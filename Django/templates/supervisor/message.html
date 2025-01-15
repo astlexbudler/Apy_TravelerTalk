@@ -1,0 +1,438 @@
+{% extends 'base/supervisor_base.html' %}
+{% block content %}
+<!-- 왼쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;">
+  {% include 'parts/left_aside_supervisor.html' %}
+</aside>
+
+<!-- 중앙 섹션 -->
+<section class="main-section px-5 px-lg-1" style="flex: 1; min-height: 100vh;">
+
+  <!-- 제목 -->
+  <div class="mt-4 mb-5">
+    <h5 class="mt-5">
+      메세지 관리
+    </h5>
+    <p>
+      관리자 문의 메세지 관리
+    </p>
+  </div>
+
+  <!-- 선택지 버튼 그룹 -->
+  <div class="btn-group w-100">
+    <a class="btn text-white" href="/supervisor/message?tab=inbox " style="background-color: gray;" id="inboxTab">
+      받은 쪽지함
+    </a>
+    <a class="btn" href="/supervisor/message?tab=outbox" style="background-color: gainsboro;" id="outboxTab">
+      보낸 쪽지함
+    </a>
+  </div>
+
+  <!-- 받은 쪽지 리스트 -->
+  <div class="my-5" id="inbox">
+
+    <!-- 통계 -->
+    <div class="rounded border p-3 mb-5">
+      <p>
+        <i class="fi fi-rr-stats"></i> 통계
+      </p>
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>구분</th>
+            <th>받은 쪽지 수</th>
+            <th>읽지 않은 쪽지 수</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              전체
+            </td>
+            <td>
+              {{status.inbox.count}}
+            </td>
+            <td>
+              {{status.inbox.unread}}
+            </td>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 검색 -->
+    <div class="rounded border p-3 mb-5">
+      <p>
+        <i class="fi fi-rr-search"></i> 검색
+      </p>
+      <form id="inboxSearchForm" method="get" action="/supervisor/message">
+        <input type="hidden" name="tab" value="inbox">
+        <div class="row">
+          <div class="form-group mt-4 col-12">
+            <label>제목</label>
+            <input class="form-control" name="messageTitle" placeholder="쪽지 제목">
+          </div>
+          <div class="form-group mt-4 col-12">
+            <label>받는 사람</label>
+            <input class="form-control" name="messageReceiverId" placeholder="받는 사람 아이디">
+          </div>
+        </div>
+      </form>
+
+      <p class="text-end mt-4">
+        <a class="btn btn-success" href="javascript: document.getElementById('inboxSearchForm').submit()">
+          <i class="fi fi-rr-search"></i> 검색
+        </a>
+      </p>
+    </div>
+
+    <!-- 버튼 -->
+    <div class="p-3 mb-5 text-end">
+
+      <a class="btn btn-success" href="javascript: new bootstrap.Modal(document.getElementById('newMessageModal')).show();">
+        <i class="fi fi-rr-envelope"></i> 쪽지 보내기
+      </a>
+
+    </div>
+
+    <!-- 검색 결과 -->
+    <p class="text-black-50 small">
+      <i class="fi fi-rr-info"></i> 쿠폰은 쪽지 내용 확인 후 <span class="text-primary">쿠폰 받기</span> 버튼을 클릭하여 받을 수
+      있습니다.
+    </p>
+    <table class="table table-border small border shadow text-center">
+      <tbody>
+        <tr>
+          <th>
+            읽음 여부
+          </th>
+          <th>
+            보낸 사람
+          </th>
+          <th>
+            제목
+          </th>
+          <th>
+            수신 날짜
+          </th>
+        </tr>
+        {% if search_messages|length < 1 %}
+        <tr>
+          <td colspan="4">
+            <p class="text-black">받은 쪽지가 없습니다.</p>
+          </td>
+        </tr>
+        {% else %}
+        {% for message in search_messages %}
+        <tr style="cursor: pointer;" 
+          onclick="new bootstrap.Modal(document.getElementById('messageModal{{message.id}}')).show();">
+          <td>
+            {% if message.read_dt == '' %}
+            <i class="fi fi-rr-eye"></i> 읽지 않음
+            {% else %}
+            <i class="fi fi-rr-eye"></i> 읽음
+            {% endif %}
+          </td>
+          <td>
+            <span class="text-dark">
+              {{ message.sender.nickname }}
+            </span>
+          </td>
+          <td>
+            {{ message.title }}
+          </td>
+          <td>
+            {{ message.send_dt }}
+          </td>
+        </tr>
+        {% endfor %}
+        {% endif %}
+      </tbody>
+    </table>
+
+  </div>
+
+  <!-- 보낸 쪽지 리스트 -->
+  <div class="my-5 d-none" id="outbox">
+
+    <!-- 통계 -->
+    <div class="rounded border p-3 mb-5">
+      <p>
+        <i class="fi fi-rr-stats"></i> 통계
+      </p>
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>구분</th>
+            <th>받은 쪽지 수</th>
+            <th>읽지 않은 쪽지 수</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              전체
+            </td>
+            <td>
+              {{status.outbox.count}}
+            </td>
+            <td>
+              {{status.outbox.unread}}
+            </td>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 검색 -->
+    <div class="rounded border p-3 mb-5">
+      <p>
+        <i class="fi fi-rr-search"></i> 검색
+      </p>
+
+      <form id="outboxSearchForm" method="get" action="/supervisor/message">
+        <input type="hidden" name="tab" value="outbox">
+        <div class="row">
+          <div class="form-group mt-4 col-12">
+            <label>제목</label>
+            <input class="form-control" name="messageTitle" placeholder="쪽지 제목">
+          </div>
+          <div class="form-group mt-4 col-12">
+            <label>받는 사람</label>
+            <input class="form-control" name="messageReceiverId" placeholder="받는 사람 아이디">
+          </div>
+        </div>
+      </form>
+
+      <p class="text-end mt-4">
+        <a class="btn btn-success" href="javascript: document.getElementById('outboxSearchForm').submit()">
+          <i class="fi fi-rr-search"></i> 검색
+        </a>
+      </p>
+    </div>
+
+    <!-- 검색 결과 -->
+    <p class="text-black-50 small">
+      <i class="fi fi-rr-info"></i> 내가 보낸 쪽지 및 읽음 여부를 확인할 수 있습니다.
+    </p>
+    <table class="table table-border small border shadow text-center">
+      <tbody>
+        <tr>
+          <th>
+            받는 사람
+          </th>
+          <th>
+            제목
+          </th>
+          <th>
+            보낸 날짜
+          </th>
+          <th>
+            읽음 여부
+          </th>
+        </tr>
+        {% if search_messages|length < 1 %}
+        <tr>
+          <td colspan="4">
+            <p class="text-black">보낸 쪽지가 없습니다.</p>
+          </td>
+        </tr>
+        {% else %}
+        {% for message in search_messages %}
+        <tr style="cursor: pointer;" onclick="new bootstrap.Modal(document.getElementById('messageModal{{message.id}}')).show();">
+          <td>
+            <span class="text-dark">
+              rec: {{ message.receiver }}/
+              {{ message.receiver.nickname }}
+            </span>
+          </td>
+          <td>
+            {{ message.title }}
+          </td>
+          <td>
+            {{ message.send_dt }}
+          </td>
+          <td>
+            {% if message.read == 'y' %}
+            <i class="fi fi-rr-eye"></i> 읽음
+            {% else %}
+            <i class="fi fi-rr-eye"></i> 읽지 않음
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+        {% endif %}
+      </tbody>
+    </table>
+
+  </div>
+
+  <div id="pageButton"></div>
+
+  <!-- Modal -->
+  {% for message in search_messages %}
+  <div class="modal fade" id="messageModal{{message.id}}" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            쪽지
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+
+          <div class="row">
+            {% if message.image != '' %}
+            <div class="col-6">
+              <img src="{{message.image}}" class="w-100">
+            </div>
+            {% endif %}
+            <div class="{% if message.image == '' %}col-12{% else %}col-6{% endif %}">
+              <p class="text-dark">
+                {{message.title}}
+              </p>
+              {% if request.GET.tab == 'outbox' %}
+              <p class="text-black-50 mb-1">
+                To. <small>{{message.receiver.nickname}}</small>
+              </p>
+              {% else %}
+              <p class="text-black-50 mb-1">
+                From. <small>{{message.sender.nickname}}</small>
+              </p>
+              {% endif %}
+              <p class="text-black-50 mb-1">
+                <i class="fi fi-rr-calendar"></i> <small>{{message.send_dt}}</small>
+              </p>
+              <p class="mt-3">
+                {{message.content}}
+              </p>
+              {% if message.include_coupon != None %}
+              <p class="text-black-50">
+                <i class="fi fi-rr-ticket"></i> {{message.include_coupon.name}} <small class="text-black-50">{{message.include_coupon.post.title}}</small>
+                <br>
+                {% if account.id != message.include_coupon.create_account_id %}
+                <a href="javascript: receiveCoupon('{{message.include_coupon.id}}');" class="small text-primary">쿠폰 받기</a>
+                {% endif %}
+                {% if message.include_coupon.required_point != 0 %}
+                <p>
+                  필요 포인트: <span class="numberComma">{{message.include_coupon.required_point}}</span> 포인트<br>
+                  쿠폰을 사용하려면 <span class="numberComma">{{message.include_coupon.required_point}}</span> 만큼의 쿠폰 포인트가 필요합니다.
+                </p>
+                {% endif %}
+              </p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          {% if request.GET.tab != 'outbox' %}
+          <button type="button" class="btn btn-success" data-bs-dismiss="modal" onclick="replyMessage('{{message.sender.id}}', '{{message.title}}');">
+            답장
+          </button>
+          {% endif %}
+          <button type="button" class="btn text-white" style="background-color: gray;" data-bs-dismiss="modal">닫기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+  <!-- 쪽지 작성 및 답변 모달 -->
+  <div class="modal fade" id="newMessageModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            쪽지 작성
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+
+          <form id="newMessageForm" method="post" action="/message/">
+            {% csrf_token %}
+
+            <!-- image -->
+            <div id="imagePreview" class="mb-2"></div>
+            <input type="file" class="d-none" id="newCouponImage" accept="image/*" onchange="previewImage(this);">
+            <input type="hidden" id="uploadedImagePath" name="image">
+
+            <!-- 쪽지 발송 대상 검색 -->
+            <div class="form-group mb-2">
+              <label>받는 사람</label> <small id="receiverConfirmMessage"></small>
+              <input class="form-control" placeholder="받는 사람의 아이디 또는 닉네임을 입력하세요." id="messageReceiver" name="receiver">
+              <input type="hidden" id="receiverId" name="receiver_id">
+            </div>
+
+            <!-- 쪽지 제목 -->
+            <div class="form-group mb-2">
+              <label>제목</label>
+              <input class="form-control" placeholder="쪽지 제목을 입력하세요." id="messageTitle" name="title">
+            </div>
+
+            <!-- 쪽지 내용 -->
+            <div class="form-group mb-2">
+              <label>내용</label>
+              <textarea class="form-control" placeholder="쪽지 내용을 입력하세요." id="messageContent" rows="5" name="content"></textarea>
+            </div>
+
+            <div class="text-end mt-3">
+              <a href="javascript: document.getElementById('newCouponImage').click();" class="btn btn-success small p-1 px-2">
+                <i class="fi fi-rr-file-image"></i> 이미지 업로드
+              </a>
+            </div>
+
+          </form>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" onclick="sendMessage();">보내기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- 오른쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+
+<script>
+
+  window.onload = () => {
+    console.log(`Window loaded at ${getNowDatetimeString()}`);
+
+    // Tab
+    tab = '{{request.GET.tab}}';
+    if(tab == '') {
+      location.href='/supervisor/message?tab=inbox';
+    }
+
+    var inboxTab = document.getElementById('inboxTab');
+    var outboxTab = document.getElementById('outboxTab');
+    var inbox = document.getElementById('inbox');
+    var outbox = document.getElementById('outbox');
+    if (tab == 'inbox') {
+      inboxTab.style.backgroundColor = 'gray';
+      outboxTab.style.backgroundColor = 'gainsboro';
+      inboxTab.classList.add('text-white');
+      outboxTab.classList.remove('text-white');
+      inbox.classList.remove('d-none');
+      outbox.classList.add('d-none');
+    } else if (tab == 'outbox') {
+      inboxTab.style.backgroundColor = 'gainsboro';
+      outboxTab.style.backgroundColor = 'gray';
+      inboxTab.classList.remove('text-white');
+      outboxTab.classList.add('text-white');
+      inbox.classList.add('d-none');
+      outbox.classList.remove('d-none');
+    }
+
+    // Page
+    var tab = '{{request.GET.tab}}';
+    var searchMessageTitle = '{{request.GET.messageTitle}}';
+    var searchMessageReceiverId = '{{request.GET.messageReceiverId}}';
+    makePaegeButton('{{request.GET.page}}', '{{last_page}}', `/supervisor/message?tab=${tab}&messageTitle=${searchMessageTitle}&messageReceiverId=${searchMessageReceiverId}`);
+  }
+
+</script>
+
+{% endblock %}

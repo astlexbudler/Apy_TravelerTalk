@@ -1,0 +1,105 @@
+{% extends 'base/main_base.html' %}
+{% block content %}
+<!-- 왼쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;">
+  {% include 'parts/left_aside_main.html' %}
+</aside>
+
+<!-- 중앙 섹션 -->
+<section class="main-section px-5 px-lg-1" style="flex: 1; min-height: 100vh;">
+
+  <!-- 제목 -->
+  <div class="mt-4 mb-5">
+    <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+      <div style="display: inline-block; text-align: left;">
+        {% include 'parts/goback.html' %}
+        <h5 class="mt-5">
+          {{board.name}}
+        </h5>
+      </div>
+      <div style="display: inline-block; text-align: right;">
+        <!-- 버튼 -->
+        {% if account.account_type in board.write_permissions %}
+        <div class="p-3 mb-5 text-end">
+
+          <a class="btn btn-success" href="/post/write_post?board_ids={{request.GET.board_ids}}">
+            <i class="fi fi-rr-edit"></i> 글 작성
+          </a>
+
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  {% if posts|length == 0 %}
+  <p>
+    게시글이 없습니다.
+  </p>
+  {% else %}
+  {% for post in posts %}
+  <div class="col-12 p-2 mb-2 pb-3 border-bottom">
+    <a href="/post/post_view?post={{ post.id }}" class="text-dark text-decoration-none">
+      <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+        <div style="display: inline-block; text-align: left;">
+          <span class="text-black-50" style="font-size: 12px;">
+            {% for board in post.boards %}
+            {{ board.name }} {% if forloop.counter < post.boards|length  %} &gt; {% endif %}
+            {% endfor %}
+          </span>
+          <h6 class="mb-2">
+            {{ post.title }}
+          </h6>
+          <span class="text-black-50">
+            <i class="fi fi-rr-user"></i> {{ post.author.nickname }} 
+            {% if account.account_type == 'user' %}
+            <span class="badge user-level-badge" style="color: {{account.level.text_color}}; background-color: {{account.level.background_color}};">{{ account.level.name }}</span>
+            {% endif %}
+          </span>
+        </div>
+        <div style="display: inline-block; text-align: right;">
+          <p class="m-0 text-end text-black-50" style="font-size: 12px;">
+            <span class="me-1" style="white-space: nowrap;">
+              <i class="fi fi-rr-eye"></i> {{ post.view_count }}
+            </span>
+            <span class="me-1" style="white-space: nowrap;">
+              <i class="fi fi-rr-comment-alt-dots"></i> {{ post.comment_count }}
+            </span>
+            <span class="me-1" style="white-space: nowrap;">
+              <i class="fi fi-rr-social-network"></i> {{ post.bookmark_count }}
+            </span>
+          </p>
+        </div>
+      </div>
+      <small class="text-black-50 mt-1">
+        <i class="fi fi-rr-calendar"></i> {{ post.created_dt }}
+      </small>
+    </a>
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  <div id="pageButton"></div>
+
+</section>
+
+<!-- 오른쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;">
+  {% include 'parts/right_aside_main.html' %}
+</aside>
+
+<script>
+
+  window.onload = () => {
+    console.log(`Window loaded at ${getNowDatetimeString()}`);
+
+    // Page
+    var board = '{{board.id}}';
+    var searchKeyword = '{{request.GET.search}}';
+    console.log('{{request.GET.page}} | {{last_page}}');
+    makePaegeButton('{{request.GET.page}}', '{{last_page}}', `/post?search=${searchKeyword}&board=${board}`);
+  }
+
+</script>
+
+{% endblock %}

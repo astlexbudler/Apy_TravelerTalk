@@ -1,0 +1,674 @@
+{% extends 'base/partner_base.html' %}
+{% block content %}
+<!-- 왼쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+
+<!-- 중앙 섹션 -->
+<section class="main-section px-5 px-lg-1" style="flex: 1; min-height: 100vh;">
+
+  <!-- 제목 -->
+  <div class="mt-4 mb-5">
+    {% include 'parts/goback.html' %}
+    <h5 class="mt-5">
+      쿠폰 관리
+    </h5>
+    <p>
+      새 쿠폰 등록 및 기존 쿠폰 관리, 쿠폰 사용 내역 조회
+    </p>
+  </div>
+
+  <!-- 선택지 버튼 그룹 -->
+  <div class="btn-group w-100">
+    <a class="btn text-white" href="/partner/coupon?tab=coupon" style="background-color: gray;" id="couponTab">
+      쿠폰 관리
+    </a>
+    <a class="btn" href="/partner/coupon?tab=history" style="background-color: gainsboro;" id="historyTab">
+      쿠폰 사용 내역
+    </a>
+  </div>
+
+  <!-- 쿠폰 목록 -->
+  <div class="my-5" id="couponBox">
+
+    <!-- 버튼 -->
+    <div class="p-3 mb-5 text-end">
+      <a href="javascript: openCreateNewCouponModal();" class="btn btn-success small">
+        <i class="fi fi-rr-plus"></i> 새 쿠폰 등록
+      </a>
+    </div>
+
+    <!-- 검색 -->
+    <div class="rounded border p-3 mb-5">
+      <p>
+        <i class="fi fi-rr-search"></i> 검색
+      </p>
+      <form id="couponSearchForm" method="get" action="/partner/coupon">
+        <div class="row">
+          <input type="hidden" name="tab" value="{{request.GET.tab}}">
+          <div class="form-group mt-4 col-12">
+            <label>쿠폰 코드</label>
+            <input class="form-control" name="code" placeholder="쿠폰 코드" value="{{request.GET.code}}">
+          </div>
+          <div class="form-group mt-4 col-12">
+            <label>쿠폰 이름</label>
+            <input class="form-control" name="name" placeholder="쿠폰 이름" value="{{request.GET.name}}">
+          </div>
+        </div>
+      </form>
+      <p class="text-end mt-4">
+        <a class="btn btn-primary" href="javascript: document.getElementById('couponSearchForm').submit()">
+          <i class="fi fi-rr-search"></i> 검색
+        </a>
+      </p>
+    </div>
+
+    <!-- 검색 결과 -->
+    <p class="text-dark m-0">
+      쿠폰 관리
+    </p>
+    <table class="table table-border small border shadow text-center">
+      <tbody>
+        <tr>
+          <th>
+            쿠폰 이름
+          </th>
+          <th>
+            소유자
+          </th>
+          <th>
+            확인 코드
+          </th>
+          <th></th>
+        </tr>
+        {% if coupons|length == 0 %}
+        <tr>
+          <td colspan="4">
+            보유중인 쿠폰이 없습니다.
+          </td>
+        </tr>
+        {% else %}
+        {% for coupon in coupons %}
+        <tr>
+          <td>
+            {{ coupon.name }}
+          </td>
+          <td>
+            <a href="/activity?profile_id={{coupon.own_user.id}}">
+              <i class="fi fi-rr-search"></i> {{ coupon.own_user.nickname }}
+            </a>
+          </td>
+          <td>
+            {{ coupon.code }}
+          </td>
+          <td>
+            <a href="javascript: new bootstrap.Modal(document.getElementById('couponModal{{coupon.id}}')).show();" class="text-primary">
+              <i class="fi fi-rr-search"></i> 상세보기
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+        {% endif %}
+      </tbody>
+    </table>
+    <p class="text-black-50 small">
+      <i class="fi fi-rr-info"></i> 쿠폰은 <span class="text-primary"><i class="fi fi-rr-search"></i>
+        상세보기</span>를 통해 세부 정보를 확인하실 수 있습니다. 쿠폰을 다른 사용자에게 보내려면 쪽지 기능을 이용해주세요.
+    </p>
+  </div>
+
+  <!-- 쿠폰 사용 내역 -->
+  <div class="my-5 d-none" id="historyBox">
+    <p class="text-dark m-0">
+      쿠폰 사용 내역
+    </p>
+    <div>
+      <table class="table table-border small border shadow text-center">
+        <tbody>
+          <tr>
+            <th>
+              쿠폰 이름
+            </th>
+            <th>
+              사용자
+            </th>
+            <th>
+              발급 날짜
+            </th>
+            <th>
+              사용 날짜
+            </th>
+            <th></th>
+          </tr>
+          {% if histories|length == 0 %}
+          <tr>
+            <td colspan="5">
+              쿠폰 사용 내역이 없습니다.
+            </td>
+          </tr>
+          {% else %}
+          {% for coupon in histories %}
+          <tr>
+            <td>
+              <a href="#" class="text-dark">
+                {{ coupon.name }}
+              </a>
+            </td>
+            <td>
+              <a href="/activity?profile_id={{coupon.user.id}}">
+                <i class="fi fi-rr-search"></i> {{ coupon.user.nickname }}
+              </a>
+            </td>
+            <td>
+              <a href="/post/post_view?id={{ coupon.post.id }}" class="text-dark">
+                {{ coupon.post.title }}
+              </a>
+            </td>
+            <td>
+              <i class="fi fi-rr-check text-success"></i>
+              {{ coupon.used_dt }}
+            </td>
+            <td>
+              <a href="javascript: new bootstrap.Modal(document.getElementById('couponHistoryModal{{coupon.id}}')).show();" class="text-primary">
+                <i class="fi fi-rr-search"></i> 상세보기
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="pageButton"></div>
+
+</section>
+
+<!-- 오른쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+
+<!-- Modals -->
+{% for coupon in coupons %}
+<div class="modal fade" id="couponModal{{coupon.id}}" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          쿠폰 상세보기
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+        <div class="row">
+          {% if coupon.images.0 != '' %}
+          <div class="col-6">
+            <img src="{{coupon.images.0}}" class="w-100">
+          </div>
+          {% endif %}
+          <div class="{% if coupon.images.0 == '' %}col-12{% else %}col-6{% endif %}">
+            <h5>
+              {{coupon.name}}
+            </h5>
+            <p class="text-black-50">
+              <small>
+                {{coupon.description}}
+              </small>
+            </p>
+            <p class="text-black-50">
+              <i class="fi fi-rr-marker"></i> <a href="/post/travel_view?post={{coupon.post.id}}" target="_blank" class="text-black-50" style="text-decoration: underline;">{{coupon.post.title}}</a>
+            </p>
+            <p class="text-black-50">
+              <i class="fi fi-rr-key"></i> 
+              <small>
+                {{coupon.code}} 
+                <a href="javascript: navigator.clipboard.writeText('{{coupon.code}}');" class="text-black-50">
+                  <i class="fi fi-rr-clipboard"></i>
+                </a>
+              </small>
+            </p>
+            {% if coupon.required_point != 0 %}
+            <p class="text-black-50">
+              <i class="fi fi-rr-star"></i> 
+              <small>
+                필요 포인트: <span class="numberComma">{{coupon.required_point}}</span> 포인트<br>
+                쿠폰을 사용하려면 <span class="numberComma">{{coupon.required_point}}</span> 만큼의 쿠폰 포인트가 필요합니다.
+              </small>
+            </p>
+            {% else %}
+            <p class="text-black-50">
+              <i class="fi fi-rr-star"></i> <small>필요 포인트: 없음</small>
+            </p>
+            {% endif %}
+            <p class="text-black-50">
+              <i class="fi fi-rr-calendar"></i> <small>생성일: {{coupon.created_dt}}</small>
+            </p>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" 
+          onclick="openModifyCouponModal('{{coupon.id}}', '{{coupon.name}}', '{{coupon.code}}', `{{coupon.description}}`, '{{coupon.required_point}}', '{{coupon.images.0}}');">
+          수정
+        </button>
+        <button type="button" class="btn btn-success" data-bs-dismiss="modal" onclick="changeCouponStatusModal('{{coupon.id}}', '{{coupon.name}}');">
+          상태변경
+        </button>
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal" onclick="deleteCoupon('{{coupon.id}}', '{{coupon.name}}');">삭제</button>
+        <button type="button" class="btn text-white" style="background-color: gray;" data-bs-dismiss="modal">닫기</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+<!--
+  쿠폰 생성 및 수정 모달
+  쿠폰 생성 또는 수정 여부에 따라 모달 제목 및 버튼 텍스트, 입력창 내용 수정
+-->
+<div class="modal fade" id="writeCouponModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="writeCouponModalLabel">
+          새 쿠폰 생성
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+        <form id="newCouponForm" method="post" action="/partner/coupon">
+          {% csrf_token %}
+
+          <!-- coupon_id -->
+          <input type="hidden" id="modifyCouponId" name="coupon_id">
+
+          <!-- image -->
+          <div id="imagePreview" class="mb-2"></div>
+          <input type="file" class="d-none" id="newCouponImage" accept="image/*" onchange="previewImage(this);">
+          <input type="hidden" id="uploadedImagePath" name="image">
+
+          <!-- code -->
+          <div class="form-group mb-2">
+            <label>쿠폰 코드</label>
+            <a href="javascript: codeRoll();">
+              <i class="fi fi-rr-refresh"></i>
+            </a>
+            <small id="codeConfirmText"></small>
+            <input class="form-control" placeholder="쿠폰 코드를 입력해주세요." id="newCouponCode" name="code">
+          </div>
+
+          <!-- name -->
+          <div class="form-group mb-2">
+            <label>쿠폰 이름</label>
+            <input class="form-control" placeholder="쿠폰 이름을 입력해주세요." id="newCouponName" name="name" required>
+          </div>
+
+          <!-- description -->
+          <div class="form-group mb-2">
+            <label>쿠폰 설명</label>
+            <textarea class="form-control" rows="5" placeholder="쿠폰 설명을 입력해주세요." id="newCouponDescription" name="description" required></textarea>
+          </div>
+
+          <!-- require_point -->
+          <div class="form-group mb-2">
+            <label>필요 포인트(선택)</label>
+            <input class="form-control" placeholder="필요 포인트를 입력해주세요." id="newCouponRequirePoint" name="require_point">
+            <small>
+              쿠폰을 사용하기 위해 사용자가 보유해야 하는 포인트의 양입니다.
+            </small>
+          </div>
+
+          <div class="text-end mt-3">
+            <a href="javascript: document.getElementById('newCouponImage').click();" class="btn btn-success small p-1 px-2">
+              <i class="fi fi-rr-file-image"></i> 이미지 업로드
+            </a>
+          </div>
+
+        </form>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="createCoupon();" id="createCouponButton">생성하기</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="changeCouponStatusModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="writeCouponModalLabel">
+          쿠폰 상태 변경
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+        <form id="changeCouponStatusForm">
+          {% csrf_token %}
+
+          <!-- coupon_id -->
+          <input type="hidden" id="changeCouponStatusCouponId" name="coupon_id">
+
+          <p id="changeCouponStatusText"></p>
+
+          <!-- status -->
+          <div class="form-group mb-2">
+            <label>쿠폰 상태</label>
+            <select class="form-select" id="changeCouponStatus" name="status">
+              <option value="used">사용</option>
+              <option value="expired">만료</option>
+              <option value="deleted">회수</option>
+            </select>
+            <small>
+              쿠폰의 상태를 변경합니다. 쿠폰을 사용하거나 만료시키거나 회수할 수 있습니다.<br>
+              상태를 변경하고 저장하면, 해당 쿠폰을 보유한 사용자에게 메세지가 전송됩니다.
+            </small>
+          </div>
+
+          <!-- note -->
+          <div class="form-group mb-2">
+            <label>메모(선택)</label>
+            <textarea class="form-control" rows="5" placeholder="메모를 입력해주세요." id="changeCouponStatusNote" name="note"></textarea>
+            <small>
+              쿠폰 상태 변경에 대한 메모를 입력해주세요. 저장된 메모는 나만 확인할 수 있습니다.
+            </small>
+          </div>
+
+        </form>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="createCoupon();" id="createCouponButton">생성하기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+  window.onload = () => {
+    console.log(`Window loaded at ${getNowDatetimeString()}`);
+
+    // Tab
+    var tab = '{{request.GET.tab}}';
+    if (tab == '') {
+      location.href = '/partner/coupon?tab=coupon';
+    }
+    var couponTab = document.getElementById('couponTab');
+    var historyTab = document.getElementById('historyTab');
+    var couponBox = document.getElementById('couponBox');
+    var historyBox = document.getElementById('historyBox');
+    if (tab == 'coupon') {
+      couponTab.style.backgroundColor = 'gray';
+      historyTab.style.backgroundColor = 'gainsboro';
+      couponTab.classList.add('text-white');
+      historyTab.classList.remove('text-white');
+      couponBox.classList.remove('d-none');
+      historyBox.classList.add('d-none');
+    } else if (tab == 'history') {
+      couponTab.style.backgroundColor = 'gainsboro';
+      historyTab.style.backgroundColor = 'gray';
+      couponTab.classList.remove('text-white');
+      historyTab.classList.add('text-white');
+      couponBox.classList.add('d-none');
+      historyBox.classList.remove('d-none');
+    }
+
+    // Page
+    console.log('{{request.GET.page}} | {{last_page}}');
+    makePaegeButton('{{request.GET.page}}', '{{last_page}}', '/?search={{request.GET.search}}');
+  }
+
+  // 새 쿠폰 생성 버튼 클릭 시
+  // 쿠폰 모달 초기화 및 쿠폰 번호 생성. 모달 열기
+  openCreateNewCouponModal = () => {
+    document.getElementById('writeCouponModalLabel').innerHTML = '새 쿠폰 생성';
+    document.getElementById('codeConfirmText').classList.remove('d-none');
+    document.getElementById('modifyCouponId').value = '';
+    document.getElementById('newCouponCode').readOnly = false;
+    document.getElementById('newCouponCode').value = '';
+    document.getElementById('newCouponName').value = '';
+    document.getElementById('newCouponDescription').value = '';
+    document.getElementById('newCouponRequirePoint').value = '';
+    document.getElementById('uploadedImagePath').value = '';
+    document.getElementById('imagePreview').innerHTML = '';
+    document.getElementById('createCouponButton').value = '생성하기';
+    new bootstrap.Modal(document.getElementById('writeCouponModal')).show();
+    codeRoll();
+  }
+
+  // 쿠폰 정보 수정 버튼 클릭 시
+  // 수정할 쿠폰 정보를 모달에 채워넣고 모달 열기
+  openModifyCouponModal = (id, name, code, description, require_point, image) => {
+    document.getElementById('writeCouponModalLabel').innerHTML = '쿠폰 수정';
+    document.getElementById('codeConfirmText').classList.add('d-none'); // 쿠폰 코드를 확인하지 않음
+    document.getElementById('modifyCouponId').value = id;
+    document.getElementById('newCouponCode').value = code;
+    document.getElementById('newCouponCode').readOnly = true; // 쿠폰 코드는 수정 불가
+    document.getElementById('newCouponName').value = name;
+    document.getElementById('newCouponDescription').value = description;
+    document.getElementById('newCouponRequirePoint').value = require_point;
+    document.getElementById('uploadedImagePath').value = image;
+    document.getElementById('imagePreview').innerHTML = '<img src="' + image + '" class="w-100">';
+    document.getElementById('createCouponButton').value = '수정하기';
+    new bootstrap.Modal(document.getElementById('writeCouponModal')).show();
+  }
+
+  // 새 쿠폰 번호 생성
+  // 16자리의 랜덤 숫자를 생성하여 새 쿠폰 생성 모달의 쿠폰 코드 입력창에 채워넣음
+  codeRoll = () => {
+    var randomNumber16 = '';
+    for (var i = 0; i < 16; i++) {
+      if (i % 4 == 0 && i != 0) {
+        randomNumber16 += '-';
+      }
+      randomNumber16 += Math.floor(Math.random() * 10);
+    }
+    document.getElementById('newCouponCode').value = randomNumber16;
+    document.getElementById('codeConfirmText').innerHTML = '사용 가능한 코드입니다.';
+    document.getElementById('codeConfirmText').classList.remove('text-danger');
+    document.getElementById('codeConfirmText').classList.add('text-success');
+    codeOk = true;
+  }
+
+  // 쿠폰 생성 또는 수정 모달의 이미지 업로드 버튼 클릭 시
+  // 이미지를 업로드하고, 업로드된 이미지를 미리보기로 표시
+  previewImage = async (input) => {
+    if (input.files && input.files[0]) {
+      var reader = new FileReader();
+      reader.onload = function (e) {
+          document.getElementById('imagePreview').innerHTML = '<img src="' + e.target.result + '" class="w-100">';
+      }
+      reader.readAsDataURL(input.files[0]);
+
+      var path = await uploadFile(input.files[0]);
+      document.getElementById('uploadedImagePath').value = path;
+    }
+  }
+
+  var codeOk = false;
+  document.querySelector('#newCouponCode').addEventListener('input', async () => {
+    var code = document.getElementById('newCouponCode').value;
+    if (code.length > 15) {
+      await fetch('/api/search_coupon?code=' + code)
+      .then(response => response.json())
+      .then(data => {
+        var exist = data.result;
+        if (exist == 'not_exist') {
+          document.getElementById('codeConfirmText').innerHTML = '사용 가능한 코드입니다.';
+          document.getElementById('codeConfirmText').classList.remove('text-danger');
+          document.getElementById('codeConfirmText').classList.add('text-success');
+          codeOk = true;
+        } else {
+          document.getElementById('codeConfirmText').innerHTML = '이미 사용중인 코드입니다.';
+          document.getElementById('codeConfirmText').classList.remove('text-success');
+          document.getElementById('codeConfirmText').classList.add('text-danger');
+          codeOk = false;
+        }
+      });
+    } else {
+      document.getElementById('codeConfirmText').innerHTML = '16자리 이상 입력해주세요.';
+      document.getElementById('codeConfirmText').classList.remove('text-success');
+      document.getElementById('codeConfirmText').classList.remove('text-danger');
+      codeOk = false;
+    }
+  });
+
+  createCoupon = async () => {
+    var coupon_id = document.getElementById('modifyCouponId').value;
+    var code = document.getElementById('newCouponCode').value;
+    var name = document.getElementById('newCouponName').value;
+    var description = document.getElementById('newCouponDescription').value;
+    var require_point = document.getElementById('newCouponRequirePoint').value;
+    var image = document.getElementById('uploadedImagePath').value;
+
+    if (coupon_id != '') { // 수정 요청
+      if(name == '' | description == '') {
+        await showAlert('쿠폰 수정', '쿠폰 이름과 설명은 필수 입력 사항입니다.', 'error');
+        return;
+      }
+
+      var formData = new FormData(document.getElementById('newCouponForm'));
+      var result = await fetch('/partner/coupon?coupon_id=' + coupon_id, {
+        method: 'PATCH',
+        headers: {
+          'X-CSRFToken': csrftoken
+        },
+        body: formData,
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        return data.result;
+      });
+
+      // 결과에 따른 처리
+      if (result == 'success') {
+        await showAlert('쿠폰 수정', '쿠폰이 수정되었습니다.', 'success');
+        location.reload();
+      } else {
+        await showAlert('쿠폰 수정 실패', '쿠폰 수정에 실패했습니다.', 'error');
+      }
+    }
+
+    // 새 쿠폰 생성
+    if (!codeOk) {
+      await showAlert('쿠폰 생성', '쿠폰 코드를 확인해주세요.', 'error');
+      return;
+    }
+
+    // 쿠폰 생성 요청 발송
+    var formData = new FormData(document.getElementById('newCouponForm'));
+    var result = await fetch(document.location.href, {
+      method: 'POST',
+      body: formData,
+    })
+    .then(response => response.json())
+    .then(async data => {
+      console.log(data);
+      return data.result;
+    });
+
+    // 결과에 따른 처리
+    if (result == 'success') {
+      await showAlert('쿠폰 생성', '쿠폰이 생성되었습니다.', 'success');
+      location.reload();
+    } else {
+      await showAlert('쿠폰 생성 실패', '쿠폰 생성에 실패했습니다.', 'error');
+    }
+  }
+
+  deleteCoupon = async (id, name) => {
+    var isDelete = await Swal.fire({
+      html: `
+      <div>
+        <div class="text-center py-4">
+          <h1 class="text-dark">
+            쿠폰 삭제
+          </h1>
+        </div>
+        <div class="text-start">
+          <p class="text-black-50">
+            <strong>${name}</strong> 쿠폰을 삭제하시겠습니까?<br>
+            쿠폰을 삭제하면, 쿠폰을 보유한 사용자가 해당 쿠폰을 사용할 수 없게 됩니다.
+          </p>
+        </div>
+      </div>`,
+      icon: `warning`,
+      showConfirmButton: true,
+      confirmButtonText: `삭제`,
+      confirmButtonColor: `red`,
+      showCancelButton: true,
+      cancelButtonText: `취소`,
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        return true;
+      }
+      return false;
+    });
+
+    // 결과에 따른 처리
+    if (!isDelete) {
+      return
+    }
+
+    // 삭제 요청
+    var result = await fetch('/partner/coupon?coupon_id=' + id, {
+      method: 'DELETE',
+      headers: {
+        'X-CSRFToken': csrftoken
+      },
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log(data);
+      return data.result;
+    });
+
+    // 결과에 따른 처리
+    if (result == 'success') {
+      await showAlert('쿠폰 삭제', '쿠폰이 삭제되었습니다.', 'success');
+      location.reload();
+    } else {
+      await showAlert('쿠폰 삭제 실패', '쿠폰 삭제에 실패했습니다.', 'error');
+    }
+  }
+
+  // 쿠폰 상태 변경
+  changeCouponStatusModal = (id, name) => {
+    document.getElementById('changeCouponStatusCouponId').value = id;
+    document.getElementById('changeCouponStatusText').innerHTML = `<strong>${name}</strong> 쿠폰의 상태를 변경합니다.`;
+    new bootstrap.Modal(document.getElementById('changeCouponStatusModal')).show();
+  }
+  changeCouponStatus = async () => {
+    var coupon_id = document.getElementById('changeCouponStatusCouponId').value;
+    var status = document.getElementById('changeCouponStatus').value;
+    var note = document.getElementById('changeCouponStatusNote').value;
+
+    // 쿠폰 상태 변경 요청
+    var result = await fetch('/partner/coupon?coupon_id=' + coupon_id + '&status=' + status + '&note=' + note, {
+      method: 'PATCH',
+      headers: {
+        'X-CSRFToken': csrftoken
+      },
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log(data);
+      return data.result;
+    });
+
+    // 결과에 따른 처리
+    if (result == 'success') {
+      await showAlert('쿠폰 상태 변경', '쿠폰 상태가 변경되었습니다.', 'success');
+      location.reload();
+    } else {
+      await showAlert('쿠폰 상태 변경 실패', '쿠폰 상태 변경에 실패했습니다.', 'error');
+    }
+  }
+
+</script>
+
+{% endblock %}

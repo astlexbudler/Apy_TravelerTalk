@@ -1,0 +1,384 @@
+{% extends 'base/partner_base.html' %}
+{% block content %}
+<!-- 왼쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+
+<!-- 중앙 섹션 -->
+<section class="main-section px-5 px-lg-1" style="flex: 1; min-height: 100vh;">
+
+  <!-- 제목 -->
+  <div class="mt-4 mb-5">
+    {% include 'parts/goback.html' %}
+    <h5 class="mt-5">
+      여행지 게시글 수정
+    </h5>
+    <p>
+      내 여행지 게시글을 수정합니다.
+    </p>
+  </div>
+
+  <!-- 버튼 -->
+  <div class="text-end">
+    <a href="javascript: deletePost();" class="btn btn-danger small">
+      <i class="fi fi-rr-trash"></i> 여행지 게시글 삭제
+    </a>
+  </div>
+
+  <!-- 게시글 컨테이너 -->
+  <div class='row my-5'>
+
+    <!-- 게시판 선택 -->
+    <div class="my-4">
+      <div class="form-group">
+        <h5>
+          게시판
+        </h5>
+        <p id="selectedBoardNames">
+          {% for board in travel_post.boards %}
+          {{ board.name }} {% if forloop.counter < travel_post.boards|length  %} &gt; {% endif %}
+          {% endfor %}
+        </p>
+
+        <div class="my-4">
+          <label>게시판 이동</label>
+          <!-- board1 -->
+          <select class="form-select mb-1" onchange="
+            document.getElementById('board').value = this.options[this.selectedIndex].value;
+            this.options[this.selectedIndex].getAttribute('post_type') == 'none' ? 
+            document.getElementById('selectedBoardNames').innerHTML = '여행지 게시판을 선택해주세요.' : 
+            document.getElementById('selectedBoardNames').innerHTML = this.options[this.selectedIndex].text;
+            document.querySelectorAll('.subBoard').forEach(e => e.classList.add('d-none'));
+            document.getElementById('board' + this.value).classList.toggle('d-none');">
+            <option>-선택해주세요-</option>
+            {% for board in boards %}
+            <!-- 상위 게시판 또는 여행지 게시판만 표시함 -->
+            {% if board.post_type == 'travel' or board.post_type == 'none' %}
+            <option value="{{board.id}}," post_type="{{board.post_type}}">{{board.name}}</option>
+            {% endif %}
+            {% endfor %}
+          </select>
+          {% for board in boards %}
+          {% if board.children|length > 0 %}
+          <!-- board2 -->
+          <select class="subBoard form-select d-none mb-1" id="board{{board.id}}," onchange="
+            document.getElementById('board').value = this.options[this.selectedIndex].value;
+            this.options[this.selectedIndex].getAttribute('post_type') == 'none' ? 
+            document.getElementById('selectedBoardNames').innerHTML = '여행지 게시판을 선택해주세요.' : 
+            document.getElementById('selectedBoardNames').innerHTML = this.options[this.selectedIndex].text;
+            document.querySelectorAll('.subBoard').forEach(e => e.classList.add('d-none'));
+            document.getElementById('board' + '{{board.id}}' + ',').classList.toggle('d-none');
+            document.getElementById('board' + this.value).classList.toggle('d-none');">
+            <option>-선택해주세요-</option>
+            {% for child in board.children %}
+            <!-- 상위 게시판 또는 여행지 게시판만 표시함 -->
+            {% if child.post_type == 'travel' or child.post_type == 'none' %}
+            <option value="{{board.id}},{{child.id}}," post_type="{{child.post_type}}">{{board.name}} > {{child.name}}</option>
+            {% endif %}
+            {% endfor %}
+          </select>
+          {% endif %}
+
+          {% for child in board.children %}
+          {% if child.children|length > 0 %}
+          <!-- board3 -->
+          <select class="subBoard form-select d-none mb-1" id="board{{board.id}},{{child.id}}," onchange="
+            document.getElementById('board').value = this.options[this.selectedIndex].value;
+            this.options[this.selectedIndex].getAttribute('post_type') == 'none' ? 
+            document.getElementById('selectedBoardNames').innerHTML = '여행지 게시판을 선택해주세요.' : 
+            document.getElementById('selectedBoardNames').innerHTML = this.options[this.selectedIndex].text;
+            document.querySelectorAll('.subBoard').forEach(e => e.classList.add('d-none'));
+            document.getElementById('board' + '{{board.id}}' + ',').classList.toggle('d-none');
+            document.getElementById('board' + '{{board.id}}' + ',' + '{{child.id}}' + ',').classList.toggle('d-none');
+            document.getElementById('board' + this.value).classList.toggle('d-none');">
+            <option>-선택해주세요-</option>
+            {% for child2 in child.children %}
+            <!-- 상위 게시판 또는 여행지 게시판만 표시함 -->
+            {% if child2.post_type == 'travel' or child2.post_type == 'none' %}
+            <option value="{{board.id}},{{child.id}},{{child2.id}}," post_type="{{child2.post_type}}">{{board.name}} > {{child.name}} > {{child2.name}}</option>
+            {% endif %}
+            {% endfor %}
+          </select>
+          {% endif %}
+
+          {% for child2 in child.children %}
+          {% if child2.children|length > 0 %}
+          <!-- board4 -->
+          <select class="subBoard form-select d-none mb-1" id="board{{board.id}},{{child.id}},{{child2.id}}," onchange="
+            document.getElementById('board').value = this.options[this.selectedIndex].value;
+            this.options[this.selectedIndex].getAttribute('post_type') == 'none' ? 
+            document.getElementById('selectedBoardNames').innerHTML = '여행지 게시판을 선택해주세요.' : 
+            document.getElementById('selectedBoardNames').innerHTML = this.options[this.selectedIndex].text;
+            document.querySelectorAll('.subBoard').forEach(e => e.classList.add('d-none'));
+            document.getElementById('board' + '{{board.id}}' + ',').classList.toggle('d-none');
+            document.getElementById('board' + '{{board.id}}' + ',' + '{{child.id}}' + ',').classList.toggle('d-none');
+            document.getElementById('board' + '{{board.id}}' + ',' + '{{child.id}}' + ',' + '{{child2.id}}' + ',').classList.toggle('d-none');">
+            <option>-선택해주세요-</option>
+            {% for child3 in child2.children %}
+            <!-- 마지막 노드에는 여행지 게시판이 아닐경우, 표시하지 않음. -->
+            {% if child3.post_type == 'travel' %}
+            <option value="{{board.id}},{{child.id}},{{child2.id}},{{child3.id}}," post_type="{{child3.post_type}}">{{board.name}} > {{child.name}} > {{child2.name}} > {{child3.name}}</option>
+            {% endif %}
+            {% endfor %}
+          </select>
+          {% endif %}
+          {% endfor %}
+          {% endfor %}
+          {% endfor %}
+
+        </div>
+        <input id="board" value="{% for board in travel_post.boards %}{{ board.id }},{% endfor %}" class="d-none">
+      </div>
+    </div>
+
+    <!-- 제목 -->
+    <div class="my-4">
+      <div class="form-group">
+        <label>제목</label>
+        <input type="text" class="form-control" value="{{ travel_post.title }}" id="title">
+      </div>
+    </div>
+
+    <!-- 대표 이미지 -->
+    <div class="my-4">
+      <label>이미지</label>
+      <div id="imagePreview" class="mb-2 row">
+        {% for image in travel_post.images %}
+        {% if image != '' %}
+        <div class="mb-2 me-2 shadow-sm text-end p-2" style="min-width: 150px; width: 12vw; background: url('{{ image }}') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw;">
+          {% if forloop.counter == 1 %}<span class="text-white">대표 이미지</span>{% endif %}
+          <a href="javascript: removeImage('{{ image }}')"
+            class="text-danger">
+            <i class="fi fi-rr-trash"></i>
+          </a>
+        </div>
+        {% endif %}
+        {% endfor %}
+      </div>
+      <a href="javascript: document.getElementById('imageInput').click();" class="btn btn-success">
+        이미지 추가
+      </a>
+      <input type="file" class="d-none" id="imageInput" multiple>
+      <input id="imagePaths" value="{% for image in travel_post.images %}{{ image }},{% endfor %}" class="d-none">
+    </div>
+
+    <!-- 내용 -->
+    <div class="p-0 my-4 col-8 col-sm-10 col-md-12" style="overflow: hidden;">
+      <label>내용</label>
+      <div id="postContent" style="height: 500px;"></div>
+      <div class="d-none" id="viewer"></div>
+      <p>
+        주소 및 카테고리는 파트너 계정 프로필에서 수정할 수 있습니다.
+      </p>
+    </div>
+
+    <!-- 저장하기 -->
+    <div class="mt-5">
+      <div class="mb-5">
+        <a class="btn btn-primary" href="javascript: rewritePost()">
+          저장하기
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+</section>
+
+<!-- 오른쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+
+<script>
+
+  window.onload = () => {
+    console.log(`Window loaded at ${getNowDatetimeString()}`);
+  }
+
+  // toastui editor
+  const editor = new toastui.Editor({
+    el: document.querySelector('#postContent'),
+    height: '500px',
+    width: '100px',
+    initialEditType: 'wysiwyg',
+    initialValue: '{{ travel_post.content }}',
+    previewStyle: 'vertical',
+    hideModeSwitch: true,
+    language: 'ko-KR'
+  });
+
+  // 이미지 업로드 및 미리보기 생성
+  document.getElementById('imageInput').addEventListener('change', async (e) => {
+    const input = e.target;
+    if (input.files && input.files[0]) {
+      var reader = new FileReader();
+      // 이미지 미리보기 생성
+      reader.onload = function (e) {
+        // 첫번째 이미지일 경우, 대표 이미지 안내 문구 추가
+        if (document.getElementById('imagePaths').value.split(',').length < 1) {
+          document.getElementById('imagePreview').innerHTML = `
+          <div class="mb-2 me-2 shadow-sm text-end p-2" style="min-width: 150px; width: 12vw; background: url('${e.target.result}') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw;">
+            <span class="text-white">대표 이미지</span>
+            <a href="javascript: removeImage('${e.target.result}')"
+              class="text-danger">
+              <i class="fi fi-rr-trash"></i>
+            </a>
+          </div>
+          `;
+        // 2번쨰 이후 이미지일 경우, 대표 이미지 안내 문구 없이 추가
+        } else {
+          document.getElementById('imagePreview').innerHTML += `
+          <div class="mb-2 me-2 shadow-sm text-end p-2" style="min-width: 150px; width: 12vw; background: url('${e.target.result}') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw;">
+            <a href="javascript: removeImage('${e.target.result}')"
+              class="text-danger">
+              <i class="fi fi-rr-trash"></i>
+            </a>
+          </div>
+          `;
+        }
+      }
+      reader.readAsDataURL(input.files[0]);
+
+      // 이미지 업로드
+      var path = await uploadFile(input.files[0]);
+
+      // 이미지 경로를 imagePaths input에 추가
+      document.getElementById('imagePaths').value += ',' + path;
+      // 이미지 경로를 구분하는 , 정리
+      if (document.getElementById('imagePaths').value.startsWith(',')) {
+        document.getElementById('imagePaths').value = document.getElementById('imagePaths').value.substring(1);
+      }
+    }
+  });
+
+  // 이미지 삭제
+  const removeImage = (path) => {
+    var imagePathsInput = document.getElementById('imagePaths');
+    console.log(imagePathsInput.value);
+    imagePathsInput.value = imagePathsInput.value.replace(path + ',', '');
+    imagePathsInput.value = imagePathsInput.value.replace(',,', ',');
+    console.log(imagePathsInput.value);
+    document.getElementById('imagePreview').innerHTML = '';
+    for (let i = 0; i < imagePathsInput.value.split(',').length; i++) {
+      if (imagePathsInput.value.split(',')[i] == '') {
+        continue;
+      }
+      if (i == 0) {
+        document.getElementById('imagePreview').innerHTML += `
+        <div class="mb-2 me-2 shadow-sm text-end p-2" style="min-width: 150px; width: 12vw; background: url('${imagePathsInput.value.split(',')[i]}') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw;">
+          <span class="text-white">대표 이미지</span>
+          <a href="javascript: removeImage('${imagePathsInput.value.split(',')[i]}')"
+            class="text-danger">
+            <i class="fi fi-rr-trash"></i>
+          </a>
+        </div>
+        `;
+      } else {
+        document.getElementById('imagePreview').innerHTML += `
+        <div class="mb-2 me-2 shadow-sm text-end p-2" style="min-width: 150px; width: 12vw; background: url('${imagePathsInput.value.split(',')[i]}') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw;">
+          <a href="javascript: removeImage('${imagePathsInput.value.split(',')[i]}')"
+            class="text-danger">
+            <i class="fi fi-rr-trash"></i>
+          </a>
+        </div>
+        `;
+      }
+    }
+  }
+
+  // 게시글 수정
+  const rewritePost = async () => {
+    const title = document.getElementById('title').value;
+    const content = editor.getMarkdown();
+    const board = document.getElementById('board').value;
+    const imagePaths = document.getElementById('imagePaths').value;
+
+    // 입력값 확인
+    if (title == '' || content == '' || board == '' || imagePaths == '') {
+      showAlert('작성 오류', '입력하지 않은 항목이 있습니다. 제목과 내용, 게시판, 이미지를 모두 입력해주세요.', 'error');
+      return;
+    }
+
+    // 게시글 수정 요청 발송
+    var formData = new FormData();
+    formData.append('title', title);
+    formData.append('content', content);
+    formData.append('board_ids', board);
+    formData.append('images', imagePaths);
+    var result = await fetch('/partner/rewrite_post', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRFToken': csrftoken
+      }
+    })
+    .then(res => res.json())
+    .then(data => {
+      console.log(data);
+      return data.result;
+    });
+
+    // 결과 확인
+    if(result == 'success') {
+      showAlert('게시글 수정', '게시글이 수정되었습니다.', 'success');
+      location.href = '/partner';
+    } else {
+      showAlert('게시글 수정', '게시글 수정에 실패했습니다.', 'error');
+    }
+  }
+
+  // 게시글 삭제
+  deletePost = async () => {
+    var isDelete = await Swal.fire({
+      html: `
+      <div>
+        <div class="text-center py-4">
+          <h1 class="text-dark">게시글 삭제</h1>
+        </div>
+        <diV class="text-start">
+          <p class="text-black-50">
+            여행지 게시글을 삭제하고. 광고 정책을 삭제할까요? 삭제된 게시글과 광고 정책은 복구할 수 없습니다.
+          </p>
+        </div>
+      </div>`,
+      icon: `warning`,
+      showConfirmButton: true,
+      confirmButtonText: `삭제하기`,
+      confirmButtonColor: `red`,
+      showCancelButton: true,
+      cancelButtonText: `취소`
+    })
+    .then((result) => {
+      if(result.isConfirmed) {
+        return true;
+      }
+      return false;
+    });
+    if (!isDelete) {
+      return;
+    }
+
+    // 게시글 삭제 요청
+    var success = await fetch('/partner/rewrite_post', {
+      method: 'DELETE',
+      headers: {
+        'X-CSRFToken': csrftoken
+      }
+    })
+    .then(res => res.json())
+    .then(data => {
+      console.log(data);
+      return data.result;
+    });
+
+    // 결과 확인
+    if(success == 'success') {
+      await showAlert('게시글 삭제', '게시글이 삭제되었습니다.', 'success');
+      location.href = '/partner';
+    } else {
+      showAlert('게시글 삭제', '게시글 삭제에 실패했습니다.', 'error');
+    }
+
+  }
+
+</script>
+
+{% endblock %}

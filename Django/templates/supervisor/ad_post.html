@@ -1,0 +1,152 @@
+{% extends 'base/supervisor_base.html' %}
+{% block content %}
+<!-- 왼쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;">
+  {% include 'parts/left_aside_supervisor.html' %}
+</aside>
+
+<!-- 중앙 섹션 -->
+<section class="main-section px-5 px-lg-1" style="flex: 1; min-height: 100vh;">
+
+  <!-- 제목 -->
+  <div class="mt-4 mb-5">
+    <h5 class="mt-5">
+      광고 관리
+    </h5>
+    <p class="small">
+      여행지 게시글 및 광고 정책 관리
+    </p>
+  </div>
+
+  <!-- 광고 -->
+  <div class="my-5">
+
+    <!-- 통계 -->
+    <div class="rounded border p-3 mb-5">
+      <p>
+        <i class="fi fi-rr-stats"></i> 통계
+      </p>
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>구분</th>
+            <th>광고중</th>
+            <th>굉고 없음</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              전체
+            </td>
+            <td>
+              {{status.active}}
+            </td>
+            <td>
+              {{status.expired}}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 검색 -->
+    <div class="rounded border p-3 mb-5">
+      <p>
+        <i class="fi fi-rr-search"></i> 검색
+      </p>
+      <form id="adSearchForm" method="get" action="/supervisor/ad_post">
+        <div class="row">
+          <div class="form-group mt-4 col-12">
+            <label>제목</label>
+            <input class="form-control" name="postTitle" placeholder="게시글 제목" value="{{request.GET.postTitle}}">
+          </div>
+          <div class="form-group mt-4 col-12">
+            <label >상태</label>
+            <select class="form-control" name="adStatus">
+              <option value="">전체</option>
+              <option value="active" {% if request.GET.adStatus == 'active' %}selected{% endif %}>광고중</option>
+              <option value="expired" {% if request.GET.adStatus == 'expired' %}selected{% endif %}>광고 없음</option>
+            </select>
+          </div>
+        </div>
+      </form>
+
+      <p class="text-end mt-4">
+        <a class="btn btn-success" href="javascript: document.getElementById('adSearchForm').submit()">
+          <i class="fi fi-rr-search"></i> 검색
+        </a>
+      </p>
+    </div>
+
+    <!-- 검색 결과 -->
+    {% if search_ads|length < 1 %}
+    <p>
+      검색 결과가 없습니다.
+    </p>
+    {% endif %}
+    {% for ad in search_ads %}
+    <div class="row mb-3 border-bottom pb-3">
+      {% with ad.post as post %}
+      {% include 'parts/travel_post_card.html' %}
+      {% endwith %}
+      <div class="col-6 col-lg-8 col-xl-9 p-2 ps-5">
+        <div class="w-100 border rounded p-3">
+          <span>
+            <span class="h5">
+              광고 설정
+            </span>
+            <a href="javascript: new bootstrap.Modal(document.getElementById('{{ad.id}}Modal')).show()">
+              <i class="fi fi-rr-edit"></i>
+            </a>
+          </span><br>
+          <p class="text-black">
+            광고 시작 일시: {{ad.start_dt}}<br>
+            광고 종료 일시: {{ad.end_dt}}<br>
+            가중치: {{ad.weight}}<br>
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="modal fade" id="{{ad.id}}Modal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">광고 설정</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+    
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" onclick="" data-bs-dismiss="modal">submit</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+
+    <div id="pageButton"></div>
+
+  </div>
+
+</section>
+
+<!-- 오른쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+
+<script>
+
+  window.onload = () => {
+    console.log(`Window loaded at ${getNowDatetimeString()}`);
+
+    // Page
+    var searchPostTitle = '{{request.GET.postTitle}}';
+    var searchAdStatus = '{{request.GET.adStatus}}';
+    console.log('{{request.GET.page}} | {{last_page}}');
+    makePaegeButton('{{request.GET.page}}', '{{last_page}}', `/supervisor/ad_post?postTitle=${searchPostTitle}&adStatus=${searchAdStatus}`);
+  }
+
+</script>
+
+{% endblock %}

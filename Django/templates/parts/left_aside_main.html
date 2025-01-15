@@ -1,0 +1,318 @@
+<aside class="px-3">
+
+  <!-- 모바일 메뉴 -->
+  <div class="d-block d-lg-none mb-5">
+    <div>
+      <a class="me-4 text-black-50" style="white-space: nowrap;"
+        href="{% if not user.is_authenticated %}javascript: needLogin();{% else %}/post/attendance{% endif %}">
+        <i class="fi fi-rr-calendar-check"></i> 출석체크
+      </a>
+    </div>
+    <div>
+      <a class="text-black-50 me-3" style="white-space: nowrap;"
+        href="{% if not user.is_authenticated %}javascript: needLogin();{% else %}/bookmark{% endif %}">
+        <i class="fi fi-rr-bookmark"></i> 즐겨찾기
+      </a>
+    </div>
+    <div>
+      <a class="text-black-50" style="white-space: nowrap;"
+        href="{% if not user.is_authenticated %}javascript: needLogin();{% else %}/coupon{% endif %}">
+        <i class="fi fi-rr-ticket"></i> 쿠폰함
+      </a>
+    </div>
+    <div>
+      <a class="text-black-50" href="/message"
+        style="white-space: nowrap;">
+        <i class="fi fi-rr-envelope"></i> 쪽지
+      </a>
+    </div>
+    <div>
+      <a class="text-black-50" href="/contact" style="white-space: nowrap;">
+        <i class="fi fi-rr-envelope"></i> 제휴문의
+      </a>
+    </div>
+  </div>
+
+  <!-- 로그인 창 -->
+  <div class="card">
+
+    {% if not user.is_authenticated %}
+      <div class="card-body">
+        <h5 class="card-title mt-2">로그인</h5>
+        <p class="card-text">로그인을 해주세요</p>
+        <div class="border rounded p-3" onkeyup="if(event.keyCode == 13) tryLogin();">
+          <div class="form-group mt-2">
+            <label>아이디</label>
+            <input type="email" class="form-control accountLoginId" placeholder="아이디를 입력해주세요" style="background-color: rgb(246, 246, 246);">
+          </div>
+          <div class="form-group mt-1">
+            <label>비밀번호</label>
+            <input type="password" class="form-control accountLoginPassword" placeholder="비밀번호를 입력해주세요" style="background-color: rgb(246, 246, 246);">
+          </div>
+          <div class="mt-4">
+            <div class="mb-2">
+              <a href="javascript: tryLogin();" class="btn btn-primary mt-2">로그인</a>
+              <a href="/signup" class="btn text-white mt-2" style="background-color: gray;">회원가입</a>
+            </div>
+            <a href="/find_account" class="text-black-50" style="text-decoration: none; font-size: 12px;">계정 복구 및 비밀번호 초기화</a>
+          </div>
+        </div>
+      </div>
+    {% else %}
+      <div class="card-body">
+        <a href="/profile">
+          {% if account.account_type == 'user' %}
+          <span class="badge user-level-badge" style="color: {{account.user_level.text_color}}; background-color: {{account.user_level.background_color}};">{{ account.user_level.name }}</span>
+          {% elif account.account_type == 'partner' %}
+          {% if account.status == 'pending' %}
+          <span class="text-black-50" style="font-size: 14px;">파트너(가입 대기중)</span>
+          {% else %}
+          <span class="text-black-50" style="font-size: 14px;">파트너</span>
+          {% endif %}
+          {% elif account.account_type == 'dame' %}
+          {% if account.status == 'pending' %}
+          <span class="text-black-50" style="font-size: 14px;">여성 회원(가입 대기중)</span>
+          {% else %}
+          <span class="text-black-50" style="font-size: 14px;">여성 회원 </span>
+          {% endif %}
+          <span class="badge text-white user-level-badge">{{ account.accumulated_point }}</span>
+          {% elif account.account_type == 'supervisor' %}
+          <span class="text-black-50" style="font-size: 14px;">관리자 </span>
+          {% endif %}
+          <p class="text-black">
+            {{ account.nickname }}
+          </p>
+        </a>
+
+        {% if account.account_type == 'user' or account.account_type == 'dame' or account.account_type == 'partner' %}
+
+        <div class="border rounded p-2">
+          <div class="my-2">
+            {% if account.account_type == 'user' or account.account_type == 'dame' %}
+            <div class="mb-3">
+              <a class="text-black-50" href="/activity">
+                보유 포인트:  <i class="fi fi-ss-coins text-secondary"></i> 
+                <span class="numberComma">{{ account.user_usable_point }}</span>
+              </a>
+            </div>
+            <div>
+              <a class="text-black-50" href="/coupon">
+                내 쿠폰: <i class="fi fi-rr-ticket"></i> 
+                {{ coupons|length }}
+              </a>
+            </div>
+            <div class="mb-3">
+              <a class="text-black-50" href="/messenge">
+                읽지 않은 쪽지: <i class="fi fi-rr-envelope"></i> 
+                {{ user_unread_messages|length }}
+              </a>
+            </div>
+            {% elif account.account_type == 'partner' %}
+            <div class="mb-3">
+              <a class="text-black-50" href="/messenge">
+                읽지 않은 쪽지: <i class="fi fi-rr-envelope"></i> 
+                {{ user_unread_messages|length }}
+              </a>
+            </div>
+            {% endif %}
+
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="text-end mt-3">
+          <a href="javascript: logout();" class="btn btn-primary me-2">로그아웃</a>
+
+          {% if account.account_type == 'partner' %}
+          <a class="btn btn-success" href="/partner">
+            <i class="fi fi-rr-settings"></i>
+          </a>
+          {% elif account.account_type == 'supervisor' or account.account_type == 'sub_supervisor' %}
+          <a class="btn btn-success" href="/supervisor">
+            <i class="fi fi-rr-settings"></i>
+          </a>
+          {% elif account.account_type == 'admin' %}
+          <a class="btn btn-success" href="/admin">
+            <i class="fi fi-rr-settings"></i>
+          </a>
+          {% endif %}
+
+        </div>
+      </div>
+    {% endif %}
+
+  </div>
+
+  {% if request.GET.category != none %}
+
+    <!-- 카테고리 검색 영역 -->
+    <div class="card mt-3">
+      <div class="card-body text-center" style="background-color: rgb(246, 246, 246);">
+        <h5 class="card-title text-black-50">카테고리
+      </div>
+      <div class="card-footer" style="min-height: 200px;"></div>
+        <div class="p-1 py-2">
+
+          <!-- 카테고리:숙박, 음식점, 관광지, 쇼핑, 스포츠, 문화, 서비스 -->
+          <div class="py-3 mb-2 border-bottom">
+            <a class="nav-link" href="#">
+              카테고리: 숙박
+            </a>
+          </div>
+          <div class="py-3 mb-2 border-bottom">
+            <a class="nav-link" href="#">
+              카테고리: 음식점
+            </a>
+          </div>
+          <div class="py-3 mb-2 border-bottom">
+            <a class="nav-link" href="#">
+              카테고리: 관광지
+            </a>
+          </div>
+          <div class="py-3 mb-2 border-bottom">
+            <a class="nav-link" href="#">
+              카테고리: 쇼핑
+            </a>
+          </div>
+          <div class="py-3 mb-2 border-bottom">
+            <a class="nav-link" href="#">
+              카테고리: 스포츠
+            </a>
+          </div>
+          <div class="py-3 mb-2 border-bottom">
+            <a class="nav-link" href="#">
+              카테고리: 문화
+            </a>
+          </div>
+          <div class="py-3 mb-2 border-bottom">
+            <a class="nav-link" href="#">
+              카테고리: 서비스
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  {% else %}
+
+  {% if account.account_type != 'admin' and account.account_type != 'supervisor' and account.account_type != 'sub_supervisor' %}
+
+    <!-- 즐겨찾기 -->
+    <div class="card mt-3">
+      <div class="card-body text-center" style="background-color: rgb(246, 246, 246);">
+        <h5 class="card-title">
+          <a href="/bookmark" class="text-black-50">즐겨찾기</a>
+        </h5>
+      </div>
+      <div class="card-footer" style="min-height: 200px;">
+        <div class="p-1 py-2">
+
+          {% if not user.is_authenticated %}
+            <p>
+              로그인이 필요합니다
+            </p>
+          {% else %}
+            {% if user_bookmarks.0 == none %}
+              <p>
+                즐겨찾기한 게시글이 없습니다
+              </p>
+            {% else %}
+              {% for post in user_bookmarks %}
+                <div class="w-100 mb-4">
+                  <a href="/post/post_view?post_id={{ post.id }}">
+                    <span class="text-black-50" style="font-size: 12px;">
+                      상위 카테고리 > 하위 카테고리
+                    </span>
+                    <h6 class="mb-1">
+                      게시글 제목
+                    </h6>
+                    <span class="text-black-50 small">
+                      작성자 닉네임
+                    </span>
+                  </a>
+                </div>
+              {% endfor %}
+            {% endif %}
+          {% endif %}
+
+        </div>
+      </div>
+    </div>
+
+    <!-- 내 쿠폰들 -->
+    {% if account.account_type == 'user' or account.account_type == 'dame' %}
+    <div class="card mt-3">
+      <div class="card-body text-center" style="background-color: rgb(246, 246, 246);">
+        <a href="/coupon">
+          <h5 class="card-title">
+            <a href="/coupon" class="text-black-50">내 쿠폰들</a>
+          </h5>
+        </a>
+      </div>
+      <div class="card-footer" style="min-height: 200px;">
+        <div class="p-1 py-2">
+
+          {% if not user.is_authenticated %}
+          <p>
+            로그인이 필요합니다
+          </p>
+          {% else %}
+          {% if user_usable_coupons.0 == none %}
+          <p>
+            사용 가능한 쿠폰이 없습니다
+          </p>
+          {% else %}
+          {% for coupon in user_usable_coupons %}
+          <!-- TODO -->
+          {% endfor %}
+          {% endif %}
+          {% endif %}
+
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- 활동 내역 -->
+    <div class="card mt-3">
+      <div class="card-body text-center" style="background-color: rgb(246, 246, 246);">
+        <h5 class="card-title">
+          <a href="/activity" class="text-black-50">활동 내역</a>
+        </h5>
+      </div>
+      <div class="card-footer" style="min-height: 200px;">
+        <div class="p-1 py-2">
+
+          {% if not user.is_authenticated %}
+          <p>
+            로그인이 필요합니다
+          </p>
+          {% else %}
+          {% if user_activities.0 == none %}
+          <p>
+            활동 내역이 없습니다
+          </p>
+          {% else %}
+          {% for activity in user_activities %}
+          <div class="mb-4">
+            <a href="/activity">
+              <span class="text-black-50" style="font-size: 12px;">
+                <i class="fi fi-rr-calendar"></i> {{ activity.created_dt }}
+              </span>
+              <p class="mt-1 text-black small">
+                [{{ activity.title }}] {{ activity.message }}
+              </p>
+            </a>
+          </div>
+          {% endfor %}
+          {% endif %}
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+  {% endif %}
+
+  {% endif %}
+
+</aside>

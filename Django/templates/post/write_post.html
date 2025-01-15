@@ -1,0 +1,178 @@
+{% extends 'base/main_base.html' %}
+{% block content %}
+<!-- 왼쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+
+<!-- 중앙 섹션 -->
+<section class="main-section" style="flex: 1; min-height: 100vh;">
+
+  <!-- 제목 -->
+  <div class="mt-4 mb-5">
+    {% include 'parts/goback.html' %}
+    <h5 class="mt-5">
+      게시글 작성
+    </h5>
+    <p class="small">
+      {{ board.name }}
+    </p>
+  </div>
+
+  <!-- 제목 -->
+  <div class="form-group mt-2 mb-3">
+    <label>제목</label>
+    <input type="text" id="postTitle" class="form-control" placeholder="제목을 입력해주세요">
+  </div>
+
+  <div class="form-group mt-2 mb-3">
+    <label>내용</label>
+    <div id="postContent"></div>
+    <div class="d-none" id="viewer"></div>
+  </div>
+
+  <div class="mt-5">
+    <div class="mb-5">
+      <a class="btn btn-primary" href="javascript: writePost()">
+        작성하기
+      </a>
+    </div>
+  </div>
+
+</section>
+
+<!-- 오른쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+
+<script>
+
+  window.onload = () => {
+    console.log(`Window loaded at ${getNowDt()}`);
+  }
+
+  const editor = new toastui.Editor({
+    el: document.querySelector('#postContent'),
+    height: '500px',
+    initialEditType: 'wysiwyg',
+    initialValue: '내용을 입력해 주세요.',
+    previewStyle: 'vertical',
+    hideModeSwitch: true,
+    language: 'ko-KR'
+  });
+
+  writePost = async () => {
+    const title = document.querySelector('#postTitle').value;
+    const content = editor.getMarkdown();
+
+    if (title.length < 2) {
+      Swal.fire({
+        html: `
+          <div>
+            <div class="text-center py-4">
+              <h1 class="text-dark">
+                제목 오류
+              </h1>
+            </div>
+            <diV class="text-start">
+              <p class="text-black">
+                제목이 너무 짧습니다. 2자 이상 입력해주세요.
+              </p>
+            </div>
+          </div>`,
+        icon: `error`,
+        showConfirmButton: true,
+        confirmButtonText: `확인`,
+        showCancelButton: false,
+        cancelButtonText: ``
+      });
+      return;
+    }
+    if (content.length < 10) {
+      Swal.fire({
+        html: `
+          <div>
+            <div class="text-center py-4">
+              <h1 class="text-dark">
+                내용 오류
+              </h1>
+            </div>
+            <diV class="text-start">
+              <p class="text-black">
+                내용이 너무 짧습니다. 10자 이상 입력해주세요.
+              </p>
+            </div>
+          </div>`,
+        icon: `error`,
+        showConfirmButton: true,
+        confirmButtonText: `확인`,
+        showCancelButton: false,
+        cancelButtonText: ``
+      });
+      return;
+    }
+
+    var formData = new FormData();
+    formData.append('title', title);
+    formData.append('content', content);
+    await fetch('/post/write_post?board_id={{board.id}}', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrftoken
+      },
+      body: formData,
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.result == 'success') {
+        Swal.fire({
+          html: `
+            <div>
+              <div class="text-center py-4">
+                <h1 class="text-dark">
+                  게시글 작성 완료
+                </h1>
+              </div>
+              <diV class="text-start">
+                <p class="text-black">
+                  게시글이 성공적으로 작성되었습니다.
+                </p>
+              </div>
+            </div>`,
+          icon: `success`,
+          showConfirmButton: true,
+          confirmButtonText: `확인`,
+          showCancelButton: false,
+          cancelButtonText: ``
+        })
+        .then(() => {
+          window.location.href = '/post/post_view?post=' + data.post_id;
+        });
+      } else {
+        Swal.fire({
+          html: `
+            <div>
+              <div class="text-center py-4">
+                <h1 class="text-dark">
+                  게시글 작성 실패
+                </h1>
+              </div>
+              <diV class="text-start">
+                <p class="text-black">
+                  게시글 작성에 실패했습니다. 잠시 후 다시 시도해주세요.
+                </p>
+              </div>
+            </div>`,
+          icon: `error`,
+          showConfirmButton: true,
+          confirmButtonText: `확인`,
+          showCancelButton: false,
+          cancelButtonText: ``
+        });
+      }
+    });
+    return
+  }
+
+
+
+</script>
+
+{% endblock %}

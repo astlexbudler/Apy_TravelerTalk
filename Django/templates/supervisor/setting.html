@@ -1,0 +1,153 @@
+{% extends 'base/supervisor_base.html' %}
+{% block content %}
+<!-- 왼쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;">
+  {% include 'parts/left_aside_supervisor.html' %}
+</aside>
+
+<!-- 중앙 섹션 -->
+<section class="main-section px-5 px-lg-1" style="flex: 1; min-height: 100vh;">
+
+  <!-- 제목 -->
+  <div class="mt-4 mb-5">
+    <h5 class="mt-5">
+      시스템 설정
+    </h5>
+    <p class="small">
+      시스템 정책 설정 수정
+    </p>
+  </div>
+
+  <!-- 시스템 설정 -->
+  <div class="container">
+    <form>
+      <div class="form-group mb-3">
+        <label>파일 업로드</label>
+        <input class="form-control mb-1" id="path" value="/media/default.png" readonly>
+        <input type="file" class="form-control" id="file" accept="image/*">
+        <small>
+          파일을 등록하면 업로드된 파일의 경로가 자동으로 표시됩니다.
+        </small>
+      </div>
+      <div class="form-group mb-3">
+        <label for="site_name">사이트 이름</label>
+        <input type="text" class="form-control" id="site_name" value="여행자들의 대화">
+        <small>
+          북마크 및 헤더, 설명 등에 표시될 사이트 이름입니다.
+        </small>
+      </div>
+      <div class="form-group mb-3">
+        <label for="site_logo">사이트 로고</label>
+        <input type="text" class="form-control" id="site_logo" value="/media/default.png">
+        <small>
+          아이콘 및 로고로 사용될 이미지의 업로드 링크. 이미지 크기는 512x512 사이즈 권장.
+        </small>
+      </div>
+      <div class="form-group mb-3">
+        <label for="site_favicon">사이트 파비콘</label>
+        <input type="text" class="form-control" id="site_favicon" value="/media/default.png">
+        <small>
+          웹 브라우저 탭에 표시될 파비콘 이미지의 업로드 링크. 이미지 크기는 32x32 사이즈 권장.
+        </small>
+      </div>
+      <div class="form-group mb-3">
+        <label for="company_name">회사 이름</label>
+        <input type="text" class="form-control" id="company_name" value="company_name">
+        <small>
+          회사 소개 및 제휴 안내 등에 표시될 회사 이름입니다.
+        </small>
+      </div>
+      <div class="form-group mb-3">
+        <label for="company_tel">회사 전화번호</label>
+        <input type="text" class="form-control" id="company_tel" value="company_tel">
+        <small>
+          고객 문의 및 제휴 문의 등에 사용될 회사 전화번호입니다.
+        </small>
+      </div>
+      <div class="form-group mb-3">
+        <label for="company_email">회사 이메일</label>
+        <input type="email" class="form-control" id="company_email" value="company_email">
+        <small>
+          고객 문의 및 제휴 문의 등에 사용될 회사 이메일입니다.
+        </small>
+      </div>
+      <div class="form-group mb-3">
+        <label for="company_address">회사 주소</label>
+        <input type="text" class="form-control" id="company_address" value="company_address">
+        <small>
+          고객 문의 및 제휴 문의 등에 사용될 회사 주소입니다.
+        </small>
+      </div>
+      <div class="form-group mb-3">
+        <label for="social_network_x">소셜 네트워크 X</label>
+        <input type="url" class="form-control" id="social_network_x" value="https://www.x.com">
+        <small>
+          소셜 네트워크 링크를 입력하세요. X(구 트위터)
+        </small>
+      </div>
+      <div class="form-group mb-3">
+        <label for="social_network_meta">소셜 네트워크 Meta</label>
+        <input type="url" class="form-control" id="social_network_meta" value="https://www.meta.com">
+        <small>
+          소셜 네트워크 링크를 입력하세요. Meta(구 페이스북)
+        </small>
+      </div>
+      <div class="form-group mb-3">
+        <label for="social_network_instagram">소셜 네트워크 Instagram</label>
+        <input type="url" class="form-control" id="social_network_instagram" value="https://www.instagram.com">
+        <small>
+          소셜 네트워크 링크를 입력하세요. Instagram
+        </small>
+      </div>
+      <div class="form-group mb-3">
+        <label for="register_point">가입 포인트</label>
+        <input type="number" class="form-control" id="register_point" value="1000">
+        <small>
+          일반 사용자가 처음 회원가입하면 지급되는 포인트입니다.
+        </small>
+      </div>
+      <div class="form-group mb-3">
+        <label for="attend_point">출석 포인트</label>
+        <input type="number" class="form-control" id="attend_point" value="100">
+        <small>
+          일반 사용자가 매일 출석하면 지급되는 포인트입니다. 1등은 x2배, 2등은 x1.5배, 3등은 x1.2배 지급됩니다.
+      </div>
+      <div class="form-group mb-3">
+        <label for="post_point">게시물 포인트</label>
+        <input type="number" class="form-control" id="post_point" value="100">
+        <small>
+          일반 사용자가 게시물을 작성하면 지급되는 포인트입니다.
+        </small>
+      </div>
+      <div class="form-group mb-3">
+        <label for="comment_point">댓글 포인트</label>
+        <input type="number" class="form-control" id="comment_point" value="50">
+        <small>
+          일반 사용자가 댓글을 작성하면 지급되는 포인트입니다.
+        </small>
+      </div>
+      <div class="form-group mb-3">
+        <label for="terms">이용 약관</label>
+        <textarea class="form-control" id="terms" style="height: 500px; overflow-y: scroll;">plz write terms here</textarea>
+        <small>
+          이용 약관을 입력하세요.
+        </small>
+      </div>
+      <button type="submit" class="btn btn-primary">저장</button>
+    </form>
+  </div>
+
+</section>
+
+<!-- 오른쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+
+<script>
+
+  window.onload = () => {
+    console.log(`Window loaded at ${getNowDatetimeString()}`);
+  }
+
+</script>
+
+{% endblock %}

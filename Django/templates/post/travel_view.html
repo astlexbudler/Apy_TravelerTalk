@@ -1,0 +1,222 @@
+{% extends 'base/main_base.html' %}
+{% block content %}
+<!-- 왼쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;">
+  {% include 'parts/left_aside_main.html' %}
+</aside>
+
+<!-- 중앙 섹션 -->
+<section class="main-section px-5 px-lg-1" style="flex: 1; min-height: 100vh;">
+
+  <!-- 제목 -->
+  <div class="mt-4 mb-5">
+    {% include 'parts/goback.html' %}
+
+    <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+      <div style="display: inline-block; text-align: left;">
+        <p class="mt-5">
+          {% for board in post.boards %}
+          {{ board.name }} {% if forloop.counter < post.boards|length  %} &gt; {% endif %}
+          {% endfor %}
+        </p>
+        <h5>
+          {{post.title}}
+          {% if account.id == post.author.id %}
+          <a href="#"
+            class="text-black-50 small">
+            <i class="fi fi-rr-edit"></i>
+          </a>
+          {% endif %}
+        </h5>
+        <p class="small mt-1">
+          <span>
+            <i class="fi fi-rr-calendar"></i> {{ post.created_dt }}
+          </span>
+          <span class="ms-3">
+            <i class="fi fi-rr-user"></i> {{ post.author.nickname }}
+          </span>
+        </p>
+      </div>
+      <div style="display: inline-block; text-align: right;">
+        <p class="m-0 text-end text-black-50" style="font-size: 14px;">
+          <span class="me-1" style="white-space: nowrap;">
+            <i class="fi fi-rr-eye"></i> {{ post.views|length }}
+          </span>
+          <span class="me-1" style="white-space: nowrap;">
+            <i class="fi fi-rr-comment-alt-dots"></i> {{ post.comments|length }}
+          </span>
+          <span class="me-1" style="white-space: nowrap;">
+            <i class="fi fi-rr-social-network"></i> {{ post.bookmarks|length }}
+          </span>
+        </p>
+        {%  if post.author.id != account.id %}
+        {% if post.id not in account.bookmark_ids %}
+        <a href="javascript: bookmark()"
+          class="btn btn-sm btn-success mt-2 p-1 px-2">
+          <i class="fi fi-rr-star"></i> 즐겨찾기
+        </a>
+        {% else %}
+        <a href="javascript: bookmark()"
+          class="btn btn-sm btn-success mt-2 p-1 px-2">
+          <i class="fi fi-rr-star-filled"></i> 즐겨찾기 해제
+        </a>
+        {% endif %}
+        <a href="javascript: writeReview()"
+          class="btn btn-sm btn-primary mt-2 p-1 px-2">
+          <i class="fi fi-rr-comment-alt-dots"></i> 리뷰 작성
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+
+  <div class="mt-4">
+    <div class="container">
+      <img class="w-100" src="{{post.images.0}}" id="mainImage">
+    </div>
+    <div class="my-4 text-start">
+      {% for photo in post.images %}
+      <div src="{{photo}}" style="width: 80px; height: 60px; background: url('{{photo}}') center/contain no-repeat black; box-shadow: 0px 0px 3px gainsboro; cursor: pointer; display: inline-block;" onclick="document.getElementById('mainImage').src ='{{photo}}'"></div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- 게시글 내용 -->
+  <div class="my-4">
+    <div style="min-height: 200px;">
+      <div id="viewer"></div>
+    </div>
+  </div>
+
+  <!-- 댓글 작성 -->
+  <div class="mt-5 mb-3 pb-3 border-bottom">
+    <p class="text-dark">
+      댓글
+    </p>
+    <textarea id="commentInput" class="form-control" rows="3"
+      placeholder="건전한 인터넷 문화 조성을 위해 댓글 작성 시 주의해주세요."></textarea>
+    <button class="btn btn-primary mt-4" onclick="writeComment('{{ user_info.email }}', '{{ post.id }}')">댓글 작성</button>
+  </div>
+
+  <!-- 댓글 목록 -->
+  <ul class="list-unstyled mt-5">
+    {% if post.comments|length < 1 %} <li>
+      <p>
+        댓글이 없습니다.
+      </p>
+      </li>
+      {% else %}
+      {% for comment in post.comments %}
+      <li>
+        <div class="mb-4">
+          <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+            <div style="display: inline-block; text-align: left;">
+              <h6 class="mt-0 mb-1">{{ comment.author.name }}</h6>
+              <small class="mb-2">{{ comment.created_dt }}</small>
+            </div>
+            <div style="display: inline-block; text-align: right;">
+              <a class="small text-black-50" href="javascript: deleteTableData('COMMENT', '{{ comment.id }}');">
+                <i class="fi fi-rr-trash"></i> 댓글 삭제
+              </a>
+            </div>
+          </div>
+          <div>
+            {{ comment.html|safe }}
+          </div>
+          <div class="nav mt-2 mb-3">
+            <a href="javascript: document.getElementById('subCommentInput').classList.toggle('d-none');"
+              class="btn btn-sm btn-border-mode mt-1 p-1 px-2">
+              댓글 달기
+            </a>
+          </div>
+          <div class="d-none mb-3" id="subCommentInput">
+            <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+              <div style="width: 20px;">
+                <i class="fi fi-rr-arrow-turn-down-right"></i>
+              </div>
+              <div style="flex: 1;">
+                <textarea class="form-control" rows="2" placeholder="댓글을 작성해주세요."
+                  id="subCommentInput{{ comment.id }}"></textarea>
+                <button class="btn btn-primary mt-2"
+                  onclick="writeComment('{{ user_info.email }}', '{{ post.id }}', '{{ comment.id }}')">
+                  댓글 작성</button>
+              </div>
+            </div>
+          </div>
+          {% if comment.sub_comments|length > 0 %}
+          <ul class="mb-5 list-unstyled border-top border-gray-300">
+            {% for sub_comment in comment.sub_comments %}
+            <li class="pt-3 ps-5">
+              <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+                <div style="display: inline-block; text-align: left;">
+                  <h6 class="mt-0 mb-1"><i class="fi fi-rr-arrow-turn-down-right"></i> {{ sub_comment.author.name }}</h6>
+                </div>
+                <div style="display: inline-block; text-align: right;">
+                  {% if user_info.email == sub_comment.author.email %}
+                  <a class="small text-black-50" href="javascript: deleteTableData('COMMENT', '{{ sub_comment.id }}');">
+                    <i class="fi fi-rr-trash"></i> 댓글 삭제
+                  </a>
+                  {% endif %}
+                </div>
+              </div>
+              <small class="mb-2">{{ sub_comment.created_dt }}</small>
+              <div>
+                {{ sub_comment.html|safe }}
+              </div>
+            </li>
+            {% endfor %}
+          </ul>
+          {% endif %}
+      </li>
+      {% endfor %}
+      {% endif %}
+  </ul>
+
+</section>
+
+<!-- 오른쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;">
+  {% include 'parts/right_aside_main.html' %}
+</aside>
+
+<script src="https://cdn.jsdelivr.net/npm/xzoom/dist/xzoom.min.js"></script>
+<script>
+
+  window.onload = () => {
+    console.log(`Window loaded at ${getNowDatetimeString()}`);
+  }
+
+  const viewer = new toastui.Editor.factory({
+    el: document.querySelector('#viewer'),
+    viewer: true,
+    height: '500px',
+    initialValue: `{{ post.content }}`,
+  });
+
+  writeReview = () => {
+    location.href = `/post/write_review?post={{ post.id }}`;
+  }
+
+  bookmark = async () => {
+    post_id = '{{ post.id }}';
+    // 북마크 토글 요청
+    var result = await fetch('/api/toggle_bookmark?post_id=' + post_id)
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        return data.result;
+      });
+
+    // 북마크 토글 결과에 따른 버튼 변경
+    if (result == 'remove') {
+      await showAlert('북마크 제거', '북마크가 제거되었습니다.', 'success');
+      location.reload();
+    } else {
+      await showAlert('북마크 추가', '북마크가 추가되었습니다.', 'success');
+      location.reload();
+    }
+  }
+</script>
+
+{% endblock %}

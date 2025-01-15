@@ -1,0 +1,153 @@
+{% extends 'base/partner_base.html' %}
+{% block content %}
+<!-- 왼쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+
+<!-- 중앙 섹션 -->
+<section class="main-section px-5 px-lg-1" style="flex: 1; min-height: 100vh;">
+
+  <!-- 제목 -->
+  <div class="mt-4 mb-5">
+    {% include 'parts/goback.html' %}
+    <h5 class="mt-5">
+      파트너 관리자
+    </h5>
+    <p>
+      광고 및 제휴 게시글 작성 또는 쿠폰 등록 및 관리
+    </p>
+  </div>
+
+  <!-- 프로필 카드 -->
+  {% include 'parts/profile_card.html' %}
+
+  <!-- 게시글 -->
+  {% if travel_post != None %}
+  <div class="col-12 border rounded p-3 mb-5">
+    <a href="/post/travel_view?post={{travel_post.id}}" class="text-dark text-decoration-none">
+      <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+        <div style="display: inline-block; text-align: left;">
+          <span class="text-black-50" style="font-size: 12px;">
+            {% for board in travel_post.boards %}
+            {{ board.name }} {% if forloop.counter < travel_post.boards|length  %} &gt; {% endif %}
+            {% endfor %}
+          </span>
+          <h6 class="mb-2">
+            {{ travel_post.title }}
+          </h6>
+          <span class="text-black-50">
+            <i class="fi fi-rr-user"></i> {{ travel_post.author.nickname }}
+          </span>
+        </div>
+        <div style="display: inline-block; text-align: right;">
+          <p class="m-0 text-end text-black-50" style="font-size: 12px;">
+            <span class="me-1" style="white-space: nowrap;">
+              <i class="fi fi-rr-eye"></i> {{ travel_post.view_count }}
+            </span>
+            <span class="me-1" style="white-space: nowrap;">
+              <i class="fi fi-rr-comment-alt-dots"></i> {{ travel_post.comment_count }}
+            </span>
+            <span class="me-1" style="white-space: nowrap;">
+              <i class="fi fi-rr-social-network"></i> {{ travel_post.bookmark_count }}
+            </span>
+          </p>
+        </div>
+      </div>
+      <small class="text-black-50 mt-1">
+        <i class="fi fi-rr-calendar"></i> {{ travel_post.created_dt }}
+      </small>
+    </a>
+  </div>
+  {% endif %}
+
+  <!--- 메뉴 -->
+  <div class="row my-5">
+
+    <div class="col-md-6 col-lg-4 mt-4">
+      <div class="pt-2-8 pb-2-4 px-1-6 border rounded shadow p-3">
+        <a href="/partner/coupon">
+          <div class="text-center mb-3">
+            <div class="icon icon-xl bg-primary text-white rounded-circle mb-3">
+              <i class="fi fi-rr-ticket"></i>
+            </div>
+          </div>
+          <h5 class="mb-3">
+            쿠폰 관리
+          </h5>
+          <p class="text-black-50">
+            새 쿠폰 등록 및 기존 쿠폰 관리, 쿠폰 사용 내역 조회
+          </p>
+        </a>
+      </div>
+    </div>
+    {% if travel_post == None %}
+    <div class="col-md-6 col-lg-4 mt-4">
+      <div class="pt-2-8 pb-2-4 px-1-6 border rounded shadow p-3">
+        <a href="/partner/write_post">
+          <div class="text-center mb-3">
+            <div class="icon icon-xl bg-primary text-white rounded-circle mb-3">
+              <i class="fi fi-rr-edit"></i>
+            </div>
+          </div>
+          <h5 class="mb-3">
+            여행지 등록
+          </h5>
+          <p class="text-black-50">
+            새 여행지 등록 및 광고 생성
+          </p>
+        </a>
+      </div>
+    </div>
+    {% else %}
+    <div class="col-md-6 col-lg-4 mt-4">
+      <div class="pt-2-8 pb-2-4 px-1-6 border rounded shadow p-3">
+        <a href="/partner/rewrite_post">
+          <div class="text-center mb-3">
+            <div class="icon icon-xl bg-primary text-white rounded-circle mb-3">
+              <i class="fi fi-rr-edit"></i>
+            </div>
+          </div>
+          <h5 class="mb-3">
+            여행지 관리
+          </h5>
+          <p class="text-black-50">
+            내가 등록한 여행지 게시글을 수정하거나, 광고 정책을 확인합니다.
+          </p>
+        </a>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="col-md-6 col-lg-4 mt-4">
+      <div class="pt-2-8 pb-2-4 px-1-6 border rounded shadow p-3">
+        <a href="/message">
+          <div class="text-center mb-3">
+            <div class="icon icon-xl bg-primary text-white rounded-circle mb-3">
+              <i class="fi fi-rr-envelope"></i>
+            </div>
+          </div>
+          <h5 class="mb-3">
+            쪽지 확인
+          </h5>
+          <p class="text-black-50">
+            관리자 및 사용자 쪽지 확인, 쿠폰 전송
+          </p>
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+</section>
+
+<!-- 오른쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+
+<script>
+
+  window.onload = () => {
+    console.log(`Window loaded at ${getNowDatetimeString()}`);
+  }
+
+</script>
+
+{% endblock %}

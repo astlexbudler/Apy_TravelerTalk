@@ -1,0 +1,36 @@
+{% extends 'base/main_base.html' %}
+{% block content %}
+<!-- 왼쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+
+<!-- 중앙 섹션 -->
+<section class="main-section px-5 px-lg-1" style="flex: 1; min-height: 100vh;">
+
+  <div class="mt-4 mb-5">
+    {% include 'parts/goback.html' %}
+    <h5 class="mt-5">
+      Terms of Service
+    </h5>
+    <p>
+      개인정보 처리 방침 및 이용약관 (2024-10-26) Original
+    </p>
+  </div>
+
+  <textarea class="form-control w-100" style="height: 500px;" readonly>
+    {{ terms }}
+  </textarea>
+
+</section>
+
+<!-- 오른쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+
+<script>
+
+  window.onload = () => {
+    console.log(`Window loaded at ${getNowDatetimeString()}`);
+  }
+
+</script>
+
+{% endblock %}

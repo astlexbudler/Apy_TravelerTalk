@@ -1,0 +1,805 @@
+{% extends 'base/main_base.html' %}
+{% block content %}
+<!-- 왼쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+
+<!-- 중앙 섹션 -->
+<section class="main-section px-5 px-lg-1" style="flex: 1; min-height: 100vh;">
+
+  <!-- 제목 -->
+  <div class="mt-4 mb-5">
+    {% include 'parts/goback.html' %}
+    <h5 class="mt-5">
+      사용자 프로필
+    </h5>
+    <p>
+      사용자 프로필을 확인하거나 수정할 수 있습니다.
+    </p>
+  </div>
+
+  <!-- 선택지 버튼 그룹 -->
+  <div class="btn-group w-100">
+    <a class="btn text-white" href="/profile?profile_id={{ profile.id }}" style="background-color: gray; border-radius: 6px 0px 0px 0px;" id="profileTab">
+      프로필
+    </a>
+    <a class="btn" href="/activity?profile_id={{ profile.id }}" style="background-color: gainsboro; border-radius: 0px;" id="activityTab">
+      활동 기록
+    </a>
+  </div>
+
+  <!-- 프로필 상자 -->
+  <div class="my-5">
+    <p class="text-dark">
+      프로필 정보
+    </p>
+
+    <!-- 프로필 카드 -->
+    {% include 'parts/profile_card.html' %}
+
+    <!--
+      레벨 정보 테이블 표시
+      - 사용자 계정일 때만 표시, 다른 계정은 표시하지 않음(다른 계정은 레벨이 없음)
+    -->
+    {% if profile.account_type == 'user' or profile.account_type == 'dame' %}
+    <p class="text-black-50 small">
+      <i class="fi fi-rr-info"></i> 포인트는 게시글 또는 댓글 작성, 출석 체크 등 활동에 따라 적립되며, 사용자 등급 상승 및 쿠폰 구매에 사용됩니다.
+    </p>
+    <div class="mb-5">
+      <p class="text-dark m-0">
+        등급 정보
+      </p>
+      <div>
+        <table class="table table-border small border shadow text-center">
+          {% for rule in level_rules %}
+          <tr>
+            <td class="pe-5"></td>
+            <td class="text-start">
+              {{ rule.level }} 레벨 
+              <span class="badge user-level-badge ms-3" style="color: {{rule.text_color}}; background-color: {{rule.background_color}};">{{ rule.name }}</span>
+            </td>
+            <td>
+              <i class="fi fi-ss-coins"></i> <span class="numberComma">{{ rule.required_point }}</span> 포인트
+            </td>
+          </tr>
+          {% endfor %}
+        </table>
+        <p class="text-black-50 small">
+          <i class="fi fi-rr-info"></i> 등급 상승은 레벨 포인트를 넘긴 후 자동으로 승급됩니다. (반영되는데 몇분정도 소요될 수 있습니다.)
+        </p>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="mb-5">
+      <p class="text-dark m-0">
+        상태
+        {% if account.account_type == 'supervisor' or account.account_type == 'sub_supervisor' and 'user' in account.supervisor_permissions %}
+        <a class="text-black-50" href="javascript: new bootstrap.Modal(document.getElementById('changeStatusModal')).show();">
+          <i class="fi fi-rr-pen-clip"></i>
+        </a>
+        {% endif %}
+      </p>
+      {% if profile.status == 'pending' %}
+      <p class="text-black-50">
+        가입 대기중
+      </p>
+      {% else %}
+      <p class="text-black-50">
+        정상
+      </p>
+      {% endif %}
+    </div>
+    <div class="mt-2 mb-5">
+      <p class="text-dark m-0">
+        아이디
+      </p>
+      <p class="text-black-50">
+        {{ profile.id }}
+      </p>
+    </div>
+    <div class="mb-5">
+      <p class="text-dark m-0">
+        닉네임
+      </p>
+      <a class="text-black-50"
+        href="javascript: new bootstrap.Modal(document.getElementById('rewriteNickNameModal')).show();">
+        {{ profile.nickname }} <i class="fi fi-rr-pen-clip"></i>
+      </a>
+    </div>
+    <div class="mb-5">
+      <p class="text-dark m-0">
+        비밀번호
+      </p>
+      <a class="text-black-50"
+        href="javascript: new bootstrap.Modal(document.getElementById('rewritePasswordModal')).show();">
+        비밀번호 변경 <i class="fi fi-rr-pen-clip"></i>
+      </a>
+    </div>
+    {% if account.account_type == 'supervisor' and 'supervisor' in profile.account_type %}
+    <div class="mb-5">
+      <p class="text-dark m-0">
+        권한
+        <a class="text-black-50"
+        href="javascript: new bootstrap.Modal(document.getElementById('rewritePasswordModal')).show();">
+        <i class="fi fi-rr-pen-clip"></i>
+      </a>
+      </p>
+      <p class="text-primary m-0">
+        {% if 'user' in profile.supervisor_permissions %}
+        <span class="badge bg-info">사용자 관리</span>
+        {% endif %}
+        {% if 'post' in profile.supervisor_permissions %}
+        <span class="badge bg-info">게시글 관리</span>
+        {% endif %}
+        {% if 'ad_post' in profile.supervisor_permissions %}
+        <span class="badge bg-info">광고 관리</span>
+        {% endif %}
+        {% if 'coupon' in profile.supervisor_permissions %}
+        <span class="badge bg-info">쿠폰 관리</span>
+        {% endif %}
+        {% if 'message' in profile.supervisor_permissions %}
+        <span class="badge bg-info">메시지 관리</span>
+        {% endif %}
+        {% if 'banner' in profile.supervisor_permissions %}
+        <span class="badge bg-info">배너 관리</span>
+        {% endif %}
+        {% if 'level' in profile.supervisor_permissions %}
+        <span class="badge bg-info">레벨 관리</span>
+        {% endif %}
+        {% if 'setting' in profile.supervisor_permissions %}
+        <span class="badge bg-info">시스템 관리</span>
+        {% endif %}
+      </p>
+    </div>
+    {% endif %}
+    {% if 'supervisor' in account.account_type %}
+    <div class="mb-5">
+      <p class="text-dark m-0">
+        계정 메모(관리자만 확인할 수 있습니다.)
+        {% if account.account_type == 'supervisor' or account.account_type == 'sub_supervisor' and 'user' in account.supervisor_permissions %}
+        <a class="text-black-50" href="javascript: new bootstrap.Modal(document.getElementById('changeNoteModal')).show();">
+          <i class="fi fi-rr-pen-clip"></i>
+        </a>
+        {% endif %}
+      </p>
+      <p class="text-black-50">
+        {{ profile.note }}
+      </p>
+    </div>
+    {% endif %}
+
+    <!-- partner -->
+    {% if profile.account_type == 'partner' %}
+    <div class="mt-5">
+      <p class="text-dark">
+        파트너 정보
+      </p>
+      <div class="mb-5">
+        <p class="text-dark m-0">
+          파트너 연락처
+        </p>
+        <a class="text-black-50"
+          href="javascript: new bootstrap.Modal(document.getElementById('rewritePartnerPhoneModal')).show();">
+          {{ profile.partner_tel }} <i class="fi fi-rr-pen-clip"></i>
+        </a>
+      </div>
+      <div class="mb-5">
+        <p class="text-dark m-0">
+          파트너 주소
+        </p>
+        <a class="text-black-50"
+          href="javascript: new bootstrap.Modal(document.getElementById('rewritePartnerAddressModal')).show();">
+          {{ profile.partner_address }} <i class="fi fi-rr-pen-clip"></i>
+        </a>
+      </div>
+      <div class="mb-5">
+        <p class="text-dark m-0">
+          파트너 카테고리
+        </p>
+        <a class="text-black-50"
+          href="javascript: new bootstrap.Modal(document.getElementById('rewritePartnerCategoryModal')).show();">
+          {{ profile.partner_categories }} <i class="fi fi-rr-pen-clip"></i>
+        </a>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if account.account_type == 'supervisor' or account.account_type == 'sub_supervisor' and 'user' in account.supervisor_permissions %}
+    <div class="mb-5">
+      <a class="btn btn-danger"
+        href="javascript: deleteAccount();">
+        회원 삭제
+      </a>
+    </div>
+    {% else %}
+    <div class="mb-5">
+      <a class="btn btn-danger"
+        href="javascript: deleteAccount();">
+        회원 탈퇴
+      </a>
+    </div>
+  </div>
+  {% endif %}
+
+</section>
+
+<!-- 오른쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+
+<!-- Modals -->
+<!-- USER: 닉네임 변경 -->
+<div class="modal fade" id="rewriteNickNameModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">닉네임 변경</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+        <!-- name -->
+        <div class="form-group">
+          <label>새 닉네임</label> <small id="newNickNameConfirmText"></small>
+          <input type="text" class="form-control" placeholder="변경할 닉네임을 입력해주세요." id="newNickName">
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="rewriteNickName();" data-bs-dismiss="modal">변경하기</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- USER: 비밀번호 변경 -->
+<div class="modal fade" id="rewritePasswordModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">비밀번호 변경</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+        <!-- new password -->
+        <div class="form-group mb-3">
+          <label>새 비밀번호</label> <small id="newPasswordConfirmText"></small>
+          <input type="password" class="form-control" placeholder="새 비밀번호를 입력해주세요." id="newPassword">
+        </div>
+
+        <!-- confirm password -->
+        <div class="form-group">
+          <label>새 비밀번호 확인</label> <small id="newPasswordConfirmText"></small>
+          <input type="password" class="form-control" placeholder="새 비밀번호를 다시 입력해주세요." id="newPasswordConfirm">
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="rewritePassword();" data-bs-dismiss="modal">변경하기</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- PARTNER: 파트너 연락처 변경 -->
+<div class="modal fade" id="rewritePartnerPhoneModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">파트너 연락처 변경</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+        <!-- partner tel -->
+        <div class="form-group">
+          <label>새 연락처</label> <small id="newPartnerTelConfirmText"></small>
+          <input type="text" class="form-control" placeholder="변경할 연락처를 입력해주세요." id="newPartnerTel">
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="rewritePartnerTel();" data-bs-dismiss="modal">변경하기</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- PARTNER: 파트너 주소 변경 -->
+<div class="modal fade" id="rewritePartnerAddressModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">파트너 주소 변경</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+        <!-- partner address -->
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+            <div style="display: inline-block; text-align: left;">
+              <label class="mt-2">주소</label>
+            </div>
+            <div style="display: inline-block; text-align: right;">
+              <a class="btn btn-success" href="javascript: sample3_execDaumPostcode();">주소검색</a>
+            </div>
+          </div>
+          <div class="content">
+            <div id="wrap"
+              style="display:none;border:1px solid;width:100%;height:300px;margin:5px 0;position:relative">
+              <img src="//t1.daumcdn.net/postcode/resource/images/close.png" id="btnFoldWrap"
+                style="cursor:pointer;position:absolute;right:0px;top:-1px;z-index:1"
+                onclick="foldDaumPostcode()" alt="접기 버튼">
+            </div>
+            <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+            <script>
+              // 우편번호 찾기 찾기 화면을 넣을 element
+              var element_wrap = document.getElementById('wrap');
+
+              function foldDaumPostcode() {
+                // iframe을 넣은 element를 안보이게 한다.
+                element_wrap.style.display = 'none';
+              }
+
+              function sample3_execDaumPostcode() {
+                // 현재 scroll 위치를 저장해놓는다.
+                var currentScroll = Math.max(document.body.scrollTop, document.documentElement.scrollTop);
+                new daum.Postcode({
+                  oncomplete: function (data) {
+                    // 검색결과 항목을 클릭했을때 실행할 코드를 작성하는 부분.
+
+                    // 각 주소의 노출 규칙에 따라 주소를 조합한다.
+                    // 내려오는 변수가 값이 없는 경우엔 공백('')값을 가지므로, 이를 참고하여 분기 한다.
+                    var addr = ''; // 주소 변수
+                    var extraAddr = ''; // 참고항목 변수
+
+                    //사용자가 선택한 주소 타입에 따라 해당 주소 값을 가져온다.
+                    if (data.userSelectedType === 'R') { // 사용자가 도로명 주소를 선택했을 경우
+                      addr = data.roadAddress;
+                    } else { // 사용자가 지번 주소를 선택했을 경우(J)
+                      addr = data.jibunAddress;
+                    }
+
+                    // 사용자가 선택한 주소가 도로명 타입일때 참고항목을 조합한다.
+                    if (data.userSelectedType === 'R') {
+                      // 법정동명이 있을 경우 추가한다. (법정리는 제외)
+                      // 법정동의 경우 마지막 문자가 "동/로/가"로 끝난다.
+                      if (data.bname !== '' && /[동|로|가]$/g.test(data.bname)) {
+                        extraAddr += data.bname;
+                      }
+                      // 건물명이 있고, 공동주택일 경우 추가한다.
+                      if (data.buildingName !== '' && data.apartment === 'Y') {
+                        extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+                      }
+                      // 표시할 참고항목이 있을 경우, 괄호까지 추가한 최종 문자열을 만든다.
+                      if (extraAddr !== '') {
+                        extraAddr = ' (' + extraAddr + ')';
+                      }
+                    }
+
+                    // 우편번호와 주소 정보를 해당 필드에 넣는다.
+                    document.getElementById("address").value = addr;
+
+                    // iframe을 넣은 element를 안보이게 한다.
+                    // (autoClose:false 기능을 이용한다면, 아래 코드를 제거해야 화면에서 사라지지 않는다.)
+                    element_wrap.style.display = 'none';
+
+                    // 우편번호 찾기 화면이 보이기 이전으로 scroll 위치를 되돌린다.
+                    document.body.scrollTop = currentScroll;
+                  },
+                  // 우편번호 찾기 화면 크기가 조정되었을때 실행할 코드를 작성하는 부분. iframe을 넣은 element의 높이값을 조정한다.
+                  onresize: function (size) {
+                    element_wrap.style.height = size.height + 'px';
+                  },
+                  width: '100%',
+                  height: '100%'
+                }).embed(element_wrap);
+
+                // iframe을 넣은 element를 보이게 한다.
+                element_wrap.style.display = 'block';
+              }
+            </script>
+          </div>
+          <input type="text" id="address" class="form-control mt-2 mb-1" placeholder="소재지가 해외인경우 직접 입력해주세요.">
+          <input type="text" id="addressDetail" class="form-control mt-2" placeholder="상세 주소를 입력해주세요.">
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="rewritePartnerAddress();" data-bs-dismiss="modal">변경하기</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- PARTNER: 파트너 카테고리 변경 -->
+<div class="modal fade" id="rewritePartnerCategoryModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">파트너 카테고리 변경</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+        <!-- partner categories -->
+        <div class="form-group">
+          <label>업종 카테고리</label><br>
+          <div class="mb-3">
+            <!-- category1 -->
+            <select class="form-select mb-1" onchange="
+              document.getElementById('partnerCategory').value = this.options[this.selectedIndex].text;
+              document.querySelectorAll('.subCategory').forEach(e => e.classList.add('d-none'));
+              document.getElementById('category' + this.value).classList.toggle('d-none');">
+              <option>-선택해주세요-</option>
+              {% for category in categories %}
+              <option value="{{category.id}}">{{category.name}}</option>
+              {% endfor %}
+            </select>
+            {% for category in categories %}
+            {% if category.children|length > 0 %}
+            <!-- category2 -->
+            <select class="subCategory form-select d-none mb-1" id="category{{category.id}}" onchange="
+              document.getElementById('partnerCategory').value = this.options[this.selectedIndex].text;
+              document.querySelectorAll('.subCategory').forEach(e => e.classList.add('d-none'));
+              document.getElementById('category' + '{{category.id}}').classList.toggle('d-none');
+              document.getElementById('category' + this.value).classList.toggle('d-none');">
+              <option>-선택해주세요-</option>
+              {% for child in category.children %}
+              <option value="{{child.id}}">{{category.name}} > {{child.name}}</option>
+              {% endfor %}
+            </select>
+            {% endif %}
+
+            {% for child in category.children %}
+            {% if child.children|length > 0 %}
+            <!-- category3 -->
+            <select class="subCategory form-select d-none mb-1" id="category{{child.id}}" onchange="
+              document.getElementById('partnerCategory').value = this.options[this.selectedIndex].text;
+              document.querySelectorAll('.subCategory').forEach(e => e.classList.add('d-none'));
+              document.getElementById('category' + '{{category.id}}').classList.toggle('d-none');
+              document.getElementById('category' + '{{child.id}}').classList.toggle('d-none');
+              document.getElementById('category' + this.value).classList.toggle('d-none');">
+              <option>-선택해주세요-</option>
+              {% for child2 in child.children %}
+              <option value="{{child2.id}}">{{category.name}} > {{child.name}} > {{child2.name}}</option>
+              {% endfor %}
+            </select>
+            {% endif %}
+
+            {% for child2 in child.children %}
+            {% if child2.children|length > 0 %}
+            <!-- category4 -->
+            <select class="subCategory form-select d-none mb-1" id="category{{child2.id}}" onchange="
+              document.getElementById('partnerCategory').value = this.options[this.selectedIndex].text;
+              document.querySelectorAll('.subCategory').forEach(e => e.classList.add('d-none'));
+              document.getElementById('category' + '{{category.id}}').classList.toggle('d-none');
+              document.getElementById('category' + '{{child.id}}').classList.toggle('d-none');
+              document.getElementById('category' + '{{child2.id}}').classList.toggle('d-none');
+              document.getElementById('category' + this.value).classList.toggle('d-none');">
+              <option>-선택해주세요-</option>
+              {% for child3 in child2.children %}
+              <option value="{{child3.id}}">{{category.name}} > {{child.name}} > {{child2.name}} > {{child3.name}}</option>
+              {% endfor %}
+            </select>
+            {% endif %}
+            {% endfor %}
+            {% endfor %}
+            {% endfor %}
+
+          </div>
+          <input class="d-none" id="partnerCategory">
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="rewritePartnerCategories();" data-bs-dismiss="modal">변경하기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  window.onload = () => {
+    console.log(`Window loaded at ${getNowDatetimeString()}`);
+  }
+
+  // 닉네임 및 파트너 이름 정보 변경
+  var nicknameOk = false;
+  var newNicknameInput = document.getElementById('newNickName');
+  var newNickNameConfirmText = document.getElementById('newNickNameConfirmText');
+  newNicknameInput.addEventListener('input', async () => {
+    var newNickName = newNicknameInput.value;
+    if (newNickName.length < 2) { // 닉네임은 2글자 이상이어야 함
+      newNickNameConfirmText.innerHTML = '닉네임은 2글자 이상이어야 합니다.';
+      newNickNameConfirmText.classList.remove('text-success');
+      newNickNameConfirmText.classList.add('text-danger');
+      nicknameOk = false;
+      return
+    }
+
+    // 닉네임 중복 확인
+    var exist = await fetch('/api/check_nickname?nickname=' + newNickName)
+    .then(response => response.json())
+    .then(data => {
+      console.log(data);
+      return data.result;
+    });
+
+    // 닉네임 중복 확인 결과에 따른 처리
+    if (exist == 'not_exist') {
+      newNickNameConfirmText.innerHTML = '사용 가능한 닉네임입니다.';
+      newNickNameConfirmText.classList.remove('text-danger');
+      newNickNameConfirmText.classList.add('text-success');
+      nicknameOk = true;
+      return
+    }
+    newNickNameConfirmText.innerHTML = '이미 사용 중인 닉네임입니다.';
+    newNickNameConfirmText.classList.remove('text-success');
+    newNickNameConfirmText.classList.add('text-danger');
+    nicknameOk = false;
+  });
+  rewriteNickName = async () => {
+    if(!nicknameOk) {
+      return;
+    }
+
+    // 닉네임 변경 요청
+    var formData = new FormData();
+    formData.append('nickname', newNicknameInput.value);
+    var result = await fetch('/api/edit_user', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRFToken': csrftoken
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log(data);
+      return data.success;
+    });
+
+    // 닉네임 변경 결과에 따른 처리
+    if (result == 'y') {
+      await showAlert('닉네임 변경 완료', '닉네임이 성공적으로 변경되었습니다.', 'success');
+      location.reload();
+      return
+    }
+    await showAlert('닉네임 변경 실패', '닉네임 변경 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error');
+  }
+
+  // 비밀번호 변경
+  var passwordOk = false;
+  var passwordConfirmOk = false;
+  const passwordRegex = /^(?=.*[a-zA-Z])(?=.*[0-9]).{8,16}$/; // 영문, 숫자 포함 8~16자
+  var newPasswordInput = document.getElementById('newPassword');
+  var newPasswordConfirmInput = document.getElementById('newPasswordConfirm');
+  newPasswordInput.addEventListener('input', () => { // 비밀번호 입력 시, 비밀번호 형식 확인
+    var newPassword = newPasswordInput.value;
+    if (!passwordRegex.test(newPassword)) {
+      document.getElementById('newPasswordConfirmText').innerHTML = '비밀번호는 8글자 이상이어야 합니다.';
+      document.getElementById('newPasswordConfirmText').classList.remove('text-success');
+      document.getElementById('newPasswordConfirmText').classList.add('text-danger');
+      passwordOk = false;
+      return
+    }
+    document.getElementById('newPasswordConfirmText').innerHTML = '사용 가능한 비밀번호입니다.';
+    document.getElementById('newPasswordConfirmText').classList.remove('text-danger');
+    document.getElementById('newPasswordConfirmText').classList.add('text-success');
+    passwordOk = true;
+  });
+  newPasswordConfirmInput.addEventListener('input', () => { // 비밀번호 확인 입력 시, 비밀번호 일치 확인
+    var newPassword = newPasswordInput.value;
+    var newPasswordConfirm = newPasswordConfirmInput.value;
+    if (newPassword != newPasswordConfirm) {
+      document.getElementById('newPasswordConfirmText').innerHTML = '비밀번호가 일치하지 않습니다.';
+      document.getElementById('newPasswordConfirmText').classList.remove('text-success');
+      document.getElementById('newPasswordConfirmText').classList.add('text-danger');
+      passwordConfirmOk = false;
+      return
+    }
+    document.getElementById('newPasswordConfirmText').innerHTML = '비밀번호가 일치합니다.';
+    document.getElementById('newPasswordConfirmText').classList.remove('text-danger');
+    document.getElementById('newPasswordConfirmText').classList.add('text-success');
+    passwordConfirmOk = true;
+  });
+  rewritePassword = async () => {
+    if (!passwordOk || !passwordConfirmOk) {
+      return;
+    }
+
+    // 비밀번호 변경 요청
+    var formData = new FormData();
+    formData.append('password', newPasswordInput.value);
+    var result = await fetch('/api/edit_user', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRFToken': csrftoken
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log(data);
+      return data.success;
+    });
+
+    // 비밀번호 변경 결과에 따른 처리
+    if (result == 'y') {
+      await showAlert('비밀번호 변경 완료', '비밀번호가 성공적으로 변경되었습니다.', 'success');
+      location.reload();
+      return
+    }
+    await showAlert('비밀번호 변경 실패', '비밀번호 변경 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error');
+  }
+
+  // 파트너 연락처 변경
+  var telOk = false;
+  var newPartnerTelInput = document.getElementById('newPartnerTel');
+  var newPartnerTelConfirmText = document.getElementById('newPartnerTelConfirmText');
+  newPartnerTelInput.addEventListener('input', () => {
+    var tel = newPartnerTelInput.value;
+    if (tel.length < 6) {
+      newPartnerTelConfirmText.innerHTML = '연락처는 6자리 이상이어야 합니다.';
+      newPartnerTelConfirmText.classList.remove('text-success');
+      newPartnerTelConfirmText.classList.add('text-danger');
+      telOk = false;
+      return
+    }
+    newPartnerTelConfirmText.innerHTML = '사용 가능한 연락처입니다.';
+    newPartnerTelConfirmText.classList.remove('text-danger');
+    newPartnerTelConfirmText.classList.add('text-success');
+    telOk = true;
+  });
+  rewritePartnerTel = async () => {
+    if (!telOk) {
+      return;
+    }
+
+    // 연락처 변경 요청
+    var formData = new FormData();
+    formData.append('partner_tel', newPartnerTelInput.value);
+    var result = await fetch('/api/edit_user', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRFToken': csrftoken
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log(data);
+      return data.success;
+    });
+
+    // 연락처 변경 결과에 따른 처리
+    if (result == 'y') {
+      await showAlert('연락처 변경 완료', '연락처가 성공적으로 변경되었습니다.', 'success');
+      location.reload();
+      return
+    }
+    await showAlert('연락처 변경 실패', '연락처 변경 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error');
+  }
+
+  // 파트너 주소 변경
+  rewritePartnerAddress = async () => {
+    var address = document.getElementById('address').value + ' ' + document.getElementById('addressDetail').value;
+    if (address.length < 10) {
+      await showAlert('주소 변경 실패', '주소가 너무 짧습니다. 10자 이상으로 입력해주세요.', 'error');
+      return;
+    }
+
+    // 주소 변경 요청
+    var formData = new FormData();
+    formData.append('partner_address', address);
+    var result = await fetch('/api/edit_user', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRFToken': csrftoken
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log(data);
+      return data.success;
+    });
+
+    // 주소 변경 결과에 따른 처리
+    if (result == 'y') {
+      await showAlert('주소 변경 완료', '주소가 성공적으로 변경되었습니다.', 'success');
+      location.reload();
+      return
+    }
+    await showAlert('주소 변경 실패', '주소 변경 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error');
+  }
+
+  // 파트너 카테고리 변경
+  rewritePartnerCategories = async () => {
+    var partnerCategory = document.getElementById('partnerCategory').value;
+    if (partnerCategory.length < 2) {
+      await showAlert('카테고리 변경 실패', '카테고리를 선택해주세요.', 'error');
+      return;
+    }
+
+    // 카테고리 변경 요청
+    var formData = new FormData();
+    formData.append('partner_categories', partnerCategory);
+    var result = await fetch('/api/edit_user', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRFToken': csrftoken
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log(data);
+      return data.success;
+    });
+
+    // 카테고리 변경 결과에 따른 처리
+    if (result == 'y') {
+      await showAlert('카테고리 변경 완료', '카테고리가 성공적으로 변경되었습니다.', 'success');
+      location.reload();
+      return
+    }
+    await showAlert('카테고리 변경 실패', '카테고리 변경 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error');
+  }
+
+  // 회원 탈퇴
+  deleteAccount = async () => {
+
+    // 탈퇴 여부 다시 확인
+    var isDelete = await Swal.fire({
+      html: `
+      <div>
+        <div class="text-center py-4">
+          <h1 class="text-dark">회원 탈퇴</h1>
+        </div>
+        <diV class="text-start">
+          <p class="text-black-50">
+            회원 탈퇴 시 모든 정보가 삭제되며, 복구가 불가능합니다. 정말 탈퇴하시겠습니까?
+          </p>
+        </div>
+      </div>`,
+      icon: `warning`,
+      showConfirmButton: true,
+      confirmButtonText: `탈퇴하기`,
+      confirmButtonColor: `red`,
+      showCancelButton: true,
+      cancelButtonText: `취소`
+    })
+    .then((result) => {
+      if(result.isConfirmed) {
+        return true;
+      }
+      return false;
+    });
+    if (!isDelete) {
+      return;
+    }
+
+    // 회원 탈퇴 요청
+    var result = await fetch('/api/delete_user', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrftoken
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log(data);
+      return data.success;
+    });
+
+    // 회원 탈퇴 결과에 따른 처리
+    if (result == 'y') {
+      await showAlert('회원 탈퇴 완료', '회원 탈퇴가 성공적으로 처리되었습니다. 이용해주셔서 감사합니다.', 'success');
+      logout();
+      return
+    }
+    await showAlert('회원 탈퇴 실패', '회원 탈퇴 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error');
+  }
+
+</script>
+
+{% endblock %}

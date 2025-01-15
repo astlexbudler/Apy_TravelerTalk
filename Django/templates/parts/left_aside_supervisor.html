@@ -1,0 +1,23 @@
+<aside class="px-3">
+
+  <!-- 로그인 창 -->
+  <div class="card">
+
+    <div class="card-body">
+      <a href="/profile">
+        {% if account.account_type == 'supervisor' %}
+        <span class="text-black-50" style="font-size: 14px;">관리자</span>
+        {% elif account.account_type == 'sub_supervisor' %}
+        <span class="text-black-50" style="font-size: 14px;">부관리자 </span>
+        {% endif %}
+        <p class="text-black">
+          {{ account.nickname }} ({{ account.id }})
+        </p>
+      </a>
+      <div class="text-end">
+        <a href="javascript: logout();" class="btn btn-primary mt-3">로그아웃</a>
+      </div>
+    </div>
+
+  </div>
+</aside>

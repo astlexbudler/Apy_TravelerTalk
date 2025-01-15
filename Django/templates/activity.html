@@ -1,0 +1,64 @@
+{% extends 'base/main_base.html' %}
+{% block content %}
+<!-- 왼쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+
+<!-- 중앙 섹션 -->
+<section class="main-section px-5 px-lg-1" style="flex: 1; min-height: 100vh;">
+
+  <!-- 제목 -->
+  <div class="mt-4 mb-5">
+    {% include 'parts/goback.html' %}
+    <h5 class="mt-5">
+      사용자 활동 내역
+    </h5>
+    <p>
+      사용자 활동 내역을 확인할 수 있습니다.
+    </p>
+  </div>
+
+  <!-- 프로필 카드 -->
+  {% include 'parts/profile_card.html' %}
+
+  {% if activities|length == 0 %}
+  <p>
+    사용자 활동 내역이 없습니다.
+  </p>
+  {% else %}
+  {% for act in activities %}
+  {{activity}}
+  <div class="col-12 p-2 mb-2 pb-3 border-bottom">
+    <a {% if act.location != '' %}href="{{act.location}}" target="_blank"{% else %}href="#"{% endif %}>
+
+      <span class="text-black-50" style="font-size: 12px;">
+        {{ act.created_dt }}<br>
+      </span>
+      <p class="mb-2 text-dark">
+        {{ act.message }}
+      </p>
+
+    </a>
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  <div id="pageButton"></div>
+
+</section>
+
+<!-- 오른쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+
+<script>
+
+  window.onload = () => {
+    console.log(`Window loaded at ${getNowDatetimeString()}`);
+
+    // Page
+    console.log('{{request.GET.page}} | {{last_page}}');
+    makePaegeButton('{{request.GET.page}}', '{{last_page}}', `/activity?search=`);
+  }
+
+</script>
+
+{% endblock %}

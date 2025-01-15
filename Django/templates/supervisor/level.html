@@ -1,0 +1,89 @@
+{% extends 'base/supervisor_base.html' %}
+{% block content %}
+<!-- 왼쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;">
+  {% include 'parts/left_aside_supervisor.html' %}
+</aside>
+
+<!-- 중앙 섹션 -->
+<section class="main-section" style="flex: 1;">
+
+  <!-- 제목 -->
+  <div class="mt-4 mb-5">
+    <h5 class="mt-5">
+      레벨 관리
+    </h5>
+    <p class="small">
+      사용자 레벨 정책 관리
+    </p>
+  </div>
+
+  <div class="text-end mb-5">
+    <a href="#" class="btn btn-success">
+      <i class="fi fi-rr-plus"></i> 레벨 정책 추가
+    </a>
+  </div>
+
+  <table class="table table-border small border shadow text-center">
+    <tbody>
+      <tr>
+        <th>
+          레벨
+        </th>
+        <th>
+          레벨 텍스트 색상
+        </th>
+        <th>
+          레벨 배경 색상
+        </th>
+        <th>
+          레벨 텍스트
+        </th>
+        <th></th>
+      </tr>
+      {% if levels|length < 1 %}
+      <tr>
+        <td colspan="5">
+          등록된 레벨 정책이 없습니다.
+        </td>
+      </tr>
+      {% else %}
+      {% for level in levels %}
+      <tr>
+        <td>
+          {{ level.level }}
+        </td>
+        <td>
+          {{ level.text_color }}
+        </td>
+        <td>
+          {{ level.background_color }}
+        </td>
+        <td>
+          <span class="badge" style="color: {{level.text_color}}; background-color: {{level.background_color}};">{{ level.name }}</span>
+        </td>
+        <td>
+          <a href="#" class="text-dark">
+            <i class="fi fi-rr-edit"></i> 수정
+          </a>
+        </td>
+      </tr>
+      {% endfor %}
+      {% endif %}
+    </tbody>
+  </table>
+
+</section>
+
+<!-- 오른쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+
+<script>
+
+  window.onload = () => {
+    console.log(`Window loaded at ${getNowDt()}`);
+  }
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,899 @@
+<!doctype html>
+<html lang="zxx" data-bs-theme="dark">
+
+<head>
+    <!-- metas -->
+<meta charset="utf-8">
+<meta name="author" content="pxdraft">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="keywords" content="Newzy – Multipurpose Blog Template">
+<meta name="description" content="Newzy – Multipurpose Blog Template">
+<!-- title -->
+<title>Newzy – Multipurpose Blog Template</title>
+<!-- Favicon -->
+<link rel="shortcut icon" href="assets/img/favicon.ico">
+<!-- CSS Template -->
+<link href="assets/css/style.css" rel="stylesheet">
+</head>
+
+<body>
+    <!-- Skippy & Prload -->
+    <!-- skippy -->
+<a id="skippy" class="skippy visually-hidden-focusable overflow-hidden" href="#content">
+    <div class="container">
+        <span class="u-skiplink-text">Skip to main content</span>
+    </div>
+</a>
+<!-- End skippy -->
+<!-- Preload -->
+<div id="loading" class="loading-preloader bg-dark">
+    <div class="loading-preloader-in">
+        <div class="spinner">
+            <span class="text-primary"></span>
+        </div>
+    </div>
+</div>
+<!-- End Preload -->
+    <!-- Edn Skippy & Prload -->
+    <!-- 
+    ========================
+        Wrapper 
+    ========================
+    -->
+    <div class="wrapper">
+        <!-- Header -->
+        <header class="header-main header-option-01">
+    <div class="header-top">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-4 d-none d-lg-block">
+                    <div class="header-search">
+                        <form class="header-search-form">
+                            <input type="text" placeholder="Search Here" value="" class="form-control">
+                            <button class="btn search-btn"><i class="bi bi-search"></i></button>
+                        </form>
+                    </div>
+                </div>
+                <div class="col-auto col-lg-4">
+                    <div class="logo">
+                        <a href="index.html">
+                            <img class="logo-dark" src="assets/img/logo.svg" title="" alt="">
+                            <img class="logo-light" src="assets/img/logo-light.svg" title="" alt="">
+                        </a>
+                    </div>
+                </div>
+                <div class="col-auto col-lg-4 ms-auto">
+                    <div class="header-icons">
+                        <!-- Switch -->
+                        <div class="h-col h-switch dropdown">
+                            <button class="theme-switch h-icon dropdown-toggle" id="bd-theme" type="button" aria-expanded="false" data-bs-toggle="dropdown" data-bs-display="static">
+                                <span class="bi my-1 theme-icon-active">
+                                    <i class="bi-circle-half"></i>
+                                </span>
+                                <span class="d-none">Toggle theme</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="bd-theme">
+                                <li>
+                                    <button type="button" class="dropdown-item" data-bs-theme-value="light">
+                                        <span class="bi me-2 opacity-50 theme-icon">
+                                            <i class="bi-sun-fill"></i>
+                                        </span>
+                                        Light
+                                        <span class="bi ms-auto d-none">
+                                            <i class="bi-check2"></i>
+                                        </span>
+                                    </button>
+                                </li>
+                                <li>
+                                    <button type="button" class="dropdown-item" data-bs-theme-value="dark">
+                                        <span class="bi me-2 opacity-50 theme-icon">
+                                            <i class="bi-moon-stars-fill"></i>
+                                        </span>
+                                        Dark
+                                        <span class="bi ms-auto d-none">
+                                            <i class="bi-check2"></i>
+                                        </span>
+                                    </button>
+                                </li>
+                                <li>
+                                    <button type="button" class="dropdown-item active" data-bs-theme-value="auto">
+                                        <span class="bi me-2 opacity-50 theme-icon">
+                                            <i class="bi-circle-half"></i>
+                                        </span>
+                                        Auto
+                                        <span class="bi ms-auto d-none">
+                                            <i class="bi-check2"></i>
+                                        </span>
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                        <!-- User -->
+                        <div class="h-col h-user dropdown">
+                            <button class="h-user-icon h-icon dropdown-toggle" id="bd-user" type="button" aria-expanded="false" data-bs-toggle="dropdown" data-bs-display="static">
+                                <i class="bi-person-circle"></i>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="bd-user">
+                                <a class="dropdown-item" href="#">Login</a>
+                                <a class="dropdown-item" href="#">Register</a>
+                                <a class="dropdown-item" href="#">My account</a>
+                            </div>
+                        </div>
+                        <!-- Mobile Toggle -->
+                        <div class="h-col h-toggler d-lg-none">
+                            <button class="navbar-toggler h-burgur-icon" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvas_Header_01" aria-controls="offcanvas_Header_01">
+                                <span></span>
+                            </button>
+                        </div>
+                        <!-- Burgur -->
+                        <div class="h-col h-extra-menu-toggle d-none d-lg-block">
+                            <a class="h-burgur-icon h-icon" data-bs-toggle="offcanvas" href="#header_extra_menu" role="button" aria-controls="header_extra_menuLabel">
+                                <span></span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="header-bottom">
+        <div class="container align-items-center">
+            <nav class="navbar navbar-expand-lg">
+                <div class="offcanvas nav-offcanvas offcanvas-start" tabindex="-1" id="offcanvas_Header_01" aria-labelledby="offcanvas_Header_01">
+                    <div class="offcanvas-header border-bottom border-gray-200">
+                        <div class="offcanvas-title flex-fill pe-3">
+                            <form class="header-search-form d-flex">
+                                <input type="text" placeholder="Search Here" value="" class="form-control">
+                                <button class="btn btn-primary search-btn px-3 ms-1"><i class="bi bi-search"></i></button>
+                            </form>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#offcanvas_Header_01" aria-label="Close"></button>
+                    </div>
+                    <div class="offcanvas-body">
+                        <ul class="navbar-nav mx-auto">
+                            <li class="nav-item dropdown dropdown-hover">
+                                <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                                    Home
+                                </a>
+                                <ul class="dropdown-menu start">
+                                    <li><a class="dropdown-item" href="index.html">Landing 1</a></li>
+                                    <li><a class="dropdown-item" href="index-02.html">Landing 2</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item dropdown dropdown-hover">
+                                <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                                    Blog Post
+                                </a>
+                                <ul class="dropdown-menu start">
+                                    <li><a class="dropdown-item" href="post-grid.html">Blog Post 01</a></li>
+                                    <li><a class="dropdown-item" href="post-grid-02.html">Blog Post 02</a></li>
+                                    <li><a class="dropdown-item" href="post-grid-03.html">Blog Post 03</a></li>
+                                    <li><a class="dropdown-item" href="post-grid-04.html">Blog Post 04</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item dropdown dropdown-hover">
+                                <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                                    Single Post
+                                </a>
+                                <ul class="dropdown-menu start">
+                                    <li><a class="dropdown-item" href="single-blog-01.html">Single Post 01</a></li>
+                                    <li><a class="dropdown-item" href="single-blog-02.html">Single Post 02</a></li>
+                                    <li><a class="dropdown-item" href="single-blog-03.html">Single Post 03</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item dropdown dropdown-hover">
+                                <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                                    Pages
+                                </a>
+                                <ul class="dropdown-menu start">
+                                    <li><a class="dropdown-item" href="about.html">About</a></li>
+                                    <li><a class="dropdown-item" href="author.html">Author</a></li>
+                                    <li><a class="dropdown-item" href="contact.html">Contact</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </div>
+</header>
+<!-- User -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="header_extra_menu" aria-labelledby="header_extra_menuLabel">
+    <div class="offcanvas-header">
+        <div class="offcanvas-title" id="header_extra_menuLabel">
+            <img class="logo-dark" src="assets/img/logo.svg" title="" alt="">
+            <img class="logo-light" src="assets/img/logo-light.svg" title="" alt="">
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div class="py-4 border-bottom">
+            <div class="pb-3">
+                <h6 class="fw-500 text-uppercase letter-spacing-2 col m-0">About Us <i class="bi-chevron-right"></i></h6>
+            </div>
+            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.</p>
+            <a class="text-mode link-effect" href="#">Read More</a>
+        </div>
+        <div class="py-4 border-bottom">
+            <div class="pb-3">
+                <h6 class="fw-500 text-uppercase letter-spacing-2 col m-0">Top Categories <i class="bi-chevron-right"></i></h6>
+            </div>
+            <div class="row gy-3">
+                <div class="col-12">
+                    <div class="bg-cover position-relative" style="background-image: url(assets/img/blog-5.jpg)">
+                        <div class="position-absolute top-0 end-0 start-0 bottom-0 bg-black bg-opacity-40"></div>
+                        <h6 class="text-white position-relative z-1 p-4 m-0 d-flex align-items-center justify-content-between">
+                            <a class="text-reset stretched-link link-effect py-1" href="#">Technology</a>
+                            <span class="bg-white rounded-circle icon text-dark">
+                                <i class="bi-chevron-right"></i>
+                            </span>
+                        </h6>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="bg-cover position-relative" style="background-image: url(assets/img/blog-2.jpg)">
+                        <div class="position-absolute top-0 end-0 start-0 bottom-0 bg-black bg-opacity-40"></div>
+                        <h6 class="text-white position-relative z-1 p-4 m-0 d-flex align-items-center justify-content-between">
+                            <a class="text-reset stretched-link link-effect py-1" href="#">Bussines</a>
+                            <span class="bg-white rounded-circle icon text-dark">
+                                <i class="bi-chevron-right"></i>
+                            </span>
+                        </h6>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="bg-cover position-relative" style="background-image: url(assets/img/blog-3.jpg)">
+                        <div class="position-absolute top-0 end-0 start-0 bottom-0 bg-black bg-opacity-40"></div>
+                        <h6 class="text-white position-relative z-1 p-4 m-0 d-flex align-items-center justify-content-between">
+                            <a class="text-reset stretched-link link-effect py-1" href="#">Culture</a>
+                            <span class="bg-white rounded-circle icon text-dark">
+                                <i class="bi-chevron-right"></i>
+                            </span>
+                        </h6>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="bg-cover position-relative" style="background-image: url(assets/img/blog-4.jpg)">
+                        <div class="position-absolute top-0 end-0 start-0 bottom-0 bg-black bg-opacity-40"></div>
+                        <h6 class="text-white position-relative z-1 p-4 m-0 d-flex align-items-center justify-content-between">
+                            <a class="text-reset stretched-link link-effect py-1" href="#">Videos</a>
+                            <span class="bg-white rounded-circle icon text-dark">
+                                <i class="bi-chevron-right"></i>
+                            </span>
+                        </h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="pt-2 pt-4">
+            <p><strong>Address:</strong> 301 The Greenhouse London,<br>E2 8DY UK</p>
+            <p><strong>Phone:</strong> 820-885-3321</p>
+            <p><strong>Email:</strong> support@domain.com</p>
+        </div>
+        <ul class="nav mt-4">
+            <li class="me-2">
+                <a class="icon btn btn-primary p-0 rounded-circle" href="#">
+                    <i class="bi-facebook"></i>
+                </a>
+            </li>
+            <li class="me-2">
+                <a class="icon btn btn-primary p-0 rounded-circle" href="#">
+                    <i class="bi-linkedin"></i>
+                </a>
+            </li>
+            <li class="me-2">
+                <a class="icon btn btn-primary p-0 rounded-circle" href="#">
+                    <i class="bi-twitter"></i>
+                </a>
+            </li>
+            <li class="me-2">
+                <a class="icon btn btn-primary p-0 rounded-circle" href="#">
+                    <i class="bi-instagram"></i>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+<!-- End User -->
+        <!-- End Header -->
+        <!-- Main -->
+        <main>
+            <!-- Section -->
+            <section class="py-5 bg-gray-100">
+                <div class="container">
+                    <div class="row align-items-center gy-4">
+                        <div class="col-sm-6 text-center text-sm-start">
+                            <h1 class="m-0 h3">Post grid</h1>
+                        </div>
+                        <div class="col-sm-6 d-flex justify-content-center justify-content-sm-end">
+                            <ol class="breadcrumb m-0">
+                                <li class="breadcrumb-item"><a href="#"><i class="bi-house me-1"></i> Home</a></li>
+                                <li class="breadcrumb-item active">All post</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- End Section -->
+            <!-- Section -->
+            <section class="py-6">
+                <div class="container">
+                    <div class="row gy-4">
+                        <div class="col-lg-8 col-xl-9 pe-lg-5 pe-xl-6">
+                            <div class="row g-3">
+                                <div class="col-sm-6">
+                                    <div class="card hover-scale overflow-hidden">
+                                        <div class="hover-scale-in blog-card-ratio ratio ratio-4x3">
+                                            <span class="bg-primary px-4 py-2 position-absolute top-0 start-0 w-auto h-auto z-1 mt-2 ms-2 text-white fs-sm">
+                                                Lifestyle
+                                            </span>
+                                            <a href="#">
+                                                <img class="blog-card-ratio-img card-img-top" src="assets/img/blog-1.jpg" title="" alt="">
+                                            </a>
+                                        </div>
+                                        <div class="card-body">
+                                            <h5 class="mb-2 ">
+                                                <a href="#" class="text-reset link-effect">Radio Air Time Marketing: A New Strategy for the Economy</a>
+                                            </h5>
+                                            <p class="m-0 ellipsis-line-3">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.</p>
+                                        </div>
+                                        <div class="d-flex align-items-center p-3 fs-sm justify-content-between card-footer bg-transparent">
+                                            <span class="pe-3"><a class="text-reset" href="#"><i class="bi-person"></i> By, Davide Ancelotti</a></span>
+                                            <span class="pe-3"><a class="text-reset" href="#"><i class="bi-calendar"></i> Aug 15, 2022</a></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="card hover-scale overflow-hidden">
+                                        <div class="hover-scale-in blog-card-ratio ratio ratio-4x3">
+                                            <span class="bg-primary px-4 py-2 position-absolute top-0 start-0 w-auto h-auto z-1 mt-2 ms-2 text-white fs-sm">
+                                                Lifestyle
+                                            </span>
+                                            <a href="#">
+                                                <img class="blog-card-ratio-img card-img-top" src="assets/img/blog-1.jpg" title="" alt="">
+                                            </a>
+                                        </div>
+                                        <div class="card-body">
+                                            <h5 class="mb-2 ">
+                                                <a href="#" class="text-reset link-effect">Radio Air Time Marketing: A New Strategy for the Economy</a>
+                                            </h5>
+                                            <p class="m-0 ellipsis-line-3">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.</p>
+                                        </div>
+                                        <div class="d-flex align-items-center p-3 fs-sm justify-content-between card-footer bg-transparent">
+                                            <span class="pe-3"><a class="text-reset" href="#"><i class="bi-person"></i> By, Davide Ancelotti</a></span>
+                                            <span class="pe-3"><a class="text-reset" href="#"><i class="bi-calendar"></i> Aug 15, 2022</a></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="card hover-scale overflow-hidden">
+                                        <div class="hover-scale-in blog-card-ratio ratio ratio-4x3">
+                                            <span class="bg-primary px-4 py-2 position-absolute top-0 start-0 w-auto h-auto z-1 mt-2 ms-2 text-white fs-sm">
+                                                Lifestyle
+                                            </span>
+                                            <a href="#">
+                                                <img class="blog-card-ratio-img card-img-top" src="assets/img/blog-1.jpg" title="" alt="">
+                                            </a>
+                                        </div>
+                                        <div class="card-body">
+                                            <h5 class="mb-2 ">
+                                                <a href="#" class="text-reset link-effect">Radio Air Time Marketing: A New Strategy for the Economy</a>
+                                            </h5>
+                                            <p class="m-0 ellipsis-line-3">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.</p>
+                                        </div>
+                                        <div class="d-flex align-items-center p-3 fs-sm justify-content-between card-footer bg-transparent">
+                                            <span class="pe-3"><a class="text-reset" href="#"><i class="bi-person"></i> By, Davide Ancelotti</a></span>
+                                            <span class="pe-3"><a class="text-reset" href="#"><i class="bi-calendar"></i> Aug 15, 2022</a></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="card hover-scale overflow-hidden">
+                                        <div class="hover-scale-in blog-card-ratio ratio ratio-4x3">
+                                            <span class="bg-primary px-4 py-2 position-absolute top-0 start-0 w-auto h-auto z-1 mt-2 ms-2 text-white fs-sm">
+                                                Lifestyle
+                                            </span>
+                                            <a href="#">
+                                                <img class="blog-card-ratio-img card-img-top" src="assets/img/blog-1.jpg" title="" alt="">
+                                            </a>
+                                        </div>
+                                        <div class="card-body">
+                                            <h5 class="mb-2 ">
+                                                <a href="#" class="text-reset link-effect">Radio Air Time Marketing: A New Strategy for the Economy</a>
+                                            </h5>
+                                            <p class="m-0 ellipsis-line-3">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.</p>
+                                        </div>
+                                        <div class="d-flex align-items-center p-3 fs-sm justify-content-between card-footer bg-transparent">
+                                            <span class="pe-3"><a class="text-reset" href="#"><i class="bi-person"></i> By, Davide Ancelotti</a></span>
+                                            <span class="pe-3"><a class="text-reset" href="#"><i class="bi-calendar"></i> Aug 15, 2022</a></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="card hover-scale overflow-hidden">
+                                        <div class="hover-scale-in blog-card-ratio ratio ratio-4x3">
+                                            <span class="bg-primary px-4 py-2 position-absolute top-0 start-0 w-auto h-auto z-1 mt-2 ms-2 text-white fs-sm">
+                                                Lifestyle
+                                            </span>
+                                            <a href="#">
+                                                <img class="blog-card-ratio-img card-img-top" src="assets/img/blog-1.jpg" title="" alt="">
+                                            </a>
+                                        </div>
+                                        <div class="card-body">
+                                            <h5 class="mb-2 ">
+                                                <a href="#" class="text-reset link-effect">Radio Air Time Marketing: A New Strategy for the Economy</a>
+                                            </h5>
+                                            <p class="m-0 ellipsis-line-3">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.</p>
+                                        </div>
+                                        <div class="d-flex align-items-center p-3 fs-sm justify-content-between card-footer bg-transparent">
+                                            <span class="pe-3"><a class="text-reset" href="#"><i class="bi-person"></i> By, Davide Ancelotti</a></span>
+                                            <span class="pe-3"><a class="text-reset" href="#"><i class="bi-calendar"></i> Aug 15, 2022</a></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="card hover-scale overflow-hidden">
+                                        <div class="hover-scale-in blog-card-ratio ratio ratio-4x3">
+                                            <span class="bg-primary px-4 py-2 position-absolute top-0 start-0 w-auto h-auto z-1 mt-2 ms-2 text-white fs-sm">
+                                                Lifestyle
+                                            </span>
+                                            <a href="#">
+                                                <img class="blog-card-ratio-img card-img-top" src="assets/img/blog-1.jpg" title="" alt="">
+                                            </a>
+                                        </div>
+                                        <div class="card-body">
+                                            <h5 class="mb-2 ">
+                                                <a href="#" class="text-reset link-effect">Radio Air Time Marketing: A New Strategy for the Economy</a>
+                                            </h5>
+                                            <p class="m-0 ellipsis-line-3">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.</p>
+                                        </div>
+                                        <div class="d-flex align-items-center p-3 fs-sm justify-content-between card-footer bg-transparent">
+                                            <span class="pe-3"><a class="text-reset" href="#"><i class="bi-person"></i> By, Davide Ancelotti</a></span>
+                                            <span class="pe-3"><a class="text-reset" href="#"><i class="bi-calendar"></i> Aug 15, 2022</a></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="card hover-scale overflow-hidden">
+                                        <div class="hover-scale-in blog-card-ratio ratio ratio-4x3">
+                                            <span class="bg-primary px-4 py-2 position-absolute top-0 start-0 w-auto h-auto z-1 mt-2 ms-2 text-white fs-sm">
+                                                Lifestyle
+                                            </span>
+                                            <a href="#">
+                                                <img class="blog-card-ratio-img card-img-top" src="assets/img/blog-1.jpg" title="" alt="">
+                                            </a>
+                                        </div>
+                                        <div class="card-body">
+                                            <h5 class="mb-2 ">
+                                                <a href="#" class="text-reset link-effect">Radio Air Time Marketing: A New Strategy for the Economy</a>
+                                            </h5>
+                                            <p class="m-0 ellipsis-line-3">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.</p>
+                                        </div>
+                                        <div class="d-flex align-items-center p-3 fs-sm justify-content-between card-footer bg-transparent">
+                                            <span class="pe-3"><a class="text-reset" href="#"><i class="bi-person"></i> By, Davide Ancelotti</a></span>
+                                            <span class="pe-3"><a class="text-reset" href="#"><i class="bi-calendar"></i> Aug 15, 2022</a></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="card hover-scale overflow-hidden">
+                                        <div class="hover-scale-in blog-card-ratio ratio ratio-4x3">
+                                            <span class="bg-primary px-4 py-2 position-absolute top-0 start-0 w-auto h-auto z-1 mt-2 ms-2 text-white fs-sm">
+                                                Lifestyle
+                                            </span>
+                                            <a href="#">
+                                                <img class="blog-card-ratio-img card-img-top" src="assets/img/blog-1.jpg" title="" alt="">
+                                            </a>
+                                        </div>
+                                        <div class="card-body">
+                                            <h5 class="mb-2 ">
+                                                <a href="#" class="text-reset link-effect">Radio Air Time Marketing: A New Strategy for the Economy</a>
+                                            </h5>
+                                            <p class="m-0 ellipsis-line-3">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.</p>
+                                        </div>
+                                        <div class="d-flex align-items-center p-3 fs-sm justify-content-between card-footer bg-transparent">
+                                            <span class="pe-3"><a class="text-reset" href="#"><i class="bi-person"></i> By, Davide Ancelotti</a></span>
+                                            <span class="pe-3"><a class="text-reset" href="#"><i class="bi-calendar"></i> Aug 15, 2022</a></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <ul class="pagination mt-6 justify-content-center">
+                                <li class="page-item">
+                                    <a class="page-link" href="#">Prev</a>
+                                </li>
+                                <li class="page-item"><a class="page-link" href="#">1</a></li>
+                                <li class="page-item active"><a class="page-link" href="#">2</a></li>
+                                <li class="page-item"><a class="page-link" href="#">..</a></li>
+                                <li class="page-item"><a class="page-link" href="#">15</a></li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#">Next</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-lg-4 col-xl-3">
+                            <div class="pb-3 pb-4">
+                                <h6 class=" text-uppercase letter-spacing-2 col m-0">Search</h6>
+                            </div>
+                            <div class="d-flex flex-row mb-4">
+                                <input type="email" class="form-control me-2" placeholder="Enter your email">
+                                <button class="btn btn-primary flex-shrink-0" type="submit"><i class="bi-search"></i></button>
+                            </div>
+                            <div class="bg-gray-100 border border-gray-300 p-4 mb-4">
+                                <div class="d-flex mb-3">
+                                    <div class="avatar avatar-lg">
+                                        <img class="avatar-img rounded" src="assets/img/avatar-1.jpg" title="" alt="">
+                                    </div>
+                                    <div class="col ps-3">
+                                        <h6 class="mt-0 mb-1">Nancy Bayers</h6>
+                                        <span class="text-muted fs-xs">Specialize in</span>
+                                        <p class="m-0">Politic, Ligestyle</p>
+                                    </div>
+                                </div>
+                                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation.</p>
+                                <div class="nav">
+                                    <a class="icon btn btn-primary p-0 rounded me-2" href="#">
+                                        <span class="bi-facebook"></span>
+                                    </a>
+                                    <a class="icon btn btn-primary p-0 rounded me-2" href="#">
+                                        <span class="bi-twitter"></span>
+                                    </a>
+                                    <a class="icon btn btn-primary p-0 rounded me-2" href="#">
+                                        <i class="bi-instagram"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="pb-3 pb-4">
+                                <h6 class=" text-uppercase letter-spacing-2 col m-0">STAY CONNECTED <i class="bi-chevron-right"></i></h6>
+                            </div>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <div class="position-relative d-flex align-items-center">
+                                        <a class="icon-md btn p-0 btn-mode stretched-link" href="#">
+                                            <span class="bi-facebook"></span>
+                                        </a>
+                                        <span class="fs-sm col ps-2 lh-sm">154K<br> Likes</span>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="position-relative d-flex align-items-center">
+                                        <a class="icon-md btn p-0 btn-mode stretched-link" href="#">
+                                            <span class="bi-linkedin"></span>
+                                        </a>
+                                        <span class="fs-sm col ps-2 lh-sm">105K<br> Followers</span>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="position-relative d-flex align-items-center">
+                                        <a class="icon-md btn p-0 btn-mode stretched-link" href="#">
+                                            <span class="bi-twitter"></span>
+                                        </a>
+                                        <span class="fs-sm col ps-2 lh-sm">200K<br> Followers</span>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="position-relative d-flex align-items-center">
+                                        <a class="icon-md btn p-0 btn-mode stretched-link" href="#">
+                                            <span class="bi-instagram"></span>
+                                        </a>
+                                        <span class="fs-sm col ps-2 lh-sm">450K<br> Followers</span>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="position-relative d-flex align-items-center">
+                                        <a class="icon-md btn p-0 btn-mode stretched-link" href="#">
+                                            <span class="bi-youtube"></span>
+                                        </a>
+                                        <span class="fs-sm col ps-2 lh-sm">200M<br> Views</span>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="position-relative d-flex align-items-center">
+                                        <a class="icon-md btn p-0 btn-mode stretched-link" href="#">
+                                            <span class="bi-pinterest"></span>
+                                        </a>
+                                        <span class="fs-sm col ps-2 lh-sm">200M<br> Pins</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr class="opacity-100 border-gray-300 my-5">
+                            <div class="d-flex align-items-center pb-3">
+                                <h6 class=" text-uppercase letter-spacing-2 col m-0">Top Categories</h6>
+                                <div class="position-relative d-flex ml-auto">
+                                    <div class="me-2 position-relative start-0 swiper-arrow-style-01 d-none d-sm-flex swiper-prev swiper-prev-03"><i class="bi-chevron-left"></i></div>
+                                    <div class="position-relative start-0 swiper-arrow-style-01 d-none d-sm-flex swiper-next swiper-next-03"><i class="bi-chevron-right"></i></div>
+                                </div>
+                            </div>
+                            <div class="swiper swiper-container" data-swiper-options='{
+                                      "slidesPerView": "1",
+                                      "spaceBetween": 15,
+                                      "loop": true,
+                                      "navigation": {
+                                        "nextEl": ".swiper-next-03",
+                                        "prevEl": ".swiper-prev-03"
+                                      },
+                                      "autoplay": {
+                                        "delay": 4000,
+                                        "disableOnInteraction": false
+                                      }
+                                    }'>
+                                <div class="swiper-wrapper">
+                                    <div class="swiper-slide">
+                                        <div class="blog-card blog-overlay-b bg-cover ratio ratio-4x3 position-relative" style="background-image: url(assets/img/blog-1.jpg)">
+                                            <div class="blog-card-content-overlay d-flex w-100 h-100 align-items-end z-1 p-3">
+                                                <div class="w-100">
+                                                    <h6 class="text-white m-0 ellipsis-line-2">
+                                                        <a href="#" class="text-reset stretched-link link-effect">Radio Air Time Marketing: A New Strategy for the Economy</a>
+                                                    </h6>
+                                                    <div class="mt-2">
+                                                        <p class="text-white text-opacity-75 m-0 ellipsis-line-1">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr class="opacity-100 border-gray-300 my-5">
+                            <div class="d-flex align-items-center pb-3">
+                                <h6 class=" text-uppercase letter-spacing-2 col m-0">Latest Posts</h6>
+                            </div>
+                            <div class="row gy-3">
+                                <div class="col-12 d-flex">
+                                    <div class="avatar-xl">
+                                        <img class="avatar-img" src="assets/img/blog-1.jpg" title="" alt="">
+                                    </div>
+                                    <div class="ps-3 col">
+                                        <h6 class="text-muted fw-400 fs-xs">
+                                            <a class="text-reset" href="#">TECH</a>
+                                        </h6>
+                                        <h6 class="mb-2  ellipsis-line-2">
+                                            <a href="#" class="text-reset link-effect">Radio Air Time Marketing: A New Strategy for the Economy</a>
+                                        </h6>
+                                        <span class="fs-xs"><a class="text-reset" href="#"><i class="bi-calendar"></i> Aug 15, 2022</a></span>
+                                    </div>
+                                </div>
+                                <div class="col-12 d-flex">
+                                    <div class="avatar-xl">
+                                        <img class="avatar-img" src="assets/img/blog-1.jpg" title="" alt="">
+                                    </div>
+                                    <div class="ps-3 col">
+                                        <h6 class="text-muted fw-400 fs-xs">
+                                            <a class="text-reset" href="#">TECH</a>
+                                        </h6>
+                                        <h6 class="mb-2  ellipsis-line-2">
+                                            <a href="#" class="text-reset link-effect">Radio Air Time Marketing: A New Strategy for the Economy</a>
+                                        </h6>
+                                        <span class="fs-xs"><a class="text-reset" href="#"><i class="bi-calendar"></i> Aug 15, 2022</a></span>
+                                    </div>
+                                </div>
+                                <div class="col-12 d-flex">
+                                    <div class="avatar-xl">
+                                        <img class="avatar-img" src="assets/img/blog-1.jpg" title="" alt="">
+                                    </div>
+                                    <div class="ps-3 col">
+                                        <h6 class="text-muted fw-400 fs-xs">
+                                            <a class="text-reset" href="#">TECH</a>
+                                        </h6>
+                                        <h6 class="mb-2  ellipsis-line-2">
+                                            <a href="#" class="text-reset link-effect">Radio Air Time Marketing: A New Strategy for the Economy</a>
+                                        </h6>
+                                        <span class="fs-xs"><a class="text-reset" href="#"><i class="bi-calendar"></i> Aug 15, 2022</a></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr class="opacity-100 border-gray-300 my-5">
+                            <div class="d-flex align-items-center pb-3">
+                                <h6 class=" text-uppercase letter-spacing-2 col m-0">Tags</h6>
+                            </div>
+                            <div class="nav list-menu-01">
+                                <a href="#">Fashion</a>
+                                <a href="#">Travel</a>
+                                <a href="#">Nature</a>
+                                <a href="#">Sport</a>
+                                <a href="#">Weather</a>
+                                <a href="#">Trends</a>
+                                <a href="#">Gear</a>
+                                <a href="#">Lifestyle</a>
+                                <a href="#">Technology</a>
+                            </div>
+                            <div class="sticky-lg-top mt-4">
+                                <a href="#">
+                                    <img class="w-100 " src="assets/img/banner3.png" title="" alt="">
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- End Section -->
+        </main>
+        <!-- End Main -->
+        <!-- Footer -->
+        <footer class="footer footer-bg border-top border-gray-300">
+    <div class="py-5 py-md-8 py-lg-10">
+        <div class="container">
+            <div class="border-bottom border-gray-300 pb-5 pb-md-8 pb-lg-10 mb-5 mb-md-8 mb-lg-10">
+                <div class="row gy-4">
+                    <div class="col-lg-4">
+                        <h5 class="h2 m-0">Get the best blog stories into your inbox</h5>
+                    </div>
+                    <div class="col-lg-8 col-xl-7 ms-xl-auto">
+                        <div class="d-flex flex-row">
+                            <input type="email" class="form-control me-2" placeholder="Enter your email">
+                            <button class="btn btn-primary flex-shrink-0" type="submit">SUBSCRIBE</button>
+                        </div>
+                        <p class="m-0 mt-2 small">New UI kits or big discounts. Never spam.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="row gy-4">
+                <div class="col-lg-3 me-auto">
+                    <div class="pb-2 footer-logo">
+                        <img class="footer-logo-light" height="50" src="assets/img/logo-light.svg" title="" alt="">
+                        <img class="footer-logo-dark" height="50" src="assets/img/logo.svg" title="" alt="">
+                    </div>
+                    <div class="pt-2">
+                        <p><strong>Address:</strong> 301 The Greenhouse London,<br>E2 8DY UK</p>
+                        <p><strong>Phone:</strong> 820-885-3321</p>
+                        <p><strong>Email:</strong> support@domain.com</p>
+                    </div>
+                    <ul class="nav mt-4">
+                        <li class="me-2">
+                            <a class="icon-md btn btn-border-mode p-0" href="#">
+                                <i class="bi-facebook"></i>
+                            </a>
+                        </li>
+                        <li class="me-2">
+                            <a class="icon-md btn btn-border-mode p-0" href="#">
+                                <i class="bi-linkedin"></i>
+                            </a>
+                        </li>
+                        <li class="me-2">
+                            <a class="icon-md btn btn-border-mode p-0" href="#">
+                                <i class="bi-twitter"></i>
+                            </a>
+                        </li>
+                        <li class="me-2">
+                            <a class="icon-md btn btn-border-mode p-0" href="#">
+                                <i class="bi-instagram"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-lg-8">
+                    <div class="row gy-4">
+                        <div class="col-lg-3 col-sm-6">
+                            <h5 class="footer-title-01">Business</h5>
+                            <ul class="list-unstyled footer-link-01 m-0">
+                                <li>
+                                    <a href="#">Startup</a>
+                                </li>
+                                <li>
+                                    <a href="#">Business Trends</a>
+                                </li>
+                                <li>
+                                    <a href="#">Work Culture</a>
+                                </li>
+                                <li>
+                                    <a href="#">Personal Finance</a>
+                                </li>
+                                <li>
+                                    <a href="#">Leaders</a>
+                                </li>
+                                <li>
+                                    <a href="#">Stocks Market</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-lg-3 col-sm-6">
+                            <h5 class="footer-title-01">Technology</h5>
+                            <ul class="list-unstyled footer-link-01 m-0">
+                                <li>
+                                    <a href="#">Personal Technology</a>
+                                </li>
+                                <li>
+                                    <a href="#">Product Reviews</a>
+                                </li>
+                                <li>
+                                    <a href="#">Video Games</a>
+                                </li>
+                                <li>
+                                    <a href="#">Discover</a>
+                                </li>
+                                <li>
+                                    <a href="#">Knowledge</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-lg-3 col-sm-6">
+                            <h5 class="footer-title-01">Travel</h5>
+                            <ul class="list-unstyled footer-link-01 m-0">
+                                <li>
+                                    <a href="#">Discovery</a>
+                                </li>
+                                <li>
+                                    <a href="#">Flight Tickets & Hotel</a>
+                                </li>
+                                <li>
+                                    <a href="#">Tour</a>
+                                </li>
+                                <li>
+                                    <a href="#">Destination</a>
+                                </li>
+                                <li>
+                                    <a href="#">Experience & Reviews</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-lg-3 col-sm-6">
+                            <h5 class="footer-title-01">Help Center</h5>
+                            <ul class="list-unstyled footer-link-01 m-0">
+                                <li>
+                                    <a href="#">About Us</a>
+                                </li>
+                                <li>
+                                    <a href="#">Contact</a>
+                                </li>
+                                <li>
+                                    <a href="#">Partners Programe</a>
+                                </li>
+                                <li>
+                                    <a href="#">Privacy Policy</a>
+                                </li>
+                                <li>
+                                    <a href="#">Term & Conditions</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="border-top border-gray-300">
+            <div class="row py-3 gy-3 align-items-center">
+                <div class="col-md-6">
+                    <ul class="nav justify-content-center justify-content-md-start my-2 links-white small list-unstyled footer-link-01 m-0">
+                        <li class="p-0 mx-3 ms-md-0 me-md-3"><a href="#" class="">Privace &amp; Policy</a></li>
+                        <li class="p-0 mx-3 ms-md-0 me-md-3"><a href="#" class="">Faq's</a></li>
+                        <li class="p-0 mx-3 ms-md-0 me-md-3"><a href="#" class="">Get a Quote</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <p class="text-white-85 small m-0">© 2023 Newzy is Proudly Powered by <a href="http://pxdraft.com/" target="_blank" class="text-reset">pxdraft</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+        <!-- End Footer -->
+    </div>
+    <!-- 
+    ========================
+       End Wrapper 
+    ========================
+    -->
+    <!-- script start -->
+    <!--bootstrap-->
+<script src="assets/vendor/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- swiper JS -->
+<script src="assets/vendor/swiper/swiper-bundle.min.js"></script>
+
+<!-- Headroom JS -->
+<!-- <script src="assets/vendor/headroom/headroom.min.js"></script> -->
+
+<!-- Timezz JS -->
+<script src="assets/vendor/timezz/timezz.js"></script>
+
+<!-- Theme JS -->
+<script src="assets/js/theme.js"></script>
+<script src="assets/js/color-modes.js"></script>
+    <!-- End script start -->
+</body>
+
+</html>

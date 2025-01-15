@@ -1,0 +1,510 @@
+{% extends 'base/supervisor_base.html' %}
+{% block content %}
+<!-- 왼쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;">
+  {% include 'parts/left_aside_supervisor.html' %}
+</aside>
+
+<!-- 중앙 섹션 -->
+<section class="main-section" style="flex: 1;">
+
+  <!-- 제목 -->
+  <div class="mt-4 mb-5">
+    <h5 class="mt-5">
+      사용자 관리
+    </h5>
+    <p class="small">
+      사용자 및 관리자 정보 관리
+    </p>
+  </div>
+
+  <!-- 선택지 버튼 그룹 -->
+  <div class="btn-group w-100">
+    <a class="btn text-white" href="/supervisor/account?tab=user" style="background-color: gray;" id="userTab">
+      사용자 계정
+    </a>
+    <a class="btn" href="/supervisor/account?tab=partner" style="background-color: gainsboro;" id="partnerTab">
+      파트너 계정
+    </a>
+    <a class="btn" href="/supervisor/account?tab=supervisor" style="background-color: gainsboro;" id="supervisorTab">
+      관리자 계정
+    </a>
+  </div>
+
+  <!-- 사용자 -->
+  <div class="my-5 d-none" id="user">
+
+    <!-- 통계 -->
+    <div class="rounded border p-3 mb-5">
+      <p>
+        <i class="fi fi-rr-stats"></i> 통계
+      </p>
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>구분</th>
+            <th>정상</th>
+            <th>승인 대기중</th>
+            <th>탈퇴</th>
+            <th>정지</th>
+            <th>영구차단</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>일반회원</td>
+            <td>{{status.user.active}}</td>
+            <td>{{status.user.pending}}</td>
+            <td>{{status.user.deleted}}</td>
+            <td>{{status.user.blocked}}</td>
+            <td>{{status.user.banned}}</td>
+          </tr>
+          <tr>
+            <td>여성 회원</td>
+            <td>{{status.dame.active}}</td>
+            <td>{{status.dame.pending}}</td>
+            <td>{{status.dame.deleted}}</td>
+            <td>{{status.dame.blocked}}</td>
+            <td>{{status.dame.banned}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 검색 -->
+    <div class="rounded border p-3 mb-5">
+      <p>
+        <i class="fi fi-rr-search"></i> 검색
+      </p>
+      <form id="userSearchForm" method="get" action="/supervisor/account">
+        <div class="row">
+          <input type="hidden" name="tab" value="{{request.GET.tab}}">
+          <div class="form-group mt-4 col-6">
+            <label>아이디</label>
+            <input class="form-control" name="accountId" placeholder="사용자 아이디" value="{{request.GET.accountId}}">
+          </div>
+          <div class="form-group mt-4 col-6">
+            <label>닉네임</label>
+            <input class="form-control" name="accountNickname" placeholder="사용자 닉네임" value="{{request.GET.accountNickname}}">
+          </div>
+          <div class="form-group mt-4 col-12">
+            <label>상태</label>
+            <select class="form-control" name="accountStatus">
+              <option value=''>전체</option>
+              <option value="active" {% if request.GET.accountStatus == 'active' %}selected{% endif %}>정상</option>
+              <option value="pending" {% if request.GET.accountStatus == 'pending' %}selected{% endif %}>승인 대기중</option>
+              <option value="deleted" {% if request.GET.accountStatus == 'deleted' %}selected{% endif %}>탈퇴</option>>탈퇴</option>
+              <option value="blocked" {% if request.GET.accountStatus == 'blocked' %}selected{% endif %}>정지</option>>정지</option>
+              <option value="banned" {% if request.GET.accountStatus == 'banned' %}selected{% endif %}>영구차단</option>
+            </select>
+          </div>
+        </div>
+      </form>
+      <p class="text-end mt-4">
+        <a class="btn btn-primary" href="javascript: document.getElementById('userSearchForm').submit()">
+          <i class="fi fi-rr-search"></i> 검색
+        </a>
+      </p>
+    </div>
+
+    <!-- 검색 결과 -->
+    {% if search_accounts|length < 1 %}
+    <p>
+      검색 결과가 없습니다.
+    </p>
+    {% endif %}
+    {% for search_account in search_accounts %}
+    <div class="col-12 p-2 mb-2 border-bottom">
+      <a href="/profile?profile_id={{ search_account.id }}" target="_blank">
+        <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+          <div style="display: inline-block; text-align: left;">
+            <span class="text-black-50" style="font-size: 14px;">
+              <i class="fi fi-rr-user"></i> {{ search_account.id }} (
+                {% if search_account.account_type == 'user' %}
+                일반회원
+                {% elif search_account.account_type == 'dame' %}
+                여성회원
+                {% endif %})
+            </span><br>
+            <span>
+              <span class="h6">
+                {{ search_account.nickname }}
+              </span>
+              {% if search_account.account_type == 'user' or search_account.account_type == 'dame' %}
+              <span class="badge user-level-badge ms-2" style="color: {{search_account.user_level.text_color}}; background-color: {{search_account.user_level.background_color}};">{{ search_account.user_level.name }}</span>
+              {% endif %}
+            </span><br>
+            <span class="text-black-50">
+              <i class="fi fi-rr-calendar"></i> 가입일: {{ search_account.date_joined }} | 최근 접속일: {{ search_account.last_login }}
+            </span>
+          </div>
+          <div style="display: inline-block; text-align: right;">
+            <p class="m-0 text-end text-black-50" style="font-size: 14px;">
+              {% if search_account.status == 'active' %}
+              <span class="badge bg-success">정상</span>
+              {% elif search_account.status == 'pending' %}
+              <span class="badge bg-warning">승인대기중</span>
+              {% elif search_account.status == 'deleted' %}
+              <span class="badge bg-danger">탈퇴</span>
+              {% elif search_account.status == 'blocked' %}
+              <span class="badge bg-secondary">정지</span>
+              {% elif search_account.status == 'banned' %}
+              <span class="badge bg-dark">영구차단</span>
+              {% endif %}
+            </p>
+          </div>
+        </div>
+        <div class="row mt-2">
+          <div class="col-6">
+            <p class="text-dark m-0">
+              레벨 포인트
+            </p>
+            <p class="text-black-50">
+              <i class="fi fi-ss-coins"></i> 
+              <span class="numberComma">{{ search_account.user_usable_point }}</span> 포인트 
+            </p>
+          </div>
+          <div class="col-6">
+            <p class="text-dark m-0">
+              쿠폰 포인트
+            </p>
+            <p class="text-black-50">
+              <i class="fi fi-ss-coins text-secondary"></i> 
+              <span class="numberComma">{{ search_account.user_usable_point }}</span> 포인트
+            </p>
+          </div>
+        </div>
+      </a>
+    </div>
+    {% endfor %}
+
+  </div>
+
+  <!-- 파트너 -->
+  <div class="my-5 d-none" id="partner">
+
+    <!-- 통계 -->
+    <div class="rounded border p-3 mb-5">
+      <p>
+        <i class="fi fi-rr-stats"></i> 통계
+      </p>
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>구분</th>
+            <th>정상</th>
+            <th>승인 대기중</th>
+            <th>탈퇴</th>
+            <th>정지</th>
+            <th>영구차단</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for category in status.partner %}
+          <tr>
+            <td>{{category.name}}</td>
+            <td>{{category.active}}</td>
+            <td>{{category.pending}}</td>
+            <td>{{category.deleted}}</td>
+            <td>{{category.blocked}}</td>
+            <td>{{category.banned}}</td>
+          </tr>
+          {% if category.children|length > 0 %}
+          {% for child in category.children %}
+          <tr>
+            <td>{{child.name}}</td>
+            <td>{{child.active}}</td>
+            <td>{{child.pending}}</td>
+            <td>{{child.deleted}}</td>
+            <td>{{child.blocked}}</td>
+            <td>{{child.banned}}</td>
+          </tr>
+          {% if child.children|length > 0 %}
+          {% for grandchild in child.children %}
+          <tr>
+            <td>{{grandchild.name}}</td>
+            <td>{{grandchild.active}}</td>
+            <td>{{grandchild.pending}}</td>
+            <td>{{grandchild.deleted}}</td>
+            <td>{{grandchild.blocked}}</td>
+            <td>{{grandchild.banned}}</td>
+          </tr>
+          {% if grandchild.children|length > 0 %}
+          {% for grandgrandchild in grandchild.children %}
+          <tr>
+            <td>{{grandgrandchild.name}}</td>
+            <td>{{grandgrandchild.active}}</td>
+            <td>{{grandgrandchild.pending}}</td>
+            <td>{{grandgrandchild.deleted}}</td>
+            <td>{{grandgrandchild.blocked}}</td>
+            <td>{{grandgrandchild.banned}}</td>
+          </tr>
+          {% endfor %}
+          {% endif %}
+          {% endfor %}
+          {% endif %}
+          {% endfor %}
+          {% endif %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 검색 -->
+    <div class="rounded border p-3 mb-5">
+      <p>
+        <i class="fi fi-rr-search"></i> 검색
+      </p>
+      <form id="partnerSearchForm" method="get" action="/supervisor/account">
+        <div class="row">
+          <input type="hidden" name="tab" value="{{request.GET.tab}}">
+          <div class="form-group mt-4 col-6">
+            <label>아이디</label>
+            <input class="form-control" name="accountId" placeholder="파트너 아이디" value="{{request.GET.accountId}}">
+          </div>
+          <div class="form-group mt-4 col-6">
+            <label>닉네임</label>
+            <input class="form-control" name="accountNickname" placeholder="파트너 닉네임" value="{{request.GET.accountNickname}}">
+          </div>
+          <div class="form-group mt-4 col-12">
+            <label>상태</label>
+            <select class="form-control" name="accountStatus">
+              <option value="">전체</option>
+              <option value="active" {% if request.GET.accountStatus == 'active' %}selected{% endif %}>정상</option>
+              <option value="pending" {% if request.GET.accountStatus == 'pending' %}selected{% endif %}>승인 대기중</option>
+              <option value="deleted" {% if request.GET.accountStatus == 'deleted' %}selected{% endif %}>탈퇴</option>
+              <option value="blocked" {% if request.GET.accountStatus == 'blocked' %}selected{% endif %}>정지</option>
+              <option value="banned" {% if request.GET.accountStatus == 'banned' %}selected{% endif %}>영구차단</option>
+            </select>
+          </div>
+        </div>
+      </form>
+      <p class="text-end mt-4">
+        <a class="btn btn-primary" href="javascript: document.getElementById('partnerSearchForm').submit()">
+          <i class="fi fi-rr-search"></i> 검색
+        </a>
+      </p>
+    </div>
+
+    <!-- 검색 결과 -->
+    {% if search_accounts|length < 1 %}
+    <p>
+      검색 결과가 없습니다.
+    </p>
+    {% endif %}
+    {% for search_account in search_accounts %}
+    <div class="col-12 p-2 mb-2 border-bottom">
+      <a href="/profile?profile_id={{ search_account.id }}" target="_blank">
+        <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+          <div style="display: inline-block; text-align: left;">
+            <span class="text-black-50" style="font-size: 14px;">
+              <i class="fi fi-rr-user"></i> {{ search_account.id }} (파트너 회원)
+            </span><br>
+            <span>
+              <span class="h6 me-2">
+                {{ search_account.nickname }}
+              </span>
+              {% for category in search_account.partner_categories %}
+              <span class="badge bg-warning">{{ category.name }}</span>
+              {% endfor %}
+            </span><br>
+            <span class="text-black-50">
+              <i class="fi fi-rr-calendar"></i> 가입일: {{ search_account.date_joined }} | 최근 접속일: {{ search_account.last_login }}
+            </span>
+          </div>
+          <div style="display: inline-block; text-align: right;">
+            <p class="m-0 text-end text-black-50" style="font-size: 14px;">
+              {% if search_account.status == 'active' %}
+              <span class="badge bg-success">정상</span>
+              {% elif search_account.status == 'pending' %}
+              <span class="badge bg-warning">승인대기중</span>
+              {% elif search_account.status == 'deleted' %}
+              <span class="badge bg-danger">탈퇴</span>
+              {% elif search_account.status == 'blocked' %}
+              <span class="badge bg-secondary">정지</span>
+              {% elif search_account.status == 'banned' %}
+              <span class="badge bg-dark">영구차단</span>
+              {% endif %}
+            </p>
+          </div>
+        </div>
+        <div class="row mt-2">
+          <p class="text-primary m-0">
+            <i class="fi fi-rr-marker"></i> {{ search_account.partner_address }}
+          </p>
+        </div>
+      </a>
+    </div>
+    {% endfor %}
+
+  </div>
+
+  <!-- 관리자 -->
+  <div class="my-5 d-none" id="supervisor">
+
+    <!-- 버튼 -->
+    <div class="p-3 mb-5 text-end">
+
+      {% if account.account_type == 'supervisor' %}
+      <a class="btn btn-success" href="javascript: new bootstrap.Modal(document.getElementById('defaultModal')).show()">
+        <i class="fi fi-rr-user-add"></i> 하위 관리자 추가
+      </a>
+      {% endif %}
+
+    </div>
+
+    <!-- 검색 결과 -->
+    {% if search_accounts|length < 1 %}
+    <p>
+      검색 결과가 없습니다.
+    </p>
+    {% endif %}
+    {% for search_account in search_accounts %}
+    <div class="col-12 p-2 mb-2 border-bottom">
+      <a href="/profile?profile_id={{ search_account.id }}" target="_blank">
+        <span class="text-black-50" style="font-size: 14px;">
+          <i class="fi fi-rr-user"></i> {{ search_account.id }} (
+            {% if search_account.account_type == 'supervisor' %}
+            관리자)
+            {% elif search_account.account_type == 'sub_supervisor' %}
+            하위 관리자)
+            {% endif %}
+        </span><br>
+        <span>
+          <span class="h6 me-2">
+            {{ search_account.nickname }}
+          </span>
+          {% for category in search_account.partner_categories %}
+          <span class="badge bg-warning">{{ category.name }}</span>
+          {% endfor %}
+        </span><br>
+        <span class="text-black-50">
+          <i class="fi fi-rr-calendar"></i> 가입일: {{ search_account.date_joined }} | 최근 접속일: {{ search_account.last_login }}
+        </span>
+        <div class="row mt-2">
+          <p class="text-dark m-0">
+            권한
+          </p>
+          <p class="text-primary m-0">
+            {% if 'user' in search_account.supervisor_permissions %}
+            <span class="badge bg-info">사용자 관리</span>
+            {% endif %}
+            {% if 'post' in search_account.supervisor_permissions %}
+            <span class="badge bg-info">게시글 관리</span>
+            {% endif %}
+            {% if 'ad_post' in search_account.supervisor_permissions %}
+            <span class="badge bg-info">광고 관리</span>
+            {% endif %}
+            {% if 'coupon' in search_account.supervisor_permissions %}
+            <span class="badge bg-info">쿠폰 관리</span>
+            {% endif %}
+            {% if 'message' in search_account.supervisor_permissions %}
+            <span class="badge bg-info">메시지 관리</span>
+            {% endif %}
+            {% if 'banner' in search_account.supervisor_permissions %}
+            <span class="badge bg-info">배너 관리</span>
+            {% endif %}
+            {% if 'level' in search_account.supervisor_permissions %}
+            <span class="badge bg-info">레벨 관리</span>
+            {% endif %}
+            {% if 'setting' in search_account.supervisor_permissions %}
+            <span class="badge bg-info">시스템 관리</span>
+            {% endif %}
+          </p>
+        </div>
+      </a>
+    </div>
+    {% endfor %}
+
+  </div>
+
+  <div id="pageButton"></div>
+
+</section>
+
+<!-- 오른쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+
+<!-- Modals -->
+<div class="modal fade" id="defaultModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">ModalName</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="" data-bs-dismiss="modal">submit</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+  window.onload = () => {
+    console.log(`Window loaded at ${getNowDatetimeString()}`);
+
+    // Number Comma
+    document.querySelectorAll('.numberComma').forEach(element => {
+      element.innerHTML = element.innerHTML.replace(/[^0-9]/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    });
+
+    // Tab
+    tab = '{{request.GET.tab}}';
+    if(tab == '') {
+      location.href='/supervisor/account?tab=user';
+    }
+    var userTab = document.getElementById('userTab');
+    var partnerTab = document.getElementById('partnerTab');
+    var supervisorTab = document.getElementById('supervisorTab');
+    var userBox = document.getElementById('user');
+    var partnerBox = document.getElementById('partner');
+    var supervisorBox = document.getElementById('supervisor');
+    if (tab == 'user') {
+      userTab.style.backgroundColor = 'gray';
+      partnerTab.style.backgroundColor = 'gainsboro';
+      supervisorTab.style.backgroundColor = 'gainsboro';
+      userTab.classList.add('text-white');
+      partnerTab.classList.remove('text-white');
+      supervisorTab.classList.remove('text-white');
+      userBox.classList.remove('d-none');
+      partnerBox.classList.add('d-none');
+      supervisorBox.classList.add('d-none');
+    } else if (tab == 'partner') {
+      userTab.style.backgroundColor = 'gainsboro';
+      partnerTab.style.backgroundColor = 'gray';
+      supervisorTab.style.backgroundColor = 'gainsboro';
+      userTab.classList.remove('text-white');
+      partnerTab.classList.add('text-white');
+      supervisorTab.classList.remove('text-white');
+      userBox.classList.add('d-none');
+      partnerBox.classList.remove('d-none');
+      supervisorBox.classList.add('d-none');
+    } else if (tab == 'supervisor') {
+      userTab.style.backgroundColor = 'gainsboro';
+      partnerTab.style.backgroundColor = 'gainsboro';
+      supervisorTab.style.backgroundColor = 'gray';
+      userTab.classList.remove('text-white');
+      partnerTab.classList.remove('text-white');
+      supervisorTab.classList.add('text-white');
+      userBox.classList.add('d-none');
+      partnerBox.classList.add('d-none');
+      supervisorBox.classList.remove('d-none');
+    }
+
+    // Page
+    var tab = '{{request.GET.tab}}';
+    var searchAccountId = '{{request.GET.accountId}}';
+    var searchAccountNickname = '{{request.GET.accountNickname}}';
+    var searchAccountStatus = '{{request.GET.accountStatus}}';
+    console.log('{{request.GET.page}} | {{last_page}}');
+    makePaegeButton('{{request.GET.page}}', '{{last_page}}', `/supervisor/account?tab=${tab}&accountId=${searchAccountId}&accountNickname=${searchAccountNickname}&accountStatus=${searchAccountStatus}`);
+  }
+
+</script>
+
+{% endblock %}

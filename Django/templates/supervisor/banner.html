@@ -1,0 +1,148 @@
+{% extends 'base/supervisor_base.html' %}
+{% block content %}
+<!-- 왼쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;">
+  {% include 'parts/left_aside_supervisor.html' %}
+</aside>
+
+<!-- 중앙 섹션 -->
+<section class="main-section px-5 px-lg-1" style="flex: 1; min-height: 100vh;">
+
+  <!-- 제목 -->
+  <div class="mt-4 mb-5">
+    <h5 class="mt-5">
+      배너 관리
+    </h5>
+    <p class="small">
+      광고 배너 관리
+    </p>
+  </div>
+
+
+  <!-- 선택지 버튼 그룹 -->
+  <div class="btn-group w-100">
+    <a class="btn text-white" href="/supervisor/banner?tab=top" style="background-color: gray;" id="topTab">
+      상단 배너
+    </a>
+    <a class="btn" href="/supervisor/banner?tab=side" style="background-color: gainsboro;" id="sideTab">
+      측/하단 배너
+    </a>
+  </div>
+
+  <!-- 상단 배너 -->
+  <div class="my-5 d-none" id="topBox">
+
+    <!-- 버튼 -->
+    <div class="p-3 mb-5 text-end">
+
+      <a class="btn btn-success" href="#">
+        <i class="fi fi-rr-plus"></i> 상단 배너 생성
+      </a>
+
+    </div>
+
+    <!-- 검색 결과 -->
+    {% if banners|length < 1 %}
+    <p>
+      등록된 상단 배너가 없습니다.
+    </p>
+    {% endif %}
+    <div class="row">
+      {% for banner in banners %}
+      <div class="col-12 col-md-6 p-1">
+        <div class="w-100 shadow-sm" style="height: 200px; background: black url('{{ banner.image }}') center/cover no-repeat;"></div>
+        <div class="mt-2 mb-5 p-2">
+          <span>
+            <span class="h5">배너 설정</span>
+            <a href="javascript:void(0);">
+              <i class="fi fi-rr-edit"></i>
+            </a>
+          </span><br>
+          위치: {{ banner.location }}<br>
+          링크: {{ banner.link }}<br>
+          생성일: {{ banner.create_at }}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+  </div>
+
+  <!-- 측/하단 배너 -->
+  <div class="my-5 d-none" id="sideBox">
+
+    <!-- 버튼 -->
+    <div class="p-3 mb-5 text-end">
+
+      <a class="btn btn-success" href="#">
+        <i class="fi fi-rr-plus"></i> 측/하단 배너 생성
+      </a>
+
+    </div>
+
+    <!-- 검색 결과 -->
+    {% if banners|length < 1 %}
+    <p>
+      등록된 측/하단 배너가 없습니다.
+    </p>
+    {% endif %}
+    <div class="row">
+      {% for banner in banners %}
+      <div class="col-12 col-md-6 p-1">
+        <div class="w-100 shadow-sm" style="height: 200px; background: black url('{{ banner.image }}') center/cover no-repeat;"></div>
+        <div class="mt-2 mb-5 p-2">
+          <span>
+            <span class="h5">배너 설정</span>
+            <a href="javascript:void(0);">
+              <i class="fi fi-rr-edit"></i>
+            </a>
+          </span><br>
+          위치: {{ banner.location }}<br>
+          링크: {{ banner.link }}<br>
+          생성일: {{ banner.create_at }}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+  </div>
+
+</section>
+
+<!-- 오른쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+
+<script>
+
+  window.onload = () => {
+    console.log(`Window loaded at ${getNowDatetimeString()}`);
+
+    // Tab
+    tab = '{{request.GET.tab}}';
+    if(tab == '') {
+      location.href='/supervisor/banner?tab=top';
+    }
+    var topTab = document.getElementById('topTab');
+    var sideTab = document.getElementById('sideTab');
+    var topBox = document.getElementById('topBox');
+    var sideBox = document.getElementById('sideBox');
+    if (tab == 'top') {
+      topTab.style.backgroundColor = 'gray';
+      sideTab.style.backgroundColor = 'gainsboro';
+      topTab.classList.add('text-white');
+      sideTab.classList.remove('text-white');
+      topBox.classList.remove('d-none');
+      sideBox.classList.add('d-none');
+    } else if (tab == 'side') {
+      topTab.style.backgroundColor = 'gainsboro';
+      sideTab.style.backgroundColor = 'gray';
+      topTab.classList.remove('text-white');
+      sideTab.classList.add('text-white');
+      topBox.classList.add('d-none');
+      sideBox.classList.remove('d-none');
+    }
+  }
+
+</script>
+
+{% endblock %}

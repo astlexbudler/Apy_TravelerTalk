@@ -1,0 +1,104 @@
+{% extends 'base/main_base.html' %}
+{% block content %}
+<!-- 왼쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+
+<!-- 중앙 섹션 -->
+<section class="main-section px-5 px-lg-1" style="flex: 1; min-height: 100vh;">
+
+  <!-- 제목 -->
+  <div class="mt-4 mb-5">
+    {% include 'parts/goback.html' %}
+    <h5 class="mt-5">
+      여행지 게시글
+    </h5>
+  </div>
+
+  <!-- 여행지 게시글 정보 -->
+  <div class="row">
+    {% include 'parts/travel_post_card.html' %}
+  </div>
+
+  <!-- 게시글 컨테이너 -->
+  <div class='row my-5'>
+
+    <div class="mt-4 mb-5">
+      <h5 class="mt-5">
+        리뷰 작성
+      </h5>
+      <p>
+        {{ board.name }}
+      </p>
+    </div>
+
+    <!-- 대표 이미지 -->
+    <div class="my-4">
+      <label>이미지</label>
+      <div id="imagePreview" class="mb-2 row">
+        {% for image in travel_post.images %}
+        {% if image != '' %}
+        <div class="mb-2 me-2 shadow-sm text-end p-2" style="min-width: 150px; width: 12vw; background: url('{{ image }}') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw;">
+          {% if forloop.counter == 1 %}<span class="text-white">대표 이미지</span>{% endif %}
+          <a href="javascript: removeImage('{{ image }}')"
+            class="text-danger">
+            <i class="fi fi-rr-trash"></i>
+          </a>
+        </div>
+        {% endif %}
+        {% endfor %}
+      </div>
+      <a href="javascript: document.getElementById('imageInput').click();" class="btn btn-success">
+        이미지 추가
+      </a>
+      <input type="file" class="d-none" id="imageInput" multiple>
+      <input id="imagePaths" value="{% for image in travel_post.images %}{{ image }},{% endfor %}" class="d-none">
+    </div>
+
+    <!-- 제목 -->
+    <div class="my-4">
+      <div class="form-group">
+        <label>제목</label>
+        <input class="form-control" id="title" placeholder="제목을 입력해 주세요.">
+      </div>
+    </div>
+
+    <!-- 내용 -->
+    <div class="p-0 my-4 col-8 col-sm-10 col-md-12" style="overflow: hidden;">
+      <label>내용</label>
+      <div id="postContent" style="height: 500px;"></div>
+      <div class="d-none" id="viewer"></div>
+    </div>
+
+    <!-- 작성하기 -->
+    <div class="my-5">
+      <a class="btn btn-primary" href="javascript: writePost()">
+        작성하기
+      </a>
+    </div>
+
+  </div>
+
+</section>
+
+<!-- 오른쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+
+<script>
+
+  window.onload = () => {
+    console.log(`Window loaded at ${getNowDt()}`);
+  }
+
+  const editor = new toastui.Editor({
+    el: document.querySelector('#postContent'),
+    height: '500px',
+    initialEditType: 'wysiwyg',
+    initialValue: '내용을 입력해 주세요.',
+    previewStyle: 'vertical',
+    hideModeSwitch: true,
+    language: 'ko-KR'
+  });
+
+</script>
+
+{% endblock %}

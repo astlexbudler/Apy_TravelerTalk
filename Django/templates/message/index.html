@@ -1,0 +1,550 @@
+{% extends 'base/main_base.html' %}
+{% block content %}
+<!-- 왼쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+
+<!-- 중앙 섹션 -->
+<section class="main-section px-5 px-lg-1" style="flex: 1; min-height: 100vh;">
+
+  <!-- 제목 -->
+  <div class="mt-4 mb-5">
+    {% include 'parts/goback.html' %}
+    <h5 class="mt-5">
+      쪽지 보관함
+    </h5>
+    <p>
+      쪽지 수신 및 발신 내역을 확인하고 쪽지를 보낼 수 있습니다.
+    </p>
+  </div>
+
+  <!-- 선택지 버튼 그룹 -->
+  <div class="btn-group w-100">
+    <a class="btn text-white" href="/message?tab=inbox" style="background-color: gray;" id="inboxTab">
+      받은 쪽지함
+    </a>
+    <a class="btn" style="background-color: gainsboro;" href="/message?tab=outbox" id="outboxTab">
+      보낸 쪽지함
+    </a>
+  </div>
+
+  <!--
+    받은 쪽지 리스트
+    쪽지 쓰기 버튼 포함. 클릭 시 쪽지 작성 모달이 나타남.
+  -->
+  <div class="my-5" id="inbox">
+
+    <!-- 버튼 -->
+    <div class="p-3 mb-5 text-end">
+      <a class="btn btn-success" href="javascript: new bootstrap.Modal(document.getElementById('newMessageModal')).show();">
+        <i class="fi fi-rr-edit"></i> 쪽지 쓰기
+      </a>
+    </div>
+
+    <p class="text-black-50 small">
+      <i class="fi fi-rr-info"></i> 쿠폰은 쪽지 내용 확인 후 <span class="text-primary">쿠폰 받기</span> 버튼을 클릭하여 받을 수
+      있습니다.
+    </p>
+    <table class="table table-border small border shadow text-center">
+      <tbody>
+        <tr>
+          <th>
+            읽음 여부
+          </th>
+          <th>
+            보낸 사람
+          </th>
+          <th>
+            제목
+          </th>
+          <th>
+            수신 날짜
+          </th>
+        </tr>
+        {% if messages|length < 1 %}
+        <tr>
+          <td colspan="4">
+            <p class="text-black">받은 쪽지가 없습니다.</p>
+          </td>
+        </tr>
+        {% else %}
+        {% for message in messages %}
+        <tr style="cursor: pointer;" 
+          onclick="
+            new bootstrap.Modal(document.getElementById('messageModal{{message.id}}')).show();
+            {% if message.read_dt == '' %}setReadDatetime('{{message.id}}');{% endif %}
+          ">
+          <td>
+            {% if message.read_dt == '' %}
+            <i class="fi fi-rr-eye"></i> 읽지 않음
+            {% else %}
+            <i class="fi fi-rr-eye"></i> 읽음
+            {% endif %}
+          </td>
+          <td>
+            <span class="text-dark">
+              {{ message.sender.nickname }}
+            </span>
+          </td>
+          <td>
+            {{ message.title }}
+          </td>
+          <td>
+            {{ message.send_dt }}
+          </td>
+        </tr>
+        {% endfor %}
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 보낸 쪽지 리스트 -->
+  <div class="my-5 d-none" id="outbox">
+    <p class="text-black-50 small">
+      <i class="fi fi-rr-info"></i> 내가 보낸 쪽지 및 읽음 여부를 확인할 수 있습니다.
+    </p>
+    <table class="table table-border small border shadow text-center">
+      <tbody>
+        <tr>
+          <th>
+            받는 사람
+          </th>
+          <th>
+            제목
+          </th>
+          <th>
+            보낸 날짜
+          </th>
+          <th>
+            읽음 여부
+          </th>
+        </tr>
+        {% if messages|length < 1 %}
+        <tr>
+          <td colspan="4">
+            <p class="text-black">보낸 쪽지가 없습니다.</p>
+          </td>
+        </tr>
+        {% else %}
+        {% for message in messages %}
+        <tr style="cursor: pointer;" onclick="new bootstrap.Modal(document.getElementById('messageModal{{message.id}}')).show();">
+          <td>
+            <span class="text-dark">
+              {{ message.receiver.nickname }}
+            </span>
+          </td>
+          <td>
+            {{ message.title }}
+          </td>
+          <td>
+            {{ message.send_dt }}
+          </td>
+          <td>
+            {% if message.read == 'y' %}
+            <i class="fi fi-rr-eye"></i> 읽음
+            {% else %}
+            <i class="fi fi-rr-eye"></i> 읽지 않음
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+
+  <div id="pageButton"></div>
+
+</section>
+
+<!-- 오른쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+
+<!--
+  Modals
+  - 쪽지 상세보기 모달
+  - 받은 쪽지 및 보낸 쪽지 모달.
+  - 받은 쪽지는 발신자, 보낸 쪽지는 수신자를 확인할 수 있음. 받은 쪽지는 답장 버튼 및 쿠폰 받기 버튼이 있음.
+-->
+{% for message in messages %}
+<div class="modal fade" id="messageModal{{message.id}}" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          쪽지
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+        <div class="row">
+          {% if message.image != '' %}
+          <div class="col-6">
+            <img src="{{message.image}}" class="w-100">
+          </div>
+          {% endif %}
+          <div class="{% if message.image == '' %}col-12{% else %}col-6{% endif %}">
+            <p class="text-dark">
+              {{message.title}}
+            </p>
+            {% if request.GET.tab == 'outbox' %}
+            <p class="text-black-50 mb-1">
+              To. <small>{{message.receiver.nickname}}</small>
+            </p>
+            {% else %}
+            <p class="text-black-50 mb-1">
+              From. <small>{{message.sender.nickname}}</small>
+            </p>
+            {% endif %}
+            <p class="text-black-50 mb-1">
+              <i class="fi fi-rr-calendar"></i> <small>{{message.send_dt}}</small>
+            </p>
+            <p class="mt-3">
+              {{message.content}}
+            </p>
+            {% if message.include_coupon != None %}
+            <p class="text-black-50">
+              <i class="fi fi-rr-ticket"></i> {{message.include_coupon.name}} <small class="text-black-50">{{message.include_coupon.post.title}}</small>
+              <br>
+              {% if account.id != message.include_coupon.create_account_id %}
+              <a href="javascript: receiveCoupon('{{message.include_coupon.id}}');" class="small text-primary">쿠폰 받기</a>
+              {% endif %}
+              {% if message.include_coupon.required_point != 0 %}
+              <p>
+                필요 포인트: <span class="numberComma">{{message.include_coupon.required_point}}</span> 포인트<br>
+                쿠폰을 사용하려면 <span class="numberComma">{{message.include_coupon.required_point}}</span> 만큼의 쿠폰 포인트가 필요합니다.
+              </p>
+              {% endif %}
+            </p>
+            {% endif %}
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        {% if message.include_coupon != None and request.GET.tab != 'outbox' %}
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" 
+          onclick="openModifyCouponModal('{{coupon.id}}', '{{coupon.name}}', '{{coupon.code}}', `{{coupon.description}}`, '{{coupon.required_point}}', '{{coupon.images.0}}');">
+          쿠폰 받기
+        </button>
+        {% endif %}
+        {% if request.GET.tab != 'outbox' %}
+        <button type="button" class="btn btn-success" data-bs-dismiss="modal" onclick="replyMessage('{{message.sender.id}}', '{{message.title}}');">
+          답장
+        </button>
+        {% endif %}
+        <button type="button" class="btn text-white" style="background-color: gray;" data-bs-dismiss="modal">닫기</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+<!-- 쪽지 작성 및 답변 모달 -->
+<div class="modal fade" id="newMessageModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          쪽지 작성
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+        <form id="newMessageForm" method="post" action="/message/">
+          {% csrf_token %}
+
+          <!-- image -->
+          <div id="imagePreview" class="mb-2"></div>
+          <input type="file" class="d-none" id="newCouponImage" accept="image/*" onchange="previewImage(this);">
+          <input type="hidden" id="uploadedImagePath" name="image">
+
+          <!-- 쪽지 발송 대상 검색 -->
+          <div class="form-group mb-2">
+            <label>받는 사람</label> <small id="receiverConfirmMessage"></small>
+            <input class="form-control" placeholder="받는 사람의 아이디 또는 닉네임을 입력하세요." id="messageReceiver" name="receiver">
+            <input type="hidden" id="receiverId" name="receiver_id">
+          </div>
+
+          <!-- 관리자에게 보내기 체크박스 -->
+          <div class="form-group mb-2">
+            <input type="checkbox" id="messageToAdmin">
+            <label for="messageToAdmin">관리자 문의 메세지로 보내기</label>
+          </div>
+
+          <!-- 쪽지 제목 -->
+          <div class="form-group mb-2">
+            <label>제목</label>
+            <input class="form-control" placeholder="쪽지 제목을 입력하세요." id="messageTitle" name="title">
+          </div>
+
+          <!-- 쪽지 내용 -->
+          <div class="form-group mb-2">
+            <label>내용</label>
+            <textarea class="form-control" placeholder="쪽지 내용을 입력하세요." id="messageContent" rows="5" name="content"></textarea>
+          </div>
+
+            <!-- 쿠폰 -->
+            {% if account.account_type == 'partner' or account.account_type == 'supervisor' or account.account_type == 'sub_supervisor' %}
+            <div class="form-group mb-2">
+              <label>쿠폰 보내기</label> <small id="couponConfirmMessage"></small>
+              <input id="couponCode" class="form-control" placeholder="보낼 쿠폰 코드를 입력하세요." name="coupon_code" oninput="couponCodeCheck(this);">
+              <small>
+                전달하고자하는 쿠폰의 쿠폰 코드를 입력하세요.
+              </small>
+            </div>
+            {% endif %}
+
+          <div class="text-end mt-3">
+            <a href="javascript: document.getElementById('newCouponImage').click();" class="btn btn-success small p-1 px-2">
+              <i class="fi fi-rr-file-image"></i> 이미지 업로드
+            </a>
+          </div>
+
+        </form>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="sendMessage();">보내기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+  window.onload = () => {
+    console.log(`Window loaded at ${getNowDatetimeString()}`);
+
+    // Tab
+    tab = '{{request.GET.tab}}';
+    if(tab == '') {
+      location.href='/message?tab=inbox';
+    }
+
+    var inboxTab = document.getElementById('inboxTab');
+    var outboxTab = document.getElementById('outboxTab');
+    var inbox = document.getElementById('inbox');
+    var outbox = document.getElementById('outbox');
+    if (tab == 'inbox') {
+      inboxTab.style.backgroundColor = 'gray';
+      outboxTab.style.backgroundColor = 'gainsboro';
+      inboxTab.classList.add('text-white');
+      outboxTab.classList.remove('text-white');
+      inbox.classList.remove('d-none');
+      outbox.classList.add('d-none');
+    } else if (tab == 'outbox') {
+      inboxTab.style.backgroundColor = 'gainsboro';
+      outboxTab.style.backgroundColor = 'gray';
+      inboxTab.classList.remove('text-white');
+      outboxTab.classList.add('text-white');
+      inbox.classList.add('d-none');
+      outbox.classList.remove('d-none');
+    }
+
+    // Page
+    var tab = '{{request.GET.tab}}';
+    makePaegeButton('{{request.GET.page}}', '{{last_page}}', `/message?tab=${tab}`);
+
+  }
+
+  // 쪽지 수신자 검색 및 확인
+  var messageReceiverInput = document.querySelector('#messageReceiver');
+  var receiverConfirmMessage = document.querySelector('#receiverConfirmMessage');
+  var receiverId = document.querySelector('#receiverId');
+  messageReceiverInput.addEventListener('keyup', async () => {
+    var receiver = messageReceiverInput.value;
+    if (receiver.length < 2) {
+      receiverConfirmMessage.innerHTML = '아이디 또는 닉네임을 2글자 이상 입력해주세요.';
+      receiverConfirmMessage.classList.add('text-danger');
+      receiverConfirmMessage.classList.remove('text-primary');
+      receiverId.value = '';
+      return;
+    }
+
+    // 사용자 검색
+    var users = await fetch(`/api/search_user?id_or_nickname=${receiver}`)
+    .then(res => res.json())
+    .then(data => {
+      console.log(data);
+      return data.users;
+    });
+
+    // 사용자 검색 결과 확인
+    if (users.length != 1) {
+      receiverConfirmMessage.innerHTML = '정확한 사용자 아이디 또는 닉네임을 입력해주세요.';
+      receiverConfirmMessage.classList.add('text-danger');
+      receiverConfirmMessage.classList.remove('text-primary');
+      receiverId.value = '';
+      return;
+    }
+    receiverConfirmMessage.innerHTML = '사용자 확인';
+    receiverConfirmMessage.classList.add('text-primary');
+    receiverConfirmMessage.classList.remove('text-danger');
+    receiverId.value = users[0].id;
+  });
+
+  // 쿠폰 코드를 입력한 경우, 유효한 쿠폰 코드인지 확인
+  var couponValid = true;
+  couponCodeCheck = async (e) => {
+    var couponCode = e.value;
+    if (couponCode.length < 6) {
+      return;
+    }
+
+    // 쿠폰 검색
+    var data = await fetch(`/api/search_coupon?code=${couponCode}`)
+    .then(res => res.json())
+    .then(data => {
+      console.log(data);
+      return data
+    });
+
+    // 쿠폰 검색 결과 확인
+    var couponConfirmMessage = document.querySelector('#couponConfirmMessage');
+    var exist = data.result == 'success'; // true or false
+    var coupon = data.coupon;
+    if (!exist) {
+      couponConfirmMessage.innerHTML = '존재하지 않는 쿠폰 코드입니다.';
+      couponConfirmMessage.classList.add('text-danger');
+      couponConfirmMessage.classList.remove('text-primary');
+      couponValid = false;
+      return;
+    }
+    if (coupon.own_account.id != coupon.create_account.id) {
+      couponConfirmMessage.innerHTML = '이미 다른 사용자가 소유한 쿠폰입니다.';
+      couponConfirmMessage.classList.add('text-danger');
+      couponConfirmMessage.classList.remove('text-primary');
+      couponValid = false;
+      return;
+    }
+    couponConfirmMessage.innerHTML = '유효한 쿠폰 코드입니다.';
+    couponConfirmMessage.classList.add('text-primary');
+    couponConfirmMessage.classList.remove('text-danger');
+    couponValid = true;
+  }
+
+  // 관리자에게 보내기 체크박스를 체크한 경우
+  var messageToAdminCheckbox = document.querySelector('#messageToAdmin');
+  messageToAdminCheckbox.addEventListener('change', () => {
+    if (messageToAdminCheckbox.checked) { // 체크한 경우
+      messageReceiverInput.value = 'supervisor'; // 수신자 = supervisor
+      messageReceiverInput.setAttribute('readonly', true);
+      receiverConfirmMessage.innerHTML = '관리자에게 쪽지를 보냅니다.';
+      receiverConfirmMessage.classList.add('text-primary');
+      receiverConfirmMessage.classList.remove('text-danger');
+      return
+    }
+    messageReceiverInput.value = '';
+    receiverConfirmMessage.innerHTML = '';
+    messageReceiverInput.removeAttribute('readonly');
+  });
+
+  // 이미지 미리보기 및 업로드
+  previewImage = async (input) => {
+    if (input.files[0]) { // 파일이 있는 경우
+
+      // 미리보기 생성
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        document.getElementById('imagePreview').innerHTML = '<img src="' + e.target.result + '" class="w-100">';
+      }
+      reader.readAsDataURL(input.files[0]);
+
+      // 파일 업로드 후 경로 저장
+      document.getElementById('uploadedImagePath').value = await uploadFile(input.files[0]);;
+    }
+  }
+
+  // 쪽지 보내기
+  sendMessage = async () => {
+
+    // couponValid 확인
+    if (!couponValid) {
+      var isContinue = showConfirm('쿠폰 코드 확인', '쿠폰 코드가 유효하지 않습니다. 그래도 계속하시겠습니까?', 'warning', '쪽지 보내기', '취소');
+      if (!isContinue) {
+        return;
+      }
+    }
+
+    var receiverId = document.getElementById('receiverId').value;
+    var messageTitle = document.getElementById('messageTitle').value;
+    var messageContent = document.getElementById('messageContent').value;
+    if (receiverId == '' || messageTitle == '' || messageContent == '') {
+      await showAlert('쪽지 보내기', '모든 항목을 입력해주세요.', 'error');
+      return;
+    }
+
+    // 메세지 전송 요청
+    var formData = new FormData();
+    formData.append('receiver_id', receiverId);
+    formData.append('title', messageTitle);
+    formData.append('content', messageContent);
+    formData.append('images', document.getElementById('uploadedImagePath').value);
+    if (document.getElementById('couponCode')) {
+      formData.append('coupon_code', document.getElementById('couponCode').value);
+    } else {
+      formData.append('coupon_code', '');
+    }
+    var result = await fetch('/api/send_message', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrftoken
+      },
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log(data);
+      return data.result
+    });
+
+    // 메세지 전송 결과에 따른 알림창
+    if (result == 'success') {
+      await showAlert('쪽지 보내기', '쪽지를 성공적으로 전송했습니다.', 'success');
+      location.reload();
+    } else {
+      await showAlert('쪽지 보내기', '쪽지를 보내지 못했습니다. 다시 시도해주세요.', 'error');
+    }
+  }
+
+  // 쪽지 답장
+  replyMessage = (receiverId, messageTitle) => {
+    document.getElementById('messageReceiver').value = receiverId;
+    document.getElementById('receiverId').value = receiverId;
+    document.getElementById('messageTitle').value = '답장: ' + document.getElementById('messageTitle').value;
+    document.getElementById('messageContent').value = `[${messageTitle}]\n답장: `;
+    new bootstrap.Modal(document.getElementById('newMessageModal')).show();
+  }
+
+  // 쪽지 읽음 처리
+  setReadDatetime = (messageId) => {
+    fetch(`/api/read_message?message_id=${messageId}`);
+  }
+
+  // 쿠폰 받기
+  receiveCoupon = async (couponId) => {
+
+    await fetch(`/api/receive_coupon?coupon_id=${couponId}`)
+    .then(response => response.json())
+    .then(data => {
+      console.log(data);
+      return data.result;
+    });
+
+    // 쿠폰 받기 결과에 따른 알림창
+    // 쿠폰 받기 성공: success => 페이지 새로고침
+    // 쿠폰 받기 실패: error => 에러 메세지 표시
+    if (result == 'success') {
+      await showAlert('쿠폰 받기', '쿠폰을 성공적으로 받았습니다. 내 쿠폰함에서 확인할 수 있습니다.', 'success');
+      location.reload();
+      return
+    } else {
+      await showAlert('쿠폰 받기', '쿠폰을 받지 못했습니다. 다시 시도해주세요.', 'error');
+    }
+  }
+
+</script>
+
+{% endblock %}

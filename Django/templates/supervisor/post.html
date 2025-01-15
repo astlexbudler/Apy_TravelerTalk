@@ -1,0 +1,367 @@
+{% extends 'base/supervisor_base.html' %}
+{% block content %}
+<!-- 왼쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;">
+  {% include 'parts/left_aside_supervisor.html' %}
+</aside>
+
+<!-- 중앙 섹션 -->
+<section class="main-section px-5 px-lg-1" style="flex: 1; min-height: 100vh;">
+
+  <!-- 제목 -->
+  <div class="mt-4 mb-5">
+    <h5 class="mt-5">
+      게시글 관리
+    </h5>
+    <p class="small">
+      일반 게시글 관리
+    </p>
+  </div>
+
+  <!-- 게시글 -->
+  <div class="my-5" id="user">
+
+    <!-- 버튼 -->
+    <div class="p-3 mb-5 text-end">
+
+      <a class="btn btn-success" href="javascript: new bootstrap.Modal(document.getElementById('defaultModal')).show()">
+        <i class="fi fi-rr-plus"></i> 최상위 게시판 추가
+      </a>
+
+    </div>
+
+    <!-- 통계 -->
+    <div class="rounded border p-3 mb-5">
+      <p>
+        <i class="fi fi-rr-stats"></i> 통계
+      </p>
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>구분</th>
+            <th>조회수</th>
+            <th>게시글 수</th>
+            <th>댓글 수</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for board in status %}
+          <tr>
+            <td>
+              <p>
+                {{ board.name }}<br>
+                <a href="javascript: new bootstrap.Modal(document.getElementById('{{ board.id }}Add')).show()" class="btn btn-success p-1 px-2 small">
+                  <i class="fi fi-rr-plus"></i> 하위 게시판 추가
+                </a>
+              </p>
+              <div class="modal fade" id="{{ board.id }}Add" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title">하위 게시판 추가</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body"></div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-primary" onclick="" data-bs-dismiss="modal">submit</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td>{{ board.total_views }}</td>
+            <td>{{ board.total_posts }}</td>
+            <td>{{ board.total_comments }}</td>
+            <td class="text-center">
+              <a href="javascript: new bootstrap.Modal(document.getElementById('{{ board.id }}Edit')).show()">
+                <i class="fi fi-rr-edit"></i>
+              </a>
+              <div class="modal fade" id="{{ board.id }}Edit" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title">{{ board.name }} 수정</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body"></div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-primary" onclick="" data-bs-dismiss="modal">submit</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+          {% if board.children|length > 0 %}
+          {% for child in board.children %}
+          <tr>
+            <td>
+              <p class="ms-2">
+                {{ child.name }}<br>
+                <a href="javascript: new bootstrap.Modal(document.getElementById('{{ child.id }}Add')).show()"class="btn btn-success p-1 px-2 small">
+                  <i class="fi fi-rr-plus"></i> 하위 게시판 추가
+                </a>
+              </p>
+              <div class="modal fade" id="{{ child.id }}Add" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title">하위 게시판 추가</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body"></div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-primary" onclick="" data-bs-dismiss="modal">submit</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td>{{ child.total_views }}</td>
+            <td>{{ child.total_posts }}</td>
+            <td>{{ child.total_comments }}</td>
+            <td class="text-center">
+              <a href="javascript: new bootstrap.Modal(document.getElementById('{{ child.id }}Detail')).show()">
+                <i class="fi fi-rr-edit"></i>
+              </a>
+              <div class="modal fade" id="{{ child.id }}Detail" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title">{{ child.name }} 수정</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body"></div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-primary" onclick="" data-bs-dismiss="modal">submit</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </td>
+            {% if child.children|length > 0 %}
+            {% for grandchild in child.children %}
+            <tr>
+              <td>
+                <p class="ms-4">
+                  {{ grandchild.name }}<br>
+                  <a href="javascript: new bootstrap.Modal(document.getElementById('{{ grandchild.id }}Add')).show()" class="btn btn-success p-1 px-2 small">
+                    <i class="fi fi-rr-plus"></i> 하위 게시판 추가
+                  </a>
+                </p>
+                <div class="modal fade" id="{{ grandchild.id }}Add" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title">하위 게시판 추가</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body"></div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-primary" onclick="" data-bs-dismiss="modal">submit</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              </td>
+              <td>{{ grandchild.total_views }}</td>
+              <td>{{ grandchild.total_posts }}</td>
+              <td>{{ grandchild.total_comments }}</td>
+              <td class="text-center">
+                <a href="javascript: new bootstrap.Modal(document.getElementById('{{ grandchild.id }}Detail')).show()">
+                  <i class="fi fi-rr-edit"></i>
+                </a>
+                <div class="modal fade" id="{{ grandchild.id }}Detail" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title">{{ grandchild.name }} 수정</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body"></div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-primary" onclick="" data-bs-dismiss="modal">submit</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              </td>
+            </tr>
+              {% if grandchild.children|length > 0 %}
+              {% for grandgrandchild in grandchild.children %}
+              <tr>
+                <td>
+                  <span class="ms-6">{{ grandgrandchild.name }}</span>
+                </td>
+                <td>{{ grandgrandchild.total_views }}</td>
+                <td>{{ grandgrandchild.total_posts }}</td>
+                <td>{{ grandgrandchild.total_comments }}</td>
+                <td class="text-center">
+                  <a href="javascript: new bootstrap.Modal(document.getElementById('{{ grandgrandchild.id }}Detail')).show()">
+                    <i class="fi fi-rr-edit"></i>
+                  </a>
+                  <div class="modal fade" id="{{ grandgrandchild.id }}Detail" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title">{{ grandgrandchild.name }} 수정</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body"></div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-primary" onclick="" data-bs-dismiss="modal">submit</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+                </td>
+              </tr>
+              {% endfor %}
+              {% endif %}
+            {% endfor %}
+            {% endif %}
+          {% endfor %}
+          {% endif %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 검색 -->
+    <div class="rounded border p-3 mb-5">
+      <p>
+        <i class="fi fi-rr-search"></i> 검색
+      </p>
+      <form id="postSearchForm" method="get" action="/supervisor/post">
+        <div class="row">
+          <div class="form-group mt-4 col-12">
+            <label>제목</label>
+            <input class="form-control" name="postTitle" placeholder="게시글 제목">
+          </div>
+          <div class="form-group mt-4 col-12">
+            <label>게시판</label>
+            <select class="form-control" name="postBoard">
+              <option value="">전체</option>
+              {% for board in status %}
+              <option value="{{ board.id }}">{{ board.name }}</option>
+              {% if board.children|length > 0 %}
+              {% for child in board.children %}
+              <option value="{{ child.id }}">- {{ child.name }}</option>
+              {% if child.children|length > 0 %}
+              {% for grandchild in child.children %}
+              <option value="{{ grandchild.id }}">-- {{ grandchild.name }}</option>
+              {% if grandchild.children|length > 0 %}
+              {% for grandgrandchild in grandchild.children %}
+              <option value="{{ grandgrandchild.id }}">--- {{ grandgrandchild.name }}</option>
+              {% endfor %}
+              {% endif %}
+              {% endfor %}
+              {% endif %}
+              {% endfor %}
+              {% endif %}
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </form>
+
+      <p class="text-end mt-4">
+        <a class="btn btn-primary" href="javascript: document.getElementById('postSearchForm').submit()">
+          <i class="fi fi-rr-search"></i> 검색
+        </a>
+      </p>
+    </div>
+
+    <!-- 검색 결과 -->
+    {% if search_posts|length < 1 %}
+    <p>
+      검색 결과가 없습니다.
+    </p>
+    {% endif %}
+    {% for post in search_posts %}
+    <div>
+      <div class="col-12 p-2 mb-2 pb-3 border-bottom">
+        <a href="/post/post_view?post={{ post.id }}" target="_blank"
+        class="text-dark text-decoration-none">
+          <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+            <div style="display: inline-block; text-align: left;">
+              <span class="text-black-50" style="font-size: 12px;">
+                {% for board in post.boards %}
+                {{ board.name }} {% if forloop.counter < post.boards|length  %} &gt; {% endif %}
+                {% endfor %}
+              </span>
+              <h6 class="mb-2">
+                {{ post.title }}
+              </h6>
+              <span class="text-black-50">
+                <i class="fi fi-rr-user"></i> {{ post.author.nickname }} 
+                {% if account.account_type == 'user' %}
+                <span class="badge user-level-badge" style="color: {{account.level.text_color}}; background-color: {{account.level.background_color}};">{{ account.level.name }}</span>
+                {% endif %}
+              </span>
+            </div>
+            <div style="display: inline-block; text-align: right;">
+              <p class="m-0 text-end text-black-50" style="font-size: 12px;">
+                <span class="me-1" style="white-space: nowrap;">
+                  <i class="fi fi-rr-eye"></i> {{ post.view_count }}
+                </span>
+                <span class="me-1" style="white-space: nowrap;">
+                  <i class="fi fi-rr-comment-alt-dots"></i> {{ post.comment_count }}
+                </span>
+                <span class="me-1" style="white-space: nowrap;">
+                  <i class="fi fi-rr-social-network"></i> {{ post.bookmark_count }}
+                </span>
+              </p>
+            </div>
+          </div>
+          <small class="text-black-50 mt-1">
+            <i class="fi fi-rr-calendar"></i> {{ post.created_dt }}
+          </small>
+        </a>
+      </div>
+    </div>
+    {% endfor %}
+
+    <div id="pageButton"></div>
+
+  </div>
+
+</section>
+
+<!-- 오른쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+
+<!-- Modal -->
+<div class="modal fade" id="defaultModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">최상위 게시판 추가</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="" data-bs-dismiss="modal">submit</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+  window.onload = () => {
+    console.log(`Window loaded at ${getNowDatetimeString()}`);
+
+    // Page
+    var searchPostTItle = '{{request.GET.postTitle}}';
+    var searchPostBoard = '{{request.GET.postBoard}}';
+    console.log('{{request.GET.page}} | {{last_page}}');
+    makePaegeButton('{{request.GET.page}}', '{{last_page}}', `/supervisor/post?postTitle=${searchPostTItle}&postBoard=${searchPostBoard}`);
+  }
+
+</script>
+
+{% endblock %}

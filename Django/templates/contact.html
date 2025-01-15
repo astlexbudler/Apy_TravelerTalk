@@ -1,0 +1,123 @@
+{% extends 'base/main_base.html' %}
+{% block content %}
+<!-- 왼쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+
+<!-- 중앙 섹션 -->
+<section class="main-section px-5 px-lg-1" style="flex: 1; min-height: 100vh;">
+
+  <!-- 제목 -->
+  <div class="mt-4 mb-5">
+    {% include 'parts/goback.html' %}
+    <h5 class="mt-5">
+      연락처
+    </h5>
+    <p>
+      아래 연락처 또는 양식을 작성하여 문의사항을 보내주시면 빠른 시일 내에 답변드리겠습니다.
+    </p>
+  </div>
+
+  <!-- 연락처 상자 -->
+  <div class="shadow rounded p-3 border py-5 mb-5">
+    <p class="text-dark">
+      회사정보
+    </p>
+    <div class="row">
+      <div class="col-12 col-lg-4">
+        <i class="fi fi-rr-marker"></i> 주소: <span class="text-black-50">{{ server.address }}</span>
+      </div>
+      <div class="col-12 col-lg-4">
+        <i class="fi fi-rr-headphones"></i> 연락처: <span class="text-black-50">{{ server.tel }}</span>
+      </div>
+      <div class="col-12 col-lg-4">
+        <i class="fi fi-rr-envelope"></i> 이메일 주소: <span class="text-black-50">{{ server.email }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 문의사항 작성 폼 -->
+  <div class="shadow rounded border p-3 py-5 mt-5">
+    <h5 class="mb-4">
+      문의 작성
+    </h5>
+    <div class="row">
+      <div class="col-12 col-lg-6">
+        <div class="mb-3">
+          <label>
+            작성자 이름(또는 회사명)
+          </label>
+          <input class="form-control" placeholder="이름 또는 회사명을 입력해주세요." id="name">
+        </div>
+      </div>
+      <div class="col-12 col-lg-6">
+        <div class="mb-3">
+          <label>
+            이메일 주소
+          </label>
+          <input class="form-control" placeholder="답변을 수신할 이메일 주소를 입력해주세요." id="email">
+        </div>
+      </div>
+    </div>
+    <div class="mb-3">
+      <label>문의 제목</label>
+      <input class="form-control" placeholder="문의 제목을 입력해주세요." id="title">
+    </div>
+    <div class="mb-3">
+      <label>문의내용</label>
+      <textarea class="form-control" style="height: 300px; overflow-y: scroll;" id="content">문의사항을 입력해주세요.</textarea>
+    </div>
+    <a class="btn btn-primary" href="javascript: sendMessage();">문의사항 보내기</a>
+  </div>
+
+</section>
+
+<!-- 오른쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+
+<script>
+
+  window.onload = () => {
+    console.log(`Window loaded at ${getNowDatetimeString()}`);
+  }
+
+  sendMessage = async () => {
+    var name = document.getElementById('name').value;
+    var email = document.getElementById('email').value;
+    var title = document.getElementById('title').value;
+    var content = document.getElementById('content').value;
+
+    // 모든 항목이 입력되었는지 확인
+    if (name == '' || email == '' || title == '' || content == '') {
+      await showAlert('메세지 오류', '모든 항목을 입력해주세요.', 'error');
+      return;
+    }
+
+    // 메세지 전송 요청 보내기
+    var formData = new FormData();
+    formData.append('receiver_id', 'supervisor');
+    formData.append('title', `제휴문의: ${title} from_${name}(email: ${email})`);
+    formData.append('content', content);
+    var result = await fetch('/api/send_message', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrftoken
+      },
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log(data);
+      return data.result
+    });
+
+    // 메세지 전송 결과에 따라 결과창 띄우기
+    if (result == 'success') {
+      await showAlert('메세지 전송 성공', '메세지가 성공적으로 전송되었습니다.', 'success');
+      location.reload();
+    }
+    await showAlert('메세지 전송 실패', '메세지 전송에 실패했습니다. 잠시 후 다시 시도해주세요.', 'error');
+  }
+
+</script>
+
+{% endblock %}

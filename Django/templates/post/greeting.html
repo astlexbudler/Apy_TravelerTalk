@@ -1,0 +1,113 @@
+{% extends 'base/main_base.html' %}
+{% block content %}
+<!-- 왼쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;">
+  {% include 'parts/left_aside_main.html' %}
+</aside>
+
+<!-- 중앙 섹션 -->
+<section class="main-section px-5 px-lg-1" style="flex: 1; min-height: 100vh;">
+
+  <!-- title -->
+  <div class="mb-5">
+    {% include 'parts/goback.html' %}
+    <h5 class="mt-5">
+      가입인사
+    </h5>
+    <p class="small">
+      가입인사를 남겨주세요.
+    </p>
+  </div>
+
+  <!-- 가입인사 메세지 컨테이너 -->
+  <div class="mt-5 mb-3 pb-3 border-bottom">
+    <p class="text-dark">
+      가입인사 메세지
+    </p>
+    {% if not is_greeted %}
+    <textarea id="commentInput" class="form-control" rows="3" onkeyup="event.keyCode == 13 ? writeComment() : null"
+      placeholder="가입인사 메세지를 작성해주세요."></textarea>
+    <button class="btn btn-primary mt-4" onclick="writeComment()">가입인사 작성</button>
+    {% else %}
+    <textarea id="commentInput" class="form-control" rows="3" disabled
+      placeholder="가입인사는 한 번만 작성할 수 있습니다."></textarea>
+    <button class="btn btn-primary mt-4" disabled>메세지 작성</button>
+    {% endif %}
+  </div>
+
+  <!-- 메세지 목록 -->
+  <ul class="list-unstyled mt-5">
+    {% if comments|length < 1 %} <li>
+      <p>
+        아직 가입인사를 남긴 사용자가 없습니다.
+      </p>
+      </li>
+      {% else %}
+      {% for greeting in comments %}
+      <li>
+        <div class="mb-4">
+          <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+            <div style="display: inline-block; text-align: left;">
+              <p class="mt-0 mb-1">{{ greeting.author.nickname }}</p>
+            </div>
+          </div>
+          <small class="mb-2">{{ greeting.created_dt }}</small>
+          <p class="text-black-50">
+            {{ greeting.content }}
+          </p>
+        </div>
+      </li>
+      {% endfor %}
+      {% endif %}
+  </ul>
+
+</section>
+
+<!-- 오른쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;">
+  {% include 'parts/right_aside_main.html' %}
+</aside>
+
+<script>
+
+  window.onload = () => {
+    console.log(`Window loaded at ${getNowDatetimeString()}`);
+
+    // Page
+    console.log('{{request.GET.page}} | {{last_page}}');
+    makePaegeButton('{{request.GET.page}}', '{{last_page}}', '/post/greeting?search=');
+  }
+
+  writeComment = async () => {
+    const comment = document.getElementById('commentInput').value;
+    if (comment == '') {
+      await showAlert('메세지 작성', '출석체크 메세지를 작성해주세요.', 'error');
+      return;
+    }
+
+    var formData = new FormData();
+    formData.append('content', comment);
+    var result = await fetch('/post/greeting', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrftoken
+      },
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log(data);
+      return data.result;
+    });
+
+    if (result == 'success') {
+      await showAlert('가입인사', '가입인사를 작성했습니다.', 'success');
+      location.reload();
+    } else {
+      await showAlert('가입인사', '가입인사 작성에 실패했습니다.', 'error');
+    }
+  }
+
+</script>
+
+{% endblock %}

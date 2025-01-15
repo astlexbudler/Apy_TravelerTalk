@@ -1,0 +1,109 @@
+{% if profile.account_type == 'partner' %}
+<div class="col-12 border rounded p-3 mb-5">
+  <a href="/profile" class="text-dark text-decoration-none">
+    <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+      <div style="display: inline-block; text-align: left;">
+        <span class="text-black-50" style="font-size: 14px;">
+          <i class="fi fi-rr-user"></i> {{ profile.id }} (파트너 회원)
+        </span><br>
+        <span>
+          <span class="h6 me-2">
+            {{ profile.nickname }}
+          </span>
+          {% for category in profile.partner_categories %}
+          <span class="badge bg-warning">{{ category.name }}</span>
+          {% endfor %}
+        </span><br>
+        <span class="text-black-50">
+          <i class="fi fi-rr-calendar"></i> 가입일: {{ profile.date_joined }} | 최근 접속일: {{ profile.last_login }}
+        </span>
+      </div>
+      <div style="display: inline-block; text-align: right;">
+        <p class="m-0 text-end text-black-50" style="font-size: 14px;">
+          {% if profile.status == 'active' %}
+          <span class="badge bg-success">정상</span>
+          {% elif profile.status == 'pending' %}
+          <span class="badge bg-warning">승인대기중</span>
+          {% elif profile.status == 'deleted' %}
+          <span class="badge bg-danger">탈퇴</span>
+          {% elif profile.status == 'blocked' %}
+          <span class="badge bg-secondary">정지</span>
+          {% elif profile.status == 'banned' %}
+          <span class="badge bg-dark">영구차단</span>
+          {% endif %}
+        </p>
+      </div>
+    </div>
+    <div class="row mt-2">
+      <p class="text-primary m-0">
+        <i class="fi fi-rr-marker"></i> {{ profile.partner_address }}
+      </p>
+    </div>
+  </a>
+</div>
+{% elif profile.account_type == 'user' or profile.account_type == 'dame' %}
+<div class="col-12 border rounded p-3 mb-5">
+  <a href="/profile" class="text-dark text-decoration-none">
+    <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+      <div style="display: inline-block; text-align: left;">
+        <span class="text-black-50" style="font-size: 14px;">
+          <i class="fi fi-rr-user"></i> {{ profile.id }} {% if profile.account_type == 'user' %} (일반 회원) {% elif profile.account_type == 'dame' %} (여성 회원) {% endif %}
+        </span><br>
+        <span>
+          <span class="h6 me-2">
+            {{ profile.nickname }}
+          </span>
+        </span>
+      </div>
+      <div style="display: inline-block; text-align: right;">
+        <p class="m-0 text-end text-black-50" style="font-size: 14px;">
+          {% if profile.status == 'active' %}
+          <span class="badge bg-success">정상</span>
+          {% elif profile.status == 'pending' %}
+          <span class="badge bg-warning">승인대기중</span>
+          {% elif profile.status == 'deleted' %}
+          <span class="badge bg-danger">탈퇴</span>
+          {% elif profile.status == 'blocked' %}
+          <span class="badge bg-secondary">정지</span>
+          {% elif profile.status == 'banned' %}
+          <span class="badge bg-dark">영구차단</span>
+          {% endif %}
+        </p>
+      </div>
+    </div>
+    <div class="row mt-4">
+      <div class="col-6">
+        <p class="text-dark m-0">
+          레벨 포인트
+        </p>
+        <p class="text-black-50">
+          <i class="fi fi-ss-coins"></i> 
+          <span class="numberComma">{{ profile.user_usable_point }}</span> 포인트 
+          <span class="badge" style="color: {{profile.user_level.text_color}}; background-color: {{profile.user_level.background_color}};">{{ profile.user_level.name }}</span>
+        </p>
+      </div>
+      <div class="col-6">
+        <p class="text-dark m-0">
+          쿠폰 포인트
+        </p>
+        <p class="text-black-50">
+          <i class="fi fi-ss-coins text-secondary"></i> 
+          <span class="numberComma">{{ profile.user_usable_point }}</span> 포인트
+        </p>
+      </div>
+    </div>
+  </a>
+</div>
+{% else %}
+<div class="col-12 border rounded p-3 mb-5">
+  <a href="/profile" class="text-dark text-decoration-none">
+    <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+      <div style="display: inline-block; text-align: left;">
+        <span class="text-black-50" style="font-size: 14px;">
+          <i class="fi fi-rr-user"></i> {{ profile.id }} {% if profile.account_type == 'supervisor' %} (관리자) {% elif profile.account_type == 'sub_supervisor' %} (하위 관리자) {% endif %}
+        </span>
+      </div>
+    </div>
+  </a>
+</div>
+{% endif %}

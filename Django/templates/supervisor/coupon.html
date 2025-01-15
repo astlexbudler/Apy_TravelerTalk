@@ -1,0 +1,447 @@
+{% extends 'base/supervisor_base.html' %}
+{% block content %}
+<!-- 왼쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;">
+  {% include 'parts/left_aside_supervisor.html' %}
+</aside>
+
+<!-- 중앙 섹션 -->
+<section class="main-section px-5 px-lg-1" style="flex: 1; min-height: 100vh;">
+
+  <!-- 제목 -->
+  <div class="mt-4 mb-5">
+    <h5 class="mt-5">
+      쿠폰 관리
+    </h5>
+    <p class="small">
+      쿠폰 발급 및 관리. 쿠폰 사용 내역 확인
+    </p>
+  </div>
+
+  <!-- 선택지 버튼 그룹 -->
+  <div class="btn-group w-100">
+    <a class="btn text-white" href="/supervisor/coupon?tab=coupon " style="background-color: gray;" id="couponTab">
+      쿠폰
+    </a>
+    <a class="btn" href="/supervisor/coupon?tab=history" style="background-color: gainsboro;" id="historyTab">
+      쿠폰 사용 내역
+    </a>
+  </div>
+
+  <!-- 쿠폰 -->
+  <div class="my-5" id="couponBox">
+
+    <!-- 통계 -->
+    <div class="rounded border p-3 mb-5">
+      <p>
+        <i class="fi fi-rr-stats"></i> 통계
+      </p>
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>구분</th>
+            <th>발행한 쿠폰</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              전체
+            </td>
+            <td>
+              {{status.coupon}}
+            </td>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 검색 -->
+    <div class="rounded border p-3 mb-5">
+      <p>
+        <i class="fi fi-rr-search"></i> 검색
+      </p>
+      <form id="couponSearchForm" method="get" action="/supervisor/coupon">
+        <input type="hidden" name="tab" value="coupon">
+        <div class="row">
+          <div class="form-group mt-4 col-12">
+            <label>이름</label>
+            <input class="form-control" name="couponName" placeholder="쿠폰 이름">
+          </div>
+        </div>
+      </form>
+
+      <p class="text-end mt-4">
+        <a class="btn btn-success" href="javascript: document.getElementById('couponSearchForm').submit()">
+          <i class="fi fi-rr-search"></i> 검색
+        </a>
+      </p>
+    </div>
+
+    <!-- 버튼 -->
+    <div class="p-3 mb-5 text-end">
+
+      <!--
+      <a class="btn btn-success" href="#">
+        <i class="fi fi-rr-plus"></i> 쿠폰 만들기
+      </a>-->
+
+    </div>
+
+    <!-- 검색 결과 -->
+    <p class="text-dark m-0">
+      쿠폰 관리
+    </p>
+    <table class="table table-border small border shadow text-center">
+      <tbody>
+        <tr>
+          <th>
+            쿠폰 이름
+          </th>
+          <th>
+            파트너
+          </th>
+          <th>
+            확인 코드
+          </th>
+          <th></th>
+        </tr>
+        {% if coupons|length == 0 %}
+        <tr>
+          <td colspan="4">
+            쿠폰이 없습니다.
+          </td>
+        </tr>
+        {% else %}
+        {% for coupon in coupons %}
+        <tr>
+          <td>
+            <a href="#" class="text-dark">
+              {{ coupon.name }}
+            </a>
+          </td>
+          <td>
+            {{ coupon.create_account.nickname }}
+          </td>
+          <td>
+            {{ coupon.code }}
+          </td>
+          <td>
+            <a href="javascript: new bootstrap.Modal(document.getElementById('couponModal{{coupon.id}}')).show();" class="text-primary">
+              <i class="fi fi-rr-search"></i> 상세보기
+            </a>
+            <div class="modal fade" id="couponModal{{coupon.id}}" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title">
+                      {{coupon.name}}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <div class="row text-start">
+                      {% if coupon.images.0 != '' %}
+                      <div class="col-6">
+                        <img src="{{coupon.images.0}}" class="w-100">
+                      </div>
+                      {% endif %}
+                      <div class="{% if coupon.images.0 == '' %}col-12{% else %}col-6{% endif %}">
+                        <p>
+                          {{coupon.name}}
+                        </p>
+                        <p class="text-black-50">
+                          <small>
+                            {{coupon.description}}
+                          </small>
+                        </p>
+                        <p class="text-black-50">
+                          <i class="fi fi-rr-marker"></i> <a href="/post/travel_view?post={{coupon.post.id}}" target="_blank" class="text-black-50" style="text-decoration: underline;">{{coupon.post.title}}</a>
+                        </p>
+                        <p class="text-black-50">
+                          <i class="fi fi-rr-key"></i> 
+                          <small>
+                            {{coupon.code}} 
+                            <a href="javascript: navigator.clipboard.writeText('{{coupon.code}}');" class="text-black-50">
+                              <i class="fi fi-rr-clipboard"></i>
+                            </a>
+                          </small>
+                        </p>
+                        {% if coupon.required_point != 0 %}
+                        <p class="text-black-50">
+                          <i class="fi fi-rr-star"></i> 
+                          <small>
+                            필요 포인트: <span class="numberComma">{{coupon.required_point}}</span> 포인트<br>
+                            쿠폰을 사용하려면 <span class="numberComma">{{coupon.required_point}}</span> 만큼의 쿠폰 포인트가 필요합니다.
+                          </small>
+                        </p>
+                        {% else %}
+                        <p class="text-black-50">
+                          <i class="fi fi-rr-star"></i> <small>필요 포인트: 없음</small>
+                        </p>
+                        {% endif %}
+                        <p class="text-black-50">
+                          <i class="fi fi-rr-calendar"></i> <small>생성일: {{coupon.created_dt}}</small>
+                        </p>
+                      </div>
+                    </div>
+            
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn text-white" style="background-color: gray;" data-bs-dismiss="modal">닫기</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+        {% endif %}
+      </tbody>
+    </table>
+    <p class="text-black-50 small">
+      <i class="fi fi-rr-info"></i> 쿠폰은 <span class="text-primary"><i class="fi fi-rr-search"></i>
+        상세보기</span>를 통해 세부 정보를 확인하실 수 있습니다. 쿠폰을 다른 사용자에게 보내려면 쪽지 기능을 이용해주세요.
+    </p>
+
+  </div>
+
+  <!-- 쿠폰 사용 내역 -->
+  <div class="my-5" id="historyBox">
+
+    <!-- 통계 -->
+    <div class="rounded border p-3 mb-5">
+      <p>
+        <i class="fi fi-rr-stats"></i> 통계
+      </p>
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>구분</th>
+            <th>사용한 쿠폰</th>
+            <th>만료된 쿠폰</th>
+            <th>회수된 쿠폰</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              전체
+            </td>
+            <td>
+              {{status.history.used}}
+            </td>
+            <td>
+              {{status.history.expired}}
+            </td>
+            <td>
+              {{status.history.deleted}}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 검색 -->
+    <div class="rounded border p-3 mb-5">
+      <p>
+        <i class="fi fi-rr-search"></i> 검색
+      </p>
+      <form id="historySearchForm" method="get" action="/supervisor/coupon">
+        <input type="hidden" name="tab" value="history">
+        <div class="row">
+          <div class="form-group mt-4 col-12">
+            <label>이름</label>
+            <input class="form-control" name="couponName" placeholder="쿠폰 이름">
+          </div>
+          <div class="form-group mt-4 col-12">
+            <label>상태</label>
+            <select class="form-control" name="couponStatus">
+              <option value="">전체</option>
+              <option value="used">사용</option>
+              <option value="expired">만료</option>
+              <option value="deleted">회수</option>
+            </select>
+          </div>
+        </div>
+      </form>
+
+      <p class="text-end mt-4">
+        <a class="btn btn-success" href="javascript: document.getElementById('historySearchForm').submit()">
+          <i class="fi fi-rr-search"></i> 검색
+        </a>
+      </p>
+    </div>
+
+    <!-- 검색 결과 -->
+    <p class="text-dark m-0">
+      쿠폰 사용 내역
+    </p>
+    <div>
+      <table class="table table-border small border shadow text-center">
+        <tbody>
+          <tr>
+            <th>
+              쿠폰 이름
+            </th>
+            <th>
+              사용자
+            </th>
+            <th>
+              발급 날짜
+            </th>
+            <th>
+              사용 날짜
+            </th>
+            <th></th>
+          </tr>
+          {% if histories|length == 0 %}
+          <tr>
+            <td colspan="5">
+              쿠폰 사용 내역이 없습니다.
+            </td>
+          </tr>
+          {% else %}
+          {% for coupon in histories %}
+          <tr>
+            <td>
+              <a href="#" class="text-dark">
+                {{ coupon.name }}
+              </a>
+            </td>
+            <td>
+              {{ coupon.create_account.nickname }}
+            </td>
+            <td>
+              <a href="/post/post_view?id={{ coupon.post.id }}" class="text-dark">
+                {{ coupon.post.title }}
+              </a>
+            </td>
+            <td>
+              <i class="fi fi-rr-check text-success"></i>
+              {{ coupon.used_dt }}
+            </td>
+            <td>
+              <a href="javascript: new bootstrap.Modal(document.getElementById('couponHistoryModal{{coupon.id}}')).show();" class="text-primary">
+                <i class="fi fi-rr-search"></i> 상세보기
+              </a>
+              <div class="modal fade" id="couponHistoryModal{{coupon.id}}" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title">
+                        {{coupon.name}}
+                      </h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="row text-start">
+                        {% if coupon.images.0 != '' %}
+                        <div class="col-6">
+                          <img src="{{coupon.images.0}}" class="w-100">
+                        </div>
+                        {% endif %}
+                        <div class="{% if coupon.images.0 == '' %}col-12{% else %}col-6{% endif %}">
+                          <p>
+                            {{coupon.name}}
+                          </p>
+                          <p class="text-black-50">
+                            <small>
+                              {{coupon.description}}
+                            </small>
+                          </p>
+                          <p class="text-black-50">
+                            <i class="fi fi-rr-marker"></i> <a href="/post/travel_view?post={{coupon.post.id}}" target="_blank" class="text-black-50" style="text-decoration: underline;">{{coupon.post.title}}</a>
+                          </p>
+                          <p class="text-black-50">
+                            <i class="fi fi-rr-key"></i> 
+                            <small>
+                              {{coupon.code}} 
+                              <a href="javascript: navigator.clipboard.writeText('{{coupon.code}}');" class="text-black-50">
+                                <i class="fi fi-rr-clipboard"></i>
+                              </a>
+                            </small>
+                          </p>
+                          {% if coupon.required_point != 0 %}
+                          <p class="text-black-50">
+                            <i class="fi fi-rr-star"></i> 
+                            <small>
+                              필요 포인트: <span class="numberComma">{{coupon.required_point}}</span> 포인트<br>
+                              쿠폰을 사용하려면 <span class="numberComma">{{coupon.required_point}}</span> 만큼의 쿠폰 포인트가 필요합니다.
+                            </small>
+                          </p>
+                          {% else %}
+                          <p class="text-black-50">
+                            <i class="fi fi-rr-star"></i> <small>필요 포인트: 없음</small>
+                          </p>
+                          {% endif %}
+                          <p class="text-black-50">
+                            <i class="fi fi-rr-calendar"></i> <small>생성일: {{coupon.created_dt}}</small>
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn text-white" style="background-color: gray;" data-bs-dismiss="modal">닫기</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <div id="pageButton"></div>
+
+</section>
+
+<!-- 오른쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+
+<script>
+
+  window.onload = () => {
+    console.log(`Window loaded at ${getNowDatetimeString()}`);
+
+    // Tab
+    tab = '{{request.GET.tab}}';
+    if(tab == '') {
+      location.href='/supervisor/coupon?tab=coupon';
+    }
+
+    var couponTab = document.getElementById('couponTab');
+    var historyTab = document.getElementById('historyTab');
+    var couponBox = document.getElementById('couponBox');
+    var historyBox = document.getElementById('historyBox');
+    if (tab == 'coupon') {
+      couponTab.style.backgroundColor = 'gray';
+      historyTab.style.backgroundColor = 'gainsboro';
+      couponTab.classList.add('text-white');
+      historyTab.classList.remove('text-white');
+      couponBox.classList.remove('d-none');
+      historyBox.classList.add('d-none');
+    } else if (tab == 'history') {
+      couponTab.style.backgroundColor = 'gainsboro';
+      historyTab.style.backgroundColor = 'gray';
+      couponTab.classList.remove('text-white');
+      historyTab.classList.add('text-white');
+      couponBox.classList.add('d-none');
+      historyBox.classList.remove('d-none');
+    }
+
+    // Page
+    var tab = '{{request.GET.tab}}';
+    var searchCouponName = '{{request.GET.couponName}}';
+    var searchCouponStatus = '{{request.GET.couponStatus}}';
+    console.log('{{request.GET.page}} | {{last_page}}');
+    makePaegeButton('{{request.GET.page}}', '{{last_page}}', `/supervisor/coupon?tab=${tab}&couponName=${searchCouponName}&couponStatus=${searchCouponStatus}`);
+  }
+
+</script>
+
+{% endblock %}
