@@ -8,6 +8,14 @@ Django를 이용하여 제작한 여행자들 대화 익명 여행지 커뮤니�
 
 일반 사용자(user), 여성 회원(dame), 파트너 회원(partner), 상위 관리자(supervisor), 하위 관리자(sub_supervisor), 데이터베이스 관리자(admin)로 구분된 회원 종류와 레벨 포인트외 레벨, 쿠폰 포인트와 쿠폰, 광고 배너 및 광고 게시글, 별도의 리뷰 게시판과 출석체크, 가입 인사 게시판, 회원간 쪽지 기능을 가지는 여행지 정보 공유 커뮤니티 사이트.
 
+### 프로젝트 실행 방법
+
+1. Django/{project_name} 디렉토리로 이동합니다.
+2. 가상환경을 생성하고 실행합니다.
+3. OS에 따라서 Win 기반 OS의 경우 init.ps1(PowerShell)을 실행합니다. Linux 기반 OS의 경우 init.sh를 실행합니다. requirements와 migration 및 초기 필요한 데이터가 자동으로 구성됩니다.
+4. python manage.py runserver 또는 python3 manage.py runserver 명령어를 이용하여 Django 프로젝트를 실행할 수 있습니다.
+5. 데이터베이스 초기화 시 다시 init 파일을 실행하여 초기 상태로 되돌릴 수 있습니다. 작성된 코드는 복구되지 않습니다.
+
 ---
 
 ## 프로젝트 구조
