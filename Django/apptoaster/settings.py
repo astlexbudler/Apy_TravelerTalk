@@ -64,7 +64,7 @@ MIDDLEWARE = [
 # sitemap 설정
 SITE_ID = 2
 SITE_DOMAIN = 'travelertalk.com'
-CSRF_TRUSTED_ORIGINS=['https://travelertalk.com', 'http://127.0.0.1:80']
+CSRF_TRUSTED_ORIGINS=['https://travelertalk.com', 'http://127.0.0.1:8000']
 
 ROOT_URLCONF = 'apptoaster.urls'
 

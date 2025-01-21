@@ -28,13 +28,6 @@ db.sqlite3
 venv/
 env/
 
-# Media files (업로드된 사용자 파일)
-media/
-
-# Static files
-staticfiles/
-static/
-
 # IDE 및 편집기 관련 파일
 .idea/
 .vscode/
