@@ -4,51 +4,15 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, logout, get_user_model
 
-from app_core import models as core_mo
-from app_user import models as user_mo
-from app_partner import models as partner_mo
-from app_supervisor import models as supervisor_mo
-from app_post import models as post_mo
-from app_message import models as message_mo
-from app_coupon import models as coupon_mo
-
-from app_post import daos as post_do
-from app_core import daos as core_do
-from app_user import daos as user_do
-from app_message import daos as message_do
-from app_coupon import daos as coupon_do
-from app_partner import daos as partner_do
-
-# 기본 컨텍스트
-# server, account, message, boards
-def get_default_context(request):
-
-  # 사용자 프로필 정보 가져오기
-  # 로그인하지 않은 사용자는 guest로 처리
-  account = user_do.get_user_profile(request)
-
-  # 읽지 않는 쪽지 미리보기
-  # 관리자의 경우 수신자가 'supervisor'인 쪽지로 검색해서 가져옴
-  messages = message_do.get_user_message_previews(request)
-
-  # 서버 설정 가져오기
-  server = core_do.get_server_settings()
-
-  # 게시판 트리 가져오기
-  # 게시판 트리는 최대 4단계까지 구성됨.
-  boards = post_do.get_boards()
-
-  return {
-    'server': server,
-    'account': account,
-    'messages': messages,
-    'boards': boards,
-  }
+from app_core import models
+from app_core import daos
 
 # 메세지 페이지
 def index(request):
-  context = get_default_context(request)
+  contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
+  boards = daos.get_board_tree() # 게시판 정보 가져오기
 
+  '''
   # 메세지 전송(fetch)
   if request.method == 'POST':
     image = request.POST.get('image', '')
@@ -137,175 +101,21 @@ def index(request):
       'success': 'y',
       'message': 'message_read',
     })
+  '''
 
-  # data
-  tab = request.GET.get('tab', 'inbox')
+  # 데이터 가져오기
+  tab = request.GET.get('tab', 'inbox') # inbox 또는 outbox
   page = int(request.GET.get('page', '1'))
 
   # 탭 확인
   if tab == 'inbox': # 받은 메세지함
-    msgs = message_mo.MESSAGE.objects.filter(
-      receiver_id=context['account']['id']
-    ).order_by('-send_dt')
-  else: # 보낸 메세지함
-    msgs = message_mo.MESSAGE.objects.filter(
-      sender_id=context['account']['id']
-    ).order_by('-send_dt')
-  print('account:', context['account']['id'])
-  print(msgs)
-
-  # 데이터 정리
-  last_page = len(msgs) // 20 + 1 # 한 페이지당 20개씩 표시
-  messages = []
-  for msg in msgs[(page - 1) * 20:page * 20]:
-
-    # 보낸 사람 정보
-    sender = get_user_model().objects.filter(username=msg.sender_id).first()
-    if sender:
-      sender = {
-        'id': sender.username,
-        'nickname': sender.first_name,
-        'account_type': sender.account_type,
-      }
-    else:
-      sender = {
-        'id':msg.sender_id,
-        'nickname': 'guest',
-        'account_type': 'guest',
-      }
-
-    # 받는 사람 정보
-    receiver = get_user_model().objects.filter(username=msg.receiver_id).first()
-    if receiver:
-      receiver = {
-        'id': receiver.username,
-        'nickname': receiver.first_name,
-        'account_type': receiver.account_type,
-      }
-    else:
-      receiver = {
-        'id': msg.receiver_id,
-        'nickname': 'guest',
-        'account_type': 'guest',
-      }
-
-    # 쿠폰 정보
-    if msg.include_coupon:
-      cu = coupon_mo.COUPON.objects.filter(code=msg.include_coupon).first()
-      cu_post = post_mo.POST.objects.filter(id=cu.post_id).first()
-      post = {
-        'id': cu.post_id,
-        'title': cu_post.title,
-      }
-      coupon = {
-        'code': cu.code,
-        'name': cu.name,
-        'post': post,
-        'own_user_id': cu.own_user_id,
-        'create_account_id': cu.create_account_id,
-        'required_point': cu.required_point,
-      }
-    else:
-      coupon = None
-
-    messages.append({
-      'id': msg.id,
-      'sender': sender,
-      'receiver': receiver,
-      'title': msg.title,
-      'image': str(msg.images).split(',')[0],
-      'content': msg.content,
-      'send_dt': msg.send_dt,
-      'read_dt': msg.read_dt,
-      'include_coupon': coupon,
-    })
+    messages, last_page = daos.get_user_inbox_messages(contexts['account']['id'], page)
+  elif tab == 'outbox': # 보낸 메세지함
+    messages, last_page = daos.get_user_outbox_messages(contexts['account']['id'], page)
 
   return render(request, 'message/index.html', {
-    **context,
+    **contexts,
+    'boards': boards, # 게시판 정보
     'messages': messages, # 받은 메세지 또는 보낸 메세지 목록
     'last_page': last_page, # page 처리 작업에 사용(반드시 필요)
   })
-
-# 사용 안함
-'''
-def write(request):
-  if not request.user.is_authenticated:
-    user_id = request.session.get('guest_id', ''.join(random.choices(string.ascii_letters + string.digits, k=16)))
-    request.session['guest_id'] = user_id
-  else:
-    user_id = request.user.username
-
-  if request.method == 'POST':
-    receiver = request.POST.get('receiver')
-    title = request.POST.get('title')
-    content = request.POST.get('content')
-    images = request.POST.get('images')
-    include_coupon_id = request.POST.get('include_coupon_id')
-    if include_coupon_id:
-      include_coupon = coupon_mo.COUPON.objects.filter(id=include_coupon_id).first()
-      if include_coupon.own_user_id != user_id:
-        return JsonResponse({
-          'success': 'n',
-          'message': 'coupon_own_user_id'
-        })
-    message = message_mo.MESSAGE(
-      sender_id=user_id,
-      receiver_id=receiver,
-      title=title,
-      content=content,
-      include_coupon=include_coupon,
-      images=images,
-    )
-    message.save()
-    return JsonResponse({
-      'success': 'y',
-    })
-
-  context = get_default_context(request)
-  return render(request, 'message/write.html', context)
-'''
-
-# 사용 안함
-'''
-def read(request):
-  if not request.user.is_authenticated:
-    user_id = request.session.get('guest_id', ''.join(random.choices(string.ascii_letters + string.digits, k=16)))
-    request.session['guest_id'] = user_id
-  else:
-    user_id = request.user.username
-
-  message_id = request.GET.get('id')
-  message = message_mo.MESSAGE.objects.get(id=message_id)
-  if message.receiver_id != user_id:
-    if message.receiver_id != 'supervisor':
-      return redirect('/message/')
-
-  if message.read_dt == '':
-    message.read_dt = core_mo.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    message.save()
-
-  context = get_default_context(request)
-  return render(request, 'message/read.html', {
-    **context,
-    'message': {
-      'id': message.id,
-      'sender': {
-        'nickname': get_user_model().objects.get(username=message.sender_id).first_name,
-        'account_type': get_user_model().objects.get(username=message.sender_id).account_type,
-      },
-      'title': message.title,
-      'content': message.content,
-      'send_dt': message.send_dt,
-      'read_dt': message.read_dt,
-      'include_coupon': {
-        'name': coupon_mo.COUPON.objects.get(code=message.include_coupon).name,
-        'required_point': coupon_mo.COUPON.objects.get(code=message.include_coupon).required_point,
-        'post': {
-          'id': coupon_mo.COUPON.objects.get(code=message.include_coupon).post_id,
-          'title': post_mo.POST.objects.get(id=coupon_mo.COUPON.objects.get(code=message.include_coupon).post_id).title,
-        } if coupon_mo.COUPON.objects.get(code=message.include_coupon).post_id else None,
-      } if message.include_coupon else None,
-      'images': str(message.images).split(','),
-    }
-  })
-'''

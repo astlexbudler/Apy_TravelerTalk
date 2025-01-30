@@ -46,7 +46,6 @@ urlpatterns = [
   # /contact 제휴 문의 페이지
   # /terms 이용약관 페이지
   path('', include('app_user.urls')),
-  path('core/', include('app_core.urls')),
   # /partner 파트너 관리 페이지
   # /partner/write_post 광고 게시글 작성 페이지
   # /partner/rewrite_post 광고 게시글 수정 페이지

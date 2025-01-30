@@ -5,104 +5,174 @@ import random
 import string
 from django.contrib.auth.models import AbstractUser
 
-def random_id(length): # 랜덤 아이디 생성(알파벳 + 숫자) *첫 글자는 반드시 알파벳
-  return ''.join(random.choices(string.ascii_letters, k=1)) + ''.join(random.choices(string.ascii_letters + string.digits, k=length-1))
+# ACCOUNT: 계정 테이블
+# GROUP: 그룹 테이블
+# ACTIVITY: 활동 테이블
+# LEVEL_RULE: 레벨 규칙 테이블
+# CATEGORY: 카테고리 테이블
+# BOARD: 게시판 테이블
+# POST: 게시물 테이블
+# PLACE_INFO: 여행지 정보 테이블
+# COMMENT: 댓글 테이블
+# COUPON: 쿠폰 테이블
+# MESSAGE: 메시지 테이블
+# UPLOAD: 파일 업로드 테이블
+# SERVER_SETTING: 서버 설정 테이블
+# SERVER_LOG: 서버 로그 테이블
+# BANNER: 배너 테이블
 
 def upload_to(instance, filename): # 파일 업로드 경로
   _, ext = os.path.splitext(filename)
   new_filename = f"{datetime.now().strftime('%Y%m%d%H%M%S%f')}{ext}"
-  return os.path.join("traveltalk/", new_filename)
+  return os.path.join(new_filename)
 
-##########
-# 모델 정의
-
-# 파일 업로드 모델
-# 업로드된 파일은 /media/traveltalk/ 경로에 저장됨. 파일명은 업로드 시간으로 생성됨.
-class UPLOAD(models.Model):
-  file = models.FileField(upload_to=upload_to)
-
-# 사용자 모델
-# Django 기본 사용자 모델(AbstractUser)을 상속받아 커스텀 사용자 모델을 정의함.
-# request.user로 접근 가능. (ex. request.user.username, request.user.account_type)
-class CustomUser(AbstractUser):
+# ACCOUNT: 계정 테이블
+class ACCOUNT(AbstractUser):
   # id = models.AutoField(primary_key=True)
-  # username = models.CharField(max_length=150, unique=True)
+  # username = models.CharField(max_length=150, unique=True) 아이디
   # password = models.CharField(max_length=128)
-  # first_name = models.CharField(max_length=30) nickname으로 사용
-  # last_name = models.CharField(max_length=150) (사용 안함)
-  # email = models.EmailField(max_length=254) (사용 안함)
-  # is_active = models.BooleanField(default=True) # 계정 활성화 여부. False면 로그인 불가.
-  # is_staff = models.BooleanField(default=False)pyth
+  # first_name = models.CharField(max_length=30) # 닉네임
+  # last_name = models.CharField(max_length=150) # 파트너 업체명
+  # email = models.EmailField(max_length=254) # 파트너 이메일
+  # is_active = models.BooleanField(default=True)
+  # is_staff = models.BooleanField(default=False)
   # is_superuser = models.BooleanField(default=False)
   # date_joined = models.DateTimeField(auto_now_add=True)
   # last_login = models.DateTimeField(auto_now=True)
   # groups = models.ManyToManyField(Group)
-  account_type = models.CharField(max_length=20, help_text='계정 유형(user, dame, partner, supervisor, sub_supervisor, admin)')
-  status = models.CharField(max_length=20, help_text='계정 상태(active, pending, sleeping, deleted, blocked, banned)') # 계정 상태. active, pending, deleted만 사용.
-  note = models.TextField(null=True, blank=True, help_text='관리자 메모(없으면 공백)')
-  user_usable_point = models.IntegerField(help_text='사용 가능한 포인트')
-  user_level_point = models.IntegerField(help_text='레벨업 포인트')
-  user_level = models.IntegerField(help_text='사용자 레벨')
-  user_bookmarks = models.TextField(null=True, blank=True, help_text='북마크한 게시물 ID(없으면 공백. ,로 구분)')
-  partner_tel = models.CharField(null=True, blank=True, max_length=20, help_text='파트너 연락처(없으면 공백)')
-  partner_address = models.CharField(null=True, blank=True, max_length=200, help_text='파트너 주소(없으면 공백)')
-  partner_categories = models.CharField(null=True, blank=True, max_length=200, help_text='파트너 업종 카테고리(없으면 공백)')
-  supervisor_permissions = models.CharField(max_length=200, null=True, blank=True, help_text='관리자 권한(없으면 공백. ,로 구분. user(사용자 관리), partner(파트너 관리), supervisor(관리자 관리), post(게시물 관리), coupon(쿠폰 관리), message(메시지 관리), setting(설정 관리))')
-  def save(self, *args, **kwargs):
-    if not self.user_usable_point:
-      self.user_usable_point = 0
-    if not self.user_level_point:
-      self.user_level_point = 0
-    if not self.user_level:
-      self.user_level = 1
-    if not self.user_bookmarks:
-      self.user_bookmarks = ''
-    if not self.partner_tel:
-      self.partner_tel = ''
-    if not self.partner_address:
-      self.partner_address = ''
-    if not self.partner_categories:
-      self.partner_categories = ''
-    if not self.supervisor_permissions:
-      self.supervisor_permissions = ''
-    if not self.note:
-      self.note = ''
-    super(CustomUser, self).save(*args, **kwargs)
-  def __str__(self):
-    return self.username
+  status = models.CharField(max_length=100, help_text='계정 상태(active, pending, deleted, blocked, banned)')
+  note = models.TextField(blank=True, help_text='관리자 메모')
+  coupon_point = models.IntegerField(help_text='쿠폰 포인트')
+  level_point = models.IntegerField(help_text='레벨업 포인트')
+  tel = models.CharField(blank=True, max_length=20, help_text='연락처')
+  address = models.CharField(blank=True, max_length=200, help_text='주소')
+  subsupervisor_permissions = models.CharField(blank=True, max_length=200, help_text='관리자 권한(account, post, coupon, message, banner, setting)')
+  bookmarked_places = models.ForeignKey('POST', on_delete=models.CASCADE, blank=True, null=True, help_text='북마크된 여행지 게시글')
+  level = models.ForeignKey('LEVEL_RULE', on_delete=models.CASCADE, blank=True, null=True, help_text='사용자 레벨')
 
-# 서버 설정 모델
-# 아래와 같은 설정을 저장함.
-# site_name(사이트 이름) 사이트 이름, 바로가기 이름 및 시스템 이름 등 다양한 곳에서 사용됨.
-# site_logo(사이트 로고 URL) 사이트의 로고 이미지 경로
-# site_favicon(파비콘) 파비콘 이미지 경로
-# company_name(회사명) 회사명. footer 및 contact 등에 사용됨.
-# company_address(회사 주소) 회사 주소. footer 및 contact 등에 사용됨.
-# company_tel(회사 연락처) 회사 연락처. footer 및 contact 등에 사용됨.
-# company_email(회사 이메일) 회사 이메일. footer 및 contact 등에 사용됨.
-# social_network_x(x 주소) 소셜 네트워크 주소
-# social_network_meta(meta 주소) 소셜 네트워크 주소
-# social_network_insta(인스타 주소) 소셜 네트워크 주소
-# register_point(회원가입 포인트) 회원가입 시 지급되는 포인트(사용자 및 여성 회원만 해당)
-# attend_point(출석 포인트) 출석 시 지급되는 포인트(1등은 2배, 2등은 1.5배, 3등은 1.2배 지급)
-# post_point(게시물 작성 포인트) 게시물 작성 시 지급되는 포인트
-# comment_point(댓글 작성 포인트) 댓글 작성 시 지급되는 포인트
-# terms(이용약관) 이용약관 내용. terms 페이지에서 사용됨.
-class SERVER_SETTING(models.Model):
-  id = models.CharField(max_length=100, help_text="설정 이름", primary_key=True)
-  value = models.TextField(help_text="설정 값")
-  class MetaData:
-    api_permission = {
-      "id": "RW",
-      "value": "RW"
-    }
+# GROUP: 그룹 테이블
+# class GROUP(models.Model):
+# name = models.CharField(primary_key=True)
+# permissions = models.ManyToManyField(Permission)
 
-# 레벨 규칙 모델
-# 사용자 레벨업에 필요한 포인트 및 레벨 이름, 뱃지 색상을 저장함.
-# 한번 레벨업이 되면, required_point 값이 수정되어도 레벨이 다시 내려가지는 않음.
+# ACTIVITY: 활동 테이블
+class ACTIVITY(models.Model):
+  id = models.AutoField(primary_key=True)
+  account = models.ForeignKey('ACCOUNT', on_delete=models.CASCADE, help_text='계정')
+  message = models.TextField(help_text='활동 내용')
+  point_change = models.CharField(blank=True, max_length=20, help_text='포인트 변동')
+  created_at = models.DateTimeField(auto_now_add=True, help_text='활동 일시')
+
+# LEVEL_RULE: 레벨 규칙 테이블
 class LEVEL_RULE(models.Model):
-  level = models.IntegerField(help_text="레벨", primary_key=True)
-  text_color = models.CharField(max_length=20, help_text="레벨 텍스트 색상")
-  background_color = models.CharField(max_length=20, help_text="레벨 배경 색상")
-  name = models.CharField(max_length=20, help_text="레벨 이름")
-  required_point = models.IntegerField(help_text="필요 포인트(한번 레벨업이 되면, 이 값이 수정되어도 레벨이 다시 내려가지는 않음.)")
+  level = models.IntegerField(primary_key=True)
+  image = models.FileField(upload_to=upload_to, blank=True, null=True, help_text='레벨 이미지')
+  text = models.CharField(max_length=20, blank=True, help_text='레벨 이름')
+  text_color = models.CharField(max_length=20, blank=True, help_text='레벨 텍스트 색상')
+  background_color = models.CharField(max_length=20, blank=True, help_text='레벨 배경 색상')
+  required_point = models.IntegerField(help_text='레벨업 필요 포인트')
+
+# CATEGORY: 카테고리 테이블
+class CATEGORY(models.Model):
+  id = models.AutoField(primary_key=True)
+  parent_category = models.ForeignKey('CATEGORY', on_delete=models.CASCADE, blank=True, null=True, help_text='상위 카테고리')
+  name = models.CharField(max_length=100, help_text='카테고리 이름')
+  display_weight = models.IntegerField(help_text='표시 순서')
+
+# BOARD: 게시판 테이블
+class BOARD(models.Model):
+  id = models.AutoField(primary_key=True)
+  parent_board = models.ForeignKey('BOARD', on_delete=models.CASCADE, blank=True, null=True, help_text='상위 게시판')
+  display_groups = models.ManyToManyField('GROUP', blank=True, null=True, help_text='표시 그룹')
+  enter_groups = models.ManyToManyField('GROUP', blank=True, null=True, help_text='접근 그룹')
+  write_groups = models.ManyToManyField('GROUP', blank=True, null=True, help_text='작성 그룹')
+  comment_groups = models.ManyToManyField('GROUP', blank=True, null=True, help_text='댓글 그룹')
+  name = models.CharField(max_length=100, help_text='게시판 이름')
+  board_type = models.CharField(max_length=20, help_text='게시물 타입(tree, travel, event, review, board, attendance, greeting)')
+  display_weight = models.IntegerField(help_text='표시 순서')
+
+# POST: 게시물 테이블
+class POST(models.Model):
+  id = models.AutoField(primary_key=True)
+  author = models.ForeignKey('ACCOUNT', on_delete=models.CASCADE, help_text='작성자')
+  boards = models.ManyToManyField('BOARD', help_text='게시판')
+  review_post = models.ForeignKey('POST', on_delete=models.CASCADE, blank=True, null=True, help_text='리뷰 게시글')
+  place_info = models.ForeignKey('PLACE_INFO', on_delete=models.CASCADE, blank=True, null=True, help_text='여행지 정보')
+  title = models.CharField(max_length=100, help_text='제목')
+  image_paths = models.TextField(blank=True, null=True, help_text='이미지 경로')
+  content = models.TextField(help_text='내용')
+  view_count = models.IntegerField(help_text='조회수')
+  like_count = models.IntegerField(help_text='좋아요 수')
+  search_weight = models.IntegerField(help_text='검색 가중치')
+  created_at = models.DateTimeField(auto_now_add=True, help_text='작성 일시')
+
+# PLACE_INFO: 여행지 정보 테이블
+class PLACE_INFO(models.Model):
+  id = models.AutoField(primary_key=True)
+  post = models.ForeignKey('POST', on_delete=models.CASCADE, help_text='게시글')
+  categories = models.ManyToManyField('CATEGORY', help_text='카테고리')
+  address = models.CharField(max_length=200, help_text='주소')
+  location_info = models.CharField(max_length=200, help_text='위치 정보')
+  open_info = models.CharField(max_length=200, help_text='영업 정보')
+  ad_start_at = models.DateTimeField(auto_now_add=True, help_text='광고 시작 일시')
+  ad_end_at = models.DateTimeField(auto_now_add=True, help_text='광고 종료 일시')
+  status = models.CharField(max_length=20, default='normal', help_text='상태(normal, pending, ad, blocked)')
+  note = models.TextField(help_text='관리자 메모')
+
+# COMMENT: 댓글 테이블
+class COMMENT(models.Model):
+  id = models.AutoField(primary_key=True)
+  post = models.ForeignKey('POST', on_delete=models.CASCADE, help_text='게시글')
+  author = models.ForeignKey('ACCOUNT', on_delete=models.CASCADE, help_text='작성자')
+  parent_comment = models.ForeignKey('COMMENT', on_delete=models.CASCADE, blank=True, null=True, help_text='상위 댓글')
+  content = models.TextField(help_text='내용')
+  created_at = models.DateTimeField(auto_now_add=True, help_text='작성 일시')
+
+# COUPON: 쿠폰 테이블
+class COUPON(models.Model):
+  code = models.CharField(max_length=20, primary_key=True, help_text='쿠폰 코드')
+  post = models.ForeignKey('POST', on_delete=models.CASCADE, blank=True, null=True, help_text='게시글')
+  create_account = models.ForeignKey('ACCOUNT', on_delete=models.CASCADE, help_text='생성자')
+  own_accounts = models.ManyToManyField('ACCOUNT', blank=True, null=True, help_text='소유 계정')
+  name = models.CharField(max_length=100, help_text='쿠폰 이름')
+  image = models.FileField(upload_to=upload_to, blank=True, null=True, help_text='이미지')
+  content = models.TextField(help_text='내용')
+  required_point = models.IntegerField(help_text='필요 포인트')
+  expire_at = models.DateTimeField(help_text='만료 일시')
+  created_at = models.DateTimeField(auto_now_add=True, help_text='생성 일시')
+  status = models.CharField(max_length=20, default='normal', help_text='상태(normal, used, expired, deleted)')
+  note = models.TextField(help_text='관리자 메모')
+
+# MESSAGE: 메시지 테이블
+class MESSAGE(models.Model):
+  id = models.AutoField(primary_key=True)
+  to_account = models.CharField(max_length=60, help_text='받는 사람')
+  sender_account = models.CharField(max_length=60, help_text='보낸 사람')
+  include_coupon = models.ForeignKey('COUPON', on_delete=models.CASCADE, blank=True, null=True, help_text='포함된 쿠폰')
+  title = models.CharField(max_length=100, help_text='제목')
+  content = models.TextField(help_text='내용')
+  is_read = models.BooleanField(default=False, help_text='읽음 여부')
+  created_at = models.DateTimeField(auto_now_add=True, help_text='생성 일시')
+
+# UPLOAD: 파일 업로드 테이블
+class UPLOAD(models.Model):
+  file = models.FileField(upload_to=upload_to)
+
+# SERVER_SETTING: 서버 설정 테이블
+class SERVER_SETTING(models.Model):
+  name = models.CharField(max_length=100, primary_key=True, help_text='설정 이름')
+  value = models.TextField(help_text='설정 값')
+
+# SERVER_LOG: 서버 로그 테이블
+class SERVER_LOG(models.Model):
+  id = models.AutoField(primary_key=True)
+  content = models.TextField(help_text='내용')
+  created_at = models.DateTimeField(auto_now_add=True, help_text='생성 일시')
+
+# BANNER: 배너 테이블
+class BANNER(models.Model):
+  id = models.AutoField(primary_key=True)
+  location = models.CharField(max_length=20, help_text='위치(top, side)')
+  image = models.FileField(upload_to=upload_to, help_text='이미지')
+  link = models.CharField(max_length=300, help_text='링크')
+  display_weight = models.IntegerField(help_text='표시 순서')

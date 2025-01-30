@@ -7,64 +7,34 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, logout, get_user_model
 from django.db.models import Q
 
-from app_core import models as core_mo
-from app_user import models as user_mo
-from app_partner import models as partner_mo
-from app_supervisor import models as supervisor_mo
-from app_post import models as post_mo
-from app_message import models as message_mo
-from app_coupon import models as coupon_mo
-
-from app_post import daos as post_do
-from app_core import daos as core_do
-from app_user import daos as user_do
-from app_message import daos as message_do
-from app_coupon import daos as coupon_do
-from app_partner import daos as partner_do
-
-# 기본 컨텍스트
-# server, account, messages
-def get_default_context(request):
-
-  # 사용자 프로필 정보 가져오기
-  # 로그인하지 않은 사용자는 guest로 처리
-  account = user_do.get_user_profile(request)
-
-  # 읽지 않는 쪽지 미리보기
-  # 관리자의 경우 수신자가 'supervisor'인 쪽지로 검색해서 가져옴
-  messages = message_do.get_user_message_previews(request)
-
-  # 서버 설정 가져오기
-  server = core_do.get_server_settings()
-
-  return {
-    'server': server,
-    'messages': messages,
-    'account': account,
-  }
+from app_core import models
+from app_core import daos
 
 # 관리자 메인 페이지
 def index(request):
-  context = get_default_context(request)
-  # 관리자 여부 확인, 관리자가 아닌 경우, 리다이렉트 후 권한 없은 메세지 표시
-  if 'supervisor' not in context['account']['account_type']:
-    return redirect('/?redirect=permission_denied')
+  contexts = daos.get_default_contexts(request)
 
-  # TODO: 현재 관리자 메인 페이지에 별도의 요소가 없음.. 디자이너와 상의 후 추가할 수 있음
-
-  return render(request, 'supervisor/index.html', context)
+  # 관리자 여부 확인, 관리자가 아닌 경우, 리다이렉트 후 권한 없음 메세지 표시
+  if not request.user.is_authenticated:
+    return redirect('/?redirect_message=permission_denied')
+  if 'supervisor' not in contexts['account']['groups']:
+    return redirect('/?redirect_message=permission_denied')
+  return render(request, 'supervisor/index.html', contexts)
 
 # 계정 관리 페이지
 # 계정별 마지막 로그인 시간 및 회원가입일, 관리자 노트 등 포함
 # 관리자 생성 및 사용자 정보 수정 기능 포함(삭제도 사용자 정보 수정으로 가능)
 def account(request):
-  context = get_default_context(request)
+  contexts = daos.get_default_contexts(request)
   # 관리자 여부 확인, 관리자가 아닌 경우, 리다이렉트 후 권한 없은 메세지 표시
-  if 'supervisor' not in context['account']['account_type']:
-    return redirect('/?redirect=permission_denied')
+  if not request.user.is_authenticated:
+    return redirect('/?redirect_message=permission_denied')
+  if 'supervisor' not in contexts['account']['groups'] and 'subsupervisor' not in contexts['account']['groups']:
+    return redirect('/?redirect_message=permission_denied')
 
   # 관리자 신규 생성 처리
   # method='POST', action='create_supervisor'일 경우, 관리자 계정 생성 요청으로 처리
+  '''
   if request.method == 'POST' and request.POST.get('action') == 'create_supervisor':
     id = request.POST['id']
     password = request.POST['password']
@@ -96,9 +66,10 @@ def account(request):
     acnt.save()
 
     return JsonResponse({'result': 'success'})
+  '''
 
   # data
-  tab = request.GET.get('tab', 'user')
+  tab = request.GET.get('tab', 'user') # user, dame, partner, supervisor
   page = int(request.GET.get('page', '1'))
   search_account_id = request.GET.get('accountId', '')
   search_account_nickname = request.GET.get('accountNickname', '')
@@ -112,163 +83,106 @@ def account(request):
   if tab == 'supervisor': # 관리자 검색 탬일 경우, 별도의 사용자 통계 기능 없음.
     status = {}
   elif tab == 'user': # 사용자 검색 탭일 경우, 사용자 및 여성회원 정보 제공
-    dame_accounts = all_accounts.filter(
-      account_type = 'dame'
+    dame_accounts = all_accounts.exclude(
+      Q(group='partner') | Q(group='supervisor') | Q(group='subsupervisor')
+    ).filter(
+      Q(group='dame') | Q(status='pending_dame')
     )
-    user_accounts = all_accounts.filter(
-      account_type = 'user'
+    user_accounts = all_accounts.exclude(
+      Q(group='partner') | Q(group='supervisor') | Q(group='subsupervisor') | Q(group='dame')
+    ).filter(
+      Q(group='user')
     )
     status = {
       'user': {
         'active': user_accounts.filter(status='active').count(),
-        'pending': user_accounts.filter(status='pending').count(),
-        'sleeping': user_accounts.filter(status='sleeping').count(),
+        'pending': 0,
         'deleted': user_accounts.filter(status='deleted').count(),
         'blocked': user_accounts.filter(status='blocked').count(),
         'banned': user_accounts.filter(status='banned').count(),
       },
       'dame': {
         'active': dame_accounts.filter(status='active').count(),
-        'pending': dame_accounts.filter(status='pending').count(),
-        'sleeping': dame_accounts.filter(status='sleeping').count(),
+        'pending': dame_accounts.filter(status='pending_dame').count(),
         'deleted': dame_accounts.filter(status='deleted').count(),
         'blocked': dame_accounts.filter(status='blocked').count(),
         'banned': dame_accounts.filter(status='banned').count(),
       }
     }
   elif tab == 'partner': # 파트너 검색 탭일 경우, 파트너 정보 제공
-    # 파트너 계정은 각 카테고리별 계정 상태 현황 제공
-    categories = partner_mo.CATEGORY.objects.all()
-    category_dict = {
-      category.name: {
-        'id': category.id,
-        'name': category.name,
-        'active': all_accounts.filter(partner_categories__contains=category.name, account_type='partner', status='active').count(),
-        'pending': all_accounts.filter(partner_categories__contains=category.name, account_type='partner', status='pending').count(),
-        'sleeping': all_accounts.filter(partner_categories__contains=category.name, account_type='partner', status='sleeping').count(),
-        'deleted': all_accounts.filter(partner_categories__contains=category.name, account_type='partner', status='deleted').count(),
-        'blocked': all_accounts.filter(partner_categories__contains=category.name, account_type='partner', status='blocked').count(),
-        'banned': all_accounts.filter(partner_categories__contains=category.name, account_type='partner', status='banned').count(),
-        'children': [],
-      } for category in categories if category.parent_id == ''
-    }
-    for category in categories:
-      if category.parent_id:
-        if category_dict.get(partner_mo.CATEGORY.objects.get(id=category.parent_id).name):
-          category_dict[partner_mo.CATEGORY.objects.get(id=category.parent_id).name]['children'].append({
-            'id': category.id,
-            'name': category.name,
-            'active': all_accounts.filter(partner_categories__contains=category.name, account_type='partner', status='active').count(),
-            'pending': all_accounts.filter(partner_categories__contains=category.name, account_type='partner', status='pending').count(),
-            'sleeping': all_accounts.filter(partner_categories__contains=category.name, account_type='partner', status='sleeping').count(),
-            'deleted': all_accounts.filter(partner_categories__contains=category.name, account_type='partner', status='deleted').count(),
-            'blocked': all_accounts.filter(partner_categories__contains=category.name, account_type='partner', status='blocked').count(),
-            'banned': all_accounts.filter(partner_categories__contains=category.name, account_type='partner', status='banned').count(),
-            'children': [],
-          })
-        else:
-          loop = True
-          for key in category_dict.keys():
-            for child in category_dict[key]['children']:
-              # 3단계 카테고리
-              if not loop:
-                break
-              if str(child['id']) == str(category.parent_id):
-                child['children'].append({
-                  'id': category.id,
-                  'name': category.name,
-                  'active': all_accounts.filter(partner_categories__contains=category.name, account_type='partner', status='active').count(),
-                  'pending': all_accounts.filter(partner_categories__contains=category.name, account_type='partner', status='pending').count(),
-                  'sleeping': all_accounts.filter(partner_categories__contains=category.name, account_type='partner', status='sleeping').count(),
-                  'deleted': all_accounts.filter(partner_categories__contains=category.name, account_type='partner', status='deleted').count(),
-                  'blocked': all_accounts.filter(partner_categories__contains=category.name, account_type='partner', status='blocked').count(),
-                  'banned': all_accounts.filter(partner_categories__contains=category.name, account_type='partner', status='banned').count(),
-                  'children': [],
-                })
-                loop = False
-              # 4단계 카테고리
-              if loop:
-                for grandchild in child['children']:
-                  if not loop:
-                    break
-                  if str(grandchild['id']) == str(category.parent_id):
-                    grandchild['children'].append({
-                      'id': category.id,
-                      'name': category.name,
-                      'active': all_accounts.filter(partner_categories__contains=category.name, account_type='partner', status='active').count(),
-                      'pending': all_accounts.filter(partner_categories__contains=category.name, account_type='partner', status='pending').count(),
-                      'sleeping': all_accounts.filter(partner_categories__contains=category.name, account_type='partner', status='sleeping').count(),
-                      'deleted': all_accounts.filter(partner_categories__contains=category.name, account_type='partner', status='deleted').count(),
-                      'blocked': all_accounts.filter(partner_categories__contains=category.name, account_type='partner', status='blocked').count(),
-                      'banned': all_accounts.filter(partner_categories__contains=category.name, account_type='partner', status='banned').count(),
-                      'children': [],
-                    })
-                    loop = False
+    partner_accounts = all_accounts.filter(
+      Q(group='partner') | Q(status='pending_partner')
+    )
     status = {
-      'partner': []
+      'partner': {
+        'active': partner_accounts.filter(status='active').count(),
+        'pending': partner_accounts.filter(status='pending_partner').count(),
+        'deleted': partner_accounts.filter(status='deleted').count(),
+        'blocked': partner_accounts.filter(status='blocked').count(),
+        'banned': partner_accounts.filter(status='banned').count(),
+      }
     }
-    for child in category_dict.keys():
-      status['partner'].append(category_dict[child])
-
   # 사용자 검색
   if tab == 'user': # 사용자 탭일 경우, user와 dame을 같이 검색
-    sats = all_accounts.filter(
-      Q(account_type='user') | Q(account_type='dame'), # 사용자 및 여성회원
+    sats = all_accounts.exclude(
+      Q(group='partner') | Q(group='supervisor') | Q(group='subsupervisor')
+    ).select_related('level').filter(
       Q(username__contains=search_account_id) | Q(first_name__contains=search_account_nickname) | Q(status__contains=search_account_status)
     )
   else: # 그외(파트너 및 관리자 탭)
     sats = all_accounts.filter(
-      Q(account_type__contains=tab),
+      Q(group=tab) | Q(status__contains=tab),
       Q(username__contains=search_account_id) | Q(first_name__contains=search_account_nickname) | Q(status__contains=search_account_status)
     )
   last_page = sats.count() // 20 + 1 # 20개씩 표시
   search_accounts = []
   for account in sats[(page - 1) * 20:page * 20]:
 
-    # 사용자 레벨 정보(사용자만)
-    if account.account_type == 'user' or account.account_type == 'dame':
-      lv = core_mo.LEVEL_RULE.objects.get(level=account.user_level)
-      level = {
-        'level': account.user_level,
-        'text_color': lv.text_color,
-        'background_color': lv.background_color,
-        'name': lv.name,
-      }
-    else:
-      level = None
-
+    # 계정 정보
     search_accounts.append({
       'id': account.username,
       'nickname': account.first_name,
-      'account_type': account.account_type,
-      'status': account.status,
+      'partner_name': account.last_name,
+      'email': account.email,
+      'groups': [group.name for group in account.groups.all()],
       'date_joined': account.date_joined,
       'last_login': account.last_login,
+      'status': account.status,
       'note': account.note,
-      'user_usable_point': account.user_usable_point,
-      'user_level_point': account.user_level_point,
-      'user_level': level,
-      'partner_tel': account.partner_tel,
-      'partner_address': account.partner_address,
-      'partner_categories': account.partner_categories,
+      'coupon_point': account.coupon_point,
+      'level_point': account.level_point,
+      'tel': account.tel,
+      'address': account.address,
       'supervisor_permissions': account.supervisor_permissions,
+      'level': {
+        'level': account.level.level,
+        'image': account.level.image,
+        'text': account.level.text,
+        'text_color': account.level.text_color,
+        'background_color': account.level.background_color,
+        'required_point': account.level.required_point,
+      } if account.level else None,
     })
 
   return render(request, 'supervisor/account.html', {
-    **context,
-    'search_accounts': search_accounts, # 검색된 계정 정보
+    **contexts,
+    'accounts': search_accounts, # 검색된 계정 정보
     'last_page': last_page, # 페이지 처리를 위해 필요한 정보
     'status': status, # 사용자 종류(탭) 별 통계 데이터(관리자는 없음)
   })
 
 # 게시글 관리 페이지
 def post(request):
-  context = get_default_context(request)
+  contexts = daos.get_default_contexts(request)
+
   # 관리자 여부 확인, 관리자가 아닌 경우, 리다이렉트 후 권한 없은 메세지 표시
-  if 'supervisor' not in context['account']['account_type']:
-    return redirect('/?redirect=permission_denied')
+  if not request.user.is_authenticated:
+    return redirect('/?redirect_message=permission_denied')
+  if 'supervisor' not in contexts['account']['groups'] and 'subsupervisor' not in contexts['account']['groups']:
+    return redirect('/?redirect_message=permission_denied')
 
   # post_id 게시글 강제 삭제
+  '''
   if request.method == 'DELETE':
     post_id = request.GET.get('post_id', '')
 
@@ -297,97 +211,94 @@ def post(request):
     po.delete()
 
     return JsonResponse({'result': 'success'})
+  '''
 
   # data
   page = int(request.GET.get('page', '1'))
-  search_post_title = request.GET.get('postTItle', '')
-  search_board_id = request.GET.get('boardId', '')
+  search_post_title = request.GET.get('post_title', '')
+  search_board_id = request.GET.get('board_id', '')
 
   # status
   # 각 게시판 별 게시글 수와 댓글 수, 조회수, 좋아요 수 통계 제공
-  all_posts = post_mo.POST.objects.all().order_by('-created_dt')
-  boards = post_mo.BOARD.objects.exclude(
-    Q(post_type='attendance') | Q(post_type='greeting')
-  )
+  all_post = models.POST.objects.prefetch_related('boards').select_related('author', 'place_info', 'review_post').prefetch_related('place_info__categories').all()
+  boards = models.BOARD.objects.all().order_by('display_weight')
   board_dict = {
     board.name: {
       'id': board.id,
       'name': board.name,
-      'post_type': board.post_type,
-      'total_views': int(math.fsum([len(str(post.views).split(',')) - 1 for post in post_mo.POST.objects.filter(Q(board_id__contains=board.id))])),
-      'total_comments': post_mo.COMMENT.objects.filter(post_id__in=[post.id for post in post_mo.POST.objects.filter(Q(board_id__contains=board.id))]).count(),
-      'total_posts': post_mo.POST.objects.filter(Q(board_id__contains=board.id)).count(),
-      'display_permissions': str(board.display_permissions),
-      'enter_permissions': str(board.enter_permissions),
-      'write_permissions': str(board.write_permissions),
-      'comment_permissions': str(board.comment_permissions),
+      'board_type': board.board_type,
+      'total_views': int(math.fsum([len(str(post.views).split(',')) - 1 for post in models.POST.objects.filter(Q(board_id__contains=board.id))])),
+      'total_comments': models.COMMENT.objects.filter(post_id__in=[post.id for post in models.POST.objects.filter(Q(board_id__contains=board.id))]).count(),
+      'total_posts': models.POST.objects.filter(Q(board_id__contains=board.id)).count(),
+      'display': [g.name for g in board.display_groups.all()],
+      'enter': [g.name for g in board.enter_groups.all()],
+      'write': [g.name for g in board.write_groups.all()],
+      'comment': [g.name for g in board.comment_groups.all()],
       'children': [],
-    } for board in boards if board.parent_id == ''
+    } for board in boards if not board.parent_board
   }
   for board in boards:
-    if board.parent_id:
-      if board_dict.get(post_mo.BOARD.objects.get(id=board.parent_id).name):
-        board_dict[post_mo.BOARD.objects.get(id=board.parent_id).name]['children'].append({
+    if board.parent_board:
+      if board_dict.get(board.parent_board.name):
+        board_dict[board.parent_board.name]['children'].append({
           'id': board.id,
           'name': board.name,
-          'post_type': board.post_type,
-          'total_views': int(math.fsum([len(str(post.views).split(',')) - 1 for post in post_mo.POST.objects.filter(Q(board_id__contains=board.id))])),
-          'total_comments': post_mo.COMMENT.objects.filter(post_id__in=[post.id for post in post_mo.POST.objects.filter(Q(board_id__contains=board.id))]).count(),
-          'total_posts': post_mo.POST.objects.filter(Q(board_id__contains=board.id)).count(),
-          'display_permissions': str(board.display_permissions),
-          'enter_permissions': str(board.enter_permissions),
-          'write_permissions': str(board.write_permissions),
-          'comment_permissions': str(board.comment_permissions),
+          'board_type': board.board_type,
+          'total_views': int(math.fsum([len(str(post.views).split(',')) - 1 for post in models.POST.objects.filter(Q(board_id__contains=board.id))])),
+          'total_comments': models.COMMENT.objects.filter(post_id__in=[post.id for post in models.POST.objects.filter(Q(board_id__contains=board.id))]).count(),
+          'total_posts': models.POST.objects.filter(Q(board_id__contains=board.id)).count(),
+          'display': [g.name for g in board.display_groups.all()],
+          'enter': [g.name for g in board.enter_groups.all()],
+          'write': [g.name for g in board.write_groups.all()],
+          'comment': [g.name for g in board.comment_groups.all()],
           'children': [],
         })
       else:
         loop = True
         for key in board_dict.keys():
           for child in board_dict[key]['children']:
-            # 3단계 게시판
             if not loop:
               break
-            if str(child['id']) == str(board.parent_id):
+            if str(child['name']) == str(board.parent_board.name):
               child['children'].append({
                 'id': board.id,
                 'name': board.name,
-                'post_type': board.post_type,
-                'total_views': int(math.fsum([len(str(post.views).split(',')) - 1 for post in post_mo.POST.objects.filter(Q(board_id__contains=board.id))])),
-                'total_comments': post_mo.COMMENT.objects.filter(post_id__in=[post.id for post in post_mo.POST.objects.filter(Q(board_id__contains=board.id))]).count(),
-                'total_posts': post_mo.POST.objects.filter(Q(board_id__contains=board.id)).count(),
-                'display_permissions': str(board.display_permissions),
-                'enter_permissions': str(board.enter_permissions),
-                'write_permissions': str(board.write_permissions),
-                'comment_permissions': str(board.comment_permissions),
+                'board_type': board.board_type,
+                'total_views': int(math.fsum([len(str(post.views).split(',')) - 1 for post in models.POST.objects.filter(Q(board_id__contains=board.id))])),
+                'total_comments': models.COMMENT.objects.filter(post_id__in=[post.id for post in models.POST.objects.filter(Q(board_id__contains=board.id))]).count(),
+                'total_posts': models.POST.objects.filter(Q(board_id__contains=board.id)).count(),
+                'display': [g.name for g in board.display_groups.all()],
+                'enter': [g.name for g in board.enter_groups.all()],
+                'write': [g.name for g in board.write_groups.all()],
+                'comment': [g.name for g in board.comment_groups.all()],
                 'children': [],
               })
               loop = False
-            # 4단계 게시판
             if loop:
               for grandchild in child['children']:
                 if not loop:
                   break
-                if str(grandchild['id']) == str(board.parent_id):
+                if str(grandchild['name']) == str(board.parent_board.name):
                   grandchild['children'].append({
                     'id': board.id,
                     'name': board.name,
-                    'post_type': board.post_type,
-                    'total_views': int(math.fsum([len(str(post.views).split(',')) - 1 for post in post_mo.POST.objects.filter(Q(board_id__contains=board.id))])),
-                    'total_comments': post_mo.COMMENT.objects.filter(post_id__in=[post.id for post in post_mo.POST.objects.filter(Q(board_id__contains=board.id))]).count(),
-                    'total_posts': post_mo.POST.objects.filter(Q(board_id__contains=board.id)).count(),
-                    'display_permissions': str(board.display_permissions),
-                    'enter_permissions': str(board.enter_permissions),
-                    'write_permissions': str(board.write_permissions),
-                    'comment_permissions': str(board.comment_permissions),
+                    'board_type': board.board_type,
+                    'total_views': int(math.fsum([len(str(post.views).split(',')) - 1 for post in models.POST.objects.filter(Q(board_id__contains=board.id))])),
+                    'total_comments': models.COMMENT.objects.filter(post_id__in=[post.id for post in models.POST.objects.filter(Q(board_id__contains=board.id))]).count(),
+                    'total_posts': models.POST.objects.filter(Q(board_id__contains=board.id)).count(),
+                    'display': [g.name for g in board.display_groups.all],
+                    'enter': [g.name for g in board.enter_groups.all()],
+                    'write': [g.name for g in board.write_groups.all()],
+                    'comment': [g.name for g in board.comment_groups.all()],
                     'children': [],
                   })
                   loop = False
-  status = []
+  boards = []
   for child in board_dict.keys():
-    status.append(board_dict[child])
+    boards.append(board_dict[child])
 
   # 게시글 검색
-  sps = all_posts.filter(
+  sps = all_post.filter(
     Q(title__contains=search_post_title),
     Q(board_id__contains=search_board_id)
   )
@@ -395,53 +306,44 @@ def post(request):
   search_posts = []
   for post in sps[(page - 1) * 20:page * 20]:
 
-    # 게시글 작성자 정보
-    at = get_user_model().objects.filter(username=post.author_id).first()
-    if not at:
-      continue
-    author = {
-      'id': post.author_id,
-      'nickname': at.first_name,
-      'account_type': at.account_type,
-      'status': at.status,
-    }
-
-    # 게시글이 속한 게시판 정보
-    boards = []
-    for b in str(post.board_id).split(','):
-      if b == '':
-        continue
-      board = post_mo.BOARD.objects.get(id=b)
-      boards.append({
-        'id': board.id,
-        'name': board.name,
-      })
-
-    # 게시글 정보
     search_posts.append({
       'id': post.id,
       'title': post.title,
-      'boards': boards,
-      'author': author,
-      'created_dt': post.created_dt,
-      'view_count': len(str(post.views).split(',')) - 1,
-      'like_count': len(str(post.bookmarks).split(',')) - 1,
-      'comment_count': post_mo.COMMENT.objects.filter(post_id=post.id).count(),
+      'image_paths': post.image_paths, # 여행지 또는 리뷰, 이벤트 게시글의 대표 이미지 경로
+      'view_count': post.view_count,
+      'like_count': post.like_count,
+      'created_at': post.created_at,
+      'author': {
+        'nickname': post.author.first_name, # 작성자 닉네임
+        'partner_name': post.author.last_name, # 작성자 파트너 이름
+      },
+      'place_info': { # 여행지 게시글인 경우, 여행지 정보
+        'categories': [c.name for c in post.place_info.categories.all()],
+        'address': post.place_info.address,
+        'location_info': post.place_info.location_info,
+        'open_info': post.place_info.open_info,
+        'status': post.place_info.status,
+      } if post.place_info else None,
+      'review_post': { # 리뷰 게시글인 경우, 리뷰 대상 게시글 정보
+        'id': post.review_post.id,
+        'title': post.review_post.title,
+      } if post.review_post else None,
     })
 
   return render(request, 'supervisor/post.html', {
-    **context,
-    'search_posts': search_posts, # 검색된 게시글 정보
+    **contexts,
+    'posts': search_posts, # 검색된 게시글 정보
     'last_page': last_page, # 페이지 처리를 위해 필요한 정보
-    'status': status, # 게시판 별 통계 데이터. 게시판 별로 게시글 수, 댓글 수, 조회수, 좋아요 수 제공
+    'status': boards, # 게시판 별 통계 데이터. 게시판 별로 게시글 수, 댓글 수, 조회수, 좋아요 수 제공
   })
 
+'''
 # 광고 게시글 관리 페이지
 def ad_post(request):
   context = get_default_context(request)
   # 관리자 여부 확인, 관리자가 아닌 경우, 리다이렉트 후 권한 없은 메세지 표시
   if 'supervisor' not in context['account']['account_type']:
-    return redirect('/?redirect=permission_denied')
+    return redirect('/?redirect_message=permission_denied')
 
   # 광고 정책 수정 요청 처리
   # 광고 게시글은 파트너가 생성하므로 삭제 또는 생성 불가. 수정만 가능
@@ -537,322 +439,158 @@ def ad_post(request):
     'last_page': last_page, # 페이지 처리를 위해 필요한 정보
     'status': status, # 광고 상태별 통계 데이터 제공
   })
+'''
 
 # 쿠폰 관리 페이지
 # 별도의 쿠폰 수정 삭제 기능은 없음
 def coupon(request):
-  context = get_default_context(request)
+  contexts = daos.get_default_contexts(request)
+
   # 관리자 여부 확인, 관리자가 아닌 경우, 리다이렉트 후 권한 없은 메세지 표시
-  if 'supervisor' not in context['account']['account_type']:
-    return redirect('/?redirect=permission_denied')
+  if not request.user.is_authenticated:
+    return redirect('/?redirect_message=permission_denied')
+  if 'supervisor' not in contexts['account']['groups'] and 'subsupervisor' not in contexts['account']['groups']:
+    return redirect('/?redirect_message=permission_denied')
 
   # data
-  tab_type = request.GET.get('tab', 'coupon')
+  tab_type = request.GET.get('tab', 'coupon') # coupon, history
   page = int(request.GET.get('page', '1'))
-  search_coupon_name = request.GET.get('couponName', '')
-  coupon_status = request.GET.get('couponStatus', 'used')
+  search_coupon_code = request.GET.get('coupon_code', '')
+  search_coupon_name = request.GET.get('coupon_name', '')
 
   # status
   if tab_type == 'coupon':
-    all_coupons = coupon_mo.COUPON.objects.all().order_by('-created_dt')
-    status = {
-      'coupon': all_coupons.count(),
-    }
-
-    # search
-    scs = all_coupons.filter(
-      name__contains=search_coupon_name # 쿠폰 이름 검색
-    )
-    last_page = scs.count() // 20 + 1 # 20개씩 표시
-    search_coupons = []
-    for coupon in scs[(page - 1) * 20:page * 20]: # 페이지 처리
-
-      # 쿠폰이 속한 게시글 정보
-      coupon_po = post_mo.POST.objects.filter(id=coupon.post_id).first()
-      if not coupon_po:
-        continue
-      coupon_po_at = get_user_model().objects.filter(username=coupon_po.author_id).first()
-      author = {
-        'id': coupon_po.author_id,
-        'nickname': coupon_po_at.first_name,
-        'partner_categories': coupon_po_at.partner_categories,
-        'partner_address': coupon_po_at.partner_address,
-      }
-      post = {
-        'id': coupon_po.id,
-        'title': coupon_po.title,
-        'author': author,
-      }
-
-      # create account
-      create_account = get_user_model().objects.filter(username=coupon.create_account_id).first()
-
-      search_coupons.append({
-        'id': coupon.id,
-        'code': coupon.code,
-        'name': coupon.name,
-        'description': coupon.description,
-        'create_account': {
-          'nickname': create_account.first_name,
-        },
-        'images': str(coupon.images).split(','),
-        'post': post,
-        'created_dt': coupon.created_dt,
-        'required_point': coupon.required_point,
-      })
-
-    return render(request, 'supervisor/coupon.html', {
-      **context,
-      'coupons': search_coupons,
-      'last_page': last_page,
-      'status': status,
-    })
-
-  else:
-    all_history = coupon_mo.COUPON_HISTORY.objects.all().order_by('-created_dt')
-    status = {
-      'history': {
-        'used': all_history.filter(status='used').count(),
-        'expired': all_history.filter(status='expired').count(),
-        'deleted': all_history.filter(status='deleted').count(),
-      }
-    }
-
-    # search
-    shs = all_history.filter(
+    cs = models.COUPON.objects.select_related('post', 'create_account').prefetch_related('own_accounts').exclude(
+      Q(status='deleted') | Q(status='used') | Q(status='expired')
+    ).filter(
+      code__contains=search_coupon_code,
       name__contains=search_coupon_name,
-    )
-    last_page = shs.count() // 20 + 1 # 20개씩 표시
-    search_histories = []
-    for history in shs[(page - 1) * 20:page * 20]:
-
-      # 쿠폰이 속한 게시글 정보
-      coupon_po = post_mo.POST.objects.filter(id=history.post_id).first()
-      coupon_po_at = get_user_model().objects.filter(username=coupon_po.author_id).first()
-      author = {
-        'id': coupon_po.author_id,
-        'nickname': coupon_po_at.first_name,
-        'partner_categories': coupon_po_at.partner_categories,
-        'partner_address': coupon_po_at.partner_address,
-      }
-      post = {
-        'id': coupon_po.id,
-        'title': coupon_po.title,
-        'author': author,
-      }
-
-      search_histories.append({
-        'id': history.id,
-        'code': history.code,
-        'name': history.name,
-        'description': history.description,
-        'images': str(history.images).split(','),
-        'post': post,
-        'created_dt': history.created_dt,
-        'used_dt': history.used_dt,
-        'required_point': history.required_point,
-        'status': history.status,
-        'note': history.note,
-      })
-
-    return render(request, 'supervisor/coupon.html', {
-      **context,
-      'histories': search_histories,
-      'last_page': last_page,
-      'status': status,
+    ).order_by('-created_at')
+  elif tab_type == 'history':
+    cs = models.COUPON.objects.select_related('post', 'create_account').prefetch_related('own_accounts').exclude(
+      Q(status='normal')
+    ).filter(
+      code__contains=search_coupon_code,
+      name__contains=search_coupon_name,
+    ).order_by('-created_at')
+  last_page = cs.count() // 20 + 1 # 20개씩 표시
+  coupons = []
+  for coupon in cs[(page - 1) * 20:page * 20]:
+    coupons.append({
+      'code': coupon.code,
+      'name': coupon.name,
+      'image': coupon.image,
+      'content': coupon.content,
+      'required_point': coupon.required_point,
+      'expire_at': coupon.expire_at,
+      'status': coupon.status,
+      'post': {
+        'id': coupon.post.id,
+        'title': coupon.post.title,
+      },
+      'create_account': {
+        'partner_name': coupon.create_account.last_name,
+      },
     })
+
+  return render(request, 'supervisor/coupon.html', {
+    **contexts,
+    'coupons': coupons, # 검색된 쿠폰 정보
+    'last_page': last_page, # 페이지 처리를 위해 필요한 정보
+  })
+
 
 # 쪽지 관리 페이지
 def message(request):
-  context = get_default_context(request)
+  contexts = daos.get_default_contexts(request)
+
   # 관리자 여부 확인, 관리자가 아닌 경우, 리다이렉트 후 권한 없은 메세지 표시
-  if 'supervisor' not in context['account']['account_type']:
-    return redirect('/?redirect=permission_denied')
+  if not request.user.is_authenticated:
+    return redirect('/?redirect_message=permission_denied')
+  if 'supervisor' not in contexts['account']['groups'] and 'subsupervisor' not in contexts['account']['groups']:
+    return redirect('/?redirect_message=permission_denied')
 
   # data
-  tab = request.GET.get('tab', 'inbox')
+  tab = request.GET.get('tab', 'inbox') # inbox, outbox
   page = int(request.GET.get('page', '1'))
-  search_message_title = request.GET.get('messageTitle', '')
-  search_message_receiver = request.GET.get('messageReceiver', '')
+  search_message_title = request.GET.get('message_title', '')
+  search_message_receiver = request.GET.get('message_receiver', '')
 
   # 받은 쪽지함
   if tab == 'inbox':
-    all_messages = message_mo.MESSAGE.objects.filter(receiver_id='supervisor').order_by('-send_dt')
-    status = {
-      'inbox': {
-        'count': all_messages.count(),
-        'unread': all_messages.filter(read_dt=None).count(),
-      }
-    }
-
-    # search
-    sms = all_messages.filter(
+    msgs = models.MESSAGE.objects.select_related('include_coupon').filter(
+      to_account='supervisor',
       title__contains=search_message_title,
-      sender_id__contains=search_message_receiver
+      sender_account__contains=search_message_receiver,
     )
-    last_page = sms.count() // 20 + 1 # 20개씩 표시
-    search_messages = []
-    for message in sms[(page - 1) * 20:page * 20]:
-
-      # 쪽지 발신자
-      sd = get_user_model().objects.filter(username=message.sender_id).first()
-      if not sd:
-        sender = {
-          'id': message.sender_id,
-          'nickname': '게스트',
-          'account_type': 'guest',
-          'status': 'active',
-        }
-      else:
-        if sd.account_type == 'partner':
-          sender = {
-            'id': message.sender_id,
-            'nickname': sd.first_name,
-            'account_type': sd.account_type,
-            'status': sd.status,
-            'partner_categories': sd.partner_categories,
-            'partner_address': sd.partner_address,
-          }
-        elif sd.account_type == 'user' or sd.account_type == 'dame':
-          lv = core_mo.LEVEL_RULE.objects.get(level=sd.user_level)
-          level = {
-            'level': sd.user_level,
-            'text_color': lv.text_color,
-            'background_color': lv.background_color,
-            'name': lv.name,
-          }
-          sender = {
-            'id': message.sender_id,
-            'nickname': sd.first_name,
-            'account_type': sd.account_type,
-            'status': sd.status,
-            'level': level,
-          }
-
-      # 쿠폰 정보
-      if message.include_coupon:
-        cu = coupon_mo.COUPON.objects.filter(code=message.include_coupon).first()
-        cu_post = post_mo.POST.objects.filter(id=cu.post_id).first()
-        post = {
-          'id': cu.post_id,
-          'title': cu_post.title,
-        }
-        coupon = {
-          'code': cu.code,
-          'name': cu.name,
-          'post': post,
-          'own_user_id': cu.own_user_id,
-          'create_account_id': cu.create_account_id,
-          'required_point': cu.required_point,
-        }
-      else:
-        coupon = None
-
-      search_messages.append({
-        'id': message.id,
-        'title': message.title,
-        'sender': sender,
-        'send_dt': message.send_dt,
-        'read_dt': message.read_dt,
-        'image': str(message.images).split(',')[0],
-        'content': message.content,
-        'include_coupon': coupon,
-      })
+    last_page = len(msgs) // 20 + 1
+    messages = [{
+      'id': m.id,
+      'title': m.title,
+      'content': m.content,
+      'is_read': m.is_read,
+      'created_at': m.created_at,
+      'include_coupon': {
+        'code': m.include_coupon.code,
+        'name': m.include_coupon.name,
+      } if m.include_coupon else None,
+      'sender': {
+        'id': sd.username,
+        'nickname': sd.first_name,
+        'partner_name': sd.last_name,
+        'level': {
+          'level': sd.level.level,
+          'image': sd.level.image,
+          'text': sd.level.text,
+          'text_color': sd.level.text_color,
+          'background_color': sd.level.background_color,
+        } if sd.level else None,
+        'groups': [g.name for g in sd.groups.all()],
+      } if (sd := get_user_model().objects.prefetch_related('groups').select_related('level').get(username=m.sender_account)) else {'id': m.sender_account},
+    } for m in msgs[(page - 1) * 20:page * 20]]
 
     return render(request, 'supervisor/message.html', {
-      **context,
-      'search_messages': search_messages,
+      **contexts,
+      'messages': messages,
       'last_page': last_page,
-      'status': status,
     })
 
-  else:
-    all_messages = message_mo.MESSAGE.objects.filter(sender_id='supervisor').order_by('-send_dt')
-    status = {
-      'outbox': {
-        'count': all_messages.count(),
-        'unread': all_messages.filter(read_dt=None).count(),
-      }
-    }
-
-    # search
-    sms = all_messages.filter(
+  elif tab == 'outbox':
+    msgs = models.MESSAGE.objects.select_related('include_coupon').filter(
+      sender_account='supervisor',
       title__contains=search_message_title,
-      sender_id='supervisor'
+      to_account__contains=search_message_receiver,
     )
-    last_page = sms.count() // 20 + 1
-    search_messages = []
-    for message in sms[(page - 1) * 20:page * 20]:
-      # 쪽지 수신자
-      rc = get_user_model().objects.filter(username=message.receiver_id).first()
-      if not rc:
-        receiver = {
-          'id': message.receiver_id,
-          'nickname': '게스트',
-          'account_type': 'guest',
-          'status': 'active',
-        }
-      else:
-        if rc.account_type == 'partner':
-          receiver = {
-            'id': message.receiver_id,
-            'nickname': rc.first_name,
-            'account_type': rc.account_type,
-            'status': rc.status,
-            'partner_categories': rc.partner_categories,
-            'partner_address': rc.partner_address,
-          }
-        elif rc.account_type == 'user' or rc.account_type == 'dame':
-          lv = core_mo.LEVEL_RULE.objects.get(level=rc.user_level)
-          level = {
-            'level': rc.user_level,
-            'text_color': lv.text_color,
-            'background_color': lv.background_color,
-            'name': lv.name,
-          }
-          receiver = {
-            'id': message.receiver_id,
-            'nickname': rc.first_name,
-            'account_type': rc.account_type,
-            'status': rc.status,
-            'level': level,
-          }
-
-      # 쿠폰 정보
-      if message.include_coupon:
-        cu = coupon_mo.COUPON.objects.filter(code=message.include_coupon).first()
-        cu_post = post_mo.POST.objects.filter(id=cu.post_id).first()
-        post = {
-          'id': cu.post_id,
-          'title': cu_post.title,
-        }
-        coupon = {
-          'code': cu.code,
-          'name': cu.name,
-          'post': post,
-          'own_user_id': cu.own_user_id,
-          'create_account_id': cu.create_account_id,
-          'required_point': cu.required_point,
-        }
-      else:
-        coupon = None
-
-      search_messages.append({
-        'id': message.id,
-        'title': message.title,
-        'receiver': receiver,
-        'send_dt': message.send_dt,
-        'read_dt': message.read_dt,
-        'image': str(message.images).split(',')[0],
-        'content': message.content,
-        'include_coupon': coupon,
-      })
+    last_page = len(msgs) // 20 + 1
+    messages = [{
+      'id': m.id,
+      'title': m.title,
+      'content': m.content,
+      'is_read': m.is_read,
+      'created_at': m.created_at,
+      'include_coupon': {
+        'code': m.include_coupon.code,
+        'name': m.include_coupon.name,
+      } if m.include_coupon else None,
+      'to': {
+        'id': rc.username,
+        'nickname': rc.first_name,
+        'partner_name': rc.last_name,
+        'level': {
+          'level': rc.level.level,
+          'image': rc.level.image,
+          'text': rc.level.text,
+          'text_color': rc.level.text_color,
+          'background_color': rc.level.background_color,
+        } if rc.level else None,
+        'groups': [g.name for g in rc.groups.all()],
+      } if (rc := get_user_model().objects.prefetch_related('groups').select_related('level').get(username=m.to_account)) else {'id': m.to_account},
+    } for m in msgs[(page - 1) * 20:page * 20]]
 
     return render(request, 'supervisor/message.html', {
-      **context,
-      'search_messages': search_messages,
+      **contexts,
+      'messages': messages,
       'last_page': last_page,
-      'status': status,
     })
 
 '''
@@ -907,13 +645,17 @@ def read_message(request, message_id):
 
 # 배너 관리 페이지
 def banner(request):
-  context = get_default_context(request)
+  contexts = daos.get_default_contexts(request)
+
   # 관리자 여부 확인, 관리자가 아닌 경우, 리다이렉트 후 권한 없은 메세지 표시
-  if 'supervisor' not in context['account']['account_type']:
-    return redirect('/?redirect=permission_denied')
+  if not request.user.is_authenticated:
+    return redirect('/?redirect_message=permission_denied')
+  if 'supervisor' not in contexts['account']['groups'] and 'subsupervisor' not in contexts['account']['groups']:
+    return redirect('/?redirect_message=permission_denied')
 
   # 배너 생성 및 수정 요청 처리
   # 아이디가 있으면 수정, 없으면 생성
+  '''
   if request.method == 'POST':
     id = request.POST.get('id')
     if id:
@@ -937,38 +679,38 @@ def banner(request):
     banner_id = request.GET.get('banner_id', '')
     supervisor_mo.BANNER.objects.get(id=banner_id).delete()
     return JsonResponse({'result': 'success'})
-
-  # data
-  banner_location = request.GET.get('tab', 'top')
+  '''
 
   # search
-  if banner_location == 'top':
-    abs = supervisor_mo.BANNER.objects.filter(location='top').order_by('display_order')
-  elif banner_location == 'side':
-    abs = supervisor_mo.BANNER.objects.filter(location='side').order_by('display_order')
-  all_banners = []
-  for banner in abs:
-    all_banners.append({
-      'id': banner.id,
-      'location': banner.location,
-      'display_order': banner.display_order,
-      'image': banner.image,
-      'link': banner.link,
-      'clicks': str(banner.clicks).split(','),
-      'created_dt': banner.created_dt,
+  banners = {
+    'top': [], # 상단 배너
+    'side': [], # 사이드 및 하단 배너
+  }
+  for b in models.BANNER.objects.all().order_by('display_weight'):
+    banners['top'].append({
+      'id': b.id,
+      'location': b.location,
+      'image': b.image,
+      'link': b.link,
+      'display_weight': b.display_weight,
     })
-  print(all_banners)
+
   return render(request, 'supervisor/banner.html', {
-    **context,
-    'banners': all_banners,
+    **contexts,
+    'banners': banners,
   })
 
 # 레벨 관리 페이지
 def level(request):
-  context = get_default_context(request)
-  if context['account'] == None:
-    return redirect('/')
+  contexts = daos.get_default_contexts(request)
 
+  # 관리자 여부 확인, 관리자가 아닌 경우, 리다이렉트 후 권한 없은 메세지 표시
+  if not request.user.is_authenticated:
+    return redirect('/?redirect_message=permission_denied')
+  if 'supervisor' not in contexts['account']['groups'] and 'subsupervisor' not in contexts['account']['groups']:
+    return redirect('/?redirect_message=permission_denied')
+
+  '''
   # 레벨 생성 및 수정 요청 철;
   if request.method == 'POST':
     level = request.POST.get('level', '')
@@ -982,31 +724,34 @@ def level(request):
       name=name,
     ).save()
     return JsonResponse({'result': 'success'})
+  '''
 
-  lvs = core_mo.LEVEL_RULE.objects.all().order_by('level')
-  levels = []
-  for level in lvs:
-    levels.append({
-      'level': level.level,
-      'text_color': level.text_color,
-      'background_color': level.background_color,
-      'name': level.name,
-    })
-
+  lvs = models.LEVEL_RULE.objects.all().order_by('level')
+  levels = [{
+    'level': lv.level,
+    'image': lv.image,
+    'text': lv.text,
+    'text_color': lv.text_color,
+    'background_color': lv.background_color,
+    'required_point': lv.required_point,
+  } for lv in lvs]
 
   return render(request, 'supervisor/level.html', {
-    **context,
+    **contexts,
     'levels': levels,
   })
 
 # 시스템 설정 페이지
 def setting(request):
-  context = get_default_context(request)
-  if context == None:
-    return redirect('/?redirect=permission_denied')
-  if 'setting' not in context['account']['supervisor_permissions']:
-    return redirect('/?redirect=permission_denied')
+  contexts = daos.get_default_contexts(request)
 
+  # 관리자 여부 확인, 관리자가 아닌 경우, 리다이렉트 후 권한 없은 메세지 표시
+  if not request.user.is_authenticated:
+    return redirect('/?redirect_message=permission_denied')
+  if 'supervisor' not in contexts['account']['groups'] and 'subsupervisor' not in contexts['account']['groups']:
+    return redirect('/?redirect_message=permission_denied')
+
+  '''
   # 설정 정보 변경 요청 처리
   if request.method == 'POST':
     id = request.POST.get('id', '')
@@ -1016,12 +761,15 @@ def setting(request):
       value=value,
     ).save()
     return JsonResponse({'result': 'success'})
+  '''
 
-  all_settings = core_mo.SERVER_SETTING.objects.all()
+  sts = models.SERVER_SETTING.objects.all()
+  settings = [{
+    'name': st.name,
+    'value': st.value,
+  } for st in sts]
+
   return render(request, 'supervisor/setting.html', {
-    **context,
-    'settings': [{
-      'id': setting.id,
-      'value': setting.value,
-    } for setting in all_settings],
+    **contexts,
+    'settings': settings,
   })

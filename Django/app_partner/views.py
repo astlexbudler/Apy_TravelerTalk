@@ -6,98 +6,59 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, logout, get_user_model
 from django.db.models import Q
 
-from app_core import models as core_mo
-from app_user import models as user_mo
-from app_partner import models as partner_mo
-from app_supervisor import models as supervisor_mo
-from app_post import models as post_mo
-from app_message import models as message_mo
-from app_coupon import models as coupon_mo
-
-from app_core import daos as core_do
-from app_user import daos as user_do
-from app_message import daos as message_do
-from app_post import daos as post_do
-
-# 기본 컨텍스트
-# server, account
-def get_default_context(request):
-
-  # 사용자 프로필 정보 가져오기
-  # 로그인하지 않은 사용자는 guest로 처리
-  account = user_do.get_user_profile(request)
-
-  # 서버 설정 가져오기
-  server = core_do.get_server_settings()
-
-  # 광고 게시글 가져오기
-  # 모든 파트너 계정은 최대 1개의 광고 게시글을 가질 수 있음.
-  tp = post_mo.POST.objects.exclude(
-    ad_id='', # 광고 게시글은 반드시 광고 ID가 있음
-  ).filter(
-    author_id=account['id'], # 파트너 계정 ID
-  ).first() # 광고 게시글은 최대 1개만 존재함
-  travel_post = None
-  if tp: # 광고 게시글이 있는 경우
-    # 게시판은 tree형태로 구성되어 있음
-    boards = []
-    bos = str(tp.board_id).split(',')
-    for bo in bos:
-      if bo != '':
-        board = post_mo.BOARD.objects.get(id=bo)
-        boards.append({
-          'id': board.id,
-          'name': board.name,
-        })
-    travel_post = {
-      'id': tp.id,
-      'boards': boards, # 여행 > 국내 > 서울 > 강남 이런 식으로 표시됨
-      'title': tp.title,
-      'images': str(tp.images).split(','), # 이미지
-      'content': tp.content,
-      'created_dt': tp.created_dt,
-      'view_count': len(str(tp.views).split(',')) - 1, # 조회수
-      'bookmark_count': len(str(tp.bookmarks).split(',')) - 1, # 북마크 수(좋아요 수)
-      'comment_count': post_mo.COMMENT.objects.filter(post_id=tp.id).count(), # 댓글 수
-      'created_dt': tp.created_dt,
-      'author': { # 작성자 정보(파트너 본인)
-        'id': tp.author_id,
-        'nickname': account['nickname'],
-        'partner_address': account['partner_address'],
-        'partner_categories': account['partner_categories'],
-      }
-    }
-
-  return {
-    'server': server,
-    'account': account,
-    'travel_post': travel_post,
-  }
+from app_core import models
+from app_core import daos
 
 # 파트너 관리자 메인 페이지
 def index(request):
-  context = get_default_context(request)
-  # 파트너 계정이 아닌 경우, 홈으로 이동
-  if context['account']['account_type'] != 'partner':
-    return redirect('/?redirect=partner_status_error')
+  contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
+
+  # 로그인 여부 확인
+  if not request.user.is_authenticated: # 로그인이 되어 있지 않은 경우
+    return redirect('/?redirect_message=need_login') # 로그인 페이지로 리다이렉트
+  # 파트너 계정 확인
+  if 'partner' not in contexts['account']['groups']: # 파트너 계정이 아닌 경우
+    return redirect('/?redirect_message=partner_status_error') # 홈으로 리다이렉트
+
+  # 사용자 프로필 정보
+  profile = daos.get_user_profile_by_id(contexts['account']['id'])
+
+  # 파트너 계정이 소유한 여행지 게시글
+  p = models.POST.objects.filter(
+    author=contexts['account']['id'],
+    place_info__isnull=False, # 여행지 정보가 있는 경우
+  ).first()
+  if not p: # 여행지 게시글이 없는 경우, 광고 게시글 작성 페이지로 이동
+    return redirect('/partner/write_post?redirect_message=need_travel_post')
+  post = daos.get_post_info(p.id)
 
   return render(request, 'partner/index.html', {
-    **context,
-    'profile': context['account'],
+    **contexts,
+    'profile': profile, # 사용자 프로필 정보
+    'post': post, # 여행지 게시글 정보
   })
 
 # 새 광고 게시글 작성 페이지
 def write_post(request):
-  context = get_default_context(request)
-  # 파트너 계정이 아닌 경우, 홈으로 이동
-  if context['account']['account_type'] != 'partner':
-    return redirect('/?redirect=partner_status_error')
+  contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
+
+  # 로그인 여부 확인
+  if not request.user.is_authenticated: # 로그인이 되어 있지 않은 경우
+    return redirect('/?redirect_message=need_login') # 로그인 페이지로 리다이렉트
+  # 파트너 계정 확인
+  if 'partner' not in contexts['account']['groups']: # 파트너 계정이 아닌 경우
+    return redirect('/?redirect_message=partner_status_error') # 홈으로 리다이렉트
 
   # 광고 게시글이 이미 있는 경우, 광고 게시글 수정 페이지로 이동
-  if context['travel_post']:
-    return redirect('/partner/rewrite_post')
+  p = models.POST.objects.filter(
+    author=contexts['account']['id'],
+    place_info__isnull=False, # 여행지 정보가 있는 경우
+  ).first()
+  if p: # 여행지 게시글이 있는 경우
+    return redirect('/partner/rewrite_post?redirect_message=travel_post_exist')
 
   # 광고 게시글 작성
+  '''
   if request.method == 'POST':
     title = request.POST.get('title', '')
     content = request.POST.get('content', '')
@@ -140,27 +101,47 @@ def write_post(request):
       'result': 'success',
       'post_id': post.id,
     })
+  '''
 
   # 게시판 정보
-  boards = post_do.get_boards()
+  boards = daos.get_board_tree()
+
+  # 카테고리 정보
+  categories = daos.get_category_tree()
 
   return render(request, 'partner/write_post.html', {
-    **context,
-    'boards': boards,
+    **contexts,
+    'boards': boards, # 게시판 정보
+    'categories': categories, # 카테고리 정보
   })
 
 # 광고 게시글 수정 페이지
 def rewrite_post(request):
-  context = get_default_context(request)
-  if context['account']['account_type'] != 'partner':
-    return redirect('/?redirect=partner_status_error')
+  contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
 
-  # 광고 게시글이 없으면, 광고 게시글 작성 페이지로 이동
-  if not context['travel_post']:
-    return redirect('/partner/write_post?redirect=need_travel_post')
+  # 로그인 여부 확인
+  if not request.user.is_authenticated: # 로그인이 되어 있지 않은 경우
+    return redirect('/?redirect_message=need_login') # 로그인 페이지로 리다이렉트
+  # 파트너 계정 확인
+  if 'partner' not in contexts['account']['groups']: # 파트너 계정이 아닌 경우
+    return redirect('/?redirect_message=partner_status_error') # 홈으로 리다이렉트
+
+  # 광고 게시글 정보
+  p = models.POST.objects.filter(
+    author=contexts['account']['id'],
+    place_info__isnull=False, # 여행지 정보가 있는 경우
+  ).first()
+  if not p: # 여행지 게시글이 없는 경우, 광고 게시글 작성 페이지로 이동
+    return redirect('/partner/write_post?redirect_message=need_travel_post')
+  post = daos.get_post_info(p.id)
+
+  # 광고 게시글 작성지 확인
+  if contexts['account']['id'] != post['author']['id']:  # 광고 게시글 작성자가 아닌 경우
+    return redirect('/?redirect_message=partner_status_error') # 홈으로 리다이렉트
 
   # 광고 게시글 수정
   # title, content, images, board_id 수정 가능
+  '''
   if request.method == 'POST':
     tp = post_mo.POST.objects.get(id=context['travel_post']['id'])
     title = request.POST.get('title', tp.title)
@@ -205,37 +186,42 @@ def rewrite_post(request):
     return JsonResponse({
       'result': 'success',
     })
+  '''
 
   # 게시판 정보
-  boards = post_do.get_boards()
+  boards = daos.get_board_tree()
+
+  # 카테고리 정보
+  categories = daos.get_category_tree()
 
   return render(request, 'partner/rewrite_post.html', {
-    **context,
-    'boards': boards,
+    **contexts,
+    'boards': boards, # 게시판 정보
+    'categories': categories, # 카테고리 정보
   })
 
 # 쿠폰 관리 페이지
 def coupon(request):
-  context = get_default_context(request)
-  if context['account']['account_type'] != 'partner':
-    return redirect('/?redirect=partner_status_error')
+  contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
 
-  # 여행 게시글
-  tp = post_mo.POST.objects.exclude(
-    ad_id='', # 광고 게시글은 반드시 광고 ID가 있음
-  ).filter(
-    author_id=context['account']['id'], # 파트너 계정 ID
-  ).first() # 광고 게시글은 1개만 존재함
-  travel_post = None
-  if tp:
-    travel_post = {
-      'id': tp.id,
-      'title': tp.title,
-    }
-  else: # 광고 게시글이 없는 경우, 광고 게시글 작성 페이지로 이동
-    return redirect('/partner/write_post?redirect=need_travel_post')
+  # 로그인 여부 확인
+  if not request.user.is_authenticated: # 로그인이 되어 있지 않은 경우
+    return redirect('/?redirect_message=need_login') # 로그인 페이지로 리다이렉트
+  # 파트너 계정 확인
+  if 'partner' not in contexts['account']['groups']: # 파트너 계정이 아닌 경우
+    return redirect('/?redirect_message=partner_status_error') # 홈으로 리다이렉트
+
+  # 여행지 게시글
+  p = models.POST.objects.filter(
+    author=contexts['account']['id'],
+    place_info__isnull=False, # 여행지 정보가 있는 경우
+  ).first()
+  if not p: # 여행지 게시글이 없는 경우, 광고 게시글 작성 페이지로 이동
+    return redirect('/partner/write_post?redirect_message=need_travel_post')
+  post = daos.get_post_info(p.id)
 
   # 새 쿠폰 생성
+  '''
   if request.method == 'POST':
     code = request.POST.get('code', '') # 쿠폰 코드
     name = request.POST.get('name', '') # 쿠폰 이름
@@ -393,98 +379,43 @@ def coupon(request):
       'result': 'success',
       'coupon_history_id': coupon_history.id,
     })
+  '''
 
-  # data
+  # 데이터 가져오기
   page = int(request.GET.get('page', 1))
-  tab = request.GET.get('tab', 'coupon') # coupon, history
-  search_coupon_code = request.GET.get('search_coupon_code', '')
-  search_coupon_name = request.GET.get('search_coupon_name', '')
+  search_coupon_name = request.GET.get('search_coupon_name', '') # 쿠폰 이름 검색
+  search_coupon_status = request.GET.get('search_coupon_status', '') # 쿠폰 상태 검색
+  search_coupon_owner = request.GET.get('search_coupon_owner', '') # 쿠폰 소유자 검색
 
-  # search
-  if tab == 'coupon': # 쿠폰 목록 탭
-
-    # 쿠폰 목록 가져오기
-    cps = coupon_mo.COUPON.objects.filter(
-      create_account_id = request.user.username,
-      code__contains = search_coupon_code,
-      name__contains = search_coupon_name,
-    ).order_by('-created_dt')
-    coupons = []
-    last_page = len(cps) // 30 + 1 # 한 페이지당 30개씩 표시
-    for cp in cps[(page - 1) * 30:page * 30]:
-
-      # 쿠폰 소유자 정보
-      if cp.own_user_id != request.user.username:
-        ou = get_user_model().objects.filter(username=cp.own_user_id).first()
-        own_user = {
-          'id': ou.username,
-          'nickname': ou.first_name,
-        }
-      else:
-        own_user = {
-          'id': request.user.username,
-          'nickname': request.user.first_name,
-        }
-
-      coupons.append({
-        'id': cp.id,
-        'code': cp.code,
-        'name': cp.name,
-        'description': cp.description,
-        'images': str(cp.images).split(','),
-        'post_id': cp.post_id,
-        'created_dt': cp.created_dt,
-        'required_point': cp.required_point,
-        'own_user': own_user,
-        'post': travel_post,
-      })
-    return render(request, 'partner/coupon.html', {
-      **context,
-      'last_page': last_page,
-      'coupons': coupons,
+  # 쿠폰 목록 가져오기
+  cps = models.COUPON.objects.prefetch_related('own_accounts').filter(
+    create_account_id=request.user.username,
+    name__contains=search_coupon_name,
+    status__contains=search_coupon_status,
+    own_accounts=search_coupon_owner,
+  ).order_by('-expire_at')
+  coupons = []
+  last_page = len(cps) // 30 + 1 # 한 페이지당 30개씩 표시
+  for cp in cps[(page - 1) * 30:page * 30]:
+    coupons.append({
+      'code': cp.code,
+      'name': cp.name,
+      'image': cp.image,
+      'content': cp.content,
+      'required_point': cp.required_point,
+      'expire_at': cp.expire_at,
+      'created_at': cp.created_at,
+      'status': cp.status,
+      'note': cp.note,
+      'own_accounts': [{
+        'id': oa.username,
+        'nickname': oa.first_name,
+      } for oa in cp.own_accounts],
     })
 
-  elif tab == 'history': # 쿠폰 사용 내역 탭
-    hs = coupon_mo.COUPON_HISTORY.objects.filter(
-      create_account_id = request.user.username,
-      code__contains = search_coupon_code,
-      name__contains = search_coupon_name,
-    ).order_by('-created_dt')
-    histories = []
-    last_page = len(hs) // 30 + 1 # 한 페이지당 30개씩 표시
-    for h in hs[(page - 1) * 30:page * 30]:
-
-      # 쿠폰 사용자 정보
-      if h.used_user_id != request.user.username:
-        uu = get_user_model().objects.filter(username=h.used_user_id).first()
-        used_user = {
-          'id': uu.username,
-          'nickname': uu.first_name,
-        }
-      else:
-        used_user = {
-          'id': request.user.username,
-          'nickname': request.user.first_name,
-        }
-
-      histories.append({
-        'id': h.id,
-        'code': h.code,
-        'name': h.name,
-        'description': h.description,
-        'images': str(h.images).split(','),
-        'post_id': h.post_id,
-        'created_dt': h.created_dt,
-        'used_dt': h.used_dt,
-        'required_point': h.required_point,
-        'status': h.status,
-        'note': h.note,
-        'used_user': used_user,
-        'post': travel_post,
-      })
-
-    return render(request, 'partner/coupon.html', {
-      **context,
-      'last_page': last_page,
-      'histories': histories,
-    })
+  return render(request, 'partner/coupon.html', {
+    **contexts,
+    'post': post, # 여행지 게시글 정보
+    'coupons': coupons, # 쿠폰 정보
+    'last_page': last_page, # page 처리 작업에 사용(반드시 필요)
+  })

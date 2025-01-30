@@ -61,6 +61,10 @@ MIDDLEWARE = [
   'corsheaders.middleware.CorsMiddleware',
 ]
 
+# scheduler 설정
+APSCHEDULER_DATETIME_FORMAT = "N J, Y, f:s a"
+SCHEDULER_DEFAULT = True
+
 # sitemap 설정
 SITE_ID = 2
 SITE_DOMAIN = 'travelertalk.com'
@@ -101,7 +105,7 @@ WSGI_APPLICATION = 'apptoaster.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-AUTH_USER_MODEL = 'app_core.CustomUser' # User model 설정
+AUTH_USER_MODEL = 'app_core.ACCOUNT' # User model 설정
 DATABASES = {
   'default': {
     'ENGINE': 'django.db.backends.sqlite3',
