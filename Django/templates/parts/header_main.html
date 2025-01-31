@@ -1,5 +1,5 @@
 <!-- header -->
-<header class="header-main header-option-01">
+<header class="header-main header-option-01 header-background">
   <div class="header-top">
     <div style="display: flex; align-items: flex-start;">
       <div class="d-none d-lg-block" style="width: 320px;"></div>
@@ -18,7 +18,7 @@
               <div class="form-group position-relative" onkeyup="if(event.keyCode == 13) searchPost('mobile');"
                 style="width: calc(100vw - 240px);">
                 <input id="mobileSearchKeyword" class="form-control border-0 border-bottom p-2 pe-6 ms-2"
-                  style="font-size: 14px;" placeholder="검색어를 입력해주세요." value="{{ request.GET.search }}">
+                  style="font-size: 14px; background: transparent" placeholder="검색어를 입력해주세요." value="{{ request.GET.search }}">
                 <a href="javascript: searchPost('pc');" class="position-absolute text-black-50"
                   style="right: 15px; top: 50%; transform: translateY(-50%); font-size: 14px;">
                   <i class="fi fi-rr-search"></i>
