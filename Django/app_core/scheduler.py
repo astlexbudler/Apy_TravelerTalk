@@ -1,4 +1,4 @@
-from datetime import timezone
+from datetime import timedelta, timezone
 from apscheduler.schedulers.background import BackgroundScheduler
 from . import models
 
@@ -8,6 +8,7 @@ def startScheduler():
     scheduler.add_job(review_search_weight, 'interval', hours=6) # 6시간마다 실행
     scheduler.add_job(coupon_expire, 'cron', hour=0, minute=0) # 매일 0시 0분에 실행
     scheduler.add_job(place_ad_manage, 'cron', hour=0, minute=30) # 매일 0시 30분에 실행
+    scheduler.add_job(delete_account, 'cron', hour=1, minute=0) # 매일 1시 0분에 실행
     scheduler.start()
 
 def empty_schedule_job():
@@ -87,3 +88,17 @@ def place_ad_manage():
                 content=f'[SCHEDULER] {place_info.post.title} 여행지의 광고가 자동 시작되었습니다.'
             )
 
+def delete_account():
+
+    # 모든 삭제 대기 중인 사용자를 가져온다.
+    accounts = models.ACCOUNT.objects.filter(
+        status='deleted'
+    )
+    today = timezone.now()
+    for account in accounts:
+        # last_login이 90일 이전인 경우 삭제
+        if account.last_login < today - timedelta(days=90):
+            account.delete()
+            models.SERVER_LOG.objects.create(
+                content=f'[SCHEDULER] {account.id} 사용자 데이터가 삭제되었습니다.'
+            )

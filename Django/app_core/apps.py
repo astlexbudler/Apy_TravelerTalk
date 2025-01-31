@@ -24,7 +24,7 @@ class AppCoreConfig(AppConfig):
         # SERVER_SETTING: 서버 설정 테이블
         models.SERVER_SETTING.objects.create(
           name='site_logo', # 로고
-          value='/media/logo.png'
+          value='/media/default.png'
         )
         models.SERVER_SETTING.objects.create(
           name='company_info', # 회사 정보

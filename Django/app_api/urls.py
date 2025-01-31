@@ -66,7 +66,7 @@ urlpatterns = [
   # 쿠폰 받기 api
   path('receive_coupon', a.receive_coupon, name='receive_coupon'),
 
-  # 북마크 토글 api
-  path('toggle_bookmark', a.toggle_bookmark, name='toggle_bookmark'),
+  # 게시글 좋아요 토글 api
+  path('like_post', a.like_post, name='like_post'),
 
 ]

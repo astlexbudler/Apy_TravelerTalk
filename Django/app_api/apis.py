@@ -5,13 +5,8 @@ from django.http import JsonResponse
 from django.contrib.auth import authenticate, logout, get_user_model, login
 from django.db.models import Q
 
-from app_core import models as core_mo
-from app_user import models as user_mo
-from app_partner import models as partner_mo
-from app_supervisor import models as supervisor_mo
-from app_post import models as post_mo
-from app_message import models as message_mo
-from app_coupon import models as coupon_mo
+from app_core import models
+from app_core import daos
 
 # 로그인 API
 # POST: id, password
@@ -27,14 +22,9 @@ def account_login(request):
     if user is not None:
       if user.status == 'active': # 활성화 상태
         login(request, user)
-        return JsonResponse({'result': 'success'})
       elif user.status == 'pending': # 승인 대기 상태
         login(request, user)
-        return JsonResponse({'result': 'pending'})
-      elif user.status == 'sleeping': # 휴면 상태
-        return JsonResponse({'result': 'sleeping'})
-      elif user.status == 'banned': # 정지 상태
-        return JsonResponse({'result': 'banned'})
+      return JsonResponse({'result': user.status})
 
     # 로그인 실패
   return JsonResponse({'result': 'error'})
@@ -52,23 +42,26 @@ def signup(request):
     account_type = request.POST['account_type']
     id = request.POST['id']
     password = request.POST['password']
-    nickname = request.POST['nickname']
-    category = request.POST.get('category', '')
+    nickname = request.POST.get('nickname', '')
+    partner_name = request.POST.get('partner_name', '')
+    email = request.POST.get('email', '')
+    category_ids = request.POST.get('category_ids', '').split(',')
     tel = request.POST.get('tel', '')
     address = request.POST.get('address', '')
     status = 'active'
-    point = 0
+    level_point = 0
+    coupon_point = 0
 
     # 파트너 또는 여성 회원일 경우
     if account_type == 'partner' or account_type == 'dame':
-      status = 'pending' # 승인 대기 상태로 설정
+      status = 'pending_' + account_type
       # 승인 대기는 관리자가 확인 후 활성화 가능.
       # 승인 대기 상태에서는 일부 기능 제한
       # 글 작성, 댓글 작성, 출석 불가
 
     # 사용자 또는 여성 회원일 경우
     if account_type == 'user' or account_type == 'dame':
-      point = int(core_mo.SERVER_SETTING.objects.get(id='register_point').value) # 가입 포인트 지급
+      point = int(models.SERVER_SETTING.objects.get(id='register_point').value) # 가입 포인트 지급
 
     # 아이디 중복 확인
     User = get_user_model()
@@ -79,30 +72,36 @@ def signup(request):
     account = User(
       username=id,
       first_name=nickname,
+      last_name=partner_name,
+      email=email,
       status=status,
       account_type=account_type,
-      user_usable_point=point,
-      partner_categories=category,
       partner_tel=tel,
-      partner_address=address
+      partner_address=address,
+      coupon_point=coupon_point,
+      level_point=level_point
     )
+    account.partner_categories.add(
+      models.CATEGORY.objects.filter(id__in=category_ids)
+    )
+    account.level = models.LEVEL_RULE.objects.get(level=1)
+    account.groups.add(models.GROUP.objects.get(name='user'))
     account.set_password(password)
     account.save()
 
     # 회원가입 활동기록 생성
-    activity = user_mo.ACTIVITY(
-      message = f'[계정] {nickname}님이 가입하셨습니다.',
-      user_id = id,
+    models.ACTIVITY.objects.create(
+      account=account,
+      message = f'[계정] {nickname}님의 계정을 생성했습니다.',
       point_change = '+' + str(point),
     )
-    activity.save()
 
     return JsonResponse({'result': status})
   return JsonResponse({'result': 'error'})
 
 # 파일 업로드 API
 def upload(request):
-  upload = core_mo.UPLOAD(
+  upload = models.UPLOAD(
     file = request.FILES["file"]
   )
   upload.save()
@@ -165,38 +164,45 @@ def send_message(request):
     sender_id = request.user.username
 
   # 쪽지 내용 설정
-  receiver_id = request.POST.get('receiver_id', '') # 수신자 아이디
-  title = request.POST.get('title', '') # 제목
-  content = request.POST.get('content', '') # 내용
-  include_coupon = request.POST.get('include_coupon', '') # 쿠폰 포함 여부(쿠폰은 쪽지를 통해 전달 가능)
-  images = request.POST.get('images', '') # 이미지(이미지는 하나만 전달 가능)
+  to_id = request.POST.get('to_id') # 수신자 아이디
+  title = request.POST.get('title') # 제목
+  content = request.POST.get('content') # 내용
+  coupon_code = request.POST.get('coupon_code') # 쿠폰 포함 여부(쿠폰은 쪽지를 통해 전달 가능)
+  image = request.FILES.get('image') # 이미지
+
+  # 쪽지 확인
+  if not title or not content: # 제목 또는 내용이 없는 경우, 에러 반환
+    return JsonResponse({'result': 'error'})
 
   # 쪽지 저장
-  message = message_mo.MESSAGE(
-    sender_id = sender_id,
-    receiver_id = receiver_id,
+  message = models.MESSAGE.objects.create(
+    to_account=to_id,
+    sender_account=sender_id,
     title = title,
     content = content,
-    include_coupon = include_coupon,
-    images = images
   )
+  if image: # 이미지가 있는 경우, 이미지 저장
+    message.images = image
+  if coupon_code: # 쿠폰 코드가 있는 경우, 쿠폰 저장
+    coupon = models.COUPON.objects.filter(code=coupon_code).first()
+    if coupon:
+      message.include_coupon = coupon
   message.save()
 
   # 쪽지 발송 활동기록 생성
   if request.user.is_authenticated: # 로그인 상태인 경우
-    if request.user.account_type == 'user' or request.user.account_type == 'dame' or request.user.account_type == 'partner':
 
-      # 관리자에게 보낸 경우, receiver를 'site_name'로 설정
-      receiver = core_mo.SERVER_SETTING.objects.get(id='site_name').value
-      if receiver_id != 'supervisor':
-        rc = get_user_model().objects.get(username=receiver_id)
-        receiver = rc.first_name
+    # 관리자에게 보낸 경우, receiver를 '관리자'로 설정
+    if to_id == 'supervisor':
+      receiver = '관리자'
+    else:
+      receiver = get_user_model().objects.get(username=to_id).first_name
 
-      activity = user_mo.ACTIVITY(
-        message = f'[쪽지] {receiver}님에게 쪽지를 보냈습니다.',
-        user_id = request.user.username,
-      )
-      activity.save()
+    activity = models.ACTIVITY(
+      account=request.user,
+      message = f'[쪽지] {receiver}님에게 쪽지를 보냈습니다.',
+    )
+    activity.save()
 
   return JsonResponse({
     'result': 'success',
@@ -211,8 +217,8 @@ def edit_user(request):
     return JsonResponse({'result': 'error'})
 
   # 수정 대상 설정
-  if request.user.account_type == 'supervisor' or request.user.account_type == 'sub_supervisor': # 관리자 계정일 경우, 수정 대상을 파라미터로 설정
-    id = request.POST.get('id')
+  if 'supervisor' in User.groups or ('subsupervisor' in User.groups and 'user' in User.subsupervisor_permissions): # 관리자 계정일 경우, 수정 대상을 파라미터로 설정
+    id = request.POST.get('edit_account_id')
   else: # 그 외의 경우, 수정 대상을 로그인한 사용자로 설정
     id = request.user.username
 
@@ -220,46 +226,60 @@ def edit_user(request):
   user = User.objects.get(username=id)
 
   # 정보 수정
+  # 닉네임
   nickname = request.POST.get('nickname', user.first_name)
   user.first_name = nickname
+  # 비밀번호
   password = request.POST.get('password', '')
   if password != '':
     user.set_password(password)
+  # 파트너 업체명
+  partner_name = request.POST.get('partner_name', user.last_name)
+  user.last_name = partner_name
+  # 이메일
+  email = request.POST.get('email', user.email)
+  user.email = email
+  # 계정 상태
   status = request.POST.get('status', user.status)
   user.status = status
+  # 관리자 메모
   note = request.POST.get('note', user.note)
   user.note = note
-  user_usable_point = request.POST.get('user_usable_point', user.user_usable_point)
-  user.user_usable_point = user_usable_point
-  user_level_point = request.POST.get('user_level_point', user.user_level_point)
-  user.user_level_point = user_level_point
-  user_level = request.POST.get('user_level', user.user_level)
-  user.user_level = user_level
-  partner_tel = request.POST.get('partner_tel', user.partner_tel)
-  user.partner_tel = partner_tel
-  partner_address = request.POST.get('partner_address', user.partner_address)
-  user.partner_address = partner_address
-  partner_categories = request.POST.get('partner_categories', user.partner_categories)
-  user.partner_categories = partner_categories
-  supervisor_permissions = request.POST.get('supervisor_permissions', user.supervisor_permissions)
-  user.supervisor_permissions = supervisor_permissions
+  # 쿠폰 포인트
+  coupon_point = request.POST.get('coupon_point', user.coupon_point)
+  user.coupon_point = coupon_point
+  # 레벨 포인트
+  level_point = request.POST.get('level_point', user.level_point)
+  user.level_point = level_point
+  # 연락처
+  tel = request.POST.get('tel', user.partner_tel)
+  user.partner_tel = tel
+  # 주소
+  address = request.POST.get('address', user.partner_address)
+  user.partner_address = address
+  # 카테고리
+  category_ids = request.POST.get('category_ids', '').split(',')
+  user.partner_categories.clear()
+  for category_id in models.CATEGORY.objects.filter(id__in=category_ids):
+    user.partner_categories.add(category_id)
+  # 권한
+  subsupervisor_permissions = request.POST.get('subsupervisor_permissions', user.subsupervisor_permissions)
+  user.subsupervisor_permissions = subsupervisor_permissions
 
   # 저장
   user.save()
 
   # 활동 기록 생성
-  if request.user.account_type == 'user' or request.user.account_type == 'dame' or request.user.account_type == 'partner': # 사용자 계정일 경우
-    activity = user_mo.ACTIVITY(
+  if 'supervisor' in User.groups or ('subsupervisor' in User.groups and 'user' in User.subsupervisor_permissions): # 관리자 계정일 경우,
+    models.ACTIVITY.objects.create(
+      account=user,
+      message = f'[계정] {nickname}님의 계정 정보가 관리자에 의해 수정되었습니다.',
+    )
+  else: # 그 외의 경우,
+    models.ACTIVITY.objects.create(
+      account=user,
       message = f'[계정] {nickname}님의 계정 정보를 수정했습니다.',
-      user_id = request.user.username,
     )
-    activity.save()
-  else:
-    activity = user_mo.ACTIVITY(
-      message = f'[계정] 관리자에 의해 {nickname}님의 계정 정보가 수정되었습니다.',
-      user_id = id
-    )
-    activity.save()
 
   return JsonResponse({'success': 'y'})
 
@@ -270,6 +290,10 @@ def delete_user(request):
   # 로그인 상태 확인
   if not request.user.is_authenticated: # 비로그인 상태인 경우, 에러 반환
     return JsonResponse({'result': 'error'})
+  if 'supervisor' in User.groups or ('subsupervisor' in User.groups and 'user' in User.subsupervisor_permissions): # 관리자 계정일 경우,
+    id = request.POST.get('delete_account_id')
+  else: # 그 외의 경우,
+    id = request.user.username
 
   if request.user.account_type == 'supervisor' or request.user.account_type == 'sub_supervisor': # 관리자 계정일 경우, 삭제 대상을 파라미터로 설정
     id = request.POST.get('id')
@@ -285,20 +309,6 @@ def delete_user(request):
   user.save()
   # 이후 last_login이 90일 이상 지나면 DB에서 삭제됨.(scheduler로 구현)
 
-  # 활동 기록 생성
-  if request.user.account_type == 'user' or request.user.account_type == 'dame' or request.user.account_type == 'partner': # 사용자 계정일 경우
-    activity = user_mo.ACTIVITY(
-      message = f'[계정] {user.first_name}님의 계정을 삭제했습니다.',
-      user_id = request.user.username,
-    )
-    activity.save()
-  else:
-    activity = user_mo.ACTIVITY(
-      message = f'[계정] 관리자에 의해 {user.first_name}님의 계정이 삭제되었습니다.',
-      user_id = id
-    )
-    activity.save()
-
   return JsonResponse({'success': 'y'})
 
 # 쿠폰 정보 조회 API
@@ -306,105 +316,86 @@ def search_coupon(request):
 
   # 쿠폰 코드로 쿠폰 조회
   coupon_code = request.GET.get('code', '')
-  cp = coupon_mo.COUPON.objects.filter(
+  cp = models.COUPON.objects.filter(
     code=coupon_code
-  ).first()
-  print(cp)
+  ).select_related('post', 'create_account').prefetch_related('own_accounts').first()
 
   if cp is None: # 쿠폰이 존재하지 않는 경우, not_exist 반환
     return JsonResponse({'result': 'not_exist', 'coupon_count': 0, 'coupon': {}})
 
-  # 쿠폰 연관 게시글 조회
-  # 각 쿠폰은 연관 게시글이 하나씩 존재함.
-  pt = post_mo.POST.objects.filter(
-    id=cp.post_id
-  ).first()
-  post = {
-    'id': pt.id,
-    'title': pt.title,
-  }
-
-  # 쿠폰 생성자 및 소유자 정보 확인
-  # 쿠폰 생성자: 파트너 또는 관리자
-  # 쿠폰 소유자: 사용자 또는 생성자
-  oa = get_user_model().objects.filter(username=cp.own_user_id).first()
-  own_account = {
-    'id': oa.username,
-    'nickname': oa.first_name,
-  }
-  ca = get_user_model().objects.filter(username=cp.create_account_id).first()
-  create_account = {
-    'id': ca.username,
-    'nickname': ca.first_name,
-  }
-
   # 쿠폰 정보 확인
   coupon = {
-    'id': cp.id,
     'code': cp.code,
     'name': cp.name,
-    'description': cp.description,
-    'images': str(cp.images).split(','), #  각 쿠폰당 이미지는 하나씩만 등록됨.
-    'post': post,
-    'own_account': own_account,
-    'create_account': create_account,
-    'created_dt': cp.created_dt,
+    'content': cp.content,
     'required_point': cp.required_point,
+    'expire_at': cp.expire_at,
+    'created_at': cp.created_at,
+    'status': cp.status,
+    'post': {
+      'title': cp.post.title,
+    },
+    'create_account': {
+      'id': cp.create_account.username,
+      'nickname': cp.create_account.first_name,
+      'partner_name': cp.create_account.last_name,
+      'groups': [group.name for group in cp.create_account],
+    },
+    'own_accounts': [{
+      'id': account.username,
+      'nickname': account.first_name,
+    } for account in cp.own_accounts]
   }
 
   return JsonResponse({
     'result': 'success',
-    'coupon_count': 1,
     'coupon': coupon
   })
 
 # 댓글 작성 api
 def write_comment(request):
   if request.method == 'POST':
-    post_id = request.POST.get('post_id', '')
-    comment_id = request.POST.get('comment_id', '')
-    content = request.POST.get('content', '')
+    post_id = request.POST.get('post_id')
+    content = request.POST.get('content')
 
-    if content == '': # 댓글 내용이 없는 경우
-      return JsonResponse({'result': 'content_empty'})
+    if not post_id or not content: # 게시글 아이디 또는 내용이 없는 경우
+      return JsonResponse({'result': 'empty'})
 
     # 게시글 확인
-    po = post_mo.POST.objects.filter(
+    po = models.POST.objects.filter(
       id=post_id
-    ).first()
+    ).prefetch_related('boards').prefetch_related('comment_groups').first()
     if po is None: # 댓글을 작성할 게시긇이 없는 경우
-      return JsonResponse({'result': 'post_not_exist'})
+      return JsonResponse({'result': 'empty'})
 
     # 게시판 확인
-    bo = post_mo.BOARD.objects.filter(
-      id=po.board_id
-    ).first()
-    # 게시글(게시판의 댓긓 작성 권한)에 댓글을 작성할 권한이 있는지 확인
-    if request.user.account_type not in bo.comment_permissions:
-      return JsonResponse({'result': 'permission_denied'})
+    for bo in po.boards:
+      if set(request.user.groups).isdisjoint(set(bo.comment_groups)): # 댓글 작성 권한 확인
+        return JsonResponse({'result': 'permission_denied'})
 
     # 댓글 작성
-    comment = post_mo.COMMENT(
-      post_id=post_id,
-      comment_id=comment_id,
-      user_id=request.user.username,
-      content=content
+    models.COMMENT.objects.create(
+      post=po,
+      author=request.user,
+      content=content,
     )
-    comment.save()
 
-    # 댓글 작성 포인트 추가
-    point = int(core_mo.SERVER_SETTING.objects.get(id='comment_point').value)
-    request.user.user_usable_point += point
-    request.user.user_level_point += point
+    # 만약 게시글이 출석 체크 게시글인 경우,
+    if 'attenddance:' in po.title:
+      # 출석 체크
+      add_point = models.SERVER_SETTING.objects.get(id='attendance_point').value
+    else: # 그 외의 경우,
+      add_point = models.SERVER_SETTING.objects.get(id='comment_point').value
+    request.user.coupon_point += add_point
+    request.user.level_point += add_point
     request.user.save()
 
     # 댓글 작성 활동기록 생성
-    activity = user_mo.ACTIVITY(
+    models.ACTIVITY.objects.create(
+      account=request.user,
       message = f'[게시판] {po.title} 게시글에 댓글을 작성했습니다.',
-      user_id = request.user.username,
-      point_change = '+' + point,
+      point_change = '+' + add_point,
     )
-    activity.save()
 
     return JsonResponse({'result': 'success'})
 
@@ -414,55 +405,91 @@ def delete_comment(request):
     comment_id = request.POST.get('comment_id', '')
 
     # 댓글 확인
-    comment = post_mo.COMMENT.objects.filter(
+    comment = models.COMMENT.objects.filter(
       id=comment_id
-    ).first()
+    ).related('author').first()
     if comment is None: # 댓글이 존재하지 않는 경우
       return JsonResponse({'result': 'comment_not_exist'})
 
-    # 권한 확인
-    if comment.author_id  != request.user.username:
-      # 관리자 또는 댓글 작성자만 삭제 가능
-      if 'post' in request.user.supervisor_permissions:
-        pass
-      else:
-        return JsonResponse({'result': 'permission_denied'})
+
+    # 관리자 또는 댓글 작성자만 삭제 가능
+    if 'supervisor' in request.user.groups or ('subsupervisor' in request.user.groups and 'post' in request.user.subsupervisor_permissions):
+      pass
+    elif comment.author != request.user: # 댓글 작성자가 아닌 경우
+      return JsonResponse({'result': 'permission_denied'})
 
     # 댓글 삭제
     comment.delete()
 
     return JsonResponse({'result': 'success'})
 
+# 메세지 읽음 처리 api
 def read_message(request):
   message_id = request.GET.get('message_id', '')
-  msg = message_mo.MESSAGE.objects.filter(
+  message = models.MESSAGE.objects.filter(
     id=message_id
   ).first()
-  if msg:
-    if not msg.read_dt:
-      msg.read_dt = datetime.datetime.now()
-      msg.save()
+  if message:
+    if not message.is_read:
+      message.is_read = True
+      message.save()
 
   return JsonResponse({'result': 'success'})
 
+# 쿠폰 받기 api
 def receive_coupon(request):
+  message_id = request.GET.get('message_id', '')
+  message = models.MESSAGE.objects.filter(
+    id=message_id
+  ).select_related('include_coupon').first()
+  if message.to_account != request.user.username: # 수신자가 아닌 경우
+    return JsonResponse({'result': 'permission_denied'})
+
+  # 쿠폰 수신
+  if message.include_coupon:
+    coupon = message.include_coupon
+    coupon.own_accounts.add(request.user)
+    coupon.save()
+    message.include_coupon = None
+    message.save()
+
+    # 쿠폰 수신 활동기록 생성
+    models.ACTIVITY.objects.create(
+      account=request.user,
+      message = f'[쿠폰] {coupon.name} 쿠폰을 받았습니다.',
+    )
 
   return JsonResponse({'result': 'success'})
 
-def toggle_bookmark(request):
+# 게시글 좋아요
+def like_post(request):
   # 게시글 아이디 확인
   post_id = request.GET.get('post_id', '')
+  post = models.POST.objects.filter(
+    id=post_id
+  ).prefetch_related('boards').first()
 
-  # 사용자 북마크 확인
-  user_bookmarks = request.user.user_bookmarks.split(',')
+  if not post: # 게시글이 존재하지 않는 경우
+    return JsonResponse({'result': 'post_not_exist'})
 
-  if post_id in user_bookmarks: # 북마크가 이미 존재하는 경우
-    user_bookmarks.remove(post_id + ',') # 북마크 삭제
-    message = 'remove'
-  else: # 북마크가 존재하지 않는 경우
-    user_bookmarks.append(post_id + ',') # 북마크 추가
-    message = 'add'
-  request.user.user_bookmarks = ','.join(user_bookmarks)
-  request.user.save() # 북마크 저장
+  # 사용자 좋아요 확인
+  like_posts = request.session.get('like_posts', '')
+  if post_id not in like_posts: # 좋아요가 존재하지 않는 경우
+    request.session['like_posts'] = like_posts + post_id + ',' # 좋아요 추가
+  else:
+    request.session['like_posts'] = like_posts.replace(post_id + ',', '') # 좋아요 삭제
 
-  return JsonResponse({'result': message})
+  # 게시글 확인
+  user = request.user.objects.prefetch_related('bookmarked_places').first()
+  for board in post.boards:
+    if 'travel' in board.board_type:
+      if post not in user.bookmarked_places:
+        user.bookmarked_places.add(post)
+        user.save()
+        return JsonResponse({'result': 'add'}) # 북마크 추가
+      else:
+        user.bookmarked_places.remove(post)
+        user.save()
+        return JsonResponse({'result': 'remove'}) # 북마크 삭제
+
+  return JsonResponse({'result': 'success'})

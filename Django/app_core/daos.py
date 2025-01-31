@@ -82,9 +82,9 @@ def get_default_contexts(request):
 
   # 서버 설정 확인
   server_settings = {
-    'logo': models.SERVER_SETTING.objects.get(id='site_logo').value,
-    'company_info': models.SERVER_SETTING.objects.get(id='company_info').value,
-    'social_network': models.SERVER_SETTING.objects.get(id='social_network').value,
+    'logo': models.SERVER_SETTING.objects.get(name='site_logo').value,
+    'company_info': models.SERVER_SETTING.objects.get(name='company_info').value,
+    'social_network': models.SERVER_SETTING.objects.get(name='social_network').value,
   }
 
   # 베스트 리뷰 5개

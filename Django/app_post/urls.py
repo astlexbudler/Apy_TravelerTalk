@@ -30,31 +30,6 @@ urlpatterns = [
   # 게시글 조회 권한 확인
   path('post_view', v.post_view, name='post_view'),
 
-  # 공지사항 페이지
-  # 공지사항 목록 및 검색 내역 제공
-  path('notice', v.notice, name='notice'),
-
-  # 이벤트 게시판 페이지
-  # 이벤트 게시글 목록 및 검색 내역 제공
-  path('event', v.event, name='event'),
-
-  # 이벤트 게시글 작성 페이지
-  # 이벤트 게시글 작성 폼 제공
-  # title, content, image 필드 제공
-  # 관리자만 접근 가능
-  path('write_event', v.write_event, name='write_event'),
-
-  # 이벤트 게시글 수정 페이지
-  # 이벤트 게시글 수정 폼 제공
-  # title, content, image 필드 제공
-  # 관리자만 접근 가능
-  path('rewrite_event', v.rewrite_event, name='rewrite_event'),
-
-  # 이벤트 게시글 상세 페이지
-  # 이벤트 게시글의 상세 정보 제공
-  # 이벤트 내용 및 댓글 목록 확인
-  path('event_view', v.event_view, name='event_view'),
-
   # 출석 게시판 페이지
   # 출석 게시글 목록 및 검색 내역 제공
   # 시스템에서 작성한 출석 게시글의 댓글 목록을 가져옴
