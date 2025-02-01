@@ -19,12 +19,17 @@
 
   <!-- 선택지 버튼 그룹 -->
   <div class="btn-group w-100">
-    <a class="btn text-white" href="/profile?profile_id={{ profile.id }}" style="background-color: gray; border-radius: 6px 0px 0px 0px;" id="profileTab">
-      프로필
-    </a>
-    <a class="btn" href="/activity?profile_id={{ profile.id }}" style="background-color: gainsboro; border-radius: 0px;" id="activityTab">
-      활동 기록
-    </a>
+    <div class="w-100 d-flex justify-content-center rounded-2 pastel-pink-background">
+      <a class="w-100 btn text-dark fw-semibold" href="/profile?profile_id={{ profile.id }}" id="profileTab">
+        프로필
+      </a>
+    </div>
+    <span class="divider"></span>
+    <div class="w-100 d-flex justify-content-center rounded-2 pastel-beige-background">
+      <a class="w-100 btn" href="/activity?profile_id={{ profile.id }}" id="activityTab">
+        활동 기록
+      </a>
+    </div>
   </div>
 
   <!-- 프로필 상자 -->
@@ -49,7 +54,7 @@
         등급 정보
       </p>
       <div>
-        <table class="table table-border small border shadow text-center">
+        <table class="table table-border small border shadow text-center pastel-beige-background">
           {% for rule in level_rules %}
           <tr>
             <td class="pe-5"></td>
