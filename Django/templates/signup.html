@@ -19,14 +19,14 @@
 
   <!-- 선택지 버튼 그룹 -->
   <div class="btn-group w-100">
-    <a class="btn text-white" href="javascript: toggleForm('user');" style="background-color: gray; border-radius: 6px 0px 0px 0px;" id="userTab">
+    <a class="btn text-white" href="/signup?tab=user" style="background-color: gray; border-radius: 6px 0px 0px 0px;" id="userTab">
       일반 회원
     </a>
-    <a class="btn" href="javascript: toggleForm('partner');" style="background-color: gainsboro; border-radius: 0px;" id="partnerTab">
-      파트너 업체
-    </a>
-    <a class="btn" href="javascript: toggleForm('dame');" style="background-color: gainsboro; border-radius: 0px 6px 0px 0px;" id="dameTab">
+    <a class="btn" href="/signup?tab=dame" style="background-color: gainsboro; border-radius: 0px 6px 0px 0px;" id="dameTab">
       여성회원
+    </a>
+    <a class="btn" href="/signup?tab=partner" style="background-color: gainsboro; border-radius: 0px;" id="partnerTab">
+      파트너 업체
     </a>
   </div>
 
@@ -42,7 +42,7 @@
       <div class="mb-5">
         <div class="form-group mt-4">
           <label for="accountId">아이디</label> <small id='idConfirmText'></small>
-          <input type="text" class="form-control" placeholder="아이디를 입력해주세요." id="accountId">
+          <input class="form-control" placeholder="아이디를 입력해주세요." id="accountId">
         </div>
       </div>
       <div class="mb-5">
@@ -57,6 +57,12 @@
           <label for="passwordCheck">비밀번호 확인</label> <small id='passwordCheckConfirmText'></small>
           <input type="password" class="form-control" placeholder="비밀번호를 다시 입력해주세요." id="passwordCheck">
         </div>
+        <div class="mb-5">
+          <div class="form-group mt-5">
+            <label for="nickname">닉네임</label> <small id='nicknameConfirmText'></small>
+            <input class="form-control" placeholder="닉네임을 입력해주세요." id="nickname">
+          </div>
+        </div>
       </div>
 
       <!-- 일반 회원 가입 폼 -->
@@ -64,14 +70,7 @@
         <p class="text-dark">
           사용자 프로필 정보
         </p>
-        <div class="mb-5">
-          <div class="form-group mt-5">
-            <label for="name">닉네임</label> <small id='nameConfirmText'></small>
-            <input type="text" class="form-control" placeholder="닉네임을 입력해주세요." id="name">
-          </div>
-        </div>
       </div>
-
 
       <!-- 파트너 업체 가입 폼 -->
       <div id="partner-form" class="d-none">
@@ -80,17 +79,87 @@
         </p>
         <div class="mb-5">
           <div class="form-group mt-5">
-            <label for="businessName">업체명</label> <small id='businessNameConfirmText'></small>
-            <input type="text" class="form-control" placeholder="업체명 또는 사업자명을 입력해주세요." id="businessName">
+            <label for="partnerName">파트너 업체명</label> <small id='partnerNameConfirmText'></small>
+            <input class="form-control" placeholder="업체명 또는 사업자명을 입력해주세요." id="partnerName">
           </div>
         </div>
         <div class="mb-5">
           <div class="form-group mt-5">
-            <label>업종 카테고리</label><br>
+            <label>지역 카테고리 선택</label><br>
+            <div class="mb-3">
+              <!-- Level 1 -->
+              <select class="form-select mb-1" onchange="
+                document.getElementById('selectedBoard').value = this.options[this.selectedIndex].value;
+                document.querySelectorAll('.subBoard').forEach(e => e.classList.add('d-none'));
+                document.getElementById('board' + this.value).classList.toggle('d-none');">
+                <option>-선택해주세요-</option>
+                {% for travel_board in travel_boards %}
+                <option value="{{travel_board.id}}">{{travel_board.name}}</option>
+                {% endfor %}
+              </select>
+
+              {% for travel_board in travel_boards %}
+              {% if travel_board.children|length > 0 %}
+              <!-- Level 2 -->
+              <select class="subBoard form-select d-none mb-1" id="board{{travel_board.id}}" onchange="
+                document.getElementById('selectedBoard').value = this.options[this.selectedIndex].value;
+                document.querySelectorAll('.subBoard').forEach(e => e.classList.add('d-none'));
+                document.getElementById('board' + '{{travel_board.id}}').classList.toggle('d-none');
+                document.getElementById('board' + this.value).classList.toggle('d-none');">
+                <option>-선택해주세요-</option>
+                {% for child in travel_board.children %}
+                <option value="{{child.id}},{{travel_board.id}}">{{travel_board.name}} > {{child.name}}</option>
+                {% endfor %}
+              </select>
+              {% endif %}
+
+              {% for child in travel_board.children %}
+              {% if child.children|length > 0 %}
+              <!-- Level 3 -->
+              <select class="subBoard form-select d-none mb-1" id="board{{child.id}}" onchange="
+                document.getElementById('selectedBoard').value = this.options[this.selectedIndex].value;
+                document.querySelectorAll('.subBoard').forEach(e => e.classList.add('d-none'));
+                document.getElementById('board' + '{{travel_board.id}}').classList.toggle('d-none');
+                document.getElementById('board' + '{{child.id}}').classList.toggle('d-none');
+                document.getElementById('board' + this.value).classList.toggle('d-none');">
+                <option>-선택해주세요-</option>
+                {% for child2 in child.children %}
+                <option value="{{child.id}},{{travel_board.id}},{{child2.id}}">{{travel_board.name}} > {{child.name}} > {{child2.name}}</option>
+                {% endfor %}
+              </select>
+              {% endif %}
+
+              {% for child2 in child.children %}
+              {% if child2.children|length > 0 %}
+              <!-- Level 4 -->
+              <select class="subBoard form-select d-none mb-1" id="board{{child2.id}}" onchange="
+                document.getElementById('selectedBoard').value = this.options[this.selectedIndex].value;
+                document.querySelectorAll('.subBoard').forEach(e => e.classList.add('d-none'));
+                document.getElementById('board' + '{{travel_board.id}}').classList.toggle('d-none');
+                document.getElementById('board' + '{{child.id}}').classList.toggle('d-none');
+                document.getElementById('board' + '{{child2.id}}').classList.toggle('d-none');
+                document.getElementById('board' + this.value).classList.toggle('d-none');">
+                <option>-선택해주세요-</option>
+                {% for child3 in child2.children %}
+                <option value="{{child.id}},{{travel_board.id}},{{child2.id}},{{child3.id}}">{{travel_board.name}} > {{child.name}} > {{child2.name}} > {{child3.name}}</option>
+                {% endfor %}
+              </select>
+              {% endif %}
+              {% endfor %}
+              {% endfor %}
+              {% endfor %}
+
+            </div>
+            <input class="d-none" id="selectedBoard">
+          </div>
+        </div>
+        <div class="mb-5">
+          <div class="form-group mt-5">
+            <label>업종 카테고리 선택</label><br>
             <div class="mb-3">
               <!-- category1 -->
               <select class="form-select mb-1" onchange="
-                document.getElementById('partnerCategory').value = this.options[this.selectedIndex].text;
+                document.getElementById('serviceCategory').value = this.options[this.selectedIndex].value;
                 document.querySelectorAll('.subCategory').forEach(e => e.classList.add('d-none'));
                 document.getElementById('category' + this.value).classList.toggle('d-none');">
                 <option>-선택해주세요-</option>
@@ -102,13 +171,13 @@
               {% if category.children|length > 0 %}
               <!-- category2 -->
               <select class="subCategory form-select d-none mb-1" id="category{{category.id}}" onchange="
-                document.getElementById('partnerCategory').value = this.options[this.selectedIndex].text;
+                document.getElementById('serviceCategory').value = this.options[this.selectedIndex].value;
                 document.querySelectorAll('.subCategory').forEach(e => e.classList.add('d-none'));
                 document.getElementById('category' + '{{category.id}}').classList.toggle('d-none');
                 document.getElementById('category' + this.value).classList.toggle('d-none');">
                 <option>-선택해주세요-</option>
                 {% for child in category.children %}
-                <option value="{{child.id}}">{{category.name}} > {{child.name}}</option>
+                <option value="{{category.id}},{{child.id}}">{{category.name}} > {{child.name}}</option>
                 {% endfor %}
               </select>
               {% endif %}
@@ -117,14 +186,14 @@
               {% if child.children|length > 0 %}
               <!-- category3 -->
               <select class="subCategory form-select d-none mb-1" id="category{{child.id}}" onchange="
-                document.getElementById('partnerCategory').value = this.options[this.selectedIndex].text;
+                document.getElementById('serviceCategory').value = this.options[this.selectedIndex].value;
                 document.querySelectorAll('.subCategory').forEach(e => e.classList.add('d-none'));
                 document.getElementById('category' + '{{category.id}}').classList.toggle('d-none');
                 document.getElementById('category' + '{{child.id}}').classList.toggle('d-none');
                 document.getElementById('category' + this.value).classList.toggle('d-none');">
                 <option>-선택해주세요-</option>
                 {% for child2 in child.children %}
-                <option value="{{child2.id}}">{{category.name}} > {{child.name}} > {{child2.name}}</option>
+                <option value="{{category.id}},{{child.id}},{{child2.id}}">{{category.name}} > {{child.name}} > {{child2.name}}</option>
                 {% endfor %}
               </select>
               {% endif %}
@@ -133,7 +202,7 @@
               {% if child2.children|length > 0 %}
               <!-- category4 -->
               <select class="subCategory form-select d-none mb-1" id="category{{child2.id}}" onchange="
-                document.getElementById('partnerCategory').value = this.options[this.selectedIndex].text;
+                document.getElementById('serviceCategory').value = this.options[this.selectedIndex].value;
                 document.querySelectorAll('.subCategory').forEach(e => e.classList.add('d-none'));
                 document.getElementById('category' + '{{category.id}}').classList.toggle('d-none');
                 document.getElementById('category' + '{{child.id}}').classList.toggle('d-none');
@@ -141,7 +210,7 @@
                 document.getElementById('category' + this.value).classList.toggle('d-none');">
                 <option>-선택해주세요-</option>
                 {% for child3 in child2.children %}
-                <option value="{{child3.id}}">{{category.name}} > {{child.name}} > {{child2.name}} > {{child3.name}}</option>
+                <option value="{{category.id}},{{child.id}},{{child2.id}},{{child3.id}}">{{category.name}} > {{child.name}} > {{child2.name}} > {{child3.name}}</option>
                 {% endfor %}
               </select>
               {% endif %}
@@ -150,13 +219,13 @@
               {% endfor %}
 
             </div>
-            <input class="d-none" id="partnerCategory">
+            <input class="d-none" id="serviceCategory">
           </div>
         </div>
         <div class="mb-5">
           <div class="form-group mt-5">
-            <label for="businessTel">연락처</label>
-            <input type="text" class="form-control" placeholder="연락처를 입력해주세요." id="businessTel">
+            <label for="tel">연락처</label>
+            <input class="form-control" placeholder="연락처를 입력해주세요." id="tel">
           </div>
           <div class="form-group mb-4">
             <div style="display: flex; justify-content: space-between; white-space: nowrap;">
@@ -243,8 +312,8 @@
                 }
               </script>
             </div>
-            <input type="text" id="address" class="form-control mt-2 mb-1" placeholder="소재지가 해외인경우 직접 입력해주세요.">
-            <input type="text" id="addressDetail" class="form-control mt-2" placeholder="상세 주소를 입력해주세요.">
+            <input id="address" class="form-control mt-2 mb-1" placeholder="소재지가 해외인경우 직접 입력해주세요.">
+            <input id="addressDetail" class="form-control mt-2" placeholder="상세 주소를 입력해주세요.">
           </div>
           <p class="text-black-50 small mt-3">
             <i class="fi fi-rr-info"></i> 파트너 회원의 경우, 관리자 승인 후 서비스 이용이 가능합니다.
@@ -286,58 +355,56 @@
   var passwordOk = false;
   var passwordCheckOk = false;
   var nicknameOk = false;
-  var businessNameOk = false;
-  var categoryOk = false;
+  var partnerNameOk = false;
+  var locationCategoryOk = false;
+  var serviceCategoryOk = false;
   var telOk = false;
   var addressOk = false;
-  var nowRegisterType = 'user';
+  var nowRegisterType = '{{request.GET.tab}}';
 
   window.onload = () => {
     console.log(`Window loaded at ${getNowDatetimeString()}`);
-  }
 
-  // 일반회원, 파트너업체, 여성회원 탭 변경
-  toggleForm = (type) => {
+    // Tab
+    tab = '{{request.GET.tab}}';
+    if (tab == '') {
+      location.href = '/signup?tab=user';
+    }
     var userTab = document.getElementById('userTab');
-    var partnerTab = document.getElementById('partnerTab');
     var dameTab = document.getElementById('dameTab');
-    var userForm = document.getElementById('user-form');
-    var partnerForm = document.getElementById('partner-form');
-    var dameForm = document.getElementById('dame-form');
-    if (type === 'user') {
+    var partnerTab = document.getElementById('partnerTab');
+    if (tab == 'user') {
       userTab.style.backgroundColor = 'gray';
       userTab.classList.add('text-white');
       partnerTab.style.backgroundColor = 'gainsboro';
       partnerTab.classList.remove('text-white');
       dameTab.style.backgroundColor = 'gainsboro';
       dameTab.classList.remove('text-white');
-      userForm.classList.remove('d-none');
-      partnerForm.classList.add('d-none');
-      dameForm.classList.add('d-none');
-      nowRegisterType = 'user'; // 현재 회원가입 타입을 user로 설정
-    } else if (type === 'partner') {
-      userTab.style.backgroundColor = 'gainsboro';
-      userTab.classList.remove('text-white');
-      partnerTab.style.backgroundColor = 'gray';
-      partnerTab.classList.add('text-white');
-      dameTab.style.backgroundColor = 'gainsboro';
-      dameTab.classList.remove('text-white');
-      userForm.classList.add('d-none');
-      partnerForm.classList.remove('d-none');
-      dameForm.classList.add('d-none');
-      nowRegisterType = 'partner'; // 현재 회원가입 타입을 partner로 설정
-    } else if (type === 'dame') {
+      document.getElementById('user-form').classList.remove('d-none');
+      document.getElementById('partner-form').classList.add('d-none');
+      document.getElementById('dame-form').classList.add('d-none');
+    } else if (tab == 'dame') {
       userTab.style.backgroundColor = 'gainsboro';
       userTab.classList.remove('text-white');
       partnerTab.style.backgroundColor = 'gainsboro';
       partnerTab.classList.remove('text-white');
       dameTab.style.backgroundColor = 'gray';
       dameTab.classList.add('text-white');
-      userForm.classList.remove('d-none');
-      partnerForm.classList.add('d-none');
-      dameForm.classList.remove('d-none');
-      nowRegisterType = 'dame'; // 현재 회원가입 타입을 dame로 설정
+      document.getElementById('user-form').classList.add('d-none');
+      document.getElementById('partner-form').classList.add('d-none');
+      document.getElementById('dame-form').classList.remove('d-none');
+    } else if (tab == 'partner') {
+      userTab.style.backgroundColor = 'gainsboro';
+      userTab.classList.remove('text-white');
+      partnerTab.style.backgroundColor = 'gray';
+      partnerTab.classList.add('text-white');
+      dameTab.style.backgroundColor = 'gainsboro';
+      dameTab.classList.remove('text-white');
+      document.getElementById('user-form').classList.add('d-none');
+      document.getElementById('partner-form').classList.remove('d-none');
+      document.getElementById('dame-form').classList.add('d-none');
     }
+
   }
 
   // 아이디 중복 검사
@@ -407,8 +474,8 @@
   });
 
   // 닉네임 중복 검사
-  checkNickname = async (name) => {
-    return await fetch(`/api/check_nickname?nickname=${name}`)
+  checkNickname = async (nickname) => {
+    return await fetch(`/api/check_nickname?nickname=${nickname}`)
     .then(res => res.json())
     .then(data => {
       console.log(data);
@@ -416,9 +483,9 @@
     });
   }
 
-  document.querySelector('#name').addEventListener('input', async () => {
-    var name = document.getElementById('name').value;
-    var nameConfirmText = document.getElementById('nameConfirmText');
+  document.querySelector('#nickname').addEventListener('input', async () => {
+    var name = document.getElementById('nickname').value;
+    var nameConfirmText = document.getElementById('nicknameConfirmText');
 
     // 닉네임 길이 확인
     if (name.length < 2) {
@@ -447,48 +514,45 @@
   });
 
   // 업체명 중복 검사(닉네임과 동일하게 처리)
-  document.querySelector('#businessName').addEventListener('input', async () => {
-    var businessName = document.getElementById('businessName').value;
-    var businessNameConfirmText = document.getElementById('businessNameConfirmText');
+  document.querySelector('#partnerName').addEventListener('input', async () => {
+    var partnerName = document.getElementById('partnerName').value;
+    var partnerNameConfirmText = document.getElementById('partnerNameConfirmText');
 
     // 업체명 길이 확인
-    if (document.getElementById('businessName').value.length < 2) {
-      document.getElementById('businessNameConfirmText').innerText = '업체명은 2자 이상이어야 합니다.';
-      document.getElementById('businessNameConfirmText').classList.remove('text-success');
-      document.getElementById('businessNameConfirmText').classList.add('text-danger');
-      businessNameOk = false;
+    if (document.getElementById('partnerName').value.length < 2) {
+      document.getElementById('partnerNameConfirmText').innerText = '업체명은 2자 이상이어야 합니다.';
+      document.getElementById('partnerNameConfirmText').classList.remove('text-success');
+      document.getElementById('partnerNameConfirmText').classList.add('text-danger');
+      partnerNameOk = false;
       return
     }
-
-    // 업체명 중복 검사
-    var exist = await checkNickname(businessName);
-
-    // 업체명 중복 검사 결과에 따른 메시지 출력
-    if (exist === 'not_exist') {
-      businessNameConfirmText.innerText = '사용 가능한 업체명입니다.';
-      businessNameConfirmText.classList.add('text-success');
-      businessNameConfirmText.classList.remove('text-danger');
-      businessNameOk = true; // 업체명 중복검사 통과. 사용 가능
-      return
-    }
-    businessNameConfirmText.innerText = '이미 사용중인 업체명입니다.';
-    businessNameConfirmText.classList.remove('text-success');
-    businessNameConfirmText.classList.add('text-danger');
-    businessNameOk = false; // 업체명 중복검사 실패. 사용 불가
+    partnerNameConfirmText.innerText = '사용 가능한 업체명입니다.';
+    partnerNameConfirmText.classList.add('text-success');
+    partnerNameConfirmText.classList.remove('text-danger');
+    partnerNameOk = true; // 업체명 중복검사 통과. 사용 가능
   });
 
-  // 카테고리 선택 확인. 카테고리를 선택했는지만 확인
-  document.querySelector('#partnerCategory').addEventListener('input', () => {
-    if (document.getElementById('partnerCategory').value === '') {
-      categoryOk = false;
+  // 위치 카테고리 선택 확인. 카테고리를 선택했는지만 확인
+  document.querySelector('#selectedBoard').addEventListener('input', () => {
+    if (document.getElementById('selectedBoard').value === '') {
+      locationCategoryOk = false;
       return;
     }
-    categoryOk = true;
+    locationCategoryOk = true;
+  });
+
+  // 서비스 카테고리 선택 확인. 카테고리를 선택했는지만 확인
+  document.querySelector('#serviceCategory').addEventListener('input', () => {
+    if (document.getElementById('serviceCategory').value === '') {
+      serviceCategoryOk = false;
+      return;
+    }
+    serviceCategoryOk = true;
   });
 
   // 전화번호 확인. 7자리 이상 입력되었는지 확인
-  document.querySelector('#businessTel').addEventListener('input', () => {
-    if (document.getElementById('businessTel').value.length < 7) {
+  document.querySelector('#tel').addEventListener('input', () => {
+    if (document.getElementById('tel').value.length < 7) {
       telOk = false;
       return;
     }
@@ -506,6 +570,10 @@
   // 회원가입 시도
   tryRegister = async () => {
 
+    // 위치 카테고리와 서비스 카테고리에 input 이벤트 발생시키기
+    document.getElementById('selectedBoard').dispatchEvent(new Event('input'));
+    document.getElementById('serviceCategory').dispatchEvent(new Event('input'));
+
     // 약관 동의 확인
     if (!document.getElementById('termsAgree').checked) {
       await showAlert('약관 동의', '서비스 이용약관 및 개인정보 처리방침에 동의해주세요.', 'error');
@@ -520,7 +588,7 @@
         return;
       }
     } else { // 파트너 업체의 경우
-      if (!idOk || !passwordOk || !passwordCheckOk || !businessNameOk || !categoryOk || !telOk || !addressOk) {
+      if (!idOk || !passwordOk || !passwordCheckOk || !partnerNameOk || !locationCategoryOk || !serviceCategoryOk || !telOk || !addressOk) {
         await showAlert('회원가입 정보 확인', '회원가입 정보를 확인해주세요.', 'error');
         return;
       }
@@ -531,14 +599,12 @@
     formData.append('account_type', nowRegisterType);
     formData.append('id', document.getElementById('accountId').value);
     formData.append('password', document.getElementById('password').value);
-    if (nowRegisterType === 'user' || nowRegisterType === 'dame') { // 일반회원, 여성회원의 경우
-      formData.append('nickname', document.getElementById('name').value);
-    } else { // 파트너 업체의 경우
-      formData.append('nickname', document.getElementById('businessName').value);
-      formData.append('category', document.getElementById('partnerCategory').value);
-      formData.append('tel', document.getElementById('businessTel').value);
-      formData.append('address', document.getElementById('address').value);
-    }
+    formData.append('nickname', document.getElementById('nickname').value);
+    formData.append('partner_name', document.getElementById('partnerName').value);
+    formData.append('location_category', document.getElementById('selectedBoard').value);
+    formData.append('service_category', document.getElementById('serviceCategory').value);
+    formData.append('tel', document.getElementById('tel').value);
+    formData.append('address', document.getElementById('address').value);
     var result = await fetch('/api/signup', {
       method: 'POST',
       body: formData,
@@ -557,7 +623,7 @@
       await showAlert('회원가입 성공', '회원가입이 성공적으로 완료되었습니다.', 'success');
       location.href = '/';
       return;
-    } else if (result === 'pending') {
+    } else if (result.indexOf('pending') != -1) {
       await showAlert('회원가입 대기', '관리자 승인 후 모든 서비스를 이용할 수 있습니다.<br>승인 전까지는 일부 서비스만 이용 가능합니다.', 'success');
       location.href = '/';
       return;

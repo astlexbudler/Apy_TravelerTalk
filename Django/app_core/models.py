@@ -42,10 +42,9 @@ class ACCOUNT(AbstractUser):
   # groups = models.ManyToManyField(Group)
   status = models.CharField(max_length=100, help_text='계정 상태(active, pending, deleted, blocked, banned)')
   note = models.TextField(blank=True, help_text='관리자 메모')
-  coupon_point = models.IntegerField(help_text='쿠폰 포인트')
-  level_point = models.IntegerField(help_text='레벨업 포인트')
+  coupon_point = models.IntegerField(help_text='쿠폰 포인트', default=0)
+  level_point = models.IntegerField(help_text='레벨업 포인트', default=0)
   tel = models.CharField(blank=True, max_length=20, help_text='연락처')
-  address = models.CharField(blank=True, max_length=200, help_text='주소')
   subsupervisor_permissions = models.CharField(blank=True, max_length=200, help_text='관리자 권한(account, post, coupon, message, banner, setting)')
   bookmarked_places = models.ForeignKey('POST', on_delete=models.CASCADE, null=True, help_text='북마크된 여행지 게시글', related_name='account_bookmarked_places')
   level = models.ForeignKey('LEVEL_RULE', on_delete=models.CASCADE, null=True, help_text='사용자 레벨', related_name='account_level')
@@ -77,7 +76,7 @@ class CATEGORY(models.Model):
   id = models.AutoField(primary_key=True)
   parent_category = models.ForeignKey('self', on_delete=models.CASCADE, null=True, help_text='상위 카테고리', related_name='category_parent_category')
   name = models.CharField(max_length=100, help_text='카테고리 이름')
-  display_weight = models.IntegerField(help_text='표시 순서')
+  display_weight = models.IntegerField(help_text='표시 순서', default=0)
 
 # BOARD: 게시판 테이블
 class BOARD(models.Model):
@@ -87,9 +86,10 @@ class BOARD(models.Model):
   enter_groups = models.ManyToManyField(Group, help_text='접근 그룹', related_name='board_enter_groups')
   write_groups = models.ManyToManyField(Group, help_text='작성 그룹', related_name='board_write_groups')
   comment_groups = models.ManyToManyField(Group, help_text='댓글 그룹', related_name='board_comment_groups')
+  level_cut = models.IntegerField(help_text='레벨 제한', default=0)
   name = models.CharField(max_length=100, help_text='게시판 이름')
-  board_type = models.CharField(max_length=20, help_text='게시물 타입(tree, travel, event, review, board, attendance, greeting)')
-  display_weight = models.IntegerField(help_text='표시 순서')
+  board_type = models.CharField(max_length=20, help_text='게시물 타입(tree, travel, event, review, board, attendance, greeting, anominous)')
+  display_weight = models.IntegerField(help_text='표시 순서', default=0)
 
 # POST: 게시물 테이블
 class POST(models.Model):
@@ -101,9 +101,9 @@ class POST(models.Model):
   title = models.CharField(max_length=100, help_text='제목')
   image_paths = models.TextField(blank=True, null=True, help_text='이미지 경로')
   content = models.TextField(help_text='내용')
-  view_count = models.IntegerField(help_text='조회수')
-  like_count = models.IntegerField(help_text='좋아요 수')
-  search_weight = models.IntegerField(help_text='검색 가중치')
+  view_count = models.IntegerField(help_text='조회수', default=0)
+  like_count = models.IntegerField(help_text='좋아요 수', default=0)
+  search_weight = models.IntegerField(help_text='검색 가중치', default=0)
   created_at = models.DateTimeField(auto_now_add=True, help_text='작성 일시')
 
 # PLACE_INFO: 여행지 정보 테이블
@@ -116,7 +116,7 @@ class PLACE_INFO(models.Model):
   open_info = models.CharField(max_length=200, help_text='영업 정보')
   ad_start_at = models.DateTimeField(auto_now_add=True, help_text='광고 시작 일시')
   ad_end_at = models.DateTimeField(auto_now_add=True, help_text='광고 종료 일시')
-  status = models.CharField(max_length=20, default='normal', help_text='상태(normal, pending, ad, blocked)')
+  status = models.CharField(max_length=20, default='normal', help_text='상태(writing, normal, pending, ad, blocked)')
   note = models.TextField(help_text='관리자 메모')
 
 # COMMENT: 댓글 테이블
@@ -176,4 +176,4 @@ class BANNER(models.Model):
   location = models.CharField(max_length=20, help_text='위치(top, side)')
   image = models.FileField(upload_to=upload_to, help_text='이미지')
   link = models.CharField(max_length=300, help_text='링크')
-  display_weight = models.IntegerField(help_text='표시 순서')
+  display_weight = models.IntegerField(help_text='표시 순서', default=0)

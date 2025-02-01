@@ -84,6 +84,19 @@
     // Page
     console.log('{{request.GET.page}} | {{last_page}}');
     makePaegeButton('{{request.GET.page}}', '{{last_page}}', `/?search=''`);
+
+    // 에러 메세지 관리
+    handleRedirectMessage();
+
+  }
+
+  handleRedirectMessage = async () => {
+    const redirect_message = '{{request.GET.redirect_message}}';
+
+    if (redirect_message == 'need_login') {
+      await showAlert('로그인 필요', '로그인 후 이용해주세요.', 'error');
+      location.href = '/';
+    }
   }
 
 </script>

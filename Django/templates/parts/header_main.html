@@ -220,7 +220,7 @@
                   <div class="navbar-nav" style="width: 100%; display: flex; flex-wrap: wrap;">
                     {% for board in boards %}
                     <div class="nav-item" style="white-space: nowrap;">
-                      {% if board.post_type == 'none' %}
+                      {% if board.board_type == 'tree' %}
                       <a class="nav-link text-dark" href="javascript: document.querySelectorAll('.sub_board').forEach(function(e){e.classList.add('d-none');}); document.getElementById('sub_board_{{ board.id }}').classList.toggle('d-none');">
                         {{ board.name }}
                       </a>
@@ -247,7 +247,7 @@
             <!-- 2차 -->
             <div class="mb-3 ps-3 border-bottom pb-2 d-none sub_board" id="sub_board_{{ board.id }}">
               {% for sub1_board in board.children %}
-              {% if sub1_board.post_type == 'none' %}
+              {% if sub1_board.board_type == 'tree' %}
               <div class="p-2 text-center" style="white-space: nowrap; display: inline;">
                 <a href="javascript: 
                   document.querySelectorAll('.sub_board').forEach(function(e){e.classList.add('d-none');}); 
@@ -272,14 +272,14 @@
               {% if sub1_board.children|length > 0 %}
               <div class="mb-3 ps-3 border-bottom pb-2 d-none sub_board" id="sub_board_{{ sub1_board.id }}">
                 {% for sub2_board in sub1_board.children %}
-                {% if sub2_board.post_type == 'none' %}
+                {% if sub2_board.board_type == 'tree' %}
                 <div class="p-2 text-center" style="white-space: nowrap; display: inline;">
                   <a href="javascript: 
                     document.querySelectorAll('.sub_board').forEach(function(e){e.classList.add('d-none');}); 
                     document.getElementById('sub_board_{{ sub1_board.id }}').classList.toggle('d-none');
                     document.getElementById('sub_board_{{ sub2_board.id }}').classList.toggle('d-none');
                     document.getElementById('sub_board_{{ board.id }}').classList.toggle('d-none');"
-                    " class="text-decoration-none text-black-50 small">
+                    class="text-decoration-none text-black-50 small">
                     {{ sub2_board.name }}
                   </a>
                 </div>
@@ -299,7 +299,7 @@
                 {% if sub2_board.children|length > 0 %}
                 <div class="mb-3 ps-3 border-bottom pb-2 d-none sub_board" id="sub_board_{{ sub2_board.id }}">
                   {% for sub3_board in sub2_board.children %}
-                  {% if sub3_board.post_type == 'none' %}
+                  {% if sub3_board.board_type == 'tree' %}
                   <div class="p-2 text-center" style="white-space: nowrap; display: inline;">
                     <a href="javascript: 
                     document.querySelectorAll('.sub_board').forEach(function(e){e.classList.add('d-none');}); 
@@ -307,7 +307,7 @@
                     document.getElementById('sub_board_{{ sub2_board.id }}').classList.toggle('d-none');
                     document.getElementById('sub_board_{{ sub1_board.id }}').classList.toggle('d-none');
                     document.getElementById('sub_board_{{ board.id }}').classList.toggle('d-none');"
-                    " class="text-decoration-none text-black-50 small">
+                    class="text-decoration-none text-black-50 small">
                       {{ sub3_board.name }}
                     </a>
                   </div>

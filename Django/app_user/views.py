@@ -74,11 +74,26 @@ def index(request):
 # 회원가입 페이지
 def signup(request):
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
-  boards = daos.get_board_tree() # 게시판 정보 가져오기
+  account_type = 'guest' # 기본값은 guest
+  if request.user.is_authenticated:
+    account_type = 'user'
+    if 'dame' in contexts['account']['groups']:
+      account_type = 'dame'
+    elif 'partner' in contexts['account']['groups']:
+      account_type = 'partner'
+    elif 'subsupervisor' in contexts['account']['groups']:
+      account_type = 'subsupervisor'
+    elif 'supervisor' in contexts['account']['groups']:
+      account_type = 'supervisor'
+  contexts['account']['account_type'] = account_type
+  boards = daos.get_board_tree(account_type) # 게시판 정보
 
   # 이미 로그인된 경우, 리다이렉트 후 메세지 표시
   if request.user.is_authenticated:
     return redirect('/?redirect_message=already_login')
+
+  # 여행지 게시판 정보
+  travel_boards = daos.get_travel_board_tree()
 
   # 카테고리 정보
   categories = daos.get_category_tree()
@@ -86,6 +101,7 @@ def signup(request):
   return render(request, 'signup.html', {
     **contexts,
     'boards': boards, # 게시판 정보
+    'travel_boards': travel_boards, # 여행지 게시판 정보
     'categories': categories, # 카테고리 정보
   })
 
@@ -93,7 +109,19 @@ def signup(request):
 # 계정 찾기는 관리자 문의를 통해 가능함
 def find_account(request):
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
-  boards = daos.get_board_tree() # 게시판 정보 가져오기
+  account_type = 'guest' # 기본값은 guest
+  if request.user.is_authenticated:
+    account_type = 'user'
+    if 'dame' in contexts['account']['groups']:
+      account_type = 'dame'
+    elif 'partner' in contexts['account']['groups']:
+      account_type = 'partner'
+    elif 'subsupervisor' in contexts['account']['groups']:
+      account_type = 'subsupervisor'
+    elif 'supervisor' in contexts['account']['groups']:
+      account_type = 'supervisor'
+  contexts['account']['account_type'] = account_type
+  boards = daos.get_board_tree(account_type) # 게시판 정보
 
   # 이미 로그인된 경우, 리다이렉트 후 메세지 표시
   if request.user.is_authenticated:
@@ -108,7 +136,19 @@ def find_account(request):
 # 관릐자의 경우, 다른 계정의 프로필 조회 가능.
 def profile(request):
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
-  boards = daos.get_board_tree() # 게시판 정보 가져오기
+  account_type = 'guest' # 기본값은 guest
+  if request.user.is_authenticated:
+    account_type = 'user'
+    if 'dame' in contexts['account']['groups']:
+      account_type = 'dame'
+    elif 'partner' in contexts['account']['groups']:
+      account_type = 'partner'
+    elif 'subsupervisor' in contexts['account']['groups']:
+      account_type = 'subsupervisor'
+    elif 'supervisor' in contexts['account']['groups']:
+      account_type = 'supervisor'
+  contexts['account']['account_type'] = account_type
+  boards = daos.get_board_tree(account_type) # 게시판 정보
 
   # 로그인 되지 않은 경우, 리다이렉트 후 로그인 필요 메세지 표시
   if not request.user.is_authenticated:
@@ -116,7 +156,7 @@ def profile(request):
 
   # data
   # 최상위 관리자 또는 사용자 권한이 있는 부관리자 계정일 경우, 다른 사용자의 프로필 페이지 접근 가능
-  if 'supervisor' in contexts['account']['groups'] or 'sub_supervisor' in contexts['account']['groups']:
+  if account_type == 'supervisor' or account_type == 'subsupervisor':
     profile_id = request.GET.get('profile_id', request.user.username)
   else: # 그 외의 경우, 자신의 프로필 페이지만 접근 가능
     profile_id = request.user.username
@@ -144,7 +184,19 @@ def profile(request):
 # 관리자와 파트너는 다른 사용자의 활동 페이지를 조회 가능.
 def activity(request):
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
-  boards = daos.get_board_tree() # 게시판 정보 가져오기
+  account_type = 'guest' # 기본값은 guest
+  if request.user.is_authenticated:
+    account_type = 'user'
+    if 'dame' in contexts['account']['groups']:
+      account_type = 'dame'
+    elif 'partner' in contexts['account']['groups']:
+      account_type = 'partner'
+    elif 'subsupervisor' in contexts['account']['groups']:
+      account_type = 'subsupervisor'
+    elif 'supervisor' in contexts['account']['groups']:
+      account_type = 'supervisor'
+  contexts['account']['account_type'] = account_type
+  boards = daos.get_board_tree(account_type) # 게시판 정보
 
   # 로그인 되지 않은 경우, 리다이렉트 후 로그인 필요 메세지 표시
   if not request.user.is_authenticated:
@@ -154,7 +206,7 @@ def activity(request):
   page = int(request.GET.get('page', '1'))
 
   # 관리자 또는 파트너 확인 가능
-  if 'supervisor' in contexts['account']['groups'] or 'sub_supervisor' in contexts['account']['groups'] or 'partner' in contexts['account']['groups']:
+  if account_type == 'supervisor' or account_type == 'partner' or account_type == 'subsupervisor':
     profile_id = request.GET.get('profile_id', request.user.username)
   else: # 그 외의 경우, 자신의 활동 페이지만 접근 가능
     profile_id = request.user.username
@@ -176,7 +228,19 @@ def activity(request):
 # 북마크 페이지
 def bookmark(request):
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
-  boards = daos.get_board_tree() # 게시판 정보 가져오기
+  account_type = 'guest' # 기본값은 guest
+  if request.user.is_authenticated:
+    account_type = 'user'
+    if 'dame' in contexts['account']['groups']:
+      account_type = 'dame'
+    elif 'partner' in contexts['account']['groups']:
+      account_type = 'partner'
+    elif 'subsupervisor' in contexts['account']['groups']:
+      account_type = 'subsupervisor'
+    elif 'supervisor' in contexts['account']['groups']:
+      account_type = 'supervisor'
+  contexts['account']['account_type'] = account_type
+  boards = daos.get_board_tree(account_type) # 게시판 정보
 
   # 로그인 되지 않은 경우, 리다이렉트 후 로그인 필요 메세지 표시
   if not request.user.is_authenticated:
@@ -193,7 +257,19 @@ def bookmark(request):
 # 제휴 문의 페이지
 def contact(request):
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
-  boards = daos.get_board_tree() # 게시판 정보 가져오기
+  account_type = 'guest' # 기본값은 guest
+  if request.user.is_authenticated:
+    account_type = 'user'
+    if 'dame' in contexts['account']['groups']:
+      account_type = 'dame'
+    elif 'partner' in contexts['account']['groups']:
+      account_type = 'partner'
+    elif 'subsupervisor' in contexts['account']['groups']:
+      account_type = 'subsupervisor'
+    elif 'supervisor' in contexts['account']['groups']:
+      account_type = 'supervisor'
+  contexts['account']['account_type'] = account_type
+  boards = daos.get_board_tree(account_type) # 게시판 정보
 
   return render(request, 'contact.html', {
     **contexts,
@@ -203,7 +279,19 @@ def contact(request):
 # 이용약관 페이지
 def terms(request):
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
-  boards = daos.get_board_tree() # 게시판 정보 가져오기
+  account_type = 'guest' # 기본값은 guest
+  if request.user.is_authenticated:
+    account_type = 'user'
+    if 'dame' in contexts['account']['groups']:
+      account_type = 'dame'
+    elif 'partner' in contexts['account']['groups']:
+      account_type = 'partner'
+    elif 'subsupervisor' in contexts['account']['groups']:
+      account_type = 'subsupervisor'
+    elif 'supervisor' in contexts['account']['groups']:
+      account_type = 'supervisor'
+  contexts['account']['account_type'] = account_type
+  boards = daos.get_board_tree(account_type) # 게시판 정보
 
   # 이용약관 본문 가져오기
   terms = models.SERVER_SETTING.objects.get(name='terms').value

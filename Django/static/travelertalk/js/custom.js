@@ -142,10 +142,20 @@ tryLogin = async () => {
   if (result === 'success') { // 로그인 성공
     location.reload();
     return;
-  } else if (result === 'pending') { // 심사 대기중인 계정의 경우
+  } else if (result.indexOf('pending') != -1) {
     // 심사 대기중 안내 및 로그인 성공
     await showAlert('계정 확인중', '아직 계정 승인 대기 중입니다. 확인이 완료될 때까지 일부 기능이 제한됩니다.', 'warning');
     location.reload();
+    return;
+  } else if (result.indexOf('banned') != -1) {
+    // 계정 정지 안내 및 로그인 실패
+    await showAlert('계정 정지', '활동이 정지된 계정입니다. 관리자에게 문의하세요.', 'error');
+    document.querySelectorAll('.accountLoginId').forEach(element => {
+      element.value = '';
+    });
+    document.querySelectorAll('.accountLoginPassword').forEach(element => {
+      element.value = '';
+    });
     return;
   }
 

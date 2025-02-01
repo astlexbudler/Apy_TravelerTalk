@@ -82,14 +82,18 @@
           </td>
           <td>
             <span class="text-dark">
+              {% if message.sender.partner_name != '' %}
+              {{ message.sender.partner_name }}
+              {% else %}
               {{ message.sender.nickname }}
+              {% endif %}
             </span>
           </td>
           <td>
             {{ message.title }}
           </td>
           <td>
-            {{ message.send_dt }}
+            {{ message.created_at }}
           </td>
         </tr>
         {% endfor %}
@@ -130,14 +134,18 @@
         <tr style="cursor: pointer;" onclick="new bootstrap.Modal(document.getElementById('messageModal{{message.id}}')).show();">
           <td>
             <span class="text-dark">
-              {{ message.receiver.nickname }}
+              {% if message.to.partner_name != '' %}
+              {{ message.to.partner_name }}
+              {% else %}
+              {{ message.to.nickname }}
+              {% endif %}
             </span>
           </td>
           <td>
             {{ message.title }}
           </td>
           <td>
-            {{ message.send_dt }}
+            {{ message.created_at }}
           </td>
           <td>
             {% if message.read == 'y' %}
@@ -478,10 +486,10 @@
 
     // 메세지 전송 요청
     var formData = new FormData();
-    formData.append('receiver_id', receiverId);
+    formData.append('to_id', receiverId);
     formData.append('title', messageTitle);
     formData.append('content', messageContent);
-    formData.append('images', document.getElementById('uploadedImagePath').value);
+    formData.append('image', document.getElementById('uploadedImagePath').value);
     if (document.getElementById('couponCode')) {
       formData.append('coupon_code', document.getElementById('couponCode').value);
     } else {

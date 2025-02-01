@@ -807,4 +807,61 @@ def travel_view(request):
     'comments': comments, # 댓글 정보
   })
 
+# 익명 게시판 페이지
+def anominous(request):
+  contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
+  boards = daos.get_board_tree() # 게시판 정보 가져오기
 
+  # 데이터 가져오기
+  board_ids = request.GET.get('board_ids')
+  page = int(request.GET.get('page', '1'))
+  search = request.GET.get('search', '')
+
+  # 익명 게시판
+  selected_boards = daos.get_selected_board_info(board_ids)
+
+  # 게시글 가져오기
+  posts, last_page = daos.get_board_posts(board_ids, page, search)
+  for post in posts:
+    post['author']['nickname'] = ''
+
+  return render(request, 'post/anominous.html', {
+    **contexts,
+    'boards': boards, # 게시판 정보
+    'selected_boards': selected_boards, # 선택된 게시판 정보
+    'posts': posts, # 게시글 정보
+    'last_page': last_page, # 마지막 페이지, page 처리에 사용
+  })
+
+# 익명 게시글 상세보기
+def anominous_view(request):
+  contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
+  boards = daos.get_board_tree() # 게시판 정보 가져오기
+
+  # 데이터 가져오기
+  post_id = request.GET.get('post_id', '')
+
+  # 게시글 확인
+  post = daos.get_post_info(post_id)
+  if not post: # 게시글이 없는 경우
+    return redirect('/?redirect=post_not_found') # 메인 페이지로 이동
+  post['author']['nickname'] = ''
+
+  # 게시판 정보
+  comments = daos.get_all_post_comments(post_id)
+  for comment in comments:
+    comment['author']['nickname'] = ''
+
+  # 조회수 증가
+  if post_id not in request.session.get('view_posts', ''):
+    request.session['view_posts'] = request.session.get('view_posts', '') + ',' + post_id
+    po = models.POST.objects.get(id=post_id)
+    po.view_count += 1
+    po.save()
+
+  return render(request, 'post/anominous_view.html', {
+    **contexts,
+    'boards': boards, # 게시판 정보
+    'post': post, # 게시글 정보
+    'comments': comments, # 댓글 정보
+  })

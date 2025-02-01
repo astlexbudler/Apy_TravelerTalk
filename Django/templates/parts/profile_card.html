@@ -1,4 +1,5 @@
 {% if profile.account_type == 'partner' %}
+<!-- 파트너 계정의 프로필 카드 -->
 <div class="col-12 border rounded p-3 mb-5">
   <a href="/profile" class="text-dark text-decoration-none">
     <div style="display: flex; justify-content: space-between; white-space: nowrap;">
@@ -42,6 +43,7 @@
   </a>
 </div>
 {% elif profile.account_type == 'user' or profile.account_type == 'dame' %}
+<!-- 사용자 계정의 프로필 카드 -->
 <div class="col-12 border rounded p-3 mb-5">
   <a href="/profile" class="text-dark text-decoration-none">
     <div style="display: flex; justify-content: space-between; white-space: nowrap;">
@@ -78,7 +80,7 @@
         </p>
         <p class="text-black-50">
           <i class="fi fi-ss-coins"></i> 
-          <span class="numberComma">{{ profile.user_usable_point }}</span> 포인트 
+          <span class="numberComma">{{ profile.level_point }}</span> 포인트 
           <span class="badge" style="color: {{profile.user_level.text_color}}; background-color: {{profile.user_level.background_color}};">{{ profile.user_level.name }}</span>
         </p>
       </div>
@@ -88,13 +90,14 @@
         </p>
         <p class="text-black-50">
           <i class="fi fi-ss-coins text-secondary"></i> 
-          <span class="numberComma">{{ profile.user_usable_point }}</span> 포인트
+          <span class="numberComma">{{ profile.coupon_point }}</span> 포인트
         </p>
       </div>
     </div>
   </a>
 </div>
 {% else %}
+<!-- 관리자 계정의 프로필 카드 -->
 <div class="col-12 border rounded p-3 mb-5">
   <a href="/profile" class="text-dark text-decoration-none">
     <div style="display: flex; justify-content: space-between; white-space: nowrap;">

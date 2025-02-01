@@ -74,4 +74,13 @@ urlpatterns = [
   # 광고 게시글 및 댓글 목록 확인
   path('travel_view', v.travel_view, name='travel_view'),
 
+  # 익명 게시판 페이지
+  # 익명 게시글 목록 및 검색 내역 제공
+  path('anominous', v.anominous, name='anominous'),
+
+  # 익명 게시판 상세 페이지
+  # 익명 게시글의 상세 정보 제공
+  # 익명 게시글 및 댓글 목록 확인
+  path('anominous_view', v.anominous_view, name='anominous_view'),
+
 ]

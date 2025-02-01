@@ -26,16 +26,19 @@
   </p>
   {% else %}
   {% for act in activities %}
-  {{activity}}
+  <!-- 활동 내역. 일시, 메세지, 포인트 변동 표시 -->
   <div class="col-12 p-2 mb-2 pb-3 border-bottom">
     <a {% if act.location != '' %}href="{{act.location}}" target="_blank"{% else %}href="#"{% endif %}>
 
       <span class="text-black-50" style="font-size: 12px;">
-        {{ act.created_dt }}<br>
+        {{ act.created_at }}<br>
       </span>
       <p class="mb-2 text-dark">
         {{ act.message }}
       </p>
+      <span class="text-black-50" style="font-size: 12px;">
+        {{ act.point_change }}
+      </span>
 
     </a>
   </div>

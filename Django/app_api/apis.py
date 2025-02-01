@@ -3,6 +3,7 @@ import random
 import string
 from django.http import JsonResponse
 from django.contrib.auth import authenticate, logout, get_user_model, login
+from django.contrib.auth.models import Group
 from django.db.models import Q
 
 from app_core import models
@@ -16,13 +17,14 @@ def account_login(request):
     # 아이디 및 비밀번호 확인
     id = request.POST.get('id', '')
     password = request.POST.get('password', '')
+    print(id, password)
     user = authenticate(request, username=id, password=password)
 
     # 로그인 성공
     if user is not None:
       if user.status == 'active': # 활성화 상태
         login(request, user)
-      elif user.status == 'pending': # 승인 대기 상태
+      elif 'pending' in user.status: # 승인 대기 상태
         login(request, user)
       return JsonResponse({'result': user.status})
 
@@ -45,9 +47,10 @@ def signup(request):
     nickname = request.POST.get('nickname', '')
     partner_name = request.POST.get('partner_name', '')
     email = request.POST.get('email', '')
-    category_ids = request.POST.get('category_ids', '').split(',')
     tel = request.POST.get('tel', '')
-    address = request.POST.get('address', '')
+    address = request.POST.get('address', '') # place address
+    service_category = request.POST.get('service_category', '') # category_ids
+    location_category = request.POST.get('location_category', '') # board_ids
     status = 'active'
     level_point = 0
     coupon_point = 0
@@ -61,40 +64,72 @@ def signup(request):
 
     # 사용자 또는 여성 회원일 경우
     if account_type == 'user' or account_type == 'dame':
-      point = int(models.SERVER_SETTING.objects.get(id='register_point').value) # 가입 포인트 지급
+      point = int(models.SERVER_SETTING.objects.get(name='register_point').value) # 가입 포인트 지급
 
     # 아이디 중복 확인
-    User = get_user_model()
-    if User.objects.filter(username=id).exists() or User.objects.filter(first_name=nickname).exists():
+    id_exist = models.ACCOUNT.objects.filter(username=id).exists()
+    nickname_exist = models.ACCOUNT.objects.filter(first_name=nickname).exists()
+    if id_exist or nickname_exist:
       return JsonResponse({'result': 'exist'})
 
     # 회원가입
-    account = User(
-      username=id,
-      first_name=nickname,
-      last_name=partner_name,
-      email=email,
-      status=status,
-      account_type=account_type,
-      partner_tel=tel,
-      partner_address=address,
-      coupon_point=coupon_point,
-      level_point=level_point
+    account = models.ACCOUNT(
+      username=id, # 아이디
+      first_name=nickname, # 닉네임
+      last_name=partner_name, # 파트너 업체명
+      email=email, # 파트너 이메일
+      status=status, # 계정 상태
+      tel=tel, # 파트너 연락처
+      coupon_point=coupon_point, # 쿠폰 포인트
+      level_point=level_point # 레벨업 포인트
     )
-    account.partner_categories.add(
-      models.CATEGORY.objects.filter(id__in=category_ids)
-    )
-    account.level = models.LEVEL_RULE.objects.get(level=1)
-    account.groups.add(models.GROUP.objects.get(name='user'))
-    account.set_password(password)
+    account.set_password(password) # 비밀번호 설정
+    account.save()
+    account.level = models.LEVEL_RULE.objects.get(level=1) # 레벨 설정
+    account.groups.add(Group.objects.get(name='user'))
     account.save()
 
+    # account_type이 partner인 경우, 여행지 게시글 프리셋 생성
+    if account_type == 'partner':
+      # 여행지 게시글 생성
+      post = models.POST(
+        author=account, # 작성자
+        title=account.last_name + ' 여행지', # 제목
+        content='파트너사 ' + account.last_name + '의 여행지 정보입니다.', # 내용
+      )
+      post.save()
+      for b in [int(b) for b in str(location_category).split(',')]:
+        board = models.BOARD.objects.filter(id=b).first()
+        if board:
+          post.boards.add(board)
+      post.save()
+      # 게시글 여행지 정보 생성
+      place_info = models.PLACE_INFO(
+        post=post, # 게시글
+        address=address, # 주소
+        location_info='여행지를 찾기위한 간단한 안내입니다.', # 위치 정보
+        open_info='여행지의 영업 시간입니다.', # 영업 정보
+        status='writing' # 상태
+      )
+      place_info.save()
+      for c in [int(c) for c in str(service_category).split(',')]:
+        category = models.CATEGORY.objects.filter(id=c).first()
+        if category:
+          place_info.categories.add(category)
+      place_info.save()
+
     # 회원가입 활동기록 생성
-    models.ACTIVITY.objects.create(
-      account=account,
-      message = f'[계정] {nickname}님의 계정을 생성했습니다.',
-      point_change = '+' + str(point),
-    )
+    if account_type == 'partner':
+      models.ACTIVITY.objects.create(
+        account=account,
+        message = f'[계정] {nickname}님의 파트너사 계정을 생성했습니다.',
+      )
+    elif account_type == 'dame' or account_type == 'user':
+      models.ACTIVITY.objects.create(
+        account=account,
+        message = f'[계정] {nickname}님의 계정을 생성했습니다.',
+        point_change = '+' + str(point),
+      )
 
     return JsonResponse({'result': status})
   return JsonResponse({'result': 'error'})
@@ -151,17 +186,31 @@ def search_user(request):
 # 쪽지 발송 API
 def send_message(request):
 
+  # 발신자 확인
+  sender = models.ACCOUNT.objects.prefetch_related('groups').filter(
+    username=request.user.username
+  ).first()
+  sender_groups = [group.name for group in sender.groups.all()]
+  account_type = 'guest'
+  if sender: # 발신자가 존재하는 경우
+    account_type = 'user'
+    if 'dame' in sender_groups:
+      account_type = 'dame'
+    elif 'partner' in sender_groups:
+      account_type = 'partner'
+    elif 'subsupervisor' in sender_groups:
+      account_type = 'subsupervisor'
+    elif 'supervisor' in sender_groups:
+      account_type = 'supervisor'
+
   # 발신자 아이디 설정
-  if not request.user.is_authenticated: # 비로그인 상태인 경우, 발신자를 guest로 설정
-    guest_id = request.session['guest_id'] if 'guest_id' in request.session else None
-    if not guest_id:
-      guest_id = ''.join(random.choices(string.ascii_letters + string.digits, k=16))
-    request.session['guest_id'] = guest_id
-    sender_id = guest_id
-  elif request.user.account_type == 'supervisor' or request.user.account_type == 'sub_supervisor': # 관리자 계정일 경우, 발신자를 supervisor로 설정
+  if account_type == 'guest':
+    sender_id = request.session.get('guest_id', ''.join(random.choices(string.ascii_letters + string.digits, k=16)))
+    request.session['guest_id'] = sender_id
+  elif account_type == 'supervisor' or account_type == 'subsupervisor':
     sender_id = 'supervisor'
-  else: # 그 외의 경우, 발신자를 로그인한 사용자로 설정
-    sender_id = request.user.username
+  else:
+    sender_id = sender.username
 
   # 쪽지 내용 설정
   to_id = request.POST.get('to_id') # 수신자 아이디
@@ -211,19 +260,30 @@ def send_message(request):
 
 # 사용자 정보 수정 API
 def edit_user(request):
-  User = get_user_model()
 
   if not request.user.is_authenticated: # 비로그인 상태인 경우, 에러 반환
     return JsonResponse({'result': 'error'})
 
   # 수정 대상 설정
-  if 'supervisor' in User.groups or ('subsupervisor' in User.groups and 'user' in User.subsupervisor_permissions): # 관리자 계정일 경우, 수정 대상을 파라미터로 설정
+  modifier = models.ACCOUNT.objects.prefetch_related('groups').first()
+  modifier_groups = [group.name for group in modifier.groups.all()]
+  modifier_type = 'user'
+  if 'dame' in modifier_groups:
+    modifier_type = 'dame'
+  elif 'partner' in modifier_groups:
+    modifier_type = 'partner'
+  elif 'subsupervisor' in modifier_groups:
+    modifier_type = 'subsupervisor'
+  elif 'supervisor' in modifier_groups:
+    modifier_type = 'supervisor'
+
+  if 'supervisor' == modifier_type or ('subsupervisor' == modifier_type and 'user' in modifier.subsupervisor_permissions):
     id = request.POST.get('edit_account_id')
   else: # 그 외의 경우, 수정 대상을 로그인한 사용자로 설정
     id = request.user.username
 
   # 수정 대상 확인
-  user = User.objects.get(username=id)
+  user = models.ACCOUNT.objects.get(username=id)
 
   # 정보 수정
   # 닉네임
@@ -252,16 +312,8 @@ def edit_user(request):
   level_point = request.POST.get('level_point', user.level_point)
   user.level_point = level_point
   # 연락처
-  tel = request.POST.get('tel', user.partner_tel)
-  user.partner_tel = tel
-  # 주소
-  address = request.POST.get('address', user.partner_address)
-  user.partner_address = address
-  # 카테고리
-  category_ids = request.POST.get('category_ids', '').split(',')
-  user.partner_categories.clear()
-  for category_id in models.CATEGORY.objects.filter(id__in=category_ids):
-    user.partner_categories.add(category_id)
+  tel = request.POST.get('tel', user.tel)
+  user.tel = tel
   # 권한
   subsupervisor_permissions = request.POST.get('subsupervisor_permissions', user.subsupervisor_permissions)
   user.subsupervisor_permissions = subsupervisor_permissions
@@ -270,7 +322,7 @@ def edit_user(request):
   user.save()
 
   # 활동 기록 생성
-  if 'supervisor' in User.groups or ('subsupervisor' in User.groups and 'user' in User.subsupervisor_permissions): # 관리자 계정일 경우,
+  if 'supervisor' in modifier_groups or ('subsupervisor' in modifier_groups and 'user' in modifier.subsupervisor_permissions): # 관리자 계정일 경우,
     models.ACTIVITY.objects.create(
       account=user,
       message = f'[계정] {nickname}님의 계정 정보가 관리자에 의해 수정되었습니다.',
@@ -383,9 +435,9 @@ def write_comment(request):
     # 만약 게시글이 출석 체크 게시글인 경우,
     if 'attenddance:' in po.title:
       # 출석 체크
-      add_point = models.SERVER_SETTING.objects.get(id='attendance_point').value
+      add_point = models.SERVER_SETTING.objects.get(name='attendance_point').value
     else: # 그 외의 경우,
-      add_point = models.SERVER_SETTING.objects.get(id='comment_point').value
+      add_point = models.SERVER_SETTING.objects.get(name='comment_point').value
     request.user.coupon_point += add_point
     request.user.level_point += add_point
     request.user.save()

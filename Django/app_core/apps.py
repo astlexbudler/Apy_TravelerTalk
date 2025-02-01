@@ -12,6 +12,7 @@ class AppCoreConfig(AppConfig):
         scheduler.startScheduler()
 
     try:
+      from django.contrib.auth import get_user_model
       from datetime import datetime
       from django.contrib.auth.models import Group
       from . import models
@@ -20,6 +21,8 @@ class AppCoreConfig(AppConfig):
       # 만약, 초기 데이터가 설정되어있지 않을 경우, 데이터 생성
       is_SERVER_SETTING_exist = models.SERVER_SETTING.objects.all().count() > 0
       if not is_SERVER_SETTING_exist: # 초기 데이터가 없을 경우
+
+        print('데이터베이스 기본 데이터 생성 시작')
 
         # SERVER_SETTING: 서버 설정 테이블
         models.SERVER_SETTING.objects.create(
@@ -103,9 +106,8 @@ class AppCoreConfig(AppConfig):
         )
 
         # ACCOUNT: 계정 테이블
-        user = models.ACCOUNT.objects.create(
+        user = models.ACCOUNT(
           username='user', # 사용자 아이디
-          password='user1!', # 비밀번호
           first_name='닉네임1', # 사용자 이름
           last_name='',
           email='',
@@ -114,15 +116,15 @@ class AppCoreConfig(AppConfig):
           coupon_point=1000, # 쿠폰 포인트
           level_point=100, # 레벨 포인트
           tel='', # 연락처
-          address='', # 주소
           subsupervisor_permissions='', # 부관리자 권한
         )
+        user.set_password('user1!')
+        user.save()
         user.groups.add(user_group)
         user.save()
 
-        dame = models.ACCOUNT.objects.create(
+        dame = models.ACCOUNT(
           username='dame', # Dame 아이디
-          password='dame1!', # 비밀번호
           first_name='닉네임2', # 낙네임
           last_name='',
           email='',
@@ -131,50 +133,31 @@ class AppCoreConfig(AppConfig):
           coupon_point=100, # 쿠폰 포인트
           level_point=200, # 레벨 포인트
           tel='', # 연락처
-          address='', # 주소
           subsupervisor_permissions='', # 부관리자 권한
         )
+        dame.set_password('dame1!')
+        dame.save()
         dame.groups.add(user_group)
         dame.save()
 
-        partner = models.ACCOUNT.objects.create(
+        partner = models.ACCOUNT(
           username='partner', # 파트너 아이디
-          password='partner1!', # 비밀번호
           first_name='닉네임4', # 닉네임
           last_name='업체명1', # 파트너 업체명
-          email='applify.kr@gmail.com', # 파트너 이메일
+          email='applify.kr@gmail.com',
           status = 'pending', # 계정 상태
           note='테스트용 파트너 데이터입니다. 아이디: partner, 비밀번호: partner1!',
           coupon_point=0,
           level_point=0,
           tel='01041098317', # 연락처
-          address='대전광역시 서구 만년동', # 주소
           subsupervisor_permissions='', # 부관리자 권한
         )
+        partner.set_password('partner1!')
+        partner.save()
 
-        subsupervisor = models.ACCOUNT.objects.create(
-          username='subsupervisor', # 부관리자 아이디
-          password='subsupervisor!', # 비밀번호
-          first_name='닉네임6', # 닉네임
-          last_name='',
-          email='',
-          status = 'active', # 계정 상태
-          note='테스트용 부관리자 데이터입니다. 아이디: subsupervisor, 비밀번호: subsupervisor!',
-          coupon_point=0,
-          level_point=0,
-          tel='', # 연락처
-          address='', # 주소
-          subsupervisor_permissions='post, coupon, message, banner, setting', # 부관리자 권한
-        )
-        subsupervisor.groups.add(user_group)
-        subsupervisor.groups.add(dame_group)
-        subsupervisor.groups.add(sub_supervisor_group)
-        subsupervisor.save()
-
-        supervisor = models.ACCOUNT.objects.create(
+        supervisor = models.ACCOUNT(
           username='supervisor', # 관리자 아이디
-          password='supervisor1!', # 비밀번호
-          first_name='닉네임7', # 닉네임
+          first_name='닉네임5', # 닉네임
           last_name='',
           email='',
           status = 'active', # 계정 상태
@@ -182,25 +165,36 @@ class AppCoreConfig(AppConfig):
           coupon_point=0,
           level_point=0,
           tel='', # 연락처
-          address='', # 주소
-          subsupervisor_permissions='',
+          subsupervisor_permissions='', # 부관리자 권한
         )
+        supervisor.set_password('supervisor1!')
+        supervisor.save()
         supervisor.groups.add(user_group)
         supervisor.groups.add(dame_group)
+        supervisor.groups.add(partner_group)
         supervisor.groups.add(sub_supervisor_group)
         supervisor.groups.add(supervisor_group)
         supervisor.save()
+
+        admin = models.ACCOUNT(
+          username='admin', # 관리자 아이디
+          email='applify.kr@gmail.com',
+          is_staff=True,
+          is_superuser=True,
+        )
+        admin.set_password('admin1!')
+        admin.save()
 
         # CATEGORY: 카테고리 테이블
         abroad = models.CATEGORY.objects.create(
           name='해외'
         )
         service = models.CATEGORY.objects.create(
-          parent_id=abroad.id,
+          parent_category=abroad,
           name='서비스'
         )
         tour = models.CATEGORY.objects.create(
-          parent_id=service.id,
+          parent_category=service,
           name='투어'
         )
 
@@ -246,7 +240,7 @@ class AppCoreConfig(AppConfig):
         community.save()
 
         free = models.BOARD.objects.create(
-          parent_id=community.id,
+          parent_board=community,
           name='자유 게시판',
           board_type='board',
         )
@@ -261,7 +255,7 @@ class AppCoreConfig(AppConfig):
         free.save()
 
         dame = models.BOARD.objects.create(
-          parent_id=community.id,
+          parent_board=community,
           name='여성 게시판',
           board_type='board',
         )
@@ -276,7 +270,7 @@ class AppCoreConfig(AppConfig):
         dame.save()
 
         review = models.BOARD.objects.create(
-          parent_id=community.id,
+          parent_board=community,
           name='리뷰 게시판',
           board_type='review',
         )
@@ -289,6 +283,21 @@ class AppCoreConfig(AppConfig):
         review.write_groups.add(user_group, dame_group)
         review.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, sub_supervisor_group)
         review.save()
+
+        anominous = models.BOARD.objects.create(
+          parent_board=community,
+          name='익명 게시판',
+          board_type='anominous',
+        )
+        # display_groups - all
+        # enter_groups - all
+        # write_groups - user, dame
+        # comment_groups - user, dame, partner, supervisor, sub_supervisor
+        anominous.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, sub_supervisor_group)
+        anominous.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, sub_supervisor_group)
+        anominous.write_groups.add(user_group, dame_group)
+        anominous.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, sub_supervisor_group)
+        anominous.save()
 
         # 자유 개시판에 글 101개 생성
         for i in range(1, 101):

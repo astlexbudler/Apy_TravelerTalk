@@ -15,23 +15,21 @@
             로그인이 필요합니다
           </p>
         {% else %}
-          {% if best_reviews.0 == none %}
+          {% if best_reviews == none or best_reviews|length == 0 %}
             <p>
               베스트 후기가 없습니다
             </p>
           {% else %}
+          <!-- 베스트 리뷰 게시글 표시. 게시글 제목, 조회수, 추천수 -->
             {% for review in best_reviews %}
               <div class="w-100 mb-4">
-                <a href="/board/post">
-                  <span class="text-black-50" style="font-size: 12px;">
-                    상위 카테고리 > 하위 카테고리
-                  </span>
-                  <h6 class="mb-1">
-                    게시글 제목
-                  </h6>
-                  <span class="text-black-50 small">
-                    작성자 닉네임
-                  </span>
+                <a href="/board/post_view?post_id={{ review.id }}">
+                  <p class="text-black-50">
+                    {{ review.title }}
+                  </p>
+                  <p class="text-black-50 small">
+                    조회수: {{ review.view_count }} / 추천수: {{ review.like_count }}
+                  </p>
                 </a>
               </div>
             {% endfor %}
@@ -47,9 +45,9 @@
   <!-- 즐겨찾기 -->
   <div class="card mt-3">
     <div class="card-body text-center pastel-pink-background">
-      <a href="/account/bookmarks"></a>
-        <h5 class="card-title text-black-50">즐겨찾기</h5>
-      </a>
+      <h5 class="card-title">
+        <a href="/bookmark" class="text-black-50">즐겨찾기</a>
+      </h5>
     </div>
     <div class="card-footer pastel-beige-background" style="min-height: 200px;">
       <div class="p-1 py-2">
@@ -59,23 +57,27 @@
             로그인이 필요합니다
           </p>
         {% else %}
-          {% if user_bookmarks.0 == none %}
+          {% if account.bookmarked_places == none or account.bookmarked_places|length == 0 %}
             <p>
               즐겨찾기한 게시글이 없습니다
             </p>
           {% else %}
-            {% for post in user_bookmarks %}
+            <!-- 즐겨찾기한 여행지 게시글 목록 -->
+            {% for post in account.bookmarked_places %}
               <div class="w-100 mb-4">
-                <a href="/board/post">
-                  <span class="text-black-50" style="font-size: 12px;">
-                    상위 카테고리 > 하위 카테고리
-                  </span>
-                  <h6 class="mb-1">
-                    게시글 제목
-                  </h6>
-                  <span class="text-black-50 small">
-                    작성자 닉네임
-                  </span>
+                <a href="/post/post_view?post_id={{ post.id }}">
+                  <p class="text-black-50 small m-0">
+                    {% for name in post.place_info.categories %}
+                    {{ name }}{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                  </p>
+                  <p class="text-black">
+                    {{ post.title }}
+                  </p>
+                  <p class="text-black-50 small">
+                    <i class="fi fi-rr-eye"></i> {{ post.view_count }} 
+                    <i class="fi fi-rr-heart"></i> {{ post.like_count }}
+                  </p>
                 </a>
               </div>
             {% endfor %}
@@ -87,66 +89,83 @@
   </div>
 
   <!-- 내 쿠폰들 -->
+  {% if account.account_type == 'user' or account.account_type == 'dame' %}
   <div class="card mt-3">
     <div class="card-body text-center pastel-pink-background">
-      <a href="/account/coupons">
-        <h5 class="card-title text-black-50">내 쿠폰들</h5>
+      <a href="/coupon">
+        <h5 class="card-title">
+          <a href="/coupon" class="text-black-50">내 쿠폰들</a>
+        </h5>
       </a>
     </div>
     <div class="card-footer pastel-beige-background" style="min-height: 200px;">
       <div class="p-1 py-2">
 
         {% if not user.is_authenticated %}
-          <p class="d-none">
-            로그인이 필요합니다
-          </p>
+        <p>
+          로그인이 필요합니다
+        </p>
         {% else %}
-          {% if user_usable_coupons.0 == none %}
-            <p>
-              사용 가능한 쿠폰이 없습니다
+        {% if coupons == none or coupons|length == 0 %}
+        <p>
+          사용 가능한 쿠폰이 없습니다
+        </p>
+        {% else %}
+        <!-- 사용 가능한 쿠폰 목록 표시. 쿠폰 이름, 만료일, 관련 게시글 제목 표시 -->
+        {% for coupon in coupons %}
+        <div class="mb-4">
+          <a href="/coupon">
+            <span class="text-black-50" style="font-size: 12px;">
+              <i class="fi fi-rr-calendar"></i> {{ coupon.expired_dt }}
+            </span>
+            <p class="mt-1 text-black small">
+              [{{ coupon.title }}] {{ coupon.name }}
             </p>
-          {% else %}
-            {% for coupon in user_usable_coupons %}
-              <!-- TODO -->
-            {% endfor %}
-          {% endif %}
+          </a>
+        </div>
+        {% endfor %}
+        {% endif %}
         {% endif %}
 
       </div>
     </div>
   </div>
+  {% endif %}
 
   <!-- 활동 내역 -->
   <div class="card mt-3">
     <div class="card-body text-center pastel-pink-background">
-      <h5 class="card-title">활동 내역</h5>
+      <h5 class="card-title">
+        <a href="/activity" class="text-black-50">활동 내역</a>
+      </h5>
     </div>
     <div class="card-footer pastel-beige-background" style="min-height: 200px;">
       <div class="p-1 py-2">
 
         {% if not user.is_authenticated %}
-          <p class="d-none">
-            로그인이 필요합니다
-          </p>
+        <p>
+          로그인이 필요합니다
+        </p>
         {% else %}
-          {% if user_activities.0 == none %}
-            <p>
-              활동 내역이 없습니다
+        {% if activities == none or activities|length == 0 %}
+        <p>
+          활동 내역이 없습니다
+        </p>
+        {% else %}
+        <!-- 활동 내역 표시. 활동 메세지, 활동 일시 표시 -->
+        {% for activity in activities %}
+        <div class="mb-4">
+          <a href="/activity">
+            <span class="text-black-50" style="font-size: 12px;">
+              <i class="fi fi-rr-calendar"></i> {{ activity.created_at }}
+            </span>
+            <p class="mt-1 text-black small">
+              {{ activity.message }}
             </p>
-          {% else %}
-            {% for activity in user_activities %}
-              <div class="mb-4">
-                <a href="/account/profile">
-                  <span class="text-black-50" style="font-size: 12px;">
-                    <i class="fi fi-rr-calendar"></i> {{ activity.created_dt }}
-                  </span>
-                  <p class="mt-1 text-black small">
-                    [{{ activity.title }}] {{ activity.message }}
-                  </p>
-                </a>
-              </div>
-            {% endfor %}
-          {% endif %}
+          </a>
+        </div>
+        {% endfor %}
+        {% endif %}
         {% endif %}
       </div>
     </div>

@@ -22,51 +22,21 @@
     <p class="text-dark">
       회사정보
     </p>
-    <div class="row">
-      <div class="col-12 col-lg-4">
-        <i class="fi fi-rr-marker"></i> 주소: <span class="text-black-50">{{ server.address }}</span>
-      </div>
-      <div class="col-12 col-lg-4">
-        <i class="fi fi-rr-headphones"></i> 연락처: <span class="text-black-50">{{ server.tel }}</span>
-      </div>
-      <div class="col-12 col-lg-4">
-        <i class="fi fi-rr-envelope"></i> 이메일 주소: <span class="text-black-50">{{ server.email }}</span>
-      </div>
+    <div class='mb-3'>
+      <p>
+        {{server.company_info}}
+      </p>
     </div>
   </div>
 
   <!-- 문의사항 작성 폼 -->
   <div class="shadow rounded border p-3 py-5 mt-5">
     <h5 class="mb-4">
-      문의 작성
+      제휴 문의 작성
     </h5>
-    <div class="row">
-      <div class="col-12 col-lg-6">
-        <div class="mb-3">
-          <label>
-            작성자 이름(또는 회사명)
-          </label>
-          <input class="form-control" placeholder="이름 또는 회사명을 입력해주세요." id="name">
-        </div>
-      </div>
-      <div class="col-12 col-lg-6">
-        <div class="mb-3">
-          <label>
-            이메일 주소
-          </label>
-          <input class="form-control" placeholder="답변을 수신할 이메일 주소를 입력해주세요." id="email">
-        </div>
-      </div>
-    </div>
-    <div class="mb-3">
-      <label>문의 제목</label>
-      <input class="form-control" placeholder="문의 제목을 입력해주세요." id="title">
-    </div>
-    <div class="mb-3">
-      <label>문의내용</label>
-      <textarea class="form-control" style="height: 300px; overflow-y: scroll;" id="content">문의사항을 입력해주세요.</textarea>
-    </div>
-    <a class="btn btn-primary" href="javascript: sendMessage();">문의사항 보내기</a>
+    <p>
+      제휴 문의 게시판을 통해 제휴 문의를 보내주세요. 빠른 시일 내에 답변드리겠습니다.
+    </p>
   </div>
 
 </section>

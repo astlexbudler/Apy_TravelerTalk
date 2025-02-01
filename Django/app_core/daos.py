@@ -4,6 +4,7 @@ import string
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.contrib.auth import authenticate, logout, get_user_model
+from django.contrib.auth.models import Group
 from django.db.models import Q
 from . import models
 
@@ -11,7 +12,7 @@ from . import models
 def get_default_contexts(request):
   if request.user.is_authenticated: # 로그인 되어있는 경우
     # 사용자 정보 가져오기
-    user = get_user_model().objects.select_related('level').prefetch_related('bookmarked_places', 'groups').get(username=user.username)
+    user = get_user_model().objects.select_related('level').prefetch_related('bookmarked_places').get(username=request.user.username)
 
     account = {
       'id': user.username,
@@ -19,6 +20,7 @@ def get_default_contexts(request):
       'groups': [g.name for g in user.groups.all()],
       'status': user.status,
       'subsupervisor_permissions': user.subsupervisor_permissions,
+      'coupon_point': user.coupon_point,
       'level': {
         'level': lv.level,
         'image': lv.image,
@@ -34,14 +36,13 @@ def get_default_contexts(request):
         'place_info': {
           'categories': [c.name for c in pi.categories.all()],
         } if (pi := bp.place_info) else None,
-      } for bp in user.bookmarked_places.all()[:5]], # 북마크한 여행지 게시글(최대 5개)
+      } for bp in user.bookmarked_places[:5]] if user.bookmarked_places else [],
     }
 
     # 사용자 활동 내역 가져오기
     activities = [{
       'id': a.id,
       'message': a.message,
-      'point_change': a.point_change,
       'created_at': a.created_at,
     } for a in models.ACTIVITY.objects.filter(account=request.user)[:5]]
 
@@ -102,16 +103,17 @@ def get_default_contexts(request):
   return {
     'account': account, # 사용자 정보
     'activities': activities, # 사용자 활동 내역
-    'messages': messages, # 받은 메세지
+    'unread_messages': messages, # 받은 메세지
     'coupons': coupons, # 내 쿠폰
-    'server_settings': server_settings, # 서버 설정
+    'server': server_settings, # 서버 설정
     'best_reviews': best_reviews, # 베스트 리뷰
   }
 
 # 게시판 트리 가져오기
-def get_board_tree(user_type):
+def get_board_tree(group_name):
+  group = Group.objects.get(name=group_name)
   boards = models.BOARD.objects.filter(
-    display_groups__name=user_type, # display 권한 확인
+    display_groups=group,
   ).order_by('display_weight')
   board_dict = {
     board.name: {
@@ -175,6 +177,90 @@ def get_board_tree(user_type):
   boards = []
   for child in board_dict.keys():
     boards.append(board_dict[child])
+  return boards
+
+# 여행지 게시판 가져오기
+def get_travel_board_tree():
+  def remove_empty_tree_nodes(data):
+      def filter_nodes(nodes):
+          return [
+              node for node in nodes
+              if not (node["board_type"] == "tree" and not node["children"])
+          ]
+      # 리스트를 필터링
+      filtered_data = filter_nodes(data)
+      # children 내부도 재귀적으로 검사
+      for node in filtered_data:
+          if "children" in node:
+              node["children"] = filter_nodes(node["children"])
+      return filtered_data
+
+  boards = models.BOARD.objects.filter(
+    Q(board_type='travel') | Q(board_type='tree') # 여행지 게시판 또는 트리
+  ).order_by('display_weight')
+  board_dict = {
+    board.name: {
+      'id': board.id,
+      'name': board.name,
+      'board_type': board.board_type,
+      'display': [g.name for g in board.display_groups.all()],
+      'enter': [g.name for g in board.enter_groups.all()],
+      'write': [g.name for g in board.write_groups.all()],
+      'comment': [g.name for g in board.comment_groups.all()],
+      'children': [],
+    } for board in boards if not board.parent_board
+  }
+  for board in boards:
+    if board.parent_board:
+      if board_dict.get(board.parent_board.name):
+        board_dict[board.parent_board.name]['children'].append({
+          'id': board.id,
+          'name': board.name,
+          'board_type': board.board_type,
+          'display': [g.name for g in board.display_groups.all()],
+          'enter': [g.name for g in board.enter_groups.all()],
+          'write': [g.name for g in board.write_groups.all()],
+          'comment': [g.name for g in board.comment_groups.all()],
+          'children': [],
+        })
+      else:
+        loop = True
+        for key in board_dict.keys():
+          for child in board_dict[key]['children']:
+            if not loop:
+              break
+            if str(child['name']) == str(board.parent_board.name):
+              child['children'].append({
+                'id': board.id,
+                'name': board.name,
+                'board_type': board.board_type,
+                'display': [g.name for g in board.display_groups.all()],
+                'enter': [g.name for g in board.enter_groups.all()],
+                'write': [g.name for g in board.write_groups.all()],
+                'comment': [g.name for g in board.comment_groups.all()],
+                'children': [],
+              })
+              loop = False
+            if loop:
+              for grandchild in child['children']:
+                if not loop:
+                  break
+                if str(grandchild['name']) == str(board.parent_board.name):
+                  grandchild['children'].append({
+                    'id': board.id,
+                    'name': board.name,
+                    'board_type': board.board_type,
+                    'display': [g.name for g in board.display_groups.all],
+                    'enter': [g.name for g in board.enter_groups.all()],
+                    'write': [g.name for g in board.write_groups.all()],
+                    'comment': [g.name for g in board.comment_groups.all()],
+                    'children': [],
+                  })
+                  loop = False
+  boards = []
+  for child in board_dict.keys():
+    boards.append(board_dict[child])
+  boards = remove_empty_tree_nodes(boards)
   return boards
 
 # 표시할 배너 정보 가져오기
@@ -245,8 +331,10 @@ def get_category_tree():
 
 # 사용자 프로필 정보 가져오기
 def get_user_profile_by_id(user_id):
-  user = get_user_model().objects.select_related('level').prefetch_related('groups').get(username=user_id)
-  return {
+  user = models.ACCOUNT.objects.select_related('level').prefetch_related('groups').filter(
+    username=user_id
+  ).first()
+  user_info = {
     'id': user.username,
     'nickname': user.first_name,
     'partner_name': user.last_name,
@@ -264,26 +352,40 @@ def get_user_profile_by_id(user_id):
       'background_color': lv.background_color,
     } if (lv := user.level) else None,
     'tel': user.tel,
-    'address': user.address,
     'level_point': user.level_point,
     'coupon_point': user.coupon_point,
     'note': user.note,
   }
 
+  # 계정 타입 설정
+  account_type = 'user'
+  if 'dame' in user_info['groups']:
+    account_type = 'dame'
+  elif 'partner' in user_info['groups']:
+    account_type = 'partner'
+  elif 'subsupervisor' in user_info['groups']:
+    account_type = 'subsupervisor'
+  elif 'supervisor' in user_info['groups']:
+    account_type = 'supervisor'
+  user_info['account_type'] = account_type
+
+  return user_info
+
 # 레벨 규칙 정보 가져오기
 def get_all_level_rules():
-  rule = models.LEVEL_RULE.objects.all().order_by('level')
-  return {
+  rules = models.LEVEL_RULE.objects.all().order_by('level')
+  return [{
     'level': rule.level,
     'image': rule.image,
     'text': rule.text,
     'text_color': rule.text_color,
     'background_color': rule.background_color,
     'required_point': rule.required_point,
-  }
+  } for rule in rules]
 
 # 사용자 활동 내역 가져오기
 def get_user_activities(user_id, page):
+  user_id = models.ACCOUNT.objects.get(username=user_id).id
   acts = models.ACTIVITY.objects.filter(account=user_id)
   last_page = len(acts) // 20 + 1
   activities = [{
