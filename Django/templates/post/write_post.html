@@ -45,7 +45,7 @@
 <script>
 
   window.onload = () => {
-    console.log(`Window loaded at ${getNowDt()}`);
+    console.log(`Window loaded at ${getNowDatetimeString()}`);
   }
 
   const editor = new toastui.Editor({
@@ -63,56 +63,18 @@
     const content = editor.getMarkdown();
 
     if (title.length < 2) {
-      Swal.fire({
-        html: `
-          <div>
-            <div class="text-center py-4">
-              <h1 class="text-dark">
-                제목 오류
-              </h1>
-            </div>
-            <diV class="text-start">
-              <p class="text-black">
-                제목이 너무 짧습니다. 2자 이상 입력해주세요.
-              </p>
-            </div>
-          </div>`,
-        icon: `error`,
-        showConfirmButton: true,
-        confirmButtonText: `확인`,
-        showCancelButton: false,
-        cancelButtonText: ``
-      });
+      showAlert('제목 오류', '제목이 너무 짧습니다. 2자 이상 작성해주세요.', 'error');
       return;
     }
     if (content.length < 10) {
-      Swal.fire({
-        html: `
-          <div>
-            <div class="text-center py-4">
-              <h1 class="text-dark">
-                내용 오류
-              </h1>
-            </div>
-            <diV class="text-start">
-              <p class="text-black">
-                내용이 너무 짧습니다. 10자 이상 입력해주세요.
-              </p>
-            </div>
-          </div>`,
-        icon: `error`,
-        showConfirmButton: true,
-        confirmButtonText: `확인`,
-        showCancelButton: false,
-        cancelButtonText: ``
-      });
+      showAlert('내용 오류', '내용이 너무 짧습니다. 10자 이상 입력해주세요.', 'error');
       return;
     }
 
     var formData = new FormData();
     formData.append('title', title);
     formData.append('content', content);
-    await fetch('/post/write_post?board_id={{board.id}}', {
+    await fetch('/post/write_post?board_ids={{request.GET.board_ids}}', {
       method: 'POST',
       headers: {
         'X-CSRFToken': csrftoken
@@ -120,58 +82,15 @@
       body: formData,
     })
     .then(response => response.json())
-    .then(data => {
+    .then(async (data) => {
       if (data.result == 'success') {
-        Swal.fire({
-          html: `
-            <div>
-              <div class="text-center py-4">
-                <h1 class="text-dark">
-                  게시글 작성 완료
-                </h1>
-              </div>
-              <diV class="text-start">
-                <p class="text-black">
-                  게시글이 성공적으로 작성되었습니다.
-                </p>
-              </div>
-            </div>`,
-          icon: `success`,
-          showConfirmButton: true,
-          confirmButtonText: `확인`,
-          showCancelButton: false,
-          cancelButtonText: ``
-        })
-        .then(() => {
-          window.location.href = '/post/post_view?post=' + data.post_id;
-        });
+        await showAlert('게시글 작성 완료', '게시글이 성공적으로 작성되었습니다.', 'success');
+        window.location.href = '/post/post_view?post_id=' + data.post_id;
       } else {
-        Swal.fire({
-          html: `
-            <div>
-              <div class="text-center py-4">
-                <h1 class="text-dark">
-                  게시글 작성 실패
-                </h1>
-              </div>
-              <diV class="text-start">
-                <p class="text-black">
-                  게시글 작성에 실패했습니다. 잠시 후 다시 시도해주세요.
-                </p>
-              </div>
-            </div>`,
-          icon: `error`,
-          showConfirmButton: true,
-          confirmButtonText: `확인`,
-          showCancelButton: false,
-          cancelButtonText: ``
-        });
+        showAlert('게시글 작성 실패', '게시글 작성에 실패했습니다. 잠시 후 다시 시도해주세요.', 'error');
       }
     });
-    return
   }
-
-
 
 </script>
 

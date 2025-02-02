@@ -606,9 +606,9 @@ def get_board_posts(board_ids, page, search):
 
 # 게시글 내용 가져오기
 def get_post_info(post_id):
-  post = models.POST.objects.select_related(
-    'author', 'place_info', 'review_post' 'boards'
-  ).prefetch_related('place_info__categories', 'review_post__place_info').get(id=post_id)
+  post = models.POST.objects.prefetch_related('boards').select_related(
+    'author', 'place_info', 'review_post'
+  ).prefetch_related('place_info__categories', 'review_post__place_info',).get(id=post_id)
   return {
     'id': post.id,
     'boards': [b.name for b in post.boards.all()],
@@ -619,6 +619,7 @@ def get_post_info(post_id):
     'like_count': post.like_count,
     'created_at': post.created_at,
     'author': {
+      'id': post.author.username,
       'nickname': post.author.first_name,
       'partner_name': post.author.last_name,
     },

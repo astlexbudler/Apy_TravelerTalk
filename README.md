@@ -51,7 +51,6 @@ Django를 이용하여 제작한 여행자들 대화 익명 여행지 커뮤니�
       - coupon_point 쿠폰 포인트
       - level_point 레벨 포인트
       - tel 연락처
-      - address 주소
       - subsupervisor_permissions 부관리자 권한
       - bookmarked_places FK 북마크된 여행지 게시글
       - level FK 사용자 레벨

@@ -189,8 +189,43 @@ searchPost = async () => {
   return;
 }
 
+// 댓글 삭제 함수
+deleteComment = async (comment_id) => {
+  // 댓글 삭제 확인
+  var isConfirmed = await showConfirm('댓글 삭제', '정말로 댓글을 삭제하시겠습니까?', 'warning', '삭제', '취소');
+  if (!isConfirmed) {
+    return;
+  }
+
+  // 댓글 삭제 요청
+  var formdata = new FormData();
+  formdata.append('comment_id', comment_id);
+  var result = await fetch('/api/delete_comment', {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': csrftoken
+    },
+    body: formdata
+  })
+  .then((response) => response.json())
+  .then(async (data) => {
+    console.log(data); // fetch 요청 결과 출력
+    return data.result;
+  });
+
+  // 댓글 삭제 결과에 따른 분기 처리
+  if (result === 'success') { // 댓글 삭제 성공
+    await showAlert('삭제 성공', '댓글 삭제가 완료되었습니다.', 'success');
+    location.reload();
+    return;
+  } else {
+    await showAlert('삭제 실패', '댓글 삭제 권한이 없습니다.', 'error');
+    return;
+  }
+}
+
 // 댓글 작성 함수
-writeComment = async (post_id, target_comment_id='', content) => {
+writeComment = async (post_id, content) => {
 
   // 사용자 확인. 로그인 여부만 확인
   // 그 외 권한이나 계정 상태는 서버에서 확인
@@ -209,7 +244,6 @@ writeComment = async (post_id, target_comment_id='', content) => {
   // 댓글 작성 요청
   var formdata = new FormData();
   formdata.append('post_id', post_id);
-  formdata.append('target_comment_id', target_comment_id);
   formdata.append('content', content);
   var result = await fetch('/api/write_comment', {
     method: 'POST',

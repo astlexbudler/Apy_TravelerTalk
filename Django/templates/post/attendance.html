@@ -143,18 +143,20 @@
       return;
     }
 
-    var formData = new FormData();
-    formData.append('content', comment);
-    var result = await fetch('/post/attendance', {
+    // 댓글 작성 요청
+    var formdata = new FormData();
+    formdata.append('post_id', '{{ post.id }}');
+    formdata.append('content', comment);
+    var result = await fetch('/api/write_comment', {
       method: 'POST',
       headers: {
         'X-CSRFToken': csrftoken
       },
-      body: formData
+      body: formdata
     })
-    .then(response => response.json())
-    .then(data => {
-      console.log(data);
+    .then((response) => response.json())
+    .then(async (data) => {
+      console.log(data); // fetch 요청 결과 출력
       return data.result;
     });
 

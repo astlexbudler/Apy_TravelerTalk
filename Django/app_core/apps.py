@@ -233,10 +233,12 @@ class AppCoreConfig(AppConfig):
         )
         # display_groups - all
         # enter_groups - all
-        # write_groups - none
-        # comment_groups - none
+        # write_groups - all
+        # comment_groups - all
         community.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, sub_supervisor_group)
         community.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, sub_supervisor_group)
+        community.write_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, sub_supervisor_group)
+        community.comment_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, sub_supervisor_group)
         community.save()
 
         free = models.BOARD.objects.create(
@@ -298,6 +300,34 @@ class AppCoreConfig(AppConfig):
         anominous.write_groups.add(user_group, dame_group)
         anominous.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, sub_supervisor_group)
         anominous.save()
+
+        # 출석체크 게시판
+        attend = models.BOARD.objects.create(
+          name='출석체크',
+          board_type='attendance',
+        )
+        # display_groups - all
+        # enter_groups - all
+        # write_groups - none
+        # comment_groups - all
+        attend.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, sub_supervisor_group)
+        attend.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, sub_supervisor_group)
+        attend.comment_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, sub_supervisor_group)
+        attend.save()
+
+        # 가입인사 게시판
+        hello = models.BOARD.objects.create(
+          name='가입인사',
+          board_type='greeting',
+        )
+        # display_groups - all
+        # enter_groups - all
+        # write_groups - none
+        # comment_groups - all
+        hello.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, sub_supervisor_group)
+        hello.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, sub_supervisor_group)
+        hello.comment_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, sub_supervisor_group)
+        hello.save()
 
         # 자유 개시판에 글 101개 생성
         for i in range(1, 101):

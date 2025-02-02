@@ -19,7 +19,7 @@
       </div>
       <div style="display: inline-block; text-align: right;">
         <!-- 버튼 -->
-        {% if account.account_type in board.write_permissions %}
+        {% if writable %}
         <div class="p-3 mb-5 text-end">
 
           <a class="btn btn-success" href="/post/write_post?board_ids={{request.GET.board_ids}}">

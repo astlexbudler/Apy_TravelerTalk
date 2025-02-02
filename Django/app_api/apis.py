@@ -414,16 +414,11 @@ def write_comment(request):
       return JsonResponse({'result': 'empty'})
 
     # 게시글 확인
-    po = models.POST.objects.filter(
+    po = models.POST.objects.prefetch_related('boards').prefetch_related('boards__comment_groups').filter(
       id=post_id
-    ).prefetch_related('boards').prefetch_related('comment_groups').first()
+    ).first()
     if po is None: # 댓글을 작성할 게시긇이 없는 경우
       return JsonResponse({'result': 'empty'})
-
-    # 게시판 확인
-    for bo in po.boards:
-      if set(request.user.groups).isdisjoint(set(bo.comment_groups)): # 댓글 작성 권한 확인
-        return JsonResponse({'result': 'permission_denied'})
 
     # 댓글 작성
     models.COMMENT.objects.create(
@@ -438,8 +433,8 @@ def write_comment(request):
       add_point = models.SERVER_SETTING.objects.get(name='attendance_point').value
     else: # 그 외의 경우,
       add_point = models.SERVER_SETTING.objects.get(name='comment_point').value
-    request.user.coupon_point += add_point
-    request.user.level_point += add_point
+    request.user.coupon_point += int(add_point)
+    request.user.level_point += int(add_point)
     request.user.save()
 
     # 댓글 작성 활동기록 생성
@@ -457,17 +452,22 @@ def delete_comment(request):
     comment_id = request.POST.get('comment_id', '')
 
     # 댓글 확인
-    comment = models.COMMENT.objects.filter(
+    comment = models.COMMENT.objects.select_related('author').filter(
       id=comment_id
-    ).related('author').first()
+    ).first()
     if comment is None: # 댓글이 존재하지 않는 경우
       return JsonResponse({'result': 'comment_not_exist'})
 
+    # 사용자 확인
+    user = models.ACCOUNT.objects.prefetch_related('groups').filter(
+      username=request.user.username
+    ).first()
+    user_groups = [group.name for group in user.groups.all()]
 
     # 관리자 또는 댓글 작성자만 삭제 가능
-    if 'supervisor' in request.user.groups or ('subsupervisor' in request.user.groups and 'post' in request.user.subsupervisor_permissions):
+    if 'supervisor' in user_groups or ('subsupervisor' in user_groups and 'post' in user.subsupervisor_permissions):
       pass
-    elif comment.author != request.user: # 댓글 작성자가 아닌 경우
+    elif comment.author != user: # 댓글 작성자가 아닌 경우
       return JsonResponse({'result': 'permission_denied'})
 
     # 댓글 삭제

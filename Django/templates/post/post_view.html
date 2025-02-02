@@ -16,7 +16,7 @@
       <div style="display: inline-block; text-align: left;">
         <p class="mt-5">
           {% for board in post.boards %}
-          {{ board.name }} {% if forloop.counter < post.boards|length  %} &gt; {% endif %}
+          {{ board }} {% if forloop.counter < post.boards|length  %} &gt; {% endif %}
           {% endfor %}
         </p>
         <h5>
@@ -30,7 +30,7 @@
         </h5>
         <p class="small mt-1">
           <span>
-            <i class="fi fi-rr-calendar"></i> {{ post.created_dt }}
+            <i class="fi fi-rr-calendar"></i> {{ post.created_at }}
           </span>
           <span class="ms-3">
             <i class="fi fi-rr-user"></i> {{ post.author.nickname }} 
@@ -69,78 +69,46 @@
       댓글
     </p>
     <textarea id="commentInput" class="form-control" rows="3"
-      placeholder="건전한 인터넷 문화 조성을 위해 댓글 작성 시 주의해주세요."></textarea>
-    <button class="btn btn-primary mt-4" onclick="writeComment('{{ user_info.email }}', '{{ post.id }}')">댓글 작성</button>
+      placeholder="건전한 인터넷 문화 조성을 위해 댓글 작성 시 주의해주세요.">
+    </textarea>
+    {% if commentable %}
+    <button class="btn btn-primary mt-4" onclick="writeComment('{{ post.id }}', document.getElementById('commentInput').value);">
+      댓글 작성
+    </button>
+    {% else %}
+    <button class="btn btn-primary mt-4" disabled>댓글 작성</button>
+    {% endif %}
+
   </div>
 
   <!-- 댓글 목록 -->
   <ul class="list-unstyled mt-5">
-    {% if post.comments|length < 1 %} <li>
+    {% if comments|length < 1 %} <li>
       <p>
         댓글이 없습니다.
       </p>
       </li>
       {% else %}
-      {% for comment in post.comments %}
+      {% for comment in comments %}
       <li>
         <div class="mb-4">
           <div style="display: flex; justify-content: space-between; white-space: nowrap;">
             <div style="display: inline-block; text-align: left;">
-              <h6 class="mt-0 mb-1">{{ comment.author.name }}</h6>
-              <small class="mb-2">{{ comment.created_dt }}</small>
+              <h6 class="mt-0 mb-1">{{ comment.author.nickname }}</h6>
+              <small class="mb-2">{{ comment.created_at }}</small>
             </div>
             <div style="display: inline-block; text-align: right;">
-              <a class="small text-black-50" href="javascript: deleteTableData('COMMENT', '{{ comment.id }}');">
+              {% if account.id == comment.author.id %}
+              <a class="small text-black-50" href="javascript: deleteComment('{{ comment.id }}');">
                 <i class="fi fi-rr-trash"></i> 댓글 삭제
               </a>
+              {% endif %}
             </div>
           </div>
           <div>
-            {{ comment.html|safe }}
+            {{ comment.content }}
           </div>
-          <div class="nav mt-2 mb-3">
-            <a href="javascript: document.getElementById('subCommentInput').classList.toggle('d-none');"
-              class="btn btn-sm btn-border-mode mt-1 p-1 px-2">
-              댓글 달기
-            </a>
-          </div>
-          <div class="d-none mb-3" id="subCommentInput">
-            <div style="display: flex; justify-content: space-between; white-space: nowrap;">
-              <div style="width: 20px;">
-                <i class="fi fi-rr-arrow-turn-down-right"></i>
-              </div>
-              <div style="flex: 1;">
-                <textarea class="form-control" rows="2" placeholder="댓글을 작성해주세요."
-                  id="subCommentInput{{ comment.id }}"></textarea>
-                <button class="btn btn-primary mt-2"
-                  onclick="writeComment('{{ user_info.email }}', '{{ post.id }}', '{{ comment.id }}')">댓글 작성</button>
-              </div>
-            </div>
-          </div>
-          {% if comment.sub_comments|length > 0 %}
-          <ul class="mb-5 list-unstyled border-top border-gray-300">
-            {% for sub_comment in comment.sub_comments %}
-            <li class="pt-3 ps-5">
-              <div style="display: flex; justify-content: space-between; white-space: nowrap;">
-                <div style="display: inline-block; text-align: left;">
-                  <h6 class="mt-0 mb-1"><i class="fi fi-rr-arrow-turn-down-right"></i> {{ sub_comment.author.name }}</h6>
-                </div>
-                <div style="display: inline-block; text-align: right;">
-                  {% if user_info.email == sub_comment.author.email %}
-                  <a class="small text-black-50" href="javascript: deleteTableData('COMMENT', '{{ sub_comment.id }}');">
-                    <i class="fi fi-rr-trash"></i> 댓글 삭제
-                  </a>
-                  {% endif %}
-                </div>
-              </div>
-              <small class="mb-2">{{ sub_comment.created_dt }}</small>
-              <div>
-                {{ sub_comment.html|safe }}
-              </div>
-            </li>
-            {% endfor %}
-          </ul>
-          {% endif %}
+        </div>
       </li>
       {% endfor %}
       {% endif %}
@@ -156,7 +124,7 @@
 <script>
 
   window.onload = () => {
-    console.log(`Window loaded at ${getNowDt()}`);
+    console.log(`Window loaded at ${getNowDatetimeString()}`);
   }
 
   const viewer = new toastui.Editor.factory({

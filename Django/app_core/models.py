@@ -94,13 +94,13 @@ class BOARD(models.Model):
 # POST: 게시물 테이블
 class POST(models.Model):
   id = models.AutoField(primary_key=True)
-  author = models.ForeignKey('ACCOUNT', on_delete=models.CASCADE, help_text='작성자', related_name='post_author')
+  author = models.ForeignKey('ACCOUNT', on_delete=models.CASCADE, null=True, help_text='작성자', related_name='post_author')
   boards = models.ManyToManyField('BOARD', help_text='게시판', related_name='post_boards')
   review_post = models.ForeignKey('self', on_delete=models.CASCADE, null=True, help_text='리뷰 게시글', related_name='post_review_post')
   place_info = models.ForeignKey('PLACE_INFO', on_delete=models.CASCADE, null=True, help_text='여행지 정보', related_name='post_place_info')
   title = models.CharField(max_length=100, help_text='제목')
   image_paths = models.TextField(blank=True, null=True, help_text='이미지 경로')
-  content = models.TextField(help_text='내용')
+  content = models.TextField(help_text='내용', null=True)
   view_count = models.IntegerField(help_text='조회수', default=0)
   like_count = models.IntegerField(help_text='좋아요 수', default=0)
   search_weight = models.IntegerField(help_text='검색 가중치', default=0)
