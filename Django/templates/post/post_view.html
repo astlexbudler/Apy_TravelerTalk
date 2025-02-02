@@ -13,45 +13,42 @@
     {% include 'parts/goback.html' %}
 
     <div style="display: flex; justify-content: space-between; white-space: nowrap;">
-      <div style="display: inline-block; text-align: left;">
+      <div class="w-100">
         <p class="mt-5">
           {% for board in post.boards %}
           {{ board }} {% if forloop.counter < post.boards|length  %} &gt; {% endif %}
           {% endfor %}
         </p>
-        <h5>
-          {{post.title}}
-          {% if account.id == post.author.id %}
-          <a href="#"
-            class="text-black-50 small">
-            <i class="fi fi-rr-edit"></i>
-          </a>
-          {% endif %}
-        </h5>
-        <p class="small mt-1">
-          <span>
-            <i class="fi fi-rr-calendar"></i> {{ post.created_at }}
-          </span>
-          <span class="ms-3">
-            <i class="fi fi-rr-user"></i> {{ post.author.nickname }} 
-            {% if account.account_type == 'user' %}
-            <span class="badge user-level-badge" style="color: {{account.level.text_color}}; background-color: {{account.level.background_color}};">{{ account.level.name }}</span>
-            {% endif %}
-          </span>
-        </p>
-      </div>
-      <div style="display: inline-block; text-align: right;">
-        <p class="m-0 text-end text-black-50" style="font-size: 14px;">
-          <span class="me-1" style="white-space: nowrap;">
-            <i class="fi fi-rr-eye"></i> {{ post.views|length }}
-          </span>
-          <span class="me-1" style="white-space: nowrap;">
-            <i class="fi fi-rr-comment-alt-dots"></i> {{ post.comments|length }}
-          </span>
-          <span class="me-1" style="white-space: nowrap;">
-            <i class="fi fi-rr-social-network"></i> {{ post.bookmarks|length }}
-          </span>
-        </p>
+        <div class="d-flex w-100">
+          <div>
+            <h5>
+              {{post.title}}
+              {% if account.id == post.author.id %}
+              <a href="#"
+                class="text-black-50 small">
+                <i class="fi fi-rr-edit"></i>
+              </a>
+              {% endif %}
+            </h5>
+          </div>
+        </div>
+        <div class="d-flex w-100">
+          <div>
+            <p class="small mt-1">
+              <span>
+                <i class="fi fi-rr-user"></i> {{ post.author.nickname }}
+                {% if account.account_type == 'user' %}
+                <span class="badge user-level-badge" style="color: {{account.level.text_color}}; background-color: {{account.level.background_color}};">{{ account.level.name }}</span>
+                {% endif %}
+              </span>
+            </p>
+          </div>
+          <div class="d-flex w-100 flex-row-reverse">
+            <span>
+              <i class="fi fi-rr-calendar"></i> {{ post.created_at }}
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -65,14 +62,31 @@
 
   <!-- 댓글 작성 -->
   <div class="mt-5 mb-3 pb-3 border-bottom">
-    <p class="text-dark">
-      댓글
-    </p>
+    <div class="d-flex w-100">
+      <div class="d-flex w-100">
+        <p class="text-dark">
+          댓글
+        </p>
+      </div>
+      <div class="d-flex w-100 flex-row-reverse">
+        <p class="m-0 text-end text-black-50" style="font-size: 14px;">
+          <span class="me-1" style="white-space: nowrap;">
+            <i class="fi fi-rr-eye"></i> {{ post.views|length }}
+          </span>
+          <span class="me-1" style="white-space: nowrap;">
+            <i class="fi fi-rr-comment-alt-dots"></i> {{ post.comments|length }}
+          </span>
+          <span class="me-1" style="white-space: nowrap;">
+            <i class="fi fi-rr-social-network"></i> {{ post.bookmarks|length }}
+          </span>
+        </p>
+      </div>
+    </div>
     <textarea id="commentInput" class="form-control" rows="3"
       placeholder="건전한 인터넷 문화 조성을 위해 댓글 작성 시 주의해주세요.">
     </textarea>
     {% if commentable %}
-    <button class="btn btn-primary mt-4" onclick="writeComment('{{ post.id }}', document.getElementById('commentInput').value);">
+    <button class="btn mt-4 pastel-pink-background text-dark fw-semibold" onclick="writeComment('{{ post.id }}', document.getElementById('commentInput').value);">
       댓글 작성
     </button>
     {% else %}
@@ -93,9 +107,13 @@
       <li>
         <div class="mb-4">
           <div style="display: flex; justify-content: space-between; white-space: nowrap;">
-            <div style="display: inline-block; text-align: left;">
-              <h6 class="mt-0 mb-1">{{ comment.author.nickname }}</h6>
-              <small class="mb-2">{{ comment.created_at }}</small>
+            <div class="d-flex w-100">
+              <div class="d-flex w-100 ">
+                <h6 class="mt-0 mb-1">{{ comment.author.nickname }}</h6>
+              </div>
+              <div class="d-flex w-100 flex-row-reverse">
+                <small class="mb-2">{{ comment.created_at }}</small>
+              </div>
             </div>
             <div style="display: inline-block; text-align: right;">
               {% if account.id == comment.author.id %}
