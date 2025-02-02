@@ -34,12 +34,12 @@
       <i class="fi fi-rr-navigation"></i> 여행지
     </p>
 
-    {% if travel_posts|length == 0 %}
+    {% if posts|length == 0 %}
     <p>
       여행지가 없습니다.
     </p>
     {% else %}
-    {% for post in travel_posts %}
+    {% for post in posts %}
     {% include 'parts/travel_post_card.html' %}
     {% endfor %}
     {% endif %}

@@ -1,3 +1,4 @@
+from datetime import timedelta
 from django.apps import AppConfig
 from apptoaster import settings
 
@@ -145,7 +146,7 @@ class AppCoreConfig(AppConfig):
           first_name='닉네임4', # 닉네임
           last_name='업체명1', # 파트너 업체명
           email='applify.kr@gmail.com',
-          status = 'pending', # 계정 상태
+          status = 'active', # 계정 상태
           note='테스트용 파트너 데이터입니다. 아이디: partner, 비밀번호: partner1!',
           coupon_point=0,
           level_point=0,
@@ -357,6 +358,28 @@ class AppCoreConfig(AppConfig):
           image='/media/default.png',
           link='https://naver.com',
         )
+
+        # 파트너 여행지 게시글 작성
+        travel_post = models.POST.objects.create(
+          author=partner,
+          title='파트너 여행지 게시글',
+          content='파트너 여행지 게시글 내용입니다.',
+          image_paths='/media/default.png,/media/default.png,/media/default.png',
+        )
+        place_info = models.PLACE_INFO.objects.create(
+          post=travel_post,
+          address='파트너 여행지 주소',
+          location_info='파트너 여행지 위치 정보',
+          open_info='파트너 여행지 영업 정보',
+          ad_end_at=datetime.now() + timedelta(days=30),
+          status='ad',
+        )
+        place_info.categories.add(abroad, service, tour)
+        place_info.save()
+        travel_post.boards.add(travel_abroad)
+        travel_post.place_info = place_info
+        travel_post.save()
+
         print('데이터베이스 기본 데이터 생성 완료')
     except Exception as e:
       print(str(e))

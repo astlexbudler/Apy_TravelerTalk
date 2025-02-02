@@ -58,6 +58,11 @@ def index(request):
     return redirect('/post/attendance')
   elif board.board_type == 'greeting': # 가입인사 게시판인 경우
     return redirect('/post/greeting')
+  elif board.board_type == 'review':
+    return redirect('/post/review')
+  elif board.board_type == 'travel':
+    return redirect('/post/travel')
+
   # 게시글 가져오기
   posts, last_page = daos.get_board_posts(board_ids, page, search)
 
@@ -732,7 +737,19 @@ def rewrite_review(request):
 # 리뷰 게시글 상세
 def review_view(request):
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
-  boards = daos.get_board_tree() # 게시판 정보 가져오기
+  account_type = 'guest' # 기본값은 guest
+  if request.user.is_authenticated:
+    account_type = 'user'
+    if 'dame' in contexts['account']['groups']:
+      account_type = 'dame'
+    elif 'partner' in contexts['account']['groups']:
+      account_type = 'partner'
+    elif 'subsupervisor' in contexts['account']['groups']:
+      account_type = 'subsupervisor'
+    elif 'supervisor' in contexts['account']['groups']:
+      account_type = 'supervisor'
+  contexts['account']['account_type'] = account_type
+  boards = daos.get_board_tree(account_type) # 게시판 정보
 
   # 데이터 가져오기
   post_id = request.GET.get('post_id')

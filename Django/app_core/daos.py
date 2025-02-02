@@ -606,6 +606,7 @@ def get_board_posts(board_ids, page, search):
 
 # 게시글 내용 가져오기
 def get_post_info(post_id):
+  print(post_id)
   post = models.POST.objects.prefetch_related('boards').select_related(
     'author', 'place_info', 'review_post'
   ).prefetch_related('place_info__categories', 'review_post__place_info',).get(id=post_id)

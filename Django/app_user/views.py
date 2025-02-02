@@ -36,9 +36,7 @@ def index(request):
 
   # 메인 페에지에 표시할 여행지 게시글 가져오기
   posts = []
-  ps = models.POST.objects.select_related('author', 'place_info').prefetch_related('place_info__categories').exclude(
-    review_post__isnull=True
-  ).filter(
+  ps = models.POST.objects.select_related('author', 'place_info').prefetch_related('place_info__categories').filter(
     title__contains=search, # 검색어가 제목에 포함된 경우
     place_info__status='ad' # post > place_info > status가 'ad'인 경우
   ).order_by('search_weight')
@@ -48,19 +46,17 @@ def index(request):
     posts.append({
       'id': p.id,
       'title': p.title,
+      'image': p.image_paths.split(',')[0],
       'author': {
         'nickname': p.author.first_name,
       },
       'place_info': {
-        'categories': [c.name for c in p.place_info.categories],
+        'categories': [c.name for c in p.place_info.categories.all()],
         'address': p.place_info.address,
         'location_info': p.place_info.location_info,
         'open_info': p.place_info.open_info,
         'status': 'ad',
       },
-      'view_count': p.view_count,
-      'like_count': p.like_count,
-      'created_at': p.created_at,
     })
 
   return render(request, 'index.html', {
