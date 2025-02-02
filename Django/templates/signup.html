@@ -18,16 +18,24 @@
   </div>
 
   <!-- 선택지 버튼 그룹 -->
-  <div class="btn-group w-100">
-    <a class="btn text-white" href="/signup?tab=user" style="background-color: gray; border-radius: 6px 0px 0px 0px;" id="userTab">
-      일반 회원
-    </a>
-    <a class="btn" href="/signup?tab=dame" style="background-color: gainsboro; border-radius: 0px 6px 0px 0px;" id="dameTab">
-      여성회원
-    </a>
-    <a class="btn" href="/signup?tab=partner" style="background-color: gainsboro; border-radius: 0px;" id="partnerTab">
-      파트너 업체
-    </a>
+  <div class="btn-group w-100 d-flex">
+    <div class="w-100 d-flex justify-content-center rounded-2">
+      <a class="w-100 btn" href="/signup?tab=user" id="userTab">
+        일반 회원
+      </a>
+    </div>
+    <span class="divider"></span>
+    <div class="w-100 d-flex justify-content-center rounded-2">
+      <a class="w-100 btn" id="dameTab">
+        여성회원
+      </a>
+    </div>
+    <span class="divider"></span>
+    <div class="w-100 d-flex justify-content-center rounded-2">
+      <a class="w-100 btn" href="/signup?tab=partner" id="partnerTab">
+        파트너 업체
+      </a>
+    </div>
   </div>
 
   <!-- 회원 가입 폼 -->
@@ -342,7 +350,7 @@
         </label>
       </div>
     </div>
-    <button type="submit" class="btn btn-primary mb-5" onclick="tryRegister();">회원가입</button>
+    <button type="submit" class="btn mb-5 pastel-pink-background" onclick="tryRegister();">회원가입</button>
   </div>
 
 </section>
@@ -374,34 +382,37 @@
     var dameTab = document.getElementById('dameTab');
     var partnerTab = document.getElementById('partnerTab');
     if (tab == 'user') {
-      userTab.style.backgroundColor = 'gray';
-      userTab.classList.add('text-white');
-      partnerTab.style.backgroundColor = 'gainsboro';
-      partnerTab.classList.remove('text-white');
-      dameTab.style.backgroundColor = 'gainsboro';
-      dameTab.classList.remove('text-white');
+      userTab.classList.add('pastel-pink-background');
+      userTab.classList.add('text-dark');
+      userTab.style.fontWeight = 'semibold';
+      partnerTab.classList.add('pastel-beige-background');
+      partnerTab.classList.remove('text-dark');
+      dameTab.classList.add('pastel-beige-background');
+      dameTab.classList.remove('text-dark');
       document.getElementById('user-form').classList.remove('d-none');
       document.getElementById('partner-form').classList.add('d-none');
       document.getElementById('dame-form').classList.add('d-none');
     } else if (tab == 'dame') {
-      userTab.style.backgroundColor = 'gainsboro';
-      userTab.classList.remove('text-white');
-      partnerTab.style.backgroundColor = 'gainsboro';
-      partnerTab.classList.remove('text-white');
-      dameTab.style.backgroundColor = 'gray';
-      dameTab.classList.add('text-white');
-      document.getElementById('user-form').classList.add('d-none');
+      userTab.classList.add('pastel-beige-background');
+      userTab.classList.remove('text-dark');
+      partnerTab.classList.add('pastel-beige-background');
+      partnerTab.classList.remove('text-dark');
+      dameTab.classList.add('pastel-pink-background');
+      dameTab.classList.add('text-dark');
+      dameTab.style.fontWeight = 'semibold';
+      document.getElementById('user-form').classList.remove('d-none');
       document.getElementById('partner-form').classList.add('d-none');
-      document.getElementById('dame-form').classList.remove('d-none');
+      document.getElementById('dame-form').classList.add('d-none');
     } else if (tab == 'partner') {
-      userTab.style.backgroundColor = 'gainsboro';
-      userTab.classList.remove('text-white');
-      partnerTab.style.backgroundColor = 'gray';
-      partnerTab.classList.add('text-white');
-      dameTab.style.backgroundColor = 'gainsboro';
-      dameTab.classList.remove('text-white');
-      document.getElementById('user-form').classList.add('d-none');
-      document.getElementById('partner-form').classList.remove('d-none');
+      userTab.classList.add('pastel-beige-background');
+      userTab.classList.remove('text-dark');
+      partnerTab.classList.add('pastel-pink-background');
+      partnerTab.classList.add('text-dark');
+      partnerTab.style.fontWeight = 'semibold';
+      dameTab.classList.add('pastel-beige-background');
+      dameTab.classList.remove('text-dark');
+      document.getElementById('user-form').classList.remove('d-none');
+      document.getElementById('partner-form').classList.add('d-none');
       document.getElementById('dame-form').classList.add('d-none');
     }
 

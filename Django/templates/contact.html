@@ -6,10 +6,13 @@
 <!-- 중앙 섹션 -->
 <section class="main-section px-5 px-lg-1" style="flex: 1; min-height: 100vh;">
 
-  <!-- 제목 -->
-  <div class="mt-4 mb-5">
+  <div class="mt-4">
     {% include 'parts/goback.html' %}
-    <h5 class="mt-5">
+  </div>
+
+  <!-- 제목 -->
+  <div class="shadow rounded p-3 border py-5 mb-5 pastel-beige-background mt-4">
+    <h5 class="mb-4 text-dark">
       연락처
     </h5>
     <p>
@@ -18,11 +21,11 @@
   </div>
 
   <!-- 연락처 상자 -->
-  <div class="shadow rounded p-3 border py-5 mb-5">
-    <p class="text-dark">
+  <div class="shadow rounded p-3 border py-5 mb-5 pastel-beige-background">
+    <h5 class="mb-4 text-dark">
       회사정보
-    </p>
-    <div class='mb-3'>
+    </h5>
+    <div class="mb-3">
       <p>
         {{server.company_info}}
       </p>
@@ -30,8 +33,8 @@
   </div>
 
   <!-- 문의사항 작성 폼 -->
-  <div class="shadow rounded border p-3 py-5 mt-5">
-    <h5 class="mb-4">
+  <div class="shadow rounded border p-3 py-5 mt-5 pastel-beige-background">
+    <h5 class="mb-4 text-dark">
       제휴 문의 작성
     </h5>
     <p>

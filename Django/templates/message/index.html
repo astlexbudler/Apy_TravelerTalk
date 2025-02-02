@@ -18,13 +18,18 @@
   </div>
 
   <!-- 선택지 버튼 그룹 -->
-  <div class="btn-group w-100">
-    <a class="btn text-white" href="/message?tab=inbox" style="background-color: gray;" id="inboxTab">
-      받은 쪽지함
-    </a>
-    <a class="btn" style="background-color: gainsboro;" href="/message?tab=outbox" id="outboxTab">
-      보낸 쪽지함
-    </a>
+  <div class="btn-group w-100 d-flex">
+    <div class="w-100 d-flex justify-content-center rounded-2">
+      <a class="w-100 btn" href="/message?tab=inbox" id="inboxTab">
+        받은 쪽지함
+      </a>
+    </div>
+    <span class="divider"></span>
+    <div class="w-100 d-flex justify-content-center rounded-2">
+      <a class="w-100 btn" href="/message?tab=outbox" id="outboxTab">
+        보낸 쪽지함
+      </a>
+    </div>
   </div>
 
   <!--
@@ -314,7 +319,7 @@
 
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-primary" onclick="sendMessage();">보내기</button>
+        <button type="button" class="btn pastel-pink-background" onclick="sendMessage();">보내기</button>
       </div>
     </div>
   </div>
@@ -336,17 +341,19 @@
     var inbox = document.getElementById('inbox');
     var outbox = document.getElementById('outbox');
     if (tab == 'inbox') {
-      inboxTab.style.backgroundColor = 'gray';
-      outboxTab.style.backgroundColor = 'gainsboro';
-      inboxTab.classList.add('text-white');
-      outboxTab.classList.remove('text-white');
+      inboxTab.classList.add('pastel-pink-background');
+      inboxTab.classList.add('text-dark');
+      inboxTab.style.fontWeight = 'semibold';
+      outboxTab.classList.add('pastel-beige-background');
+      outboxTab.classList.remove('text-dark');
       inbox.classList.remove('d-none');
       outbox.classList.add('d-none');
     } else if (tab == 'outbox') {
-      inboxTab.style.backgroundColor = 'gainsboro';
-      outboxTab.style.backgroundColor = 'gray';
-      inboxTab.classList.remove('text-white');
-      outboxTab.classList.add('text-white');
+      inboxTab.classList.add('pastel-beige-background');
+      inboxTab.classList.remove('text-dark');
+      outboxTab.classList.add('pastel-pink-background');
+      outboxTab.classList.add('text-dark');
+      outboxTab.style.fontWeight = 'semibold';
       inbox.classList.add('d-none');
       outbox.classList.remove('d-none');
     }

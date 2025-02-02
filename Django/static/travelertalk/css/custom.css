@@ -1,0 +1,21 @@
+.pastel-pink-background {
+    background-color: #FCE4EC;
+}
+
+.pastel-beige-background {
+    background-color: #FFF9F0;
+}
+
+.pastel-gray-background {
+    background-color: #808080;
+}
+
+.pastel-white-background {
+    background-color: white;
+}
+
+.divider {
+    width: 16px;
+    height: 100%;
+    background-color: white;
+}
