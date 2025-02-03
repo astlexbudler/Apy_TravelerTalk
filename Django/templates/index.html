@@ -45,6 +45,28 @@
     {% endif %}
 
   </div>
+
+  <!-- 검색 컴포넌트와 맨 위로 가는 버튼 -->
+  <div class="d-flex w-100">
+    <div class="header-search d-flex w-100 flex-row-reverse">
+      <form class="header-search-form d-flex flex-row" onkeyup="if(event.keyCode == 13) searchPost('pc');">
+        <select class="form-select mx-2">
+            <option value="title">제목</option>
+            <option value="content">내용</option>
+        </select>
+        <input id="pcSearchKeyword" placeholder="검색어를 입력해주세요." value="{{ request.GET.keyword }}" class="form-control">
+        <button class="btn search-btn" onclick="searchPost('pc');">
+          <i class="fi fi-rr-search"></i>
+        </button>
+      </form>
+    </div>
+    <div>
+      <button class="btn btn-info" id="topBtn" onclick="window.scrollTo({ top: 0, behavior: 'smooth' })">
+          TOP
+      </button>
+    </div>
+  </div>
+
   <div id="pageButton"></div>
 
   <!--
