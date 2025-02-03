@@ -159,21 +159,6 @@
                     </div>
                     {% endif %}
 
-                    <!-- 광고 관리 -->
-                    {% if account.account_type == 'supervisor' or account.account_type == 'sub_supervisor' and 'ad' in account.supervisor_permissions %}
-                    <div class="nav-item" style="white-space: nowrap;">
-                      <a class="nav-link text-dark" href="/supervisor/ad_post">
-                        <i class="fi fi-rr-bullhorn"></i> 광고 관리
-                      </a>
-                    </div>
-                    {% else %}
-                    <div class="nav-item" style="white-space: nowrap;">
-                      <a class="nav-link text-black-50" href="#">
-                        <i class="fi fi-rr-bullhorn"></i> 광고 관리
-                      </a>
-                    </div>
-                    {% endif %}
-
                     <!-- 쿠폰 관리 -->
                     {% if account.account_type == 'supervisor' or account.account_type == 'sub_supervisor' and 'coupon' in account.supervisor_permissions %}
                     <div class="nav-item" style="white-space: nowrap;">

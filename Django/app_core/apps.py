@@ -155,6 +155,9 @@ class AppCoreConfig(AppConfig):
         )
         partner.set_password('partner1!')
         partner.save()
+        partner.groups.add(user_group)
+        partner.groups.add(partner_group)
+        partner.save()
 
         supervisor = models.ACCOUNT(
           username='supervisor', # 관리자 아이디

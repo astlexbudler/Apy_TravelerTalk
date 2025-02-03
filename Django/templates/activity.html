@@ -39,9 +39,11 @@
       <p class="mb-2 text-dark">
         {{ act.message }}
       </p>
+      {% if act.point_change %}
       <span class="text-black-50" style="font-size: 12px;">
-        {{ act.point_change }}
+        <i class="fi fi-ss-coins"></i><i class="fi fi-ss-coins text-secondary"></i> {{ act.point_change }}
       </span>
+      {% endif %}
 
     </a>
   </div>

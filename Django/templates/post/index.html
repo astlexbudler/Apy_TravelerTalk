@@ -39,7 +39,7 @@
   {% else %}
 
   <!-- 일반 게시글 형태 -->
-  {% if board.board_type == 'board' %}
+  {% if board.board_type != 'board' %}
   {% for post in posts %}
   <div class="col-12 p-2 mb-2 pb-3 border-bottom">
     <a href="/post/post_view?post_id={{ post.id }}" class="text-dark text-decoration-none">
@@ -100,7 +100,7 @@
   {% endif %}
 
   <!-- 이벤트 게시글 형태 -->
-  {% if board.board_type == 'event' %}
+  {% if board.board_type != 'event' %}
   {% for post in posts %}
   <div class="col-12 p-2 mb-2 pb-3 border-bottom">
     <a href="/post/post_view?post_id={{ post.id }}" class="text-dark text-decoration-none">

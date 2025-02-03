@@ -139,7 +139,7 @@ tryLogin = async () => {
   });
 
   // 로그인 결과에 따른 분기 처리
-  if (result === 'success') { // 로그인 성공
+  if (result === 'success' || result === 'active') { // 로그인 성공
     location.reload();
     return;
   } else if (result.indexOf('pending') != -1) {
@@ -150,23 +150,13 @@ tryLogin = async () => {
   } else if (result.indexOf('banned') != -1) {
     // 계정 정지 안내 및 로그인 실패
     await showAlert('계정 정지', '활동이 정지된 계정입니다. 관리자에게 문의하세요.', 'error');
-    document.querySelectorAll('.accountLoginId').forEach(element => {
-      element.value = '';
-    });
-    document.querySelectorAll('.accountLoginPassword').forEach(element => {
-      element.value = '';
-    });
+    location.reload();
     return;
   }
 
   // 로그인 실패
   await showAlert('로그인 실패', '아이디 또는 비밀번호가 일치하지 않습니다.', 'error');
-  document.querySelectorAll('.accountLoginId').forEach(element => {
-    element.value = '';
-  });
-  document.querySelectorAll('.accountLoginPassword').forEach(element => {
-    element.value = '';
-  });
+  location.reload();
 }
 
 // 로그아웃 버튼 클릭 시

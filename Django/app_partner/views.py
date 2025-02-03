@@ -12,12 +12,21 @@ from app_core import daos
 # 파트너 관리자 메인 페이지
 def index(request):
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
-
-  # 로그인 여부 확인
-  if not request.user.is_authenticated: # 로그인이 되어 있지 않은 경우
-    return redirect('/?redirect_message=need_login') # 로그인 페이지로 리다이렉트
-  # 파트너 계정 확인
-  if 'partner' not in contexts['account']['groups']: # 파트너 계정이 아닌 경우
+  account_type = 'guest' # 기본값은 guest
+  if request.user.is_authenticated:
+    account_type = 'user'
+    if 'dame' in contexts['account']['groups']:
+      account_type = 'dame'
+    elif 'partner' in contexts['account']['groups']:
+      account_type = 'partner'
+    elif 'subsupervisor' in contexts['account']['groups']:
+      account_type = 'subsupervisor'
+    elif 'supervisor' in contexts['account']['groups']:
+      account_type = 'supervisor'
+  contexts['account']['account_type'] = account_type
+  if not request.user.is_authenticated: # 로그인 되지 않은 경우
+    return redirect('/?redirect_message=need_login') # 로그인 필요 메세지 표시
+  if account_type != 'partner': # 파트너 계정이 아닌 경우
     return redirect('/?redirect_message=partner_status_error') # 홈으로 리다이렉트
 
   # 사용자 프로필 정보
@@ -25,7 +34,7 @@ def index(request):
 
   # 파트너 계정이 소유한 여행지 게시글
   p = models.POST.objects.filter(
-    author=contexts['account']['id'],
+    author=request.user,
     place_info__isnull=False, # 여행지 정보가 있는 경우
   ).first()
   if not p: # 여행지 게시글이 없는 경우, 광고 게시글 작성 페이지로 이동
@@ -41,6 +50,22 @@ def index(request):
 # 새 광고 게시글 작성 페이지
 def write_post(request):
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
+  account_type = 'guest' # 기본값은 guest
+  if request.user.is_authenticated:
+    account_type = 'user'
+    if 'dame' in contexts['account']['groups']:
+      account_type = 'dame'
+    elif 'partner' in contexts['account']['groups']:
+      account_type = 'partner'
+    elif 'subsupervisor' in contexts['account']['groups']:
+      account_type = 'subsupervisor'
+    elif 'supervisor' in contexts['account']['groups']:
+      account_type = 'supervisor'
+  contexts['account']['account_type'] = account_type
+  if not request.user.is_authenticated: # 로그인 되지 않은 경우
+    return redirect('/?redirect_message=need_login') # 로그인 필요 메세지 표시
+  if account_type != 'partner': # 파트너 계정이 아닌 경우
+    return redirect('/?redirect_message=partner_status_error') # 홈으로 리다이렉트
 
   # 로그인 여부 확인
   if not request.user.is_authenticated: # 로그인이 되어 있지 않은 경우
@@ -51,7 +76,7 @@ def write_post(request):
 
   # 광고 게시글이 이미 있는 경우, 광고 게시글 수정 페이지로 이동
   p = models.POST.objects.filter(
-    author=contexts['account']['id'],
+    author=request.user,
     place_info__isnull=False, # 여행지 정보가 있는 경우
   ).first()
   if p: # 여행지 게시글이 있는 경우
@@ -118,17 +143,28 @@ def write_post(request):
 # 광고 게시글 수정 페이지
 def rewrite_post(request):
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
-
-  # 로그인 여부 확인
-  if not request.user.is_authenticated: # 로그인이 되어 있지 않은 경우
-    return redirect('/?redirect_message=need_login') # 로그인 페이지로 리다이렉트
-  # 파트너 계정 확인
+  account_type = 'guest' # 기본값은 guest
+  if request.user.is_authenticated:
+    account_type = 'user'
+    if 'dame' in contexts['account']['groups']:
+      account_type = 'dame'
+    elif 'partner' in contexts['account']['groups']:
+      account_type = 'partner'
+    elif 'subsupervisor' in contexts['account']['groups']:
+      account_type = 'subsupervisor'
+    elif 'supervisor' in contexts['account']['groups']:
+      account_type = 'supervisor'
+  contexts['account']['account_type'] = account_type
+  if not request.user.is_authenticated: # 로그인 되지 않은 경우
+    return redirect('/?redirect_message=need_login') # 로그인 필요 메세지 표시
+  if account_type != 'partner': # 파트너 계정이 아닌 경우
+    return redirect('/?redirect_message=partner_status_error') # 홈으로 리다이렉트
   if 'partner' not in contexts['account']['groups']: # 파트너 계정이 아닌 경우
     return redirect('/?redirect_message=partner_status_error') # 홈으로 리다이렉트
 
   # 광고 게시글 정보
   p = models.POST.objects.filter(
-    author=contexts['account']['id'],
+    author=request.user,
     place_info__isnull=False, # 여행지 정보가 있는 경우
   ).first()
   if not p: # 여행지 게시글이 없는 경우, 광고 게시글 작성 페이지로 이동
@@ -189,7 +225,7 @@ def rewrite_post(request):
   '''
 
   # 게시판 정보
-  boards = daos.get_board_tree()
+  boards = daos.get_board_tree(account_type)
 
   # 카테고리 정보
   categories = daos.get_category_tree()
@@ -203,17 +239,26 @@ def rewrite_post(request):
 # 쿠폰 관리 페이지
 def coupon(request):
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
-
-  # 로그인 여부 확인
-  if not request.user.is_authenticated: # 로그인이 되어 있지 않은 경우
-    return redirect('/?redirect_message=need_login') # 로그인 페이지로 리다이렉트
-  # 파트너 계정 확인
-  if 'partner' not in contexts['account']['groups']: # 파트너 계정이 아닌 경우
+  account_type = 'guest' # 기본값은 guest
+  if request.user.is_authenticated:
+    account_type = 'user'
+    if 'dame' in contexts['account']['groups']:
+      account_type = 'dame'
+    elif 'partner' in contexts['account']['groups']:
+      account_type = 'partner'
+    elif 'subsupervisor' in contexts['account']['groups']:
+      account_type = 'subsupervisor'
+    elif 'supervisor' in contexts['account']['groups']:
+      account_type = 'supervisor'
+  contexts['account']['account_type'] = account_type
+  if not request.user.is_authenticated: # 로그인 되지 않은 경우
+    return redirect('/?redirect_message=need_login') # 로그인 필요 메세지 표시
+  if account_type != 'partner': # 파트너 계정이 아닌 경우
     return redirect('/?redirect_message=partner_status_error') # 홈으로 리다이렉트
 
   # 여행지 게시글
   p = models.POST.objects.filter(
-    author=contexts['account']['id'],
+    author=request.user,
     place_info__isnull=False, # 여행지 정보가 있는 경우
   ).first()
   if not p: # 여행지 게시글이 없는 경우, 광고 게시글 작성 페이지로 이동
@@ -389,10 +434,10 @@ def coupon(request):
 
   # 쿠폰 목록 가져오기
   cps = models.COUPON.objects.prefetch_related('own_accounts').filter(
-    create_account_id=request.user.username,
+    create_account=request.user,
     name__contains=search_coupon_name,
     status__contains=search_coupon_status,
-    own_accounts=search_coupon_owner,
+    own_accounts__id__in=search_coupon_owner,
   ).order_by('-expire_at')
   coupons = []
   last_page = len(cps) // 30 + 1 # 한 페이지당 30개씩 표시

@@ -1,0 +1,5 @@
+{% if level.image %}
+<img src="{{ level.image }}" style="height: 20px; width: auto;">
+{% else %}
+<span class="badge" style="color: {{level.text_color}}; background-color: {{level.background_color}};">{{ level.text }}</span>
+{% endif %}

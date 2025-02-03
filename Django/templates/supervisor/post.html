@@ -24,7 +24,7 @@
     <!-- 버튼 -->
     <div class="p-3 mb-5 text-end">
 
-      <a class="btn btn-success" href="javascript: new bootstrap.Modal(document.getElementById('defaultModal')).show()">
+      <a class="btn btn-success" href="javascript: new bootstrap.Modal(document.getElementById('addTopBoardModal')).show()">
         <i class="fi fi-rr-plus"></i> 최상위 게시판 추가
       </a>
 
@@ -41,7 +41,6 @@
             <th>구분</th>
             <th>조회수</th>
             <th>게시글 수</th>
-            <th>댓글 수</th>
             <th></th>
           </tr>
         </thead>
@@ -51,29 +50,22 @@
             <td>
               <p>
                 {{ board.name }}<br>
-                <a href="javascript: new bootstrap.Modal(document.getElementById('{{ board.id }}Add')).show()" class="btn btn-success p-1 px-2 small">
+
+                <!-- 하위 게시판 추가. 트리 타입만 가능 -->
+                {% if board.board_type == 'tree' %}
+                <a href="javascript: document.getElementById('subBoardParent').value = '{{ board.id }}'; new bootstrap.Modal(document.getElementById('addSubBoardModal')).show()"
+                class="btn btn-success p-1 px-2 small">
                   <i class="fi fi-rr-plus"></i> 하위 게시판 추가
                 </a>
+                {% endif %}
+
               </p>
-              <div class="modal fade" id="{{ board.id }}Add" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                  <div class="modal-content">
-                    <div class="modal-header">
-                      <h5 class="modal-title">하위 게시판 추가</h5>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body"></div>
-                    <div class="modal-footer">
-                      <button type="button" class="btn btn-primary" onclick="" data-bs-dismiss="modal">submit</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </td>
             <td>{{ board.total_views }}</td>
             <td>{{ board.total_posts }}</td>
-            <td>{{ board.total_comments }}</td>
             <td class="text-center">
+
+              <!-- 게시판 수정 -->
               <a href="javascript: new bootstrap.Modal(document.getElementById('{{ board.id }}Edit')).show()">
                 <i class="fi fi-rr-edit"></i>
               </a>
@@ -91,6 +83,7 @@
                   </div>
                 </div>
               </div>
+
             </td>
           </tr>
           {% if board.children|length > 0 %}
@@ -99,29 +92,22 @@
             <td>
               <p class="ms-2">
                 {{ child.name }}<br>
-                <a href="javascript: new bootstrap.Modal(document.getElementById('{{ child.id }}Add')).show()"class="btn btn-success p-1 px-2 small">
+
+                <!-- 하위 게시판 추가. 트리 타입만 가능 -->
+                {% if child.board_type == 'tree' %}
+                <a href="javascript: document.getElementById('subBoardParent').value = '{{ board.id }}'; new bootstrap.Modal(document.getElementById('addSubBoardModal')).show()"
+                class="btn btn-success p-1 px-2 small">
                   <i class="fi fi-rr-plus"></i> 하위 게시판 추가
                 </a>
+                {% endif %}
+
               </p>
-              <div class="modal fade" id="{{ child.id }}Add" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                  <div class="modal-content">
-                    <div class="modal-header">
-                      <h5 class="modal-title">하위 게시판 추가</h5>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body"></div>
-                    <div class="modal-footer">
-                      <button type="button" class="btn btn-primary" onclick="" data-bs-dismiss="modal">submit</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </td>
             <td>{{ child.total_views }}</td>
             <td>{{ child.total_posts }}</td>
-            <td>{{ child.total_comments }}</td>
             <td class="text-center">
+
+              <!-- 게시판 수정 -->
               <a href="javascript: new bootstrap.Modal(document.getElementById('{{ child.id }}Detail')).show()">
                 <i class="fi fi-rr-edit"></i>
               </a>
@@ -139,6 +125,7 @@
                   </div>
                 </div>
               </div>
+
             </td>
             {% if child.children|length > 0 %}
             {% for grandchild in child.children %}
@@ -146,46 +133,40 @@
               <td>
                 <p class="ms-4">
                   {{ grandchild.name }}<br>
-                  <a href="javascript: new bootstrap.Modal(document.getElementById('{{ grandchild.id }}Add')).show()" class="btn btn-success p-1 px-2 small">
+
+                  <!-- 하위 게시판 추가. 트리 타입만 가능 -->
+                  {% if grandchild.board_type == 'tree' %}
+                  <a href="javascript: document.getElementById('subBoardParent').value = '{{ board.id }}'; new bootstrap.Modal(document.getElementById('addSubBoardModal')).show()"
+                  class="btn btn-success p-1 px-2 small">
                     <i class="fi fi-rr-plus"></i> 하위 게시판 추가
                   </a>
+                  {% endif %}
+
                 </p>
-                <div class="modal fade" id="{{ grandchild.id }}Add" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                  <div class="modal-content">
-                    <div class="modal-header">
-                      <h5 class="modal-title">하위 게시판 추가</h5>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body"></div>
-                    <div class="modal-footer">
-                      <button type="button" class="btn btn-primary" onclick="" data-bs-dismiss="modal">submit</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
               </td>
               <td>{{ grandchild.total_views }}</td>
               <td>{{ grandchild.total_posts }}</td>
-              <td>{{ grandchild.total_comments }}</td>
               <td class="text-center">
+
+                <!-- 게시판 수정 -->
                 <a href="javascript: new bootstrap.Modal(document.getElementById('{{ grandchild.id }}Detail')).show()">
                   <i class="fi fi-rr-edit"></i>
                 </a>
                 <div class="modal fade" id="{{ grandchild.id }}Detail" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                  <div class="modal-content">
-                    <div class="modal-header">
-                      <h5 class="modal-title">{{ grandchild.name }} 수정</h5>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body"></div>
-                    <div class="modal-footer">
-                      <button type="button" class="btn btn-primary" onclick="" data-bs-dismiss="modal">submit</button>
+                  <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h5 class="modal-title">{{ grandchild.name }} 수정</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body"></div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" onclick="" data-bs-dismiss="modal">submit</button>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+
               </td>
             </tr>
               {% if grandchild.children|length > 0 %}
@@ -196,25 +177,27 @@
                 </td>
                 <td>{{ grandgrandchild.total_views }}</td>
                 <td>{{ grandgrandchild.total_posts }}</td>
-                <td>{{ grandgrandchild.total_comments }}</td>
                 <td class="text-center">
+
+                  <!-- 게시판 수정 -->
                   <a href="javascript: new bootstrap.Modal(document.getElementById('{{ grandgrandchild.id }}Detail')).show()">
                     <i class="fi fi-rr-edit"></i>
                   </a>
                   <div class="modal fade" id="{{ grandgrandchild.id }}Detail" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                  <div class="modal-content">
-                    <div class="modal-header">
-                      <h5 class="modal-title">{{ grandgrandchild.name }} 수정</h5>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body"></div>
-                    <div class="modal-footer">
-                      <button type="button" class="btn btn-primary" onclick="" data-bs-dismiss="modal">submit</button>
+                    <div class="modal-dialog modal-dialog-centered">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <h5 class="modal-title">{{ grandgrandchild.name }} 수정</h5>
+                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body"></div>
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-primary" onclick="" data-bs-dismiss="modal">submit</button>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
+
                 </td>
               </tr>
               {% endfor %}
@@ -279,7 +262,7 @@
       검색 결과가 없습니다.
     </p>
     {% endif %}
-    {% for post in search_posts %}
+    {% for post in posts %}
     <div>
       <div class="col-12 p-2 mb-2 pb-3 border-bottom">
         <a href="/post/post_view?post={{ post.id }}" target="_blank"
@@ -333,7 +316,8 @@
 <aside class="d-none d-lg-block" style="width: 320px;"></aside>
 
 <!-- Modal -->
-<div class="modal fade" id="defaultModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+<!-- 최상위 게시판 추가 모달 -->
+<div class="modal fade" id="addTopBoardModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
@@ -342,9 +326,283 @@
       </div>
       <div class="modal-body">
 
+        <!-- 게시판 이름 -->
+        <div class="form-group">
+          <label>새 이름</label>
+          <input class="form-control" placeholder="게시판 이름" id="topBoardName">
+        </div>
+
+        <!-- 게시판 타입 -->
+        <div class="form-group">
+          <label>게시판 타입</label>
+          <select class="form-control" id="topBoardType">
+            <option value="board">게시판</option>
+            <option value="travel">여행</option>
+            <option value="tree">폴더</option>
+          </select>
+        </div>
+
+        <!-- 레벨 제한 -->
+        <div class="form-group">
+          <label>레벨 제한</label>
+          <input type="number" class="form-control" id="topBoardLevel" value="1">
+        </div>
+
+        <!-- 표시 그룹 -->
+        <div class="form-group top-board-groups">
+          <label>게시판 표시 그룹</label>
+          <p>
+            <input type="checkbox" class="form-check-input" id="topBoardDisplayUser">
+            <label class="form-check-label" for="topBoardDisplayUser">사용자</label>
+          </p>
+          <p>
+            <input type="checkbox" class="form-check-input" id="topBoardDisplayDame">
+            <label class="form-check-label" for="topBoardDisplayDame">여성회원</label>
+          </p>
+          <p>
+            <input type="checkbox" class="form-check-input" id="topBoardDisplayPartner">
+            <label class="form-check-label" for="topBoardDisplayPartner">파트너</label>
+          </p>
+          <p>
+            <input type="checkbox" class="form-check-input" id="topBoardDisplaySubsupervisor">
+            <label class="form-check-label" for="topBoardDisplaySubsupervisor">부관리자</label>
+          </p>
+          <p>
+            <input type="checkbox" class="form-check-input" id="topBoardDisplaySupervisor">
+            <label class="form-check-label" for="topBoardDisplaySupervisor">관리자</label>
+          </p>
+        </div>
+
+        <!-- 입장 그룹 -->
+        <div class="form-group top-board-groups">
+          <label>게시판 입장 그룹</label>
+          <p>
+            <input type="checkbox" class="form-check-input" id="topBoardEnterUser">
+            <label class="form-check-label" for="topBoardEnterUser">사용자</label>
+          </p>
+          <p>
+            <input type="checkbox" class="form-check-input" id="topBoardEnterDame">
+            <label class="form-check-label" for="topBoardEnterDame">여성회원</label>
+          </p>
+          <p>
+            <input type="checkbox" class="form-check-input" id="topBoardEnterPartner">
+            <label class="form-check-label" for="topBoardEnterPartner">파트너</label>
+          </p>
+          <p>
+            <input type="checkbox" class="form-check-input" id="topBoardEnterSubsupervisor">
+            <label class="form-check-label" for="topBoardEnterSubsupervisor">부관리자</label>
+          </p>
+          <p>
+            <input type="checkbox" class="form-check-input" id="topBoardEnterSupervisor">
+            <label class="form-check-label" for="topBoardEnterSupervisor">관리자</label>
+          </p>
+        </div>
+
+        <!-- 작성 그룹 -->
+        <div class="form-group top-board-groups">
+          <label>게시글 작성 그룹</label>
+          <p>
+            <input type="checkbox" class="form-check-input" id="topBoardWriteUser">
+            <label class="form-check-label" for="topBoardWriteUser">사용자</label>
+          </p>
+          <p>
+            <input type="checkbox" class="form-check-input" id="topBoardWriteDame">
+            <label class="form-check-label" for="topBoardWriteDame">여성회원</label>
+          </p>
+          <p>
+            <input type="checkbox" class="form-check-input" id="topBoardWritePartner">
+            <label class="form-check-label" for="topBoardWritePartner">파트너</label>
+          </p>
+          <p>
+            <input type="checkbox" class="form-check-input" id="topBoardWriteSubsupervisor">
+            <label class="form-check-label" for="topBoardWriteSubsupervisor">부관리자</label>
+          </p>
+          <p>
+            <input type="checkbox" class="form-check-input" id="topBoardWriteSupervisor">
+            <label class="form-check-label" for="topBoardWriteSupervisor">관리자</label>
+          </p>
+        </div>
+
+        <!-- 댓글 그룹 -->
+        <div class="form-group top-board-groups">
+          <label>댓글 작성 그룹</label>
+          <p>
+            <input type="checkbox" class="form-check-input" id="topBoardCommentUser">
+            <label class="form-check-label" for="topBoardCommentUser">사용자</label>
+          </p>
+          <p>
+            <input type="checkbox" class="form-check-input" id="topBoardCommentDame">
+            <label class="form-check-label" for="topBoardCommentDame">여성회원</label>
+          </p>
+          <p>
+            <input type="checkbox" class="form-check-input" id="topBoardCommentPartner">
+            <label class="form-check-label" for="topBoardCommentPartner">파트너</label>
+          </p>
+          <p>
+            <input type="checkbox" class="form-check-input" id="topBoardCommentSubsupervisor">
+            <label class="form-check-label" for="topBoardCommentSubsupervisor">부관리자</label>
+          </p>
+          <p>
+            <input type="checkbox" class="form-check-input" id="topBoardCommentSupervisor">
+            <label class="form-check-label" for="topBoardCommentSupervisor">관리자</label>
+          </p>
+        </div>
+
+        <!-- 표시 가중치 -->
+        <div class="form-group">
+          <label>표시 가중치</label>
+          <input type="number" class="form-control" id="topBoardWeight" value="0">
+        </div>
+
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-primary" onclick="" data-bs-dismiss="modal">submit</button>
+        <button type="button" class="btn btn-primary" onclick="addTopBoard();" data-bs-dismiss="modal">변경하기</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="addSubBoardModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">하위 게시판 추가</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+        <input type="hidden" id="subBoardParent" value="{{ board.id }}">
+
+        <!-- 게시판 이름 -->
+        <div class="form-group">
+          <label>새 이름</label>
+          <input class="form-control" placeholder="게시판 이름" id="subBoardName">
+        </div>
+
+        <!-- 게시판 타입 -->
+        <div class="form-group">
+          <label>게시판 타입</label>
+          <select class="form-control" id="subBoardType">
+            <option value="board">게시판</option>
+            <option value="travel">여행</option>
+            <option value="tree">폴더</option>
+          </select>
+        </div>
+
+        <!-- 레벨 제한 -->
+        <div class="form-group">
+          <label>레벨 제한</label>
+          <input type="number" class="form-control" id="subBoardLevel" value="1">
+        </div>
+
+        <!-- 표시 그룹 -->
+        <div class="form-group sub-board-groups">
+          <label>게시판 표시 그룹</label>
+          <p>
+            <input type="checkbox" class="form-check-input" id="subBoardDisplayUser">
+            <label class="form-check-label" for="subBoardDisplayUser">사용자</label>
+          </p>
+          <p>
+            <input type="checkbox" class="form-check-input" id="subBoardDisplayDame">
+            <label class="form-check-label" for="subBoardDisplayDame">여성회원</label>
+          </p>
+          <p>
+            <input type="checkbox" class="form-check-input" id="subBoardDisplayPartner">
+            <label class="form-check-label" for="subBoardDisplayPartner">파트너</label>
+          </p>
+          <p>
+            <input type="checkbox" class="form-check-input" id="subBoardDisplaySubsupervisor">
+            <label class="form-check-label" for="subBoardDisplaySubsupervisor">부관리자</label>
+          </p>
+          <p>
+            <input type="checkbox" class="form-check-input" id="subBoardDisplaySupervisor">
+            <label class="form-check-label" for="subBoardDisplaySupervisor">관리자</label>
+          </p>
+        </div>
+
+        <!-- 입장 그룹 -->
+        <div class="form-group sub-board-groups">
+          <label>게시판 입장 그룹</label>
+          <p>
+            <input type="checkbox" class="form-check-input" id="subBoardEnterUser">
+            <label class="form-check-label" for="subBoardEnterUser">사용자</label>
+          </p>
+          <p>
+            <input type="checkbox" class="form-check-input" id="subBoardEnterDame">
+            <label class="form-check-label" for="subBoardEnterDame">여성회원</label>
+          </p>
+          <p>
+            <input type="checkbox" class="form-check-input" id="subBoardEnterPartner">
+            <label class="form-check-label" for="subBoardEnterPartner">파트너</label>
+          </p>
+          <p>
+            <input type="checkbox" class="form-check-input" id="subBoardEnterSubsupervisor">
+            <label class="form-check-label" for="subBoardEnterSubsupervisor">부관리자</label>
+          </p>
+          <p>
+            <input type="checkbox" class="form-check-input" id="subBoardEnterSupervisor">
+            <label class="form-check-label" for="subBoardEnterSupervisor">관리자</label>
+          </p>
+        </div>
+
+        <!-- 작성 그룹 -->
+        <div class="form-group sub-board-groups">
+          <label>게시글 작성 그룹</label>
+          <p>
+            <input type="checkbox" class="form-check-input" id="subBoardWriteUser">
+            <label class="form-check-label" for="subBoardWriteUser">사용자</label>
+          </p>
+          <p>
+            <input type="checkbox" class="form-check-input" id="subBoardWriteDame">
+            <label class="form-check-label" for="subBoardWriteDame">여성회원</label>
+          </p>
+          <p>
+            <input type="checkbox" class="form-check-input" id="subBoardWritePartner">
+            <label class="form-check-label" for="subBoardWritePartner">파트너</label>
+          </p>
+          <p>
+            <input type="checkbox" class="form-check-input" id="subBoardWriteSubsupervisor">
+            <label class="form-check-label" for="subBoardWriteSubsupervisor">부관리자</label>
+          </p>
+          <p>
+            <input type="checkbox" class="form-check-input" id="subBoardWriteSupervisor">
+            <label class="form-check-label" for="subBoardWriteSupervisor">관리자</label>
+          </p>
+        </div>
+
+        <!-- 댓글 그룹 -->
+        <div class="form-group sub-board-groups">
+          <label>댓글 작성 그룹</label>
+          <p>
+            <input type="checkbox" class="form-check-input" id="subBoardCommentUser">
+            <label class="form-check-label" for="subBoardCommentUser">사용자</label>
+          </p>
+          <p>
+            <input type="checkbox" class="form-check-input" id="subBoardCommentDame">
+            <label class="form-check-label" for="subBoardCommentDame">여성회원</label>
+          </p>
+          <p>
+            <input type="checkbox" class="form-check-input" id="subBoardCommentPartner">
+            <label class="form-check-label" for="subBoardCommentPartner">파트너</label>
+          </p>
+          <p>
+            <input type="checkbox" class="form-check-input" id="subBoardCommentSubsupervisor">
+            <label class="form-check-label" for="subBoardCommentSubsupervisor">부관리자</label>
+          </p>
+          <p>
+            <input type="checkbox" class="form-check-input" id="subBoardCommentSupervisor">
+            <label class="form-check-label" for="subBoardCommentSupervisor">관리자</label>
+          </p>
+        </div>
+
+        <!-- 표시 가중치 -->
+        <div class="form-group">
+          <label>표시 가중치</label>
+          <input type="number" class="form-control" id="subBoardWeight" value="0">
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="addsubBoard();" data-bs-dismiss="modal">변경하기</button>
       </div>
     </div>
   </div>

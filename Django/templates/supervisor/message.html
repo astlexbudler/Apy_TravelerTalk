@@ -431,6 +431,14 @@
     var searchMessageTitle = '{{request.GET.messageTitle}}';
     var searchMessageReceiverId = '{{request.GET.messageReceiverId}}';
     makePaegeButton('{{request.GET.page}}', '{{last_page}}', `/supervisor/message?tab=${tab}&messageTitle=${searchMessageTitle}&messageReceiverId=${searchMessageReceiverId}`);
+
+    // to
+    var to = '{{request.GET.to}}';
+    if (to != '') {
+      new bootstrap.Modal(document.getElementById('newMessageModal')).show();
+      document.getElementById('messageReceiver').value = to;
+    }
+
   }
 
 </script>

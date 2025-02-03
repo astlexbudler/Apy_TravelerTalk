@@ -80,18 +80,18 @@ def account(request):
   # 파트너는 각 카테고리면 파트너 계정 통계 제공
   # 사용자는 사용자 및 여성 회원의 계정 통계 제공
   all_accounts = get_user_model().objects.all().order_by('-date_joined')
-  if tab == 'supervisor': # 관리자 검색 탬일 경우, 별도의 사용자 통계 기능 없음.
+  if tab == 'supervisor': # 관리자 검색 탭일 경우, 별도의 사용자 통계 기능 없음.
     status = {}
   elif tab == 'user': # 사용자 검색 탭일 경우, 사용자 및 여성회원 정보 제공
     dame_accounts = all_accounts.exclude(
-      Q(group='partner') | Q(group='supervisor') | Q(group='subsupervisor')
+      groups__name__in=['partner', 'supervisor', 'subsupervisor']
     ).filter(
-      Q(group='dame') | Q(status='pending_dame')
+      Q(groups__name='dame') | Q(status='pending_dame')
     )
     user_accounts = all_accounts.exclude(
-      Q(group='partner') | Q(group='supervisor') | Q(group='subsupervisor') | Q(group='dame')
+      groups__name__in=['partner', 'supervisor', 'subsupervisor', 'dame']
     ).filter(
-      Q(group='user')
+      groups__name='user'
     )
     status = {
       'user': {
@@ -111,7 +111,7 @@ def account(request):
     }
   elif tab == 'partner': # 파트너 검색 탭일 경우, 파트너 정보 제공
     partner_accounts = all_accounts.filter(
-      Q(group='partner') | Q(status='pending_partner')
+      Q(groups__name='partner') | Q(status='pending_partner')
     )
     status = {
       'partner': {
@@ -125,15 +125,21 @@ def account(request):
   # 사용자 검색
   if tab == 'user': # 사용자 탭일 경우, user와 dame을 같이 검색
     sats = all_accounts.exclude(
-      Q(group='partner') | Q(group='supervisor') | Q(group='subsupervisor')
+      groups__name__in=['partner', 'supervisor', 'subsupervisor']
     ).select_related('level').filter(
       Q(username__contains=search_account_id) | Q(first_name__contains=search_account_nickname) | Q(status__contains=search_account_status)
     )
-  else: # 그외(파트너 및 관리자 탭)
+  elif tab == 'supervisor': # 관리자 탭일 경우, 관리자만 검색
     sats = all_accounts.filter(
-      Q(group=tab) | Q(status__contains=tab),
+      Q(groups__name='supervisor') | Q(groups__name='subsupervisor'),
       Q(username__contains=search_account_id) | Q(first_name__contains=search_account_nickname) | Q(status__contains=search_account_status)
     )
+  elif tab == 'partner': # 파트너 탭일 경우, 파트너만 검색
+    sats = all_accounts.filter(
+      Q(groups__name='partner') | Q(status__contains='pending_partner'),
+      Q(username__contains=search_account_id) | Q(first_name__contains=search_account_nickname) | Q(status__contains=search_account_status)
+    )
+
   last_page = sats.count() // 20 + 1 # 20개씩 표시
   search_accounts = []
   for account in sats[(page - 1) * 20:page * 20]:
@@ -152,8 +158,7 @@ def account(request):
       'coupon_point': account.coupon_point,
       'level_point': account.level_point,
       'tel': account.tel,
-      'address': account.address,
-      'supervisor_permissions': account.supervisor_permissions,
+      'subsupervisor_permissions': account.subsupervisor_permissions,
       'level': {
         'level': account.level.level,
         'image': account.level.image,
@@ -227,9 +232,8 @@ def post(request):
       'id': board.id,
       'name': board.name,
       'board_type': board.board_type,
-      'total_views': int(math.fsum([len(str(post.views).split(',')) - 1 for post in models.POST.objects.filter(Q(board_id__contains=board.id))])),
-      'total_comments': models.COMMENT.objects.filter(post_id__in=[post.id for post in models.POST.objects.filter(Q(board_id__contains=board.id))]).count(),
-      'total_posts': models.POST.objects.filter(Q(board_id__contains=board.id)).count(),
+      'total_views': int(math.fsum([post.view_count for post in models.POST.objects.filter(Q(boards__id__in=str(board.id)))])),
+      'total_posts': models.POST.objects.filter(Q(boards__id__in=str(board.id))).count(),
       'display': [g.name for g in board.display_groups.all()],
       'enter': [g.name for g in board.enter_groups.all()],
       'write': [g.name for g in board.write_groups.all()],
@@ -244,9 +248,8 @@ def post(request):
           'id': board.id,
           'name': board.name,
           'board_type': board.board_type,
-          'total_views': int(math.fsum([len(str(post.views).split(',')) - 1 for post in models.POST.objects.filter(Q(board_id__contains=board.id))])),
-          'total_comments': models.COMMENT.objects.filter(post_id__in=[post.id for post in models.POST.objects.filter(Q(board_id__contains=board.id))]).count(),
-          'total_posts': models.POST.objects.filter(Q(board_id__contains=board.id)).count(),
+          'total_views': int(math.fsum([post.view_count for post in models.POST.objects.filter(Q(boards__id__in=str(board.id)))])),
+          'total_posts': models.POST.objects.filter(Q(boards__id__in=str(board.id))).count(),
           'display': [g.name for g in board.display_groups.all()],
           'enter': [g.name for g in board.enter_groups.all()],
           'write': [g.name for g in board.write_groups.all()],
@@ -264,9 +267,8 @@ def post(request):
                 'id': board.id,
                 'name': board.name,
                 'board_type': board.board_type,
-                'total_views': int(math.fsum([len(str(post.views).split(',')) - 1 for post in models.POST.objects.filter(Q(board_id__contains=board.id))])),
-                'total_comments': models.COMMENT.objects.filter(post_id__in=[post.id for post in models.POST.objects.filter(Q(board_id__contains=board.id))]).count(),
-                'total_posts': models.POST.objects.filter(Q(board_id__contains=board.id)).count(),
+                'total_views': int(math.fsum([post.view_count for post in models.POST.objects.filter(Q(boards__id__in=str(board.id)))])),
+                'total_posts': models.POST.objects.filter(Q(boards__id__in=str(board.id))).count(),
                 'display': [g.name for g in board.display_groups.all()],
                 'enter': [g.name for g in board.enter_groups.all()],
                 'write': [g.name for g in board.write_groups.all()],
@@ -283,9 +285,8 @@ def post(request):
                     'id': board.id,
                     'name': board.name,
                     'board_type': board.board_type,
-                    'total_views': int(math.fsum([len(str(post.views).split(',')) - 1 for post in models.POST.objects.filter(Q(board_id__contains=board.id))])),
-                    'total_comments': models.COMMENT.objects.filter(post_id__in=[post.id for post in models.POST.objects.filter(Q(board_id__contains=board.id))]).count(),
-                    'total_posts': models.POST.objects.filter(Q(board_id__contains=board.id)).count(),
+                    'total_views': int(math.fsum([post.view_count for post in models.POST.objects.filter(Q(boards__id__in=str(board.id)))])),
+                    'total_posts': models.POST.objects.filter(Q(boards__id__in=str(board.id))).count(),
                     'display': [g.name for g in board.display_groups.all],
                     'enter': [g.name for g in board.enter_groups.all()],
                     'write': [g.name for g in board.write_groups.all()],
@@ -300,7 +301,7 @@ def post(request):
   # 게시글 검색
   sps = all_post.filter(
     Q(title__contains=search_post_title),
-    Q(board_id__contains=search_board_id)
+    Q(boards__id__contains=search_board_id),
   )
   last_page = sps.count() // 20 + 1 # 20개씩 표시
   search_posts = []

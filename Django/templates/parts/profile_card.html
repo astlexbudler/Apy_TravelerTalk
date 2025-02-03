@@ -7,14 +7,11 @@
         <span class="text-black-50" style="font-size: 14px;">
           <i class="fi fi-rr-user"></i> {{ profile.id }} (파트너 회원)
         </span><br>
-        <span>
+        <p>
           <span class="h6 me-2">
-            {{ profile.nickname }}
+            {{ profile.partner_name }}
           </span>
-          {% for category in profile.partner_categories %}
-          <span class="badge bg-warning">{{ category.name }}</span>
-          {% endfor %}
-        </span><br>
+        </p>
         <span class="text-black-50">
           <i class="fi fi-rr-calendar"></i> 가입일: {{ profile.date_joined }} | 최근 접속일: {{ profile.last_login }}
         </span>
@@ -34,11 +31,6 @@
           {% endif %}
         </p>
       </div>
-    </div>
-    <div class="row mt-2">
-      <p class="text-primary m-0">
-        <i class="fi fi-rr-marker"></i> {{ profile.partner_address }}
-      </p>
     </div>
   </a>
 </div>
@@ -81,7 +73,12 @@
         <p class="text-black-50">
           <i class="fi fi-ss-coins"></i> 
           <span class="numberComma">{{ profile.level_point }}</span> 포인트 
-          <span class="badge" style="color: {{profile.user_level.text_color}}; background-color: {{profile.user_level.background_color}};">{{ profile.user_level.name }}</span>
+
+          <!-- 레벨 뱃지 -->
+          {% with level=profile.level %}
+          {% include 'parts/level_badge.html' %}
+          {% endwith %}
+
         </p>
       </div>
       <div class="col-6">

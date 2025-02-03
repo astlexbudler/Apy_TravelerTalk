@@ -59,9 +59,12 @@ def index(request):
   elif board.board_type == 'greeting': # 가입인사 게시판인 경우
     return redirect('/post/greeting')
   elif board.board_type == 'review':
-    return redirect('/post/review')
+    return redirect('/post/review?board_ids=' + request.GET.get('board_ids'))
   elif board.board_type == 'travel':
-    return redirect('/post/travel')
+    return redirect('/post/travel?board_ids=' + request.GET.get('board_ids'))
+  elif board.board_type == 'anominous':
+    return redirect('/post/anominous?board_ids=' + request.GET.get('board_ids'))
+
 
   # 게시글 가져오기
   posts, last_page = daos.get_board_posts(board_ids, page, search)
@@ -395,14 +398,26 @@ def attendance(request):
 # 가입인사 게시판
 def greeting(request):
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
-  boards = daos.get_board_tree() # 게시판 정보 가져오기
+  account_type = 'guest' # 기본값은 guest
+  if request.user.is_authenticated:
+    account_type = 'user'
+    if 'dame' in contexts['account']['groups']:
+      account_type = 'dame'
+    elif 'partner' in contexts['account']['groups']:
+      account_type = 'partner'
+    elif 'subsupervisor' in contexts['account']['groups']:
+      account_type = 'subsupervisor'
+    elif 'supervisor' in contexts['account']['groups']:
+      account_type = 'supervisor'
+  contexts['account']['account_type'] = account_type
+  boards = daos.get_board_tree(account_type) # 게시판 정보
 
   # 권한 확인
   if not request.user.is_authenticated:
     return redirect('/?redirect_message=need_login') # 게스트는 가입인사 게시판 접근 불가
 
   # 가입인사 게시판
-  b = models.BOARD.objects.filter(post_type='greeting').first()
+  b = models.BOARD.objects.filter(board_type='greeting').first()
   board = {
     'id': b.id,
     'name': b.name,
@@ -410,14 +425,14 @@ def greeting(request):
 
   # 가입인사 게시글 가져오기
   post = models.POST.objects.filter(
-    board_id=b.id,
+    boards__id__in=str(b.id),
     title='greeting',
   ).first()
   if not post:
-    post = models.POST(
-      board_id=b.id,
+    post = models.POST.objects.create(
       title='greeting',
     )
+    post.boards.add(b)
     post.save()
 
   # 가입 인사 작성 요청
@@ -503,7 +518,7 @@ def review(request):
   boards = daos.get_board_tree(account_type) # 게시판 정보
 
   # 리뷰 게시판
-  b = models.BOARD.objects.filter(post_type='review').first()
+  b = models.BOARD.objects.filter(board_type='review').first()
   board = {
     'id': b.id,
     'name': b.name,
@@ -514,15 +529,15 @@ def review(request):
   search = request.GET.get('search', '')
 
   # search posts
-  posts, last_page = daos.get_board_posts(b.id, page, search)
+  posts, last_page = daos.get_board_posts(str(b.id), page, search)
 
   if page == 1 and search == '':
     # best reviews
     # 오늘의 베스트 리뷰(추천, 조회, 업로드 순)
-    today = timezone.localtime().date()
+    today = datetime.datetime.now().strftime('%Y-%m-%d')
     today_best_reviews = []
     tbrs = models.POST.objects.select_related('author', 'review_post').filter(
-      board_id=b.id,
+      boards__id__in=str(b.id),
       created_at__date=today,
     ).order_by('-like_count', '-view_count', '-created_at')[:10]
     for tbr in tbrs:
@@ -543,9 +558,9 @@ def review(request):
     # 주간 베스트 리뷰(weight 기준)
     weekly_best_reviews = []
     wbrs = models.POST.objects.select_related('author', 'review_post').filter(
-      board_id=b.id,
-      created_at__gte=today - datetime.timedelta(days=7),
-    ).order_by('-weight')[:10]
+      boards__id__in=str(b.id),
+      created_at__gte=datetime.datetime.now() - datetime.timedelta(days=7),
+    ).order_by('-search_weight')[:10]
     for wbr in wbrs:
       weekly_best_reviews.append({
         'id': wbr.id,
@@ -562,13 +577,13 @@ def review(request):
         'created_at': wbr.created_at,
       })
     # 월간 베스트 리뷰(weight 기준)
-    now = timezone.localtime()
+    now = datetime.datetime.now()
     monthly_best_reviews = []
     mbrs = models.POST.objects.select_related('author', 'review_post').filter(
-      board_id=b.id,
+      boards__id__in=str(b.id),
       created_at__year=now.year,
       created_at__month=now.month,
-    ).order_by('-weight')[:10]
+    ).order_by('-search_weight')[:10]
     for mbr in mbrs:
       monthly_best_reviews.append({
         'id': mbr.id,
@@ -608,7 +623,7 @@ def write_review(request):
     return redirect('/?redirect=not_allowed') # 파트너, 관리자는 리뷰 작성 불가
 
   # 리뷰 게시판
-  b = models.BOARD.objects.filter(post_type='review').first()
+  b = models.BOARD.objects.filter(board_type='review').first()
   board = {
     'id': b.id,
     'name': b.name,
@@ -681,7 +696,7 @@ def rewrite_review(request):
   post_id = request.GET.get('post_id')
 
   # 리뷰 게시판
-  b = models.BOARD.objects.filter(post_type='review').first()
+  b = models.BOARD.objects.filter(board_type='review').first()
   board = {
     'id': b.id,
     'name': b.name,
@@ -787,7 +802,19 @@ def review_view(request):
 # 여행 게시판
 def travel(request):
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
-  boards = daos.get_board_tree() # 게시판 정보 가져오기
+  account_type = 'guest' # 기본값은 guest
+  if request.user.is_authenticated:
+    account_type = 'user'
+    if 'dame' in contexts['account']['groups']:
+      account_type = 'dame'
+    elif 'partner' in contexts['account']['groups']:
+      account_type = 'partner'
+    elif 'subsupervisor' in contexts['account']['groups']:
+      account_type = 'subsupervisor'
+    elif 'supervisor' in contexts['account']['groups']:
+      account_type = 'supervisor'
+  contexts['account']['account_type'] = account_type
+  boards = daos.get_board_tree(account_type) # 게시판 정보
 
   # 데이터 가져오기
   board_ids = request.GET.get('board_ids')
@@ -795,37 +822,39 @@ def travel(request):
   search = request.GET.get('search', '')
   categories = request.GET.get('categories', '')
 
-  # 여행 게시판
-  selected_boards = daos.get_selected_board_info(board_ids)
-
   # 게시글 가져오기
   posts = []
   ps = models.POST.objects.select_related('author', 'place_info').prefetch_related('place_info__categories').exclude(
-    review_post__isnull=True
+    place_info__isnull=True, # 장소 정보가 없는 경우
   ).filter(
     title__contains=search, # 검색어가 제목에 포함된 경우
-    place_info__categories=categories, # 카테고리 검색 조건 추가
-  ).order_by('search_weight')
+  )
+  if categories:
+    ps.filter(
+      place_info__categories__name__in=categories.split(','), # 카테고리가 선택된 경우
+    )
+  ps.order_by('search_weight')
   last_page = (ps.count() // 20) + 1
   ps = ps[(page - 1) * 20:page * 20] # 각 페이지에 20개씩 표시
   for p in ps:
     posts.append({
       'id': p.id,
       'title': p.title,
+      'image': str(p.image_paths).split(',')[0], # 이미지 경로
       'author': {
         'nickname': p.author.first_name,
       },
       'place_info': {
-        'categories': [c.name for c in p.place_info.categories],
+        'categories': [c.name for c in p.place_info.categories.all()],
         'address': p.place_info.address,
         'location_info': p.place_info.location_info,
         'open_info': p.place_info.open_info,
         'status': 'ad',
       },
-      'view_count': p.view_count,
-      'like_count': p.like_count,
-      'created_at': p.created_at,
     })
+
+  # 게시판 정보 가져오기(마지막 게시판 정보)
+  board = models.BOARD.objects.filter(id=board_ids[-1]).first()
 
   # 카테고리 정보 가져오기
   categories = daos.get_category_tree()
@@ -833,7 +862,7 @@ def travel(request):
   return render(request, 'post/travel.html', {
     **contexts,
     'boards': boards, # 게시판 정보
-    'selected_boards': selected_boards, # 게시판 정보
+    'board': board, # 게시판 정보
     'posts': posts, # 게시글 정보
     'last_page': last_page, # 마지막 페이지
     'categories': categories, # 카테고리 정보

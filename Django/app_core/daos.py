@@ -81,6 +81,20 @@ def get_default_contexts(request):
     messages = []
     coupons = []
 
+  # 계정 타입 확인
+  account_type = 'guest' # 기본값은 guest
+  if request.user.is_authenticated:
+    account_type = 'user'
+    if 'supervisor' in account['groups']:
+      account_type = 'supervisor'
+    elif 'subsupervisor' in account['groups']:
+      account_type = 'subsupervisor'
+    elif 'partner' in account['groups']:
+      account_type = 'partner'
+    elif 'dame' in account['groups']:
+      account_type = 'dame'
+  account['account_type'] = account_type
+
   # 서버 설정 확인
   server_settings = {
     'logo': models.SERVER_SETTING.objects.get(name='site_logo').value,
@@ -359,14 +373,14 @@ def get_user_profile_by_id(user_id):
 
   # 계정 타입 설정
   account_type = 'user'
-  if 'dame' in user_info['groups']:
-    account_type = 'dame'
-  elif 'partner' in user_info['groups']:
-    account_type = 'partner'
+  if 'supervisor' in user_info['groups']:
+    account_type = 'supervisor'
   elif 'subsupervisor' in user_info['groups']:
     account_type = 'subsupervisor'
-  elif 'supervisor' in user_info['groups']:
-    account_type = 'supervisor'
+  elif 'partner' in user_info['groups']:
+    account_type = 'partner'
+  elif 'dame' in user_info['groups']:
+    account_type = 'dame'
   user_info['account_type'] = account_type
 
   return user_info

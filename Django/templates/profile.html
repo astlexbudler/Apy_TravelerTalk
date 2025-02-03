@@ -45,7 +45,7 @@
       레벨 정보 테이블 표시
       - 사용자 계정일 때만 표시, 다른 계정은 표시하지 않음(다른 계정은 레벨이 없음)
     -->
-    {% if profile.account_type == 'user' or profile.account_type == 'dame' %}
+    {% if profile.account_type in 'user, dame' %}
     <p class="text-black-50 small">
       <i class="fi fi-rr-info"></i> 포인트는 게시글 또는 댓글 작성, 출석 체크 등 활동에 따라 적립되며, 사용자 등급 상승 및 쿠폰 구매에 사용됩니다.
     </p>
@@ -59,8 +59,13 @@
           <tr>
             <td class="pe-5"></td>
             <td class="text-start">
-              {{ rule.level }} 레벨 
-              <span class="badge user-level-badge ms-3" style="color: {{rule.text_color}}; background-color: {{rule.background_color}};">{{ rule.name }}</span>
+              {{ rule.level }} 레벨
+
+              <!-- 레벨 뱃지 -->
+              {% with level=rule.level %}
+              {% include 'parts/level_badge.html' %}
+              {% endwith %}
+
             </td>
             <td>
               <i class="fi fi-ss-coins"></i> <span class="numberComma">{{ rule.required_point }}</span> 포인트
@@ -78,21 +83,42 @@
     <div class="mb-5">
       <p class="text-dark m-0">
         상태
-        {% if account.account_type == 'supervisor' or account.account_type == 'sub_supervisor' and 'user' in account.supervisor_permissions %}
+
+        <!--
+          관리자 또는 사용자 편집 권한이 있는 부관리자만 보이는 메뉴
+          사용자 상태 변경 버튼
+        -->
+        {% if account.account_type == 'supervisor' or account.account_type == 'subsupervisor' and 'user' in account.subsupervisor_permissions %}
         <a class="text-black-50" href="javascript: new bootstrap.Modal(document.getElementById('changeStatusModal')).show();">
           <i class="fi fi-rr-pen-clip"></i>
         </a>
         {% endif %}
+
       </p>
-      {% if profile.status == 'pending' %}
+
+      <!-- 사용자 상태 -->
+      {% if profile.status == 'pending_dame' %}
       <p class="text-black-50">
-        가입 대기중
+        여성회원 가입 대기중..
       </p>
-      {% else %}
+      {% elif profile.status == 'pending_partner' %}
+      <p class="text-black-50">
+        파트너 가입 대기중..
+      </p>
+      {% elif profile.status == 'active' %}
       <p class="text-black-50">
         정상
       </p>
+      {% elif profile.status == 'deleted' %}
+      <p class="text-black-50">
+        삭제 대기중..
+      </p>
+      {% elif profile.status == 'blocked' %}
+      <p class="text-black-50">
+        정지됨
+      </p>
       {% endif %}
+
     </div>
     <div class="mt-2 mb-5">
       <p class="text-dark m-0">
@@ -120,7 +146,12 @@
         비밀번호 변경 <i class="fi fi-rr-pen-clip"></i>
       </a>
     </div>
-    {% if account.account_type == 'supervisor' and 'supervisor' in profile.account_type %}
+
+    <!--
+      부 관리자의 프로필일 때, 관리자만 보이는 메뉴
+      부 관리자 권한 편집 버튼
+    -->
+    {% if account.account_type == 'supervisor' and profile.account_type == 'subsupervisor' %}
     <div class="mb-5">
       <p class="text-dark m-0">
         권한
@@ -135,9 +166,6 @@
         {% endif %}
         {% if 'post' in profile.supervisor_permissions %}
         <span class="badge bg-info">게시글 관리</span>
-        {% endif %}
-        {% if 'ad_post' in profile.supervisor_permissions %}
-        <span class="badge bg-info">광고 관리</span>
         {% endif %}
         {% if 'coupon' in profile.supervisor_permissions %}
         <span class="badge bg-info">쿠폰 관리</span>
@@ -157,7 +185,9 @@
       </p>
     </div>
     {% endif %}
-    {% if 'supervisor' in account.account_type %}
+
+    <!-- 관리자 또는 사용자 편집 권한이 있는 부관리자만 보이는 메뉴 -->
+    {% if account.account_type == 'supervisor' or account.account_type == 'subsupervisor' and 'user' in account.subsupervisor_permissions %}
     <div class="mb-5">
       <p class="text-dark m-0">
         계정 메모(관리자만 확인할 수 있습니다.)
@@ -190,26 +220,20 @@
       </div>
       <div class="mb-5">
         <p class="text-dark m-0">
-          파트너 주소
+          파트너 이름
         </p>
-        <a class="text-black-50"
-          href="javascript: new bootstrap.Modal(document.getElementById('rewritePartnerAddressModal')).show();">
-          {{ profile.partner_address }} <i class="fi fi-rr-pen-clip"></i>
-        </a>
-      </div>
-      <div class="mb-5">
-        <p class="text-dark m-0">
-          파트너 카테고리
+        <p class="text-black-50">
+          {{ profile.partner_name }} 
+          <a class="text-black-50"
+            href="javascript: new bootstrap.Modal(document.getElementById('rewritePartnerNameModal')).show();">
+            <i class="fi fi-rr-pen-clip"></i>
+          </a>
         </p>
-        <a class="text-black-50"
-          href="javascript: new bootstrap.Modal(document.getElementById('rewritePartnerCategoryModal')).show();">
-          {{ profile.partner_categories }} <i class="fi fi-rr-pen-clip"></i>
-        </a>
       </div>
     </div>
     {% endif %}
 
-    {% if account.account_type == 'supervisor' or account.account_type == 'sub_supervisor' and 'user' in account.supervisor_permissions %}
+    {% if account.account_type == 'supervisor' or account.account_type == 'subsupervisor' and 'user' in account.supervisor_permissions %}
     <div class="mb-5">
       <a class="btn btn-danger"
         href="javascript: deleteAccount();">
@@ -232,7 +256,7 @@
 <aside class="d-none d-lg-block" style="width: 320px;"></aside>
 
 <!-- Modals -->
-<!-- USER: 닉네임 변경 -->
+<!-- 닉네임 변경 모달 -->
 <div class="modal fade" id="rewriteNickNameModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
@@ -255,7 +279,7 @@
     </div>
   </div>
 </div>
-<!-- USER: 비밀번호 변경 -->
+<!-- 비밀번호 변경 모달 -->
 <div class="modal fade" id="rewritePasswordModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
@@ -284,7 +308,7 @@
     </div>
   </div>
 </div>
-<!-- PARTNER: 파트너 연락처 변경 -->
+<!-- 파트너 연락처 변경 -->
 <div class="modal fade" id="rewritePartnerPhoneModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
@@ -307,195 +331,55 @@
     </div>
   </div>
 </div>
-<!-- PARTNER: 파트너 주소 변경 -->
-<div class="modal fade" id="rewritePartnerAddressModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+<!-- 파트너 이름 변경 모달 -->
+<div class="modal fade" id="rewritePartnerNameModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">파트너 주소 변경</h5>
+        <h5 class="modal-title">파트너 이름 변경</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
 
-        <!-- partner address -->
+        <!-- partner name -->
         <div class="form-group">
-          <div style="display: flex; justify-content: space-between; white-space: nowrap;">
-            <div style="display: inline-block; text-align: left;">
-              <label class="mt-2">주소</label>
-            </div>
-            <div style="display: inline-block; text-align: right;">
-              <a class="btn btn-success" href="javascript: sample3_execDaumPostcode();">주소검색</a>
-            </div>
-          </div>
-          <div class="content">
-            <div id="wrap"
-              style="display:none;border:1px solid;width:100%;height:300px;margin:5px 0;position:relative">
-              <img src="//t1.daumcdn.net/postcode/resource/images/close.png" id="btnFoldWrap"
-                style="cursor:pointer;position:absolute;right:0px;top:-1px;z-index:1"
-                onclick="foldDaumPostcode()" alt="접기 버튼">
-            </div>
-            <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
-            <script>
-              // 우편번호 찾기 찾기 화면을 넣을 element
-              var element_wrap = document.getElementById('wrap');
-
-              function foldDaumPostcode() {
-                // iframe을 넣은 element를 안보이게 한다.
-                element_wrap.style.display = 'none';
-              }
-
-              function sample3_execDaumPostcode() {
-                // 현재 scroll 위치를 저장해놓는다.
-                var currentScroll = Math.max(document.body.scrollTop, document.documentElement.scrollTop);
-                new daum.Postcode({
-                  oncomplete: function (data) {
-                    // 검색결과 항목을 클릭했을때 실행할 코드를 작성하는 부분.
-
-                    // 각 주소의 노출 규칙에 따라 주소를 조합한다.
-                    // 내려오는 변수가 값이 없는 경우엔 공백('')값을 가지므로, 이를 참고하여 분기 한다.
-                    var addr = ''; // 주소 변수
-                    var extraAddr = ''; // 참고항목 변수
-
-                    //사용자가 선택한 주소 타입에 따라 해당 주소 값을 가져온다.
-                    if (data.userSelectedType === 'R') { // 사용자가 도로명 주소를 선택했을 경우
-                      addr = data.roadAddress;
-                    } else { // 사용자가 지번 주소를 선택했을 경우(J)
-                      addr = data.jibunAddress;
-                    }
-
-                    // 사용자가 선택한 주소가 도로명 타입일때 참고항목을 조합한다.
-                    if (data.userSelectedType === 'R') {
-                      // 법정동명이 있을 경우 추가한다. (법정리는 제외)
-                      // 법정동의 경우 마지막 문자가 "동/로/가"로 끝난다.
-                      if (data.bname !== '' && /[동|로|가]$/g.test(data.bname)) {
-                        extraAddr += data.bname;
-                      }
-                      // 건물명이 있고, 공동주택일 경우 추가한다.
-                      if (data.buildingName !== '' && data.apartment === 'Y') {
-                        extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
-                      }
-                      // 표시할 참고항목이 있을 경우, 괄호까지 추가한 최종 문자열을 만든다.
-                      if (extraAddr !== '') {
-                        extraAddr = ' (' + extraAddr + ')';
-                      }
-                    }
-
-                    // 우편번호와 주소 정보를 해당 필드에 넣는다.
-                    document.getElementById("address").value = addr;
-
-                    // iframe을 넣은 element를 안보이게 한다.
-                    // (autoClose:false 기능을 이용한다면, 아래 코드를 제거해야 화면에서 사라지지 않는다.)
-                    element_wrap.style.display = 'none';
-
-                    // 우편번호 찾기 화면이 보이기 이전으로 scroll 위치를 되돌린다.
-                    document.body.scrollTop = currentScroll;
-                  },
-                  // 우편번호 찾기 화면 크기가 조정되었을때 실행할 코드를 작성하는 부분. iframe을 넣은 element의 높이값을 조정한다.
-                  onresize: function (size) {
-                    element_wrap.style.height = size.height + 'px';
-                  },
-                  width: '100%',
-                  height: '100%'
-                }).embed(element_wrap);
-
-                // iframe을 넣은 element를 보이게 한다.
-                element_wrap.style.display = 'block';
-              }
-            </script>
-          </div>
-          <input type="text" id="address" class="form-control mt-2 mb-1" placeholder="소재지가 해외인경우 직접 입력해주세요.">
-          <input type="text" id="addressDetail" class="form-control mt-2" placeholder="상세 주소를 입력해주세요.">
+          <label>새 이름</label> <small id="newPartnerNameConfirmText"></small>
+          <input type="text" class="form-control" placeholder="변경할 이름을 입력해주세요." id="newPartnerName">
         </div>
 
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-primary" onclick="rewritePartnerAddress();" data-bs-dismiss="modal">변경하기</button>
+        <button type="button" class="btn btn-primary" onclick="rewritePartnerName();" data-bs-dismiss="modal">변경하기</button>
       </div>
     </div>
   </div>
 </div>
-<!-- PARTNER: 파트너 카테고리 변경 -->
-<div class="modal fade" id="rewritePartnerCategoryModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+<!-- 상태 변경 모달 -->
+<div class="modal fade" id="changeStatusModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">파트너 카테고리 변경</h5>
+        <h5 class="modal-title">상태 변경</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
 
-        <!-- partner categories -->
+        <!-- status -->
         <div class="form-group">
-          <label>업종 카테고리</label><br>
-          <div class="mb-3">
-            <!-- category1 -->
-            <select class="form-select mb-1" onchange="
-              document.getElementById('partnerCategory').value = this.options[this.selectedIndex].text;
-              document.querySelectorAll('.subCategory').forEach(e => e.classList.add('d-none'));
-              document.getElementById('category' + this.value).classList.toggle('d-none');">
-              <option>-선택해주세요-</option>
-              {% for category in categories %}
-              <option value="{{category.id}}">{{category.name}}</option>
-              {% endfor %}
-            </select>
-            {% for category in categories %}
-            {% if category.children|length > 0 %}
-            <!-- category2 -->
-            <select class="subCategory form-select d-none mb-1" id="category{{category.id}}" onchange="
-              document.getElementById('partnerCategory').value = this.options[this.selectedIndex].text;
-              document.querySelectorAll('.subCategory').forEach(e => e.classList.add('d-none'));
-              document.getElementById('category' + '{{category.id}}').classList.toggle('d-none');
-              document.getElementById('category' + this.value).classList.toggle('d-none');">
-              <option>-선택해주세요-</option>
-              {% for child in category.children %}
-              <option value="{{child.id}}">{{category.name}} > {{child.name}}</option>
-              {% endfor %}
-            </select>
-            {% endif %}
-
-            {% for child in category.children %}
-            {% if child.children|length > 0 %}
-            <!-- category3 -->
-            <select class="subCategory form-select d-none mb-1" id="category{{child.id}}" onchange="
-              document.getElementById('partnerCategory').value = this.options[this.selectedIndex].text;
-              document.querySelectorAll('.subCategory').forEach(e => e.classList.add('d-none'));
-              document.getElementById('category' + '{{category.id}}').classList.toggle('d-none');
-              document.getElementById('category' + '{{child.id}}').classList.toggle('d-none');
-              document.getElementById('category' + this.value).classList.toggle('d-none');">
-              <option>-선택해주세요-</option>
-              {% for child2 in child.children %}
-              <option value="{{child2.id}}">{{category.name}} > {{child.name}} > {{child2.name}}</option>
-              {% endfor %}
-            </select>
-            {% endif %}
-
-            {% for child2 in child.children %}
-            {% if child2.children|length > 0 %}
-            <!-- category4 -->
-            <select class="subCategory form-select d-none mb-1" id="category{{child2.id}}" onchange="
-              document.getElementById('partnerCategory').value = this.options[this.selectedIndex].text;
-              document.querySelectorAll('.subCategory').forEach(e => e.classList.add('d-none'));
-              document.getElementById('category' + '{{category.id}}').classList.toggle('d-none');
-              document.getElementById('category' + '{{child.id}}').classList.toggle('d-none');
-              document.getElementById('category' + '{{child2.id}}').classList.toggle('d-none');
-              document.getElementById('category' + this.value).classList.toggle('d-none');">
-              <option>-선택해주세요-</option>
-              {% for child3 in child2.children %}
-              <option value="{{child3.id}}">{{category.name}} > {{child.name}} > {{child2.name}} > {{child3.name}}</option>
-              {% endfor %}
-            </select>
-            {% endif %}
-            {% endfor %}
-            {% endfor %}
-            {% endfor %}
-
-          </div>
-          <input class="d-none" id="partnerCategory">
+          <label>변경할 상태</label>
+          <select class="form-select" id="status">
+            <option value="active">정상</option>
+            <option value="deleted">삭제 대기중</option>
+            <option value="blocked">정지됨</option>
+          </select>
         </div>
+        <small class="text-black-50">
+          상태 변경 시, 해당 사용자의 활동이 제한될 수 있습니다. 삭제 대기중 상태는 90일 뒤, 자동으로 삭제됩니다.
+        </small>
 
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-primary" onclick="rewritePartnerCategories();" data-bs-dismiss="modal">변경하기</button>
+        <button type="button" class="btn btn-primary" onclick="changeStatus();" data-bs-dismiss="modal">변경하기</button>
       </div>
     </div>
   </div>
@@ -684,17 +568,32 @@
     await showAlert('연락처 변경 실패', '연락처 변경 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error');
   }
 
-  // 파트너 주소 변경
-  rewritePartnerAddress = async () => {
-    var address = document.getElementById('address').value + ' ' + document.getElementById('addressDetail').value;
-    if (address.length < 10) {
-      await showAlert('주소 변경 실패', '주소가 너무 짧습니다. 10자 이상으로 입력해주세요.', 'error');
+  // 파트너 이름 변경
+  var partnerNameOk = false;
+  var newPartnerNameInput = document.getElementById('newPartnerName');
+  var newPartnerNameConfirmText = document.getElementById('newPartnerNameConfirmText');
+  newPartnerNameInput.addEventListener('input', () => {
+    var partnerName = newPartnerNameInput.value;
+    if (partnerName.length < 2) {
+      newPartnerNameConfirmText.innerHTML = '이름은 2글자 이상이어야 합니다.';
+      newPartnerNameConfirmText.classList.remove('text-success');
+      newPartnerNameConfirmText.classList.add('text-danger');
+      partnerNameOk = false;
+      return
+    }
+    newPartnerNameConfirmText.innerHTML = '사용 가능한 이름입니다.';
+    newPartnerNameConfirmText.classList.remove('text-danger');
+    newPartnerNameConfirmText.classList.add('text-success');
+    partnerNameOk = true;
+  });
+  rewritePartnerName = async () => {
+    if (!partnerNameOk) {
       return;
     }
 
-    // 주소 변경 요청
+    // 이름 변경 요청
     var formData = new FormData();
-    formData.append('partner_address', address);
+    formData.append('partner_name', newPartnerNameInput.value);
     var result = await fetch('/api/edit_user', {
       method: 'POST',
       body: formData,
@@ -708,26 +607,22 @@
       return data.success;
     });
 
-    // 주소 변경 결과에 따른 처리
+    // 이름 변경 결과에 따른 처리
     if (result == 'y') {
-      await showAlert('주소 변경 완료', '주소가 성공적으로 변경되었습니다.', 'success');
+      await showAlert('이름 변경 완료', '이름이 성공적으로 변경되었습니다.', 'success');
       location.reload();
       return
     }
-    await showAlert('주소 변경 실패', '주소 변경 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error');
+    await showAlert('이름 변경 실패', '이름 변경 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error');
   }
 
-  // 파트너 카테고리 변경
-  rewritePartnerCategories = async () => {
-    var partnerCategory = document.getElementById('partnerCategory').value;
-    if (partnerCategory.length < 2) {
-      await showAlert('카테고리 변경 실패', '카테고리를 선택해주세요.', 'error');
-      return;
-    }
+  // 상태 변경
+  changeStatus = async () => {
+    var status = document.getElementById('status').value;
 
-    // 카테고리 변경 요청
+    // 상태 변경 요청
     var formData = new FormData();
-    formData.append('partner_categories', partnerCategory);
+    formData.append('status', status);
     var result = await fetch('/api/edit_user', {
       method: 'POST',
       body: formData,
@@ -741,13 +636,13 @@
       return data.success;
     });
 
-    // 카테고리 변경 결과에 따른 처리
+    // 상태 변경 결과에 따른 처리
     if (result == 'y') {
-      await showAlert('카테고리 변경 완료', '카테고리가 성공적으로 변경되었습니다.', 'success');
+      await showAlert('상태 변경 완료', '상태가 성공적으로 변경되었습니다.', 'success');
       location.reload();
       return
     }
-    await showAlert('카테고리 변경 실패', '카테고리 변경 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error');
+    await showAlert('상태 변경 실패', '상태 변경 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error');
   }
 
   // 회원 탈퇴
