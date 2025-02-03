@@ -17,6 +17,31 @@
     </p>
   </div>
 
+  <!-- 대표 이미지 -->
+  {% if board.board_type in 'event, review' %}
+  <div class="my-4">
+    <label>대표 이미지</label>
+    <div id="imagePreview" class="mb-2 row">
+      {% for image in travel_post.images %}
+      {% if image != '' %}
+      <div class="mb-2 me-2 shadow-sm text-end p-2" style="min-width: 150px; width: 12vw; background: url('{{ image }}') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw;">
+        {% if forloop.counter == 1 %}<span class="text-white">대표 이미지</span>{% endif %}
+        <a href="javascript: removeImage('{{ image }}')"
+          class="text-danger">
+          <i class="fi fi-rr-trash"></i>
+        </a>
+      </div>
+      {% endif %}
+      {% endfor %}
+    </div>
+    <a href="javascript: document.getElementById('imageInput').click();" class="btn btn-success">
+      이미지 추가
+    </a>
+    <input type="file" class="d-none" id="imageInput" multiple>
+    <input id="imagePaths" value="{% for image in travel_post.images %}{{ image }},{% endfor %}" class="d-none">
+  </div>
+  {% endif %}
+
   <!-- 제목 -->
   <div class="form-group mt-2 mb-3">
     <label>제목</label>
@@ -29,12 +54,10 @@
     <div class="d-none" id="viewer"></div>
   </div>
 
-  <div class="mt-5">
-    <div class="mb-5">
-      <a class="btn pastel-pink-background text-dark fw-semibold" href="javascript: writePost()">
-        작성하기
-      </a>
-    </div>
+  <div class="my-5">
+    <a class="btn btn-primary" href="javascript: writePost()">
+      작성하기 <i class="fi fi-rr-edit"></i>
+    </a>
   </div>
 
 </section>
@@ -58,6 +81,29 @@
     language: 'ko-KR'
   });
 
+  // 대표 이미지 추가
+  try {
+    document.getElementById('imageInput').addEventListener('change', async (e) => {
+      const files = e.target.files;
+      const imagePaths = document.getElementById('imagePaths');
+      const imagePreview = document.getElementById('imagePreview');
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const imagePath = e.target.result;
+          imagePreview.innerHTML += `
+          <div class="mb-2 me-2 shadow-sm text-end p-2" style="min-width: 150px; width: 12vw; background: url('${imagePath}') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw;"></div>
+          `;
+        }
+        reader.readAsDataURL(file);
+      }
+    });
+  } catch (e) {
+    console.error(e);
+  }
+
   writePost = async () => {
     const title = document.querySelector('#postTitle').value;
     const content = editor.getMarkdown();
@@ -74,6 +120,10 @@
     var formData = new FormData();
     formData.append('title', title);
     formData.append('content', content);
+    if (document.getElementById('imageInput')) {
+      formData.append('image', document.getElementById('imageInput').files[0]); // 대표 이미지
+    }
+
     await fetch('/post/write_post?board_ids={{request.GET.board_ids}}', {
       method: 'POST',
       headers: {

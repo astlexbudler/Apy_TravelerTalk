@@ -6,39 +6,34 @@
 <!-- 중앙 섹션 -->
 <section class="main-section px-5 px-lg-1" style="flex: 1; min-height: 100vh;">
 
-  <div class="mt-4">
-    {% include 'parts/goback.html' %}
-  </div>
-
   <!-- 제목 -->
-  <div class="shadow rounded p-3 border py-5 mb-5 pastel-beige-background mt-4">
-    <h5 class="mb-4 text-dark">
+  <div class="mt-4 mb-5">
+    {% include 'parts/goback.html' %}
+    <h5 class="mt-5">
       연락처
     </h5>
     <p>
-      아래 연락처 또는 양식을 작성하여 문의사항을 보내주시면 빠른 시일 내에 답변드리겠습니다.
+      연락처를 확인하고 문의사항을 보내주세요.
     </p>
   </div>
 
-  <!-- 연락처 상자 -->
-  <div class="shadow rounded p-3 border py-5 mb-5 pastel-beige-background">
-    <h5 class="mb-4 text-dark">
-      회사정보
-    </h5>
-    <div class="mb-3">
-      <p>
-        {{server.company_info}}
-      </p>
-    </div>
+  <!-- 연락처 -->
+  <div class="shadow rounded p-3 border py-5 mb-5 pastel-beige-background mt-4">
+    <h6 class="mb-4 text-dark">
+      연락처 및 회사정보
+    </h6>
+    <p>
+      {{server.company_info}}
+    </p>
   </div>
 
-  <!-- 문의사항 작성 폼 -->
+  <!-- 제휴 문의 안내 -->
   <div class="shadow rounded border p-3 py-5 mt-5 pastel-beige-background">
-    <h5 class="mb-4 text-dark">
-      제휴 문의 작성
-    </h5>
+    <h6 class="mb-4 text-dark">
+      제휴 문의
+    </h6>
     <p>
-      제휴 문의 게시판을 통해 제휴 문의를 보내주세요. 빠른 시일 내에 답변드리겠습니다.
+      파트너 계정의 경우, 제휴문의 게시판에 제휴 문의 게시글을 작성해주세요.
     </p>
   </div>
 

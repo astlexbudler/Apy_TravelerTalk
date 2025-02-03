@@ -18,13 +18,18 @@
   </div>
 
   <!-- 선택지 버튼 그룹 -->
-  <div class="btn-group w-100 mb-4">
-    <a class="btn text-white" href="/coupon?tab=coupon" style="background-color: gray;" id="couponTab">
-      보유 쿠폰
-    </a>
-    <a class="btn" href="/coupon?tab=history" style="background-color: gainsboro;" id="historyTab">
-      쿠폰 사용 내역
-    </a>
+  <div class="btn-group w-100 d-flex mb-4">
+    <div class="w-100 d-flex justify-content-center rounded-2">
+      <a class="w-100 btn" href="/coupon?tab=coupon" id="couponTab">
+        보유 쿠폰
+      </a>
+    </div>
+    <span class="divider"></span>
+    <div class="w-100 d-flex justify-content-center rounded-2">
+      <a class="w-100 btn" href="/coupon?tab=history" id="historyTab">
+        쿠폰 사용 내역
+      </a>
+    </div>
   </div>
 
   <!-- 프로필 카드 -->
@@ -235,24 +240,21 @@
     if(tab == '') {
       location.href='/coupon?tab=coupon';
     }
+
     var couponTab = document.getElementById('couponTab');
     var historyTab = document.getElementById('historyTab');
     var couponBox = document.getElementById('couponBox');
     var historyBox = document.getElementById('historyBox');
     if (tab == 'coupon') {
-      couponTab.style.backgroundColor = 'gray';
-      historyTab.style.backgroundColor = 'gainsboro';
-      couponTab.classList.add('text-white');
-      historyTab.classList.remove('text-white');
-      couponBox.classList.remove('d-none');
-      historyBox.classList.add('d-none');
+      couponTab.classList.add('pastel-pink-background');
+      couponTab.classList.add('text-dark');
+      historyTab.classList.add('pastel-beige-background');
+      historyTab.classList.remove('text-dark');
     } else if (tab == 'history') {
-      couponTab.style.backgroundColor = 'gainsboro';
-      historyTab.style.backgroundColor = 'gray';
-      couponTab.classList.remove('text-white');
-      historyTab.classList.add('text-white');
-      couponBox.classList.add('d-none');
-      historyBox.classList.remove('d-none');
+      couponTab.classList.add('pastel-beige-background');
+      couponTab.classList.remove('text-dark');
+      historyTab.classList.add('pastel-pink-background');
+      historyTab.classList.add('text-dark');
     }
 
     // Page

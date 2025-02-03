@@ -17,47 +17,23 @@
     </p>
   </div>
 
-  {% if account.bookmarks|length == 0 %}
+  <!-- 북마크한 여행지 게시글 -->
+  {% if bookmarks|length == 0 %}
   <p>
     북마크된 게시글이 없습니다.
   </p>
   {% else %}
-  {% for post in account.bookmarks %}
-  <div class="col-12 p-2 mb-2">
-    <a href="/post/post_view?post_id={{ post.id }}" class="text-decoration-none text-black">
-      <div style="display: flex; justify-content: space-between; white-space: nowrap;">
-        <div style="display: inline-block; text-align: left;">
-          <span class="text-black-50" style="font-size: 12px;">
-            {{ post.board.name }}
-          </span>
-          <h6 class="mb-2">
-            {{ post.title }}
-          </h6>
-          <span class="text-black-50">
-            <i class="fi fi-rr-user"></i> {{ post.author.nickname }}
-          </span>
-        </div>
-        <div style="display: inline-block; text-align: right;">
-          <p class="m-0 text-end text-black-50" style="font-size: 12px;">
-            <span class="me-1" style="white-space: nowrap;">
-              <i class="fi fi-rr-eye"></i> {{ post.view_count }}
-            </span>
-            <span class="me-1" style="white-space: nowrap;">
-              <i class="fi fi-rr-comment-alt-dots"></i> {{ post.comment_count }}
-            </span>
-            <span class="me-1" style="white-space: nowrap;">
-              <i class="fi fi-rr-social-network"></i> {{ post.like_count }}
-            </span>
-          </p>
-        </div>
-      </div>
-      <small class="text-black-50 mt-1">
-        <i class="fi fi-rr-calendar"></i> {{ post.created_dt }}
-      </small>
-    </a>
-  </div>
+  {% for post in bookmarks %}
+  {% include 'parts/travel_post_card.html' %}
   {% endfor %}
   {% endif %}
+
+  <!-- 맨 위로 버튼 -->
+  <div class="text-end">
+    <button class="btn text-white m-0" id="topBtn" onclick="window.scrollTo({ top: 0, behavior: 'smooth' })" style="background-color: rgb(184, 184, 184);">
+      Top <i class="fi fi-rr-arrow-up"></i>
+    </button>
+  </div>
 
 </section>
 

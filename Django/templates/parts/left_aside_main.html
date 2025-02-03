@@ -239,22 +239,7 @@
             {% else %}
               <!-- 즐겨찾기한 여행지 게시글 목록 -->
               {% for post in account.bookmarked_places %}
-                <div class="w-100 mb-4">
-                  <a href="/post/post_view?post_id={{ post.id }}">
-                    <p class="text-black-50 small m-0">
-                      {% for name in post.place_info.categories %}
-                      {{ name }}{% if not forloop.last %}, {% endif %}
-                      {% endfor %}
-                    </p>
-                    <p class="text-black">
-                      {{ post.title }}
-                    </p>
-                    <p class="text-black-50 small">
-                      <i class="fi fi-rr-eye"></i> {{ post.view_count }} 
-                      <i class="fi fi-rr-heart"></i> {{ post.like_count }}
-                    </p>
-                  </a>
-                </div>
+              {% include 'parts/simplified_board_type.html' %}
               {% endfor %}
             {% endif %}
           {% endif %}

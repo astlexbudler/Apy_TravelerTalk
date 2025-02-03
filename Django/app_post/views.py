@@ -17,19 +17,7 @@ from app_core import daos
 # 3. 사전 정의되지 않은 기타 게시판의 경우 => 해당 게시글 검색
 def index(request):
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
-  account_type = 'guest' # 기본값은 guest
-  if request.user.is_authenticated:
-    account_type = 'user'
-    if 'dame' in contexts['account']['groups']:
-      account_type = 'dame'
-    elif 'partner' in contexts['account']['groups']:
-      account_type = 'partner'
-    elif 'subsupervisor' in contexts['account']['groups']:
-      account_type = 'subsupervisor'
-    elif 'supervisor' in contexts['account']['groups']:
-      account_type = 'supervisor'
-  contexts['account']['account_type'] = account_type
-  boards = daos.get_board_tree(account_type) # 게시판 정보
+  boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보
 
   # 데이터 가져오기
   board_ids = request.GET.get('board_ids') # 게시판 아이디
@@ -45,9 +33,9 @@ def index(request):
   selected_boards = daos.get_selected_board_info(board_ids) # 선택된 게시판 정보
   writable = False
   for board in selected_boards:
-    if account_type not in board['enter']: # enter 권한 확인
+    if contexts['account']['account_type'] not in board['enter']: # enter 권한 확인
       return redirect('/?redirect_message=not_allowed_board') # 권한이 없는 경우, 메인 페이지로 이동
-    if account_type in board['write']: # write 권한 확인
+    if contexts['account']['account_type'] in board['write']:
       writable = True
 
   # 게시판이 사전 정의된 게시판인지 확인
@@ -62,9 +50,6 @@ def index(request):
     return redirect('/post/review?board_ids=' + request.GET.get('board_ids'))
   elif board.board_type == 'travel':
     return redirect('/post/travel?board_ids=' + request.GET.get('board_ids'))
-  elif board.board_type == 'anominous':
-    return redirect('/post/anominous?board_ids=' + request.GET.get('board_ids'))
-
 
   # 게시글 가져오기
   posts, last_page = daos.get_board_posts(board_ids, page, search)
@@ -81,21 +66,7 @@ def index(request):
 # 게시글 작성 페이지
 def write_post(request):
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
-  account_type = 'guest' # 기본값은 guest
-  if request.user.is_authenticated:
-    account_type = 'user'
-    if 'dame' in contexts['account']['groups']:
-      account_type = 'dame'
-    elif 'partner' in contexts['account']['groups']:
-      account_type = 'partner'
-    elif 'subsupervisor' in contexts['account']['groups']:
-      account_type = 'subsupervisor'
-    elif 'supervisor' in contexts['account']['groups']:
-      account_type = 'supervisor'
-  contexts['account']['account_type'] = account_type
-  boards = daos.get_board_tree(account_type) # 게시판 정보
-  if not request.user.is_authenticated: # 로그인 되지 않은 경우
-    return redirect('/?redirect_message=need_login') # 로그인 필요 메세지 표시
+  boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보
 
   # 데이터 가져오기
   board_ids = request.GET.get('board_ids')
@@ -108,7 +79,7 @@ def write_post(request):
   # 게시판 접근 권한 확인
   selected_boards = daos.get_selected_board_info(board_ids) # 선택된 게시판 정보
   for board in selected_boards:
-    if account_type not in board['write']: # write 권한 확인
+    if contexts['account']['account_type'] not in board['write']: # write 권한 확인
       return redirect('/?redirect_message=not_allowed_board')
 
   # 게시판이 사전 정의된 게시판인지 확인
@@ -125,7 +96,7 @@ def write_post(request):
   if request.method == 'POST':
     title = request.POST.get('title')
     content = request.POST.get('content')
-    image_paths = request.POST.get('image_paths') # 이벤트나 리뷰 게시글 작성 시 이미지 경로
+    image = request.FILES.get('image') if request.FILES.get('image') else None
     review_post_id = request.POST.get('review_post_id') # 리뷰 게시글 작성시, 대상 게시글 아이디
     board_ids = request.GET.get('board_ids') # 게시판 아이디
     if not title or not content: # 제목 또는 내용이 없는 경우
@@ -139,7 +110,7 @@ def write_post(request):
       author=request.user,
       title=title,
       content=content,
-      image_paths=image_paths,
+      image=image,
     )
     post.boards.add(*boards)
     if review_post_id:
@@ -154,7 +125,7 @@ def write_post(request):
       account=request.user,
       message = f'[게시글] {title} 게시글을 작성하였습니다.',
     )
-    if account_type in ['user', 'dame']:
+    if contexts['account']['account_type'] in ['user', 'dame']:
       point = int(models.SERVER_SETTING.objects.get(name='post_point').value)
       request.user.level_point += point
       request.user.coupon_point += point
@@ -219,25 +190,14 @@ def rewrite_post(request):
 # 게시글 상세 페이지
 def post_view(request):
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
-  account_type = 'guest' # 기본값은 guest
-  if request.user.is_authenticated:
-    account_type = 'user'
-    if 'dame' in contexts['account']['groups']:
-      account_type = 'dame'
-    elif 'partner' in contexts['account']['groups']:
-      account_type = 'partner'
-    elif 'subsupervisor' in contexts['account']['groups']:
-      account_type = 'subsupervisor'
-    elif 'supervisor' in contexts['account']['groups']:
-      account_type = 'supervisor'
-  contexts['account']['account_type'] = account_type
-  boards = daos.get_board_tree(account_type) # 게시판 정보
+  boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보 가져오기
 
   # 데이터 가져오기
   post_id = request.GET.get('post_id')
 
   # post 확인
   post = daos.get_post_info(post_id)
+  print(post)
 
   board_ids = [
     board.id for board in models.BOARD.objects.filter(name__in=post['boards'])
@@ -245,10 +205,13 @@ def post_view(request):
   selected_boards = daos.get_selected_board_info(board_ids) # 선택된 게시판 정보
   commentable = False
   for board in selected_boards:
-    if account_type not in board['enter']: # enter 권한 확인
+    if contexts['account']['account_type'] not in board['enter']: # enter 권한 확인
       return redirect('/?redirect_message=not_allowed_board') # 권한이 없는 경우, 메인 페이지로 이동
-    if account_type in board['comment']: # write 권한 확인
+    if contexts['account']['account_type'] in board['comment']: # 댓글 작성 가능한 경우
       commentable = True
+
+  # 마지막 게시판 가져오기
+  board = selected_boards[-1]
 
   # 댓글 가져오기
   comments = daos.get_all_post_comments(post_id)
@@ -263,6 +226,7 @@ def post_view(request):
   return render(request, 'post/post_view.html', {
     **contexts,
     'boards': boards, # 게시판 정보
+    'board': board, # 게시판 정보
     'post': post, # 게시글 정보
     'commentable': commentable, # 댓글 작성 가능 여부
     'comments': comments, # 댓글 정보
@@ -416,6 +380,9 @@ def greeting(request):
   if not request.user.is_authenticated:
     return redirect('/?redirect_message=need_login') # 게스트는 가입인사 게시판 접근 불가
 
+  # 데이터 가져오기
+  page = int(request.GET.get('page', '1'))
+
   # 가입인사 게시판
   b = models.BOARD.objects.filter(board_type='greeting').first()
   board = {
@@ -435,51 +402,6 @@ def greeting(request):
     post.boards.add(b)
     post.save()
 
-  # 가입 인사 작성 요청
-  '''
-  if request.method == 'POST':
-    content = request.POST.get('content', '')
-    if not content:
-      return JsonResponse({'result': 'error'})
-
-    # 이미 가입인사를 했는지 확인
-    if post_mo.COMMENT.objects.filter(
-      post_id=post.id,
-      author_id=context['account']['id'],
-    ).exists():
-      return JsonResponse({'result': 'error'}) # 이미 가입인사를 한 경우, 에러 반환
-
-    # 가입인사 포인트 확인
-    point = int(core_mo.SERVER_SETTING.objects.get(id='comment_point').value)
-
-    # 가입인사 댓글 작성
-    comment = post_mo.COMMENT(
-      post_id=post.id,
-      author_id=context['account']['id'],
-      content=content,
-    )
-    comment.save()
-
-    # 사용자 활동 기록 추가 및 포인트 증가
-    # 사용자 계정 및 파트너 계정만 해당
-    if context['account']['account_type'] in ['user', 'dame', 'partner']:
-      act = user_mo.ACTIVITY(
-        user_id=context['account']['id'],
-        location='/post/greeting',
-        message=f'가입인사 댓글 작성',
-        point_change=point,
-      )
-      act.save()
-
-      # 사용자 계정일 경우, 포인트 증가
-      account = get_user_model().objects.get(username=context['account']['id'])
-      account.user_level_point += point
-      account.user_usable_point += point
-      account.save()
-
-    return JsonResponse({'result': 'success'})
-  '''
-
   # 가입인사 댓글 가져오기
   is_greeted = False
   comments = daos.get_all_post_comments(post.id)
@@ -487,10 +409,13 @@ def greeting(request):
     if comment['author']['id'] == contexts['account']['id']:
       is_greeted = True
       break
+  last_page = len(comments) // 20 + 1
+  comments = comments[(page - 1) * 20:page * 20]
 
   return render(request, 'post/greeting.html', {
     **contexts,
     'boards': boards, # 게시판 정보
+    'last_page': last_page, # 마지막 페이지, page 처리에 사용
     'comments': comments, # 가입인사 댓글
     'post': post, # 가입인사 게시글
     'is_greeted': is_greeted, # 가입인사를 했는지 여부
@@ -840,7 +765,7 @@ def travel(request):
     posts.append({
       'id': p.id,
       'title': p.title,
-      'image': str(p.image_paths).split(',')[0], # 이미지 경로
+      'image': '/media/' + str(p.image) if p.image else '/media/default.png',
       'author': {
         'nickname': p.author.first_name,
       },
@@ -871,7 +796,7 @@ def travel(request):
 # 여행 게시글 상세보기
 def travel_view(request):
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
-  boards = daos.get_board_tree() # 게시판 정보 가져오기
+  boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보
 
   # 데이터 가져오기
   post_id = request.GET.get('post_id', '')
@@ -890,69 +815,20 @@ def travel_view(request):
     po = models.POST.objects.get(id=post_id)
     po.view_count += 1
     po.save()
+
+  # 현재 사용자의 북마크에 추가된 게시글인지 확인
+  if models.ACCOUNT.objects.prefetch_related('bookmarked_places').filter(
+    username = contexts['account']['id'],
+    bookmarked_places__id = post['id']
+  ).exists():
+    bookmarkable = False
+  else:
+    bookmarkable = True
 
   return render(request, 'post/travel_view.html', {
     **contexts,
     'boards': boards, # 게시판 정보
     'post': post, # 게시글 정보
-    'comments': comments, # 댓글 정보
-  })
-
-# 익명 게시판 페이지
-def anominous(request):
-  contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
-  boards = daos.get_board_tree() # 게시판 정보 가져오기
-
-  # 데이터 가져오기
-  board_ids = request.GET.get('board_ids')
-  page = int(request.GET.get('page', '1'))
-  search = request.GET.get('search', '')
-
-  # 익명 게시판
-  selected_boards = daos.get_selected_board_info(board_ids)
-
-  # 게시글 가져오기
-  posts, last_page = daos.get_board_posts(board_ids, page, search)
-  for post in posts:
-    post['author']['nickname'] = ''
-
-  return render(request, 'post/anominous.html', {
-    **contexts,
-    'boards': boards, # 게시판 정보
-    'selected_boards': selected_boards, # 선택된 게시판 정보
-    'posts': posts, # 게시글 정보
-    'last_page': last_page, # 마지막 페이지, page 처리에 사용
-  })
-
-# 익명 게시글 상세보기
-def anominous_view(request):
-  contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
-  boards = daos.get_board_tree() # 게시판 정보 가져오기
-
-  # 데이터 가져오기
-  post_id = request.GET.get('post_id', '')
-
-  # 게시글 확인
-  post = daos.get_post_info(post_id)
-  if not post: # 게시글이 없는 경우
-    return redirect('/?redirect=post_not_found') # 메인 페이지로 이동
-  post['author']['nickname'] = ''
-
-  # 게시판 정보
-  comments = daos.get_all_post_comments(post_id)
-  for comment in comments:
-    comment['author']['nickname'] = ''
-
-  # 조회수 증가
-  if post_id not in request.session.get('view_posts', ''):
-    request.session['view_posts'] = request.session.get('view_posts', '') + ',' + post_id
-    po = models.POST.objects.get(id=post_id)
-    po.view_count += 1
-    po.save()
-
-  return render(request, 'post/anominous_view.html', {
-    **contexts,
-    'boards': boards, # 게시판 정보
-    'post': post, # 게시글 정보
+    'bookmarkable': bookmarkable, # 북마크 가능 여부
     'comments': comments, # 댓글 정보
   })

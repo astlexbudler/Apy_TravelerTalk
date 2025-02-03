@@ -99,8 +99,8 @@ class AppCoreConfig(AppConfig):
         partner_group = Group.objects.create(
           name='partner' # 파트너 그룹
         )
-        sub_supervisor_group = Group.objects.create(
-          name='sub_supervisor' # 부관리자 그룹
+        subsupervisor_group = Group.objects.create(
+          name='subsupervisor' # 부관리자 그룹
         )
         supervisor_group = Group.objects.create(
           name='supervisor' # 관리자 그룹
@@ -176,7 +176,7 @@ class AppCoreConfig(AppConfig):
         supervisor.groups.add(user_group)
         supervisor.groups.add(dame_group)
         supervisor.groups.add(partner_group)
-        supervisor.groups.add(sub_supervisor_group)
+        supervisor.groups.add(subsupervisor_group)
         supervisor.groups.add(supervisor_group)
         supervisor.save()
 
@@ -211,8 +211,8 @@ class AppCoreConfig(AppConfig):
         # enter_groups - all
         # write_groups - partner
         # comment_groups - user, dame
-        travel_abroad.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, sub_supervisor_group)
-        travel_abroad.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, sub_supervisor_group)
+        travel_abroad.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        travel_abroad.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         travel_abroad.write_groups.add(partner_group)
         travel_abroad.comment_groups.add(user_group, dame_group)
         travel_abroad.save()
@@ -225,10 +225,10 @@ class AppCoreConfig(AppConfig):
         # enter_groups - all
         # write_groups - supervisor, sub_supervisor
         # comment_groups - user, dame, partner, supervisor, sub_supervisor
-        event.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, sub_supervisor_group)
-        event.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, sub_supervisor_group)
-        event.write_groups.add(supervisor_group, sub_supervisor_group)
-        event.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, sub_supervisor_group)
+        event.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        event.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        event.write_groups.add(supervisor_group, subsupervisor_group)
+        event.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         event.save()
 
         community = models.BOARD.objects.create(
@@ -239,10 +239,10 @@ class AppCoreConfig(AppConfig):
         # enter_groups - all
         # write_groups - all
         # comment_groups - all
-        community.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, sub_supervisor_group)
-        community.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, sub_supervisor_group)
-        community.write_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, sub_supervisor_group)
-        community.comment_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, sub_supervisor_group)
+        community.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        community.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        community.write_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        community.comment_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         community.save()
 
         free = models.BOARD.objects.create(
@@ -254,10 +254,10 @@ class AppCoreConfig(AppConfig):
         # enter_groups - all
         # write_groups - user, dame
         # comment_groups - user, dame, partner, supervisor, sub_supervisor
-        free.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, sub_supervisor_group)
-        free.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, sub_supervisor_group)
+        free.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        free.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         free.write_groups.add(user_group, dame_group)
-        free.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, sub_supervisor_group)
+        free.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         free.save()
 
         dame = models.BOARD.objects.create(
@@ -269,10 +269,10 @@ class AppCoreConfig(AppConfig):
         # enter_groups - dame, supervisor, sub_supervisor
         # write_groups - dame
         # comment_groups - dame, supervisor, sub_supervisor
-        dame.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, sub_supervisor_group)
-        dame.enter_groups.add(dame_group, supervisor_group, sub_supervisor_group)
+        dame.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        dame.enter_groups.add(dame_group, supervisor_group, subsupervisor_group)
         dame.write_groups.add(dame_group)
-        dame.comment_groups.add(dame_group, supervisor_group, sub_supervisor_group)
+        dame.comment_groups.add(dame_group, supervisor_group, subsupervisor_group)
         dame.save()
 
         review = models.BOARD.objects.create(
@@ -284,26 +284,26 @@ class AppCoreConfig(AppConfig):
         # enter_groups - all
         # write_groups - user, dame
         # comment_groups - user, dame, partner, supervisor, sub_supervisor
-        review.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, sub_supervisor_group)
-        review.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, sub_supervisor_group)
+        review.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        review.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         review.write_groups.add(user_group, dame_group)
-        review.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, sub_supervisor_group)
+        review.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         review.save()
 
-        anominous = models.BOARD.objects.create(
+        anonymous = models.BOARD.objects.create(
           parent_board=community,
           name='익명 게시판',
-          board_type='anominous',
+          board_type='anonymous',
         )
         # display_groups - all
         # enter_groups - all
         # write_groups - user, dame
         # comment_groups - user, dame, partner, supervisor, sub_supervisor
-        anominous.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, sub_supervisor_group)
-        anominous.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, sub_supervisor_group)
-        anominous.write_groups.add(user_group, dame_group)
-        anominous.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, sub_supervisor_group)
-        anominous.save()
+        anonymous.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        anonymous.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        anonymous.write_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        anonymous.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        anonymous.save()
 
         # 출석체크 게시판
         attend = models.BOARD.objects.create(
@@ -314,9 +314,9 @@ class AppCoreConfig(AppConfig):
         # enter_groups - all
         # write_groups - none
         # comment_groups - all
-        attend.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, sub_supervisor_group)
-        attend.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, sub_supervisor_group)
-        attend.comment_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, sub_supervisor_group)
+        attend.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        attend.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        attend.comment_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         attend.save()
 
         # 가입인사 게시판
@@ -328,9 +328,9 @@ class AppCoreConfig(AppConfig):
         # enter_groups - all
         # write_groups - none
         # comment_groups - all
-        hello.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, sub_supervisor_group)
-        hello.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, sub_supervisor_group)
-        hello.comment_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, sub_supervisor_group)
+        hello.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        hello.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        hello.comment_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         hello.save()
 
         # 자유 개시판에 글 101개 생성
@@ -367,7 +367,6 @@ class AppCoreConfig(AppConfig):
           author=partner,
           title='파트너 여행지 게시글',
           content='파트너 여행지 게시글 내용입니다.',
-          image_paths='/media/default.png,/media/default.png,/media/default.png',
         )
         place_info = models.PLACE_INFO.objects.create(
           post=travel_post,

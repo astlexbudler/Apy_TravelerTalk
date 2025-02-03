@@ -1,0 +1,64 @@
+<div class="col-12 p-2 mb-2 pb-3 border-bottom">
+  <a href="/post/post_view?post_id={{ post.id }}" class="text-dark text-decoration-none">
+    <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+      <div style="display: inline-block; text-align: left;">
+
+        <!-- 게시판 및 제목 -->
+        <span class="text-black-50" style="font-size: 12px;">
+          {% for board in post.boards %}
+          {{ board.name }} {% if forloop.counter < post.boards|length  %} &gt; {% endif %}
+          {% endfor %}
+        </span>
+        <h6 class="mb-2">
+          {{ post.title }}
+        </h6>
+
+        <!-- 익명 게시판이 아닐경우, 작성자 표시 -->
+        {% if board.board_type != 'anonymous' %}
+        <span class="text-black-50">
+
+          <!-- 작성자가 파트너일 경우, 파트너 명 표시 -->
+          {% if post.author.partner_name != '' %}
+          <i class="fi fi-rr-heart"></i> {{ post.author.partner_name }}
+
+          <!-- 작성자가 파트너가 아닐 경우, 닉네임 표시 -->
+          {% else %}
+          <i class="fi fi-rr-user"></i> {{ post.author.nickname }} 
+
+          <!-- 사용자일 경우 레벨 뱃지 표시 -->
+          {% if account.account_type == 'user' or account.account_type == 'dame' %}
+
+          <!-- 레벨 뱃지 -->
+          {% with level=profile.level %}
+          {% include 'parts/level_badge.html' %}
+          {% endwith %}
+
+          {% endif %}
+
+          {% endif %}
+
+        </span>
+        {% endif %}
+
+      </div>
+      <div style="display: inline-block; text-align: right;">
+
+        <!-- 조회수, 북마크수 -->
+        <p class="m-0 text-end text-black-50" style="font-size: 12px;">
+          <span class="me-1" style="white-space: nowrap;">
+            <i class="fi fi-rr-eye"></i> {{ post.view_count }}
+          </span>
+          <span class="me-1" style="white-space: nowrap;">
+            <i class="fi fi-rr-social-network"></i> {{ post.like_count }}
+          </span>
+        </p>
+      </div>
+    </div>
+
+    <!-- 작성일 -->
+    <small class="text-black-50 mt-1">
+      <i class="fi fi-rr-calendar"></i> {{ post.created_at }}
+    </small>
+
+  </a>
+</div>

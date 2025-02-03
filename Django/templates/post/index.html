@@ -10,247 +10,49 @@
 
   <!-- 제목 -->
   <div class="mt-4 mb-5">
-    <div style="display: flex; justify-content: space-between; white-space: nowrap;">
-      <div style="display: inline-block; text-align: left;">
-        {% include 'parts/goback.html' %}
-        <h5 class="mt-5">
-          {{board.name}}
-        </h5>
-      </div>
-    </div>
+    {% include 'parts/goback.html' %}
+    <h5 class="mt-5">
+      {{board.name}}
+    </h5>
   </div>
 
-  {% if posts|length == 0 %}
-  <p>
-    게시글이 없습니다.
-  </p>
-  {% else %}
+  <!-- 게시글 검색 결과 -->
+  <div class="mb-5" style="min-height: 30vh;">
+    {% if posts|length == 0 %}
+    <p>
+      게시글이 없습니다.
+    </p>
+    {% else %}
 
-  <!-- 일반 게시글 형태 -->
-  {% if board.board_type != 'board' %}
-  {% for post in posts %}
-  <div class="col-12 p-2 mb-2 pb-3 border-bottom">
-    <a href="/post/post_view?post_id={{ post.id }}" class="text-dark text-decoration-none">
-      <div style="display: flex; justify-content: space-between; white-space: nowrap;">
-        <div style="display: inline-block; text-align: left;">
+    <!-- 일반 게시글 형태 -->
+    {% if board.board_type in 'board, anonymous' %}
+    {% for post in posts %}
+    {% include 'parts/normal_board_type.html' %}
+    {% endfor %}
+    {% endif %}
 
-          <!-- 게시판 및 제목 -->
-          <span class="text-black-50" style="font-size: 12px;">
-            {% for board in post.boards %}
-            {{ board.name }} {% if forloop.counter < post.boards|length  %} &gt; {% endif %}
-            {% endfor %}
-          </span>
-          <h6 class="mb-2">
-            {{ post.title }}
-          </h6>
-          <span class="text-black-50">
+    <!-- 이미지가 있는 게시글 형태 -->
+    {% if board.board_type in 'event, review' %}
+    {% for post in posts %}
+    {% include 'parts/image_board_type.html' %}
+    {% endfor %}
+    {% endif %}
 
-            <!-- 작성자 -->
-            {% if post.author.partner_name != '' %}
-            <i class="fi fi-rr-heart"></i> {{ post.author.partner_name }}
-            {% else %}
-            <i class="fi fi-rr-user"></i> {{ post.author.nickname }} 
+    {% endif %}
 
-            <!-- 레벨 -->
-            {% if account.account_type == 'user' or account.account_type == 'dame' %}
-            {% if account.level.image %}
-            <img src="{{ account.level.image }}" style="height: 16px; width: auto;">
-            {% else %}
-            <span class="badge user-level-badge" style="color: {{account.level.text_color}}; background-color: {{account.level.background_color}};">{{ account.level.text }}</span>
-            {% endif %}
-            {% endif %}
-            {% endif %}
-
-          </span>
-        </div>
-        <div style="display: inline-block; text-align: right;">
-
-          <!-- 조회수, 댓글수, 북마크수 -->
-          <p class="m-0 text-end text-black-50" style="font-size: 12px;">
-            <span class="me-1" style="white-space: nowrap;">
-              <i class="fi fi-rr-eye"></i> {{ post.view_count }}
-            </span>
-            <span class="me-1" style="white-space: nowrap;">
-              <i class="fi fi-rr-social-network"></i> {{ post.like_count }}
-            </span>
-          </p>
-        </div>
-      </div>
-
-      <!-- 작성일 -->
-      <small class="text-black-50 mt-1">
-        <i class="fi fi-rr-calendar"></i> {{ post.created_at }}
-      </small>
-
-    </a>
-  </div>
-  {% endfor %}
-  {% endif %}
-
-  <!-- 이벤트 게시글 형태 -->
-  {% if board.board_type != 'event' %}
-  {% for post in posts %}
-    <div class="col-12 col-md-6 col-lg-4 p-2 mb-2 pb-3 w-100">
-      <a href="/post/post_view?post_id={{ post.id }}" class="text-dark text-decoration-none">
-        <div class="col-12 p-2 mb-2 pb-3 border-bottom">
-          <div class="row g-0">
-            <div class="col-2 col-md-2">
-              <img src="{{ post.image }}" alt="/media/default0.png" class="img-fluid rounded-start img-web" />
-            </div>
-            <div class="col-10 col-md-10">
-              <div>
-                <div>
-                  <span class="text-black-50" style="font-size: 12px;">
-                    {% for board in post.boards %}
-                      {{ board.name }} {% if forloop.counter < post.boards|length %} &gt; {% endif %}
-                    {% endfor %}
-                  </span>
-                </div>
-                <div class="d-flex">
-                  <div class="d-flex w-100">
-                    <h6 class="mb-2">
-                      {{ post.title }}
-                    </h6>
-                  </div>
-                  <div class="d-flex w-100 justify-content-end">
-                    <p class="m-0 text-end text-black-50" style="font-size: 12px;">
-                      <span class="me-1" style="white-space: nowrap;">
-                        <i class="fi fi-rr-eye"></i> {{ post.view_count }}
-                      </span>
-                      <span class="me-1" style="white-space: nowrap;">
-                        <i class="fi fi-rr-social-network"></i> {{ post.like_count }}
-                      </span>
-                    </p>
-                  </div>
-                </div>
-                <div>
-                  <span class="text-black-50">
-                    {% if post.author.partner_name != '' %}
-                      <i class="fi fi-rr-heart"></i> {{ post.author.partner_name }}
-                    {% else %}
-                      <i class="fi fi-rr-user"></i> {{ post.author.nickname }}
-                    {% endif %}
-
-                    {% if account.account_type == 'user' or account.account_type == 'dame' %}
-                      {% if account.level.image %}
-                        <img src="{{ account.level.image }}" style="height: 16px; width: auto;">
-                      {% else %}
-                        <span class="badge user-level-badge" style="color: {{ account.level.text_color }}; background-color: {{ account.level.background_color }};">{{ account.level.text }}</span>
-                      {% endif %}
-                    {% endif %}
-                  </span>
-                </div>
-                <div>
-                  <small class="text-black-50 mt-1">
-                    <i class="fi fi-rr-calendar"></i> {{ post.created_at }}
-                  </small>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </a>
-    </div>
-  {% endfor %}
-  {% endif %}
-
-  <!-- 익명 게시글 형태 -->
-  {% if board.board_type == 'anonymous' %}
-  {% for post in posts %}
-  <div class="col-12 p-2 mb-2 pb-3 border-bottom">
-    <a href="/post/post_view?post_id={{ post.id }}" class="text-dark text-decoration-none">
-      <div style="display: flex; justify-content: space-between; white-space: nowrap;">
-        <div style="display: inline-block; text-align: left;">
-
-          <!-- 게시판 및 제목 -->
-          <span class="text-black-50" style="font-size: 12px;">
-            {% for board in post.boards %}
-            {{ board.name }} {% if forloop.counter < post.boards|length  %} &gt; {% endif %}
-            {% endfor %}
-          </span>
-          <h6 class="mb-2">
-            {{ post.title }}
-          </h6>
-          <span class="text-black-50">
-
-            <!-- 작성자 -->
-            {% if post.author.partner_name != '' %}
-            <i class="fi fi-rr-heart"></i> {{ post.author.partner_name }}
-            {% else %}
-            <i class="fi fi-rr-user"></i> {{ post.author.nickname }} 
-
-            <!-- 레벨 -->
-            {% if account.account_type == 'user' or account.account_type == 'dame' %}
-            {% if account.level.image %}
-            <img src="{{ account.level.image }}" style="height: 16px; width: auto;">
-            {% else %}
-            <span class="badge user-level-badge" style="color: {{account.level.text_color}}; background-color: {{account.level.background_color}};">{{ account.level.text }}</span>
-            {% endif %}
-            {% endif %}
-            {% endif %}
-
-          </span>
-        </div>
-        <div style="display: inline-block; text-align: right;">
-
-          <!-- 조회수, 댓글수, 북마크수 -->
-          <p class="m-0 text-end text-black-50" style="font-size: 12px;">
-            <span class="me-1" style="white-space: nowrap;">
-              <i class="fi fi-rr-eye"></i> {{ post.view_count }}
-            </span>
-            <span class="me-1" style="white-space: nowrap;">
-              <i class="fi fi-rr-social-network"></i> {{ post.like_count }}
-            </span>
-          </p>
-        </div>
-      </div>
-
-      <!-- 작성일 -->
-      <small class="text-black-50 mt-1">
-        <i class="fi fi-rr-calendar"></i> {{ post.created_at }}
-      </small>
-
-    </a>
-  </div>
-  {% endfor %}
-  {% endif %}
-
-  {% endif %}
-
-  <!-- 검색 컴포넌트와 맨 위로 가는 버튼 -->
-  <div class="d-flex w-100 align-items-center">
-    <div class="header-search d-flex w-100 flex-row-reverse">
-      <form class="header-search-form d-flex flex-row" onkeyup="if(event.keyCode == 13) searchPost('pc');">
-        <select class="form-select mx-2">
-            <option value="title">제목</option>
-            <option value="content">내용</option>
-        </select>
-        <input id="pcSearchKeyword" placeholder="검색어를 입력해주세요." value="{{ request.GET.keyword }}" class="form-control">
-        <button class="btn search-btn" onclick="searchPost('pc');">
-          <i class="fi fi-rr-search"></i>
-        </button>
-      </form>
-    </div>
-    <div>
-      <button class="btn btn-info" id="topBtn" onclick="window.scrollTo({ top: 0, behavior: 'smooth' })">
-          TOP
-      </button>
-    </div>
-    <div>
-      <!-- 버튼 -->
-      {% if writable %}
-      <div class="p-3 text-end">
-
-        <a class="btn btn-success" href="/post/write_post?board_ids={{request.GET.board_ids}}">
-          <i class="fi fi-rr-edit"></i> 글 작성
-        </a>
-
-      </div>
-      {% endif %}
-    </div>
   </div>
 
-  <div id="pageButton"></div>
+  <!-- 검색 및 페이지 버튼 -->
+  <div>
+    <!-- 검색 컴포넌트 -->
+    {% include 'parts/search.html' %}
+
+    <!-- 페이지 버튼 -->
+    <div id="pageButton"></div>
+
+    <!-- 게시판 버튼(맨 위로, 글쓰기) -->
+    {% include 'parts/board_buttons.html' %}
+  </div>
 
 </section>
 

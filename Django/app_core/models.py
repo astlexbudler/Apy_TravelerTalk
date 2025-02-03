@@ -46,7 +46,7 @@ class ACCOUNT(AbstractUser):
   level_point = models.IntegerField(help_text='레벨업 포인트', default=0)
   tel = models.CharField(blank=True, max_length=20, help_text='연락처')
   subsupervisor_permissions = models.CharField(blank=True, max_length=200, help_text='관리자 권한(account, post, coupon, message, banner, setting)')
-  bookmarked_places = models.ForeignKey('POST', on_delete=models.CASCADE, null=True, help_text='북마크된 여행지 게시글', related_name='account_bookmarked_places')
+  bookmarked_places = models.ManyToManyField('POST', help_text='즐겨찾기 여행지', related_name='account_bookmarked_places')
   level = models.ForeignKey('LEVEL_RULE', on_delete=models.CASCADE, null=True, help_text='사용자 레벨', related_name='account_level')
 
 # GROUP: 그룹 테이블
@@ -88,7 +88,7 @@ class BOARD(models.Model):
   comment_groups = models.ManyToManyField(Group, help_text='댓글 그룹', related_name='board_comment_groups')
   level_cut = models.IntegerField(help_text='레벨 제한', default=0)
   name = models.CharField(max_length=100, help_text='게시판 이름')
-  board_type = models.CharField(max_length=20, help_text='게시물 타입(tree, travel, event, review, board, attendance, greeting, anominous)')
+  board_type = models.CharField(max_length=20, help_text='게시물 타입(tree, travel, event, review, board, attendance, greeting, anonymous)')
   display_weight = models.IntegerField(help_text='표시 순서', default=0)
 
 # POST: 게시물 테이블
@@ -99,7 +99,7 @@ class POST(models.Model):
   review_post = models.ForeignKey('self', on_delete=models.CASCADE, null=True, help_text='리뷰 게시글', related_name='post_review_post')
   place_info = models.ForeignKey('PLACE_INFO', on_delete=models.CASCADE, null=True, help_text='여행지 정보', related_name='post_place_info')
   title = models.CharField(max_length=100, help_text='제목')
-  image_paths = models.TextField(blank=True, null=True, help_text='이미지 경로')
+  image = models.FileField(upload_to=upload_to, null=True, help_text='대표 이미지')
   content = models.TextField(help_text='내용', null=True)
   view_count = models.IntegerField(help_text='조회수', default=0)
   like_count = models.IntegerField(help_text='좋아요 수', default=0)
@@ -134,6 +134,7 @@ class COUPON(models.Model):
   post = models.ForeignKey('POST', on_delete=models.CASCADE, null=True, help_text='게시글', related_name='coupon_post')
   create_account = models.ForeignKey('ACCOUNT', on_delete=models.CASCADE, help_text='생성자', related_name='coupon_create_account')
   own_accounts = models.ManyToManyField('ACCOUNT', help_text='소유 계정', related_name='coupon_own_accounts')
+  used_account = models.ManyToManyField('ACCOUNT', help_text='사용 계정', related_name='coupon_used_account')
   name = models.CharField(max_length=100, help_text='쿠폰 이름')
   image = models.FileField(upload_to=upload_to, null=True, help_text='이미지')
   content = models.TextField(help_text='내용')

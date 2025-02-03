@@ -17,7 +17,6 @@ def account_login(request):
     # 아이디 및 비밀번호 확인
     id = request.POST.get('id', '')
     password = request.POST.get('password', '')
-    print(id, password)
     user = authenticate(request, username=id, password=password)
 
     # 로그인 성공
@@ -168,12 +167,10 @@ def check_nickname(request):
 # 회원 정보 조회 API(쪽지 발송 시 수신자 확인에 사용)
 def search_user(request):
   id_or_nickname = request.GET.get('id_or_nickname', '')
-  User = get_user_model()
 
   # 아이디 또는 닉네임으로 사용자 조회(일치 여부 확인)
-  users = User.objects.filter(
-    Q(username=id_or_nickname) | Q(first_name=id_or_nickname),
-    status='active'
+  users = models.ACCOUNT.objects.filter(
+    Q(username=id_or_nickname) or Q(first_name=id_or_nickname)
   )
   return JsonResponse({
     'result': 'success',
@@ -431,18 +428,28 @@ def write_comment(request):
     if 'attenddance:' in po.title:
       # 출석 체크
       add_point = models.SERVER_SETTING.objects.get(name='attendance_point').value
+
+      # 댓글 작성 활동기록 생성
+      today = datetime.datetime.now().strftime('%Y-%m-%d')
+      models.ACTIVITY.objects.create(
+        account=request.user,
+        message = f'[출석체크] {today} 출석체크를 완료했습니다.',
+        point_change = '+' + add_point,
+      )
+
     else: # 그 외의 경우,
       add_point = models.SERVER_SETTING.objects.get(name='comment_point').value
+
+      # 댓글 작성 활동기록 생성
+      models.ACTIVITY.objects.create(
+        account=request.user,
+        message = f'[게시판] {po.title} 게시글에 댓글을 작성했습니다.',
+        point_change = '+' + add_point,
+      )
+
     request.user.coupon_point += int(add_point)
     request.user.level_point += int(add_point)
     request.user.save()
-
-    # 댓글 작성 활동기록 생성
-    models.ACTIVITY.objects.create(
-      account=request.user,
-      message = f'[게시판] {po.title} 게시글에 댓글을 작성했습니다.',
-      point_change = '+' + add_point,
-    )
 
     return JsonResponse({'result': 'success'})
 
@@ -517,9 +524,9 @@ def receive_coupon(request):
 def like_post(request):
   # 게시글 아이디 확인
   post_id = request.GET.get('post_id', '')
-  post = models.POST.objects.filter(
+  post = models.POST.objects.prefetch_related('boards').filter(
     id=post_id
-  ).prefetch_related('boards').first()
+  ).first()
 
   if not post: # 게시글이 존재하지 않는 경우
     return JsonResponse({'result': 'post_not_exist'})
@@ -532,16 +539,22 @@ def like_post(request):
     request.session['like_posts'] = like_posts.replace(post_id + ',', '') # 좋아요 삭제
 
   # 게시글 확인
-  user = request.user.objects.prefetch_related('bookmarked_places').first()
-  for board in post.boards:
-    if 'travel' in board.board_type:
-      if post not in user.bookmarked_places:
+  for board in post.boards.all():
+    if 'travel' == board.board_type: # 여행지 게시글인 경우, 북마크 추가
+      user = models.ACCOUNT.objects.prefetch_related('bookmarked_places').filter(
+        username=request.user.username
+      ).first()
+      bookmarked = models.ACCOUNT.objects.prefetch_related('bookmarked_places').filter(
+        username=request.user.username,
+        bookmarked_places=post
+      ).exists()
+      print(user)
+      print(bookmarked)
+      if not bookmarked:
         user.bookmarked_places.add(post)
         user.save()
-        return JsonResponse({'result': 'add'}) # 북마크 추가
       else:
         user.bookmarked_places.remove(post)
         user.save()
-        return JsonResponse({'result': 'remove'}) # 북마크 삭제
 
   return JsonResponse({'result': 'success'})

@@ -21,18 +21,9 @@
             </p>
           {% else %}
           <!-- 베스트 리뷰 게시글 표시. 게시글 제목, 조회수, 추천수 -->
-            {% for review in best_reviews %}
-              <div class="w-100 mb-4">
-                <a href="/board/post_view?post_id={{ review.id }}">
-                  <p class="text-black-50">
-                    {{ review.title }}
-                  </p>
-                  <p class="text-black-50 small">
-                    조회수: {{ review.view_count }} / 추천수: {{ review.like_count }}
-                  </p>
-                </a>
-              </div>
-            {% endfor %}
+          {% for review in best_reviews %}
+          {% include 'parts/simplified_board_type.html' %}
+          {% endfor %}
           {% endif %}
         {% endif %}
 

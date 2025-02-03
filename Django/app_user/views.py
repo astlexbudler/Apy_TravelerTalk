@@ -35,7 +35,7 @@ def index(request):
     posts.append({
       'id': p.id,
       'title': p.title,
-      'image': p.image_paths.split(',')[0],
+      'image': '/media/' + p.image if p.image else '/media/default.png',
       'place_info': {
         'categories': [c.name for c in p.place_info.categories.all()],
         'address': p.place_info.address,

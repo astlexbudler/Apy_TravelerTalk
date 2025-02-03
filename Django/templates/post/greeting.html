@@ -9,7 +9,7 @@
 <section class="main-section px-5 px-lg-1" style="flex: 1; min-height: 100vh;">
 
   <!-- title -->
-  <div class="mb-5">
+  <div class="mt-4 mb-5">
     {% include 'parts/goback.html' %}
     <h5 class="mt-5">
       가입인사
@@ -37,29 +37,47 @@
 
   <!-- 메세지 목록 -->
   <ul class="list-unstyled mt-5">
-    {% if comments|length < 1 %} <li>
+    {% if comments|length < 1 %} 
+    <li>
       <p>
         아직 가입인사를 남긴 사용자가 없습니다.
       </p>
-      </li>
-      {% else %}
-      {% for greeting in comments %}
-      <li>
-        <div class="mb-4">
-          <div style="display: flex; justify-content: space-between; white-space: nowrap;">
-            <div style="display: inline-block; text-align: left;">
-              <p class="mt-0 mb-1">{{ greeting.author.nickname }}</p>
-            </div>
+    </li>
+    {% else %}
+    {% for comment in comments %}
+    <li>
+      <div class="mb-4">
+        <div class="d-flex w-100">
+          <div class="d-flex w-100 ">
+  
+            <!-- 댓글 작성자 이름. 파트너 이름 또는 사용자 닉네임 -->
+            {% if comment.author.partner_name %}
+            <h6 class="mt-0 mb-1">{{ comment.author.partner_name }}</h6>
+            {% else %}
+            <h6 class="mt-0 mb-1">{{ comment.author.nickname }}</h6>
+            {% endif %}
+  
           </div>
-          <small class="mb-2">{{ greeting.created_dt }}</small>
-          <p class="text-black-50">
-            {{ greeting.content }}
-          </p>
+          <div class="d-flex w-100 flex-row-reverse">
+            <small class="mb-2">{{ comment.created_at }}</small>
+          </div>
         </div>
-      </li>
-      {% endfor %}
-      {% endif %}
+        <p class="text-black-50">
+          {{ comment.content }}
+        </p>
+      </div>
+    </li>
+    {% endfor %}
+    {% endif %}
   </ul>
+
+  <!-- 검색 및 페이지 버튼 -->
+  <div>
+
+    <!-- 페이지 버튼 -->
+    <div id="pageButton"></div>
+
+  </div>
 
 </section>
 
@@ -85,14 +103,16 @@
       return;
     }
 
-    var formData = new FormData();
-    formData.append('content', comment);
-    var result = await fetch('/post/greeting', {
+    // 댓글 작성 요청
+    var formdata = new FormData();
+    formdata.append('post_id', '{{ post.id }}');
+    formdata.append('content', comment);
+    var result = await fetch('/api/write_comment', {
       method: 'POST',
       headers: {
         'X-CSRFToken': csrftoken
       },
-      body: formData
+      body: formdata
     })
     .then(response => response.json())
     .then(data => {

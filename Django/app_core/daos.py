@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.contrib.auth import authenticate, logout, get_user_model
 from django.contrib.auth.models import Group
-from django.db.models import Q
+from django.db.models import Q, Count
 from . import models
 
 # 기본 컨텍스트 정보 가져오기
@@ -36,7 +36,7 @@ def get_default_contexts(request):
         'place_info': {
           'categories': [c.name for c in pi.categories.all()],
         } if (pi := bp.place_info) else None,
-      } for bp in user.bookmarked_places[:5]] if user.bookmarked_places else [],
+      } for bp in user.bookmarked_places.all()[:5]],
     }
 
     # 사용자 활동 내역 가져오기
@@ -412,12 +412,13 @@ def get_user_activities(user_id, page):
 
 # 사용자의 모든 북마크 가져오기
 def get_all_bookmarked_places(user_id):
-  bookmarks = models.POST.objects.select_related('place_info', 'author').filter(bookmarked_accounts=user_id)
+  bookmarks = models.ACCOUNT.objects.prefetch_related('bookmarked_places').prefetch_related('bookmarked_places__place_info__categories',).get(
+    username=user_id
+  ).bookmarked_places.all()
   return [{
     'id': b.id,
     'title': b.title,
-    'view_count': b.view_count,
-    'like_count': b.like_count,
+    'image': '/media/' + b.image if b.image else '/media/default.png',
     'place_info': {
       'categories': [c.name for c in b.place_info.categories.all()],
       'address': b.place_info.address,
@@ -425,15 +426,12 @@ def get_all_bookmarked_places(user_id):
       'open_info': b.place_info.open_info,
       'status': b.place_info.status,
     },
-    'author': {
-      'nickname': b.author.first_name
-    },
   } for b in bookmarks]
 
 # 사용자의 모든 쿠폰 가져오기
 def get_all_user_coupons(user_id, page):
-  coupons = models.COUPON.objects.select_related('post', 'create_account').filter(
-    own_accounts=user_id,
+  coupons = models.COUPON.objects.select_related('post', 'create_account').prefetch_related('own_accounts').filter(
+    own_accounts__username=user_id,
     status='normal',
   ).order_by('expire_at')
   last_page = len(coupons) // 20 + 1
@@ -457,10 +455,10 @@ def get_all_user_coupons(user_id, page):
 
 # 사용자의 사용된 쿠폰 내역 가져오기
 def get_all_coupon_histories(user_id, page):
-  coupons = models.COUPON.objects.select_related('post', 'create_account').exclude(
+  coupons = models.COUPON.objects.select_related('post', 'create_account').prefetch_related('used_account').exclude(
     status='normal',
   ).filter(
-    used_user_id=user_id,
+    used_account__username=user_id,
   )
   last_page = len(coupons) // 20 + 1
   coupons = [{
@@ -491,6 +489,7 @@ def get_user_inbox_messages(user_id, page):
     'content': m.content,
     'is_read': m.is_read,
     'created_at': m.created_at,
+    'image': m.image,
     'include_coupon': {
       'code': m.include_coupon.code,
       'name': m.include_coupon.name,
@@ -587,16 +586,19 @@ def get_selected_board_info(board_ids):
 # 선택된 게시판의 게시글 가져오기
 def get_board_posts(board_ids, page, search):
   posts = models.POST.objects.select_related(
-    'author', 'place_info', 'review_post'
+      'author', 'place_info', 'review_post'
   ).prefetch_related('place_info__categories', 'review_post__place_info').filter(
-    title__contains=search,
-    boards__id__in=board_ids,
+      title__contains=search
+  ).annotate(
+      board_count=Count('boards', filter=Q(boards__id__in=board_ids), distinct=True)
+  ).filter(
+      board_count=len(board_ids)  # 모든 board_ids 포함된 게시글만 필터
   ).order_by('search_weight')
   last_page = len(posts) // 20 + 1
   posts = [{
     'id': p.id,
     'title': p.title,
-    'image_paths': p.image_paths, # 여행지 또는 리뷰, 이벤트 게시글의 대표 이미지 경로
+    'image': '/media/' + str(p.image) if p.image else '/media/default.png',
     'view_count': p.view_count,
     'like_count': p.like_count,
     'created_at': p.created_at,
@@ -620,7 +622,6 @@ def get_board_posts(board_ids, page, search):
 
 # 게시글 내용 가져오기
 def get_post_info(post_id):
-  print(post_id)
   post = models.POST.objects.prefetch_related('boards').select_related(
     'author', 'place_info', 'review_post'
   ).prefetch_related('place_info__categories', 'review_post__place_info',).get(id=post_id)
@@ -628,7 +629,7 @@ def get_post_info(post_id):
     'id': post.id,
     'boards': [b.name for b in post.boards.all()],
     'title': post.title,
-    'image_paths': post.image_paths,
+    'image': '/media/' + str(post.image) if post.image else '/media/default.png',
     'content': post.content,
     'view_count': post.view_count,
     'like_count': post.like_count,
@@ -659,6 +660,7 @@ def get_all_post_comments(post_id):
     'content': c.content,
     'created_at': c.created_at,
     'author': {
+      'id': c.author.username,
       'nickname': c.author.first_name,
       'partner_name': c.author.last_name,
       'level': {
