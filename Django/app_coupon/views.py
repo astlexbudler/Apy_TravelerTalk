@@ -8,8 +8,9 @@ from app_core import daos
 
 # 쿠폰 조회 페이지(사용자 및 여성회원 전용)
 def index(request):
+  # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
-  boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보 가져오기
+  boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보
 
   # 로그인 여부 확인
   if contexts['account']['account_type'] == 'guest': # 비회원인 경우

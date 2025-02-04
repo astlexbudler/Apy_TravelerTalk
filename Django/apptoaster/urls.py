@@ -6,6 +6,7 @@ from django.http import HttpResponse
 from django.contrib.sitemaps import Sitemap
 from django.contrib.sitemaps.views import sitemap
 from datetime import datetime
+from django_hosts import patterns, host
 
 def robots_txt(request):
   return HttpResponse(
@@ -35,6 +36,13 @@ class ApplifySitemapClass(Sitemap):
   def priority(self, obj):
     return 0
 
+#host_patterns = patterns(
+#    '',
+#    host(r'partner', 'partner.urls', name='partner'),
+#    host(r'supervisor', 'supervisor.urls', name='supervisor'),
+#    host(r'', 'apptoaster.urls', name='main'),
+#)
+
 urlpatterns = [
   path('admin/', admin.site.urls),
   # / 메인 페이지
@@ -50,7 +58,7 @@ urlpatterns = [
   # /partner/write_post 광고 게시글 작성 페이지
   # /partner/rewrite_post 광고 게시글 수정 페이지
   # /partner/coupon 쿠폰 관리 페이지
-  path('partner/', include('app_partner.urls')),
+  path('partner/', include('app_partner.urls')), # subdomain 처리
   # /supervisor 관리자 메인 페이지
   # /supervisor/account 계정 관리 페이지
   # /supervisor/post 게시글 관리 페이지
@@ -62,7 +70,7 @@ urlpatterns = [
   # /supervisor/banner 배너 관리 페이지
   # /supervisor/level 레벨 관리 페이지
   # /supervisor/setting 설정 페이지
-  path('supervisor/', include('app_supervisor.urls')),
+  path('supervisor/', include('app_supervisor.urls')), # subdomain 처리
   # /post 표준 게시판 페이지
   # /post/write_post 표준 게시글 작성 페이지
   # /post/rewrite_post 표준 게시글 수정 페이지

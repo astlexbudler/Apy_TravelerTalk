@@ -47,19 +47,6 @@ urlpatterns = [
   # 리뷰 게시글 목록 및 검색 내역 제공
   path('review', v.review, name='review'),
 
-  # 리뷰 게시글 작성 페이지
-  # 리뷰 게시글 작성 폼 제공
-  # 리뷰 작성은 광고 게시글 내 리뷰 작성 버튼을 통해 접근 가능
-  # title, content, image 필드 제공
-  # 사용자 및 여성 회원만 접근 가능
-  path('write_review', v.write_review, name='write_review'),
-
-  # 리뷰 게시글 수정 페이지
-  # 리뷰 게시글 수정 폼 제공
-  # title, content, image 필드 제공
-  # 리뷰 작성자만 접근 가능
-  path('rewrite_review', v.rewrite_review, name='rewrite_review'),
-
   # 리뷰 게시글 상세 페이지
   # 리뷰 게시글의 상세 정보 제공
   # 리뷰 내용 및 댓글 목록 확인

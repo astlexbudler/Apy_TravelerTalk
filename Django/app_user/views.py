@@ -105,7 +105,7 @@ def profile(request):
 
   # data
   # 최상위 관리자 또는 사용자 권한이 있는 부관리자 계정일 경우, 다른 사용자의 프로필 페이지 접근 가능
-  if contexts['account']['account_type'] == 'supervisor' or contexts['account']['account_type'] == 'subsupervisor':
+  if contexts['account']['account_type'] == 'supervisor' or (contexts['account']['account_type'] == 'subsupervisor' and 'account' in contexts['account']['subsupervisor_permissions']):
     profile_id = request.GET.get('profile_id', request.user.username)
   else: # 그 외의 경우, 자신의 프로필 페이지만 접근 가능
     profile_id = request.user.username
@@ -143,7 +143,7 @@ def activity(request):
   boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보
 
   # 로그인 되지 않은 경우, 리다이렉트 후 로그인 필요 메세지 표시
-  if not request.user.is_authenticated:
+  if contexts['account']['account_type'] == 'guest':
     return redirect('/?redirect_message=need_login')
 
   # data
@@ -176,7 +176,7 @@ def bookmark(request):
   boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보
 
   # 로그인 되지 않은 경우, 리다이렉트 후 로그인 필요 메세지 표시
-  if not request.user.is_authenticated:
+  if contexts['account']['account_type'] == 'guest':
     return redirect('/?redirect_message=need_login')
 
   # 사용자의 북마크 정보 가져오기(여행지 게시글만 북마크 가능)

@@ -142,6 +142,8 @@ def write_post(request):
 
 # 광고 게시글 수정 페이지
 def rewrite_post(request):
+  return redirect('/partner') # 광고 게시글 작성 페이지로 이동 TODO: 수정 예정
+
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
   account_type = 'guest' # 기본값은 guest
   if request.user.is_authenticated:

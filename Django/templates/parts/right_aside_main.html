@@ -1,30 +1,24 @@
 <aside class="px-3">
 
   <!-- 베스트 후기 -->
-  <div class="card mt-3">
+  <div class="card mt-1" style="border-radius: 0;">
     <div class="card-body text-center pastel-pink-background">
       <a href="/post/review">
         <h5 class="card-title text-black-50">베스트 후기</h5>
       </a>
     </div>
-    <div class="card-footer pastel-beige-background" style="min-height: 200px;">
+    <div class="card-footer" style="min-height: 200px;">
       <div class="p-1 py-2">
 
-        {% if not user.is_authenticated %}
+        {% if best_reviews == none or best_reviews|length == 0 %}
           <p>
-            로그인이 필요합니다
+            베스트 후기가 없습니다
           </p>
         {% else %}
-          {% if best_reviews == none or best_reviews|length == 0 %}
-            <p>
-              베스트 후기가 없습니다
-            </p>
-          {% else %}
-          <!-- 베스트 리뷰 게시글 표시. 게시글 제목, 조회수, 추천수 -->
-          {% for review in best_reviews %}
-          {% include 'parts/simplified_board_type.html' %}
-          {% endfor %}
-          {% endif %}
+        <!-- 베스트 리뷰 게시글 표시. 게시글 제목, 조회수, 추천수 -->
+        {% for review in best_reviews %}
+        {% include 'parts/simplified_board_type.html' %}
+        {% endfor %}
         {% endif %}
 
       </div>

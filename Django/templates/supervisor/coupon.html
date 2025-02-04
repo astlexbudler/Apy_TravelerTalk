@@ -19,20 +19,25 @@
   </div>
 
   <!-- 선택지 버튼 그룹 -->
-  <div class="btn-group w-100">
-    <a class="btn text-white" href="/supervisor/coupon?tab=coupon " style="background-color: gray;" id="couponTab">
-      쿠폰
-    </a>
-    <a class="btn" href="/supervisor/coupon?tab=history" style="background-color: gainsboro;" id="historyTab">
-      쿠폰 사용 내역
-    </a>
+  <div class="btn-group w-100 d-flex mb-4">
+    <div class="w-100 d-flex justify-content-center rounded-2">
+      <a class="w-100 btn" href="/supervisor/coupon?tab=coupon" id="couponTab">
+        보유 쿠폰
+      </a>
+    </div>
+    <span class="divider"></span>
+    <div class="w-100 d-flex justify-content-center rounded-2">
+      <a class="w-100 btn" href="/supervisor/coupon?tab=history" id="historyTab">
+        쿠폰 사용 내역
+      </a>
+    </div>
   </div>
 
   <!-- 쿠폰 -->
   <div class="my-5" id="couponBox">
 
     <!-- 통계 -->
-    <div class="rounded border p-3 mb-5">
+    <div class="rounded border p-3 mb-5 shadow">
       <p>
         <i class="fi fi-rr-stats"></i> 통계
       </p>
@@ -56,7 +61,7 @@
     </div>
 
     <!-- 검색 -->
-    <div class="rounded border p-3 mb-5">
+    <div class="rounded border p-3 mb-5 shadow">
       <p>
         <i class="fi fi-rr-search"></i> 검색
       </p>
@@ -69,7 +74,6 @@
           </div>
         </div>
       </form>
-
       <p class="text-end mt-4">
         <a class="btn btn-success" href="javascript: document.getElementById('couponSearchForm').submit()">
           <i class="fi fi-rr-search"></i> 검색
@@ -80,10 +84,9 @@
     <!-- 버튼 -->
     <div class="p-3 mb-5 text-end">
 
-      <!--
       <a class="btn btn-success" href="#">
         <i class="fi fi-rr-plus"></i> 쿠폰 만들기
-      </a>-->
+      </a>
 
     </div>
 
@@ -209,7 +212,7 @@
   <div class="my-5" id="historyBox">
 
     <!-- 통계 -->
-    <div class="rounded border p-3 mb-5">
+    <div class="rounded border p-3 mb-5 shadow">
       <p>
         <i class="fi fi-rr-stats"></i> 통계
       </p>
@@ -242,7 +245,7 @@
     </div>
 
     <!-- 검색 -->
-    <div class="rounded border p-3 mb-5">
+    <div class="rounded border p-3 mb-5 shadow">
       <p>
         <i class="fi fi-rr-search"></i> 검색
       </p>
@@ -419,19 +422,15 @@
     var couponBox = document.getElementById('couponBox');
     var historyBox = document.getElementById('historyBox');
     if (tab == 'coupon') {
-      couponTab.style.backgroundColor = 'gray';
-      historyTab.style.backgroundColor = 'gainsboro';
-      couponTab.classList.add('text-white');
-      historyTab.classList.remove('text-white');
-      couponBox.classList.remove('d-none');
-      historyBox.classList.add('d-none');
+      couponTab.classList.add('pastel-pink-background');
+      couponTab.classList.add('text-dark');
+      historyTab.classList.add('pastel-beige-background');
+      historyTab.classList.remove('text-dark');
     } else if (tab == 'history') {
-      couponTab.style.backgroundColor = 'gainsboro';
-      historyTab.style.backgroundColor = 'gray';
-      couponTab.classList.remove('text-white');
-      historyTab.classList.add('text-white');
-      couponBox.classList.add('d-none');
-      historyBox.classList.remove('d-none');
+      couponTab.classList.add('pastel-beige-background');
+      couponTab.classList.remove('text-dark');
+      historyTab.classList.add('pastel-pink-background');
+      historyTab.classList.add('text-dark');
     }
 
     // Page

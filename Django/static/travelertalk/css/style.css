@@ -20666,12 +20666,6 @@ html {
     }
 }
 
-.header-background {
-    background-image: url("/media/header-image.jpg");
-    background-size: cover;
-    background-position: center;
-}
-
 .main-header {
     transition: ease top 0.35s;
 }

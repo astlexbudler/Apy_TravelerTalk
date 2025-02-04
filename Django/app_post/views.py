@@ -16,6 +16,7 @@ from app_core import daos
 # 2. 전체 글 검색을 하는 경우(board_id 가 없음) => 전체 게시글 검색
 # 3. 사전 정의되지 않은 기타 게시판의 경우 => 해당 게시글 검색
 def index(request):
+  # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
   boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보
 
@@ -65,6 +66,7 @@ def index(request):
 
 # 게시글 작성 페이지
 def write_post(request):
+  # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
   boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보
 
@@ -106,6 +108,7 @@ def write_post(request):
     if not boards:
       return JsonResponse({'result': 'error'})
 
+    # 게시글 작성
     post = models.POST.objects.create(
       author=request.user,
       title=title,
@@ -119,14 +122,21 @@ def write_post(request):
         post.review_post = review_post
     post.save()
 
-    # 사용자 활동 기록 추가
+    # 사용자 활동 기록 추가 및 포인트
     # 사용자 계정 및 파트너 계정만 해당
-    models.ACTIVITY.objects.create(
-      account=request.user,
-      message = f'[게시글] {title} 게시글을 작성하였습니다.',
-    )
-    if contexts['account']['account_type'] in ['user', 'dame']:
+    if review_post_id:
+      models.ACTIVITY.objects.create(
+        account=request.user,
+        message = f'[리뷰] {title} 리뷰를 작성하였습니다.',
+      )
+      point = int(models.SERVER_SETTING.objects.get(name='review_point').value)
+    else:
+      models.ACTIVITY.objects.create(
+        account=request.user,
+        message = f'[게시글] {title} 게시글을 작성하였습니다.',
+      )
       point = int(models.SERVER_SETTING.objects.get(name='post_point').value)
+    if contexts['account']['account_type'] in ['user', 'dame']:
       request.user.level_point += point
       request.user.coupon_point += point
       request.user.save()
@@ -141,8 +151,9 @@ def write_post(request):
 
 # 게시글 수정 페이지
 def rewrite_post(request):
+  # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
-  boards = daos.get_board_tree() # 게시판 정보 가져오기
+  boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보
 
   # 데이터 가져오기
   post_id = request.GET.get('post')
@@ -156,48 +167,96 @@ def rewrite_post(request):
   if (contexts['account']['id'] != post['author']['id']) or ('supervisor' not in contexts['account']['groups']) or not (('post' in contexts['account']['subsupervisor_permissions']) and 'subsupervisor' in contexts['account']['groups']):
     return redirect('/?redirect_message=not_allowed')
 
-  '''
   # 게시글 수정 요청
   if request.method == 'POST':
-    title = request.POST.get('title', po.title)
-    content = request.POST.get('content', po.content)
-    if not title or not content:
+    title = request.POST.get('title')
+    content = request.POST.get('content')
+    image = request.FILES.get('image') if request.FILES.get('image') else None
+    review_post_id = request.POST.get('review_post_id') # 리뷰 게시글 작성시, 대상 게시글 아이디
+    board_ids = request.GET.get('board_ids') # 게시판 아이디
+    if not title or not content: # 제목 또는 내용이 없는 경우
       return JsonResponse({'result': 'error'})
-    po.title = title
-    po.content = content
-    po.save()
+    board_ids = [int(b) for b in board_ids.split(',')]
+    boards = models.BOARD.objects.filter(id__in=board_ids)
+    if not boards:
+      return JsonResponse({'result': 'error'})
+
+    # 게시글 수정
+    post = models.POST.objects.get(id=post_id)
+    post.title = title
+    post.content = content
+    if image:
+      post.image = image
+    post.boards.clear()
+    post.boards.add(*boards)
+    if review_post_id:
+      review_post = models.POST.objects.filter(id=review_post_id).first()
+      if review_post:
+        post.review_post = review_post
+    post.save()
 
     # 사용자 활동 기록 추가
-    # 사용자 계정 및 파트너 계정만 해당
-    if any(context['account']['account_type'] in s for s in ['user', 'dame', 'partner']):
-      act = user_mo.ACTIVITY(
-        user_id=context['account']['id'],
-        location='/post/post_view?post=' + post_id,
-        message=f'[{boards[-1]["name"]}] 게시글 수정. ({title})',
-        point_change='0',
+    if review_post_id:
+      models.ACTIVITY.objects.create(
+        account=request.user,
+        message = f'[리뷰] {title} 리뷰를 수정하였습니다.',
       )
-      act.save()
+    else:
+      models.ACTIVITY.objects.create(
+        account=request.user,
+        message = f'[게시글] {title} 게시글을 수정하였습니다.',
+      )
 
-    return JsonResponse({'result': 'success'})
-  '''
+    return JsonResponse({'result': 'success', 'post_id': post.id})
 
   return render(request, 'post/rewrite_post.html', {
-    **contexts,
+    **contexts, # 기본 컨텍스트 정보
     'boards': boards, # 게시판 정보
     'post': post, # 게시글 정보
   })
 
 # 게시글 상세 페이지
 def post_view(request):
+  # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
-  boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보 가져오기
+  boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보
 
   # 데이터 가져오기
   post_id = request.GET.get('post_id')
 
+  # 삭제 요청 처리
+  if request.method == 'DELETE':
+    post = models.POST.objects.select_related('author').filter(
+      id=post_id
+    ).first()
+
+    # 게시글 작성자 확인
+    if request.user.username != post.author.id:
+      # 관리자 또는 부관리자(게시글 권한이 있는) 확인
+      if contexts['account']['account_type'] == 'supervisor' or (contexts['account']['account_type'] == 'subsupervisor' and 'post' in contexts['account']['subsupervisor_permissions']):
+        pass
+      else:
+        return JsonResponse({'result': 'error'})
+
+    # 게시글 삭제
+    if post:
+      # 사용자 활동 기록 추가
+      if request.user.username != post.author.id:
+        models.ACTIVITY.objects.create(
+          account=request.user,
+          message = f'[게시글] {post.title} 게시글을 삭제하였습니다.',
+        )
+      else:
+        models.ACTIVITY.objects.create(
+          account=post.author,
+          message = f'[게시글] {post.title} 게시글이 관리자에 의해 삭제되었습니다.',
+        )
+      post.delete()
+
+    return JsonResponse({'result': 'success'})
+
   # post 확인
   post = daos.get_post_info(post_id)
-  print(post)
 
   board_ids = [
     board.id for board in models.BOARD.objects.filter(name__in=post['boards'])
@@ -234,20 +293,9 @@ def post_view(request):
 
 # 출석체크 게시판
 def attendance(request):
+  # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
-  account_type = 'guest' # 기본값은 guest
-  if request.user.is_authenticated:
-    account_type = 'user'
-    if 'dame' in contexts['account']['groups']:
-      account_type = 'dame'
-    elif 'partner' in contexts['account']['groups']:
-      account_type = 'partner'
-    elif 'subsupervisor' in contexts['account']['groups']:
-      account_type = 'subsupervisor'
-    elif 'supervisor' in contexts['account']['groups']:
-      account_type = 'supervisor'
-  contexts['account']['account_type'] = account_type
-  boards = daos.get_board_tree(account_type) # 게시판 정보
+  boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보
 
   # 권한 확인
   if not request.user.is_authenticated:
@@ -278,61 +326,6 @@ def attendance(request):
   # 댓글 가져오기
   comments = daos.get_all_post_comments(post.id)
 
-  '''
-  # 출석체크 댓글 작성 요청 처리
-  if request.method == 'POST':
-    content = request.POST.get('content', '')
-    if not content:
-      return JsonResponse({'result': 'error'})
-
-    # 이미 출석을 했는지 확인
-    if post_mo.COMMENT.objects.filter(
-      post_id=post.id,
-      author_id=context['account']['id'],
-    ).exists():
-      return JsonResponse({'result': 'error'})
-
-    # 오늘의 출석체크 등수 확인
-    comment_length = post_mo.COMMENT.objects.filter(
-      post_id=post.id,
-    ).count()
-    if comment_length == 0: # 첫 댓글인 경우
-      point = int(core_mo.SERVER_SETTING.objects.get(id='attend_point').value) * 2
-    elif comment_length == 1: # 두 번째 댓글인 경우
-      point = int(core_mo.SERVER_SETTING.objects.get(id='attend_point').value) * 1.5
-    elif comment_length == 2: # 세 번째 댓글인 경우
-      point = int(core_mo.SERVER_SETTING.objects.get(id='attend_point').value) * 1.2
-    else: # 네 번째 댓글 이상인 경우
-      point = int(core_mo.SERVER_SETTING.objects.get(id='attend_point').value)
-
-    # 출석체크 댓글 작성
-    comment = post_mo.COMMENT(
-      post_id=post.id,
-      author_id=context['account']['id'],
-      content=content,
-    )
-    comment.save()
-
-    # 사용자 활동 기록 추가 및 포인트 증가
-    # 사용자 계정 및 파트너 계정만 해당
-    if context['account']['account_type'] in ['user', 'dame', 'partner']:
-      act = user_mo.ACTIVITY(
-        user_id=context['account']['id'],
-        location='/post/attendance',
-        message=f'출석체크 댓글 작성',
-        point_change=point,
-      )
-      act.save()
-
-      # 사용자 계정일 경우, 포인트 증가
-      account = get_user_model().objects.get(username=context['account']['id'])
-      account.user_level_point += point
-      account.user_usable_point += point
-      account.save()
-
-    return JsonResponse({'result': 'success'})
-  '''
-
   # 사용자가 이전에 출석한 날짜 가져오기
   is_attended = False
   attend_days = []
@@ -350,7 +343,7 @@ def attendance(request):
         is_attended = True
 
   return render(request, 'post/attendance.html', {
-    **contexts,
+    **contexts, # 기본 컨텍스트 정보
     'boards': boards, # 게시판 정보
     'comments': comments, # 출석 체크 글
     'post': post, # 출석체크 게시글
@@ -361,20 +354,9 @@ def attendance(request):
 
 # 가입인사 게시판
 def greeting(request):
+  # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
-  account_type = 'guest' # 기본값은 guest
-  if request.user.is_authenticated:
-    account_type = 'user'
-    if 'dame' in contexts['account']['groups']:
-      account_type = 'dame'
-    elif 'partner' in contexts['account']['groups']:
-      account_type = 'partner'
-    elif 'subsupervisor' in contexts['account']['groups']:
-      account_type = 'subsupervisor'
-    elif 'supervisor' in contexts['account']['groups']:
-      account_type = 'supervisor'
-  contexts['account']['account_type'] = account_type
-  boards = daos.get_board_tree(account_type) # 게시판 정보
+  boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보
 
   # 권한 확인
   if not request.user.is_authenticated:
@@ -427,20 +409,9 @@ def greeting(request):
 # 리뷰 게시글은 target_post가 존재.
 # 리뷰 게시글의 순위를 나타내는 weight는 스케줄러에서 관리함.
 def review(request):
+  # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
-  account_type = 'guest' # 기본값은 guest
-  if request.user.is_authenticated:
-    account_type = 'user'
-    if 'dame' in contexts['account']['groups']:
-      account_type = 'dame'
-    elif 'partner' in contexts['account']['groups']:
-      account_type = 'partner'
-    elif 'subsupervisor' in contexts['account']['groups']:
-      account_type = 'subsupervisor'
-    elif 'supervisor' in contexts['account']['groups']:
-      account_type = 'supervisor'
-  contexts['account']['account_type'] = account_type
-  boards = daos.get_board_tree(account_type) # 게시판 정보
+  boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보
 
   # 리뷰 게시판
   b = models.BOARD.objects.filter(board_type='review').first()
@@ -536,160 +507,11 @@ def review(request):
     'monthly_reviews': monthly_best_reviews, # 월간 베스트 리뷰
   })
 
-# 리뷰 게시글 작성
-def write_review(request):
-  contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
-  boards = daos.get_board_tree() # 게시판 정보 가져오기
-
-  # 사용자 계정만 리뷰 등록 가능
-  if not request.user.is_authenticated:
-    return redirect('/?redirect=need_login') # 로그인 필요
-  if 'partner' in contexts['account']['groups'] or 'supervisor' in contexts['account']['groups'] or 'subsupervisor' in contexts['account']['groups']:
-    return redirect('/?redirect=not_allowed') # 파트너, 관리자는 리뷰 작성 불가
-
-  # 리뷰 게시판
-  b = models.BOARD.objects.filter(board_type='review').first()
-  board = {
-    'id': b.id,
-    'name': b.name,
-  }
-
-  # 데이터
-  review_post_id = request.GET.get('post_id')
-
-  # 리뷰 대상 게시글 확인
-  if not review_post_id: # 리뷰 대상 게시글이 없는 경우
-    return redirect('/?redirect=target_post_not_found') # 리뷰 대상 게시글이 없는 경우
-  review_post = daos.get_post_info(review_post_id)
-
-  # 게시글 작성 처리
-  '''
-  if request.method == 'POST':
-    title = request.POST.get('title', '')
-    content = request.POST.get('content', '')
-    images = request.POST.get('images', '')
-    post = post_mo.POST(
-      board_id=board.id,
-      author_id=context['account']['id'],
-      target_post_id=target_post_id,
-      title=title,
-      content=content,
-      images=images,
-    )
-    post.save()
-
-    # 사용자 활동 기록 추가
-    # 사용자 계정만 해당
-    if context['account']['account_type'] in ['user', 'dame']:
-      point = core_mo.SERVER_SETTING.objects.get(id='post_point').value
-      act = user_mo.ACTIVITY(
-        user_id=context['account']['id'],
-        location='/post/post_view?post=' + str(post.id),
-        message=f'{board["name"]} 게시글 작성. ({title})',
-        point_change=f'+{point}',
-      )
-      act.save()
-      # 사용자 계정일 경우, 포인트 증가
-      account = get_user_model().objects.get(username=context['account']['id'])
-      account.user_level_point += point
-      account.user_usable_point += point
-      account.save()
-
-    return JsonResponse({
-      'result': 'success',
-      'post_id': post.id,
-    })
-  '''
-
-  return render(request, 'post/write_review.html', {
-    **contexts,
-    'boards': boards, # 게시판 정보
-    'board': board, # 리뷰 게시판
-    'review_post': review_post, # 리뷰 대상 게시글
-  })
-
-# 리뷰 게시글 수정
-def rewrite_review(request):
-  contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
-  boards = daos.get_board_tree() # 게시판 정보 가져오기
-
-  # 로그인 여부 확인
-  if not request.user.is_authenticated: # 로그인이 되어 있지 않은 경우
-    return redirect('/?redirect_message=need_login') # 로그인 페이지로 리다이렉트
-
-  # 데이터 가져오기
-  post_id = request.GET.get('post_id')
-
-  # 리뷰 게시판
-  b = models.BOARD.objects.filter(board_type='review').first()
-  board = {
-    'id': b.id,
-    'name': b.name,
-  }
-
-  # 리뷰 게시글 확인
-  post = daos.get_post_info(post_id)
-  if not post: # 게시글이 없는 경우
-    return redirect('/?redirect_message=not_found_post')
-  # 게시물 수정 권한 확인(작성자 또는 관리자 또는 게시글 권한이 있는 부관리자가 가능)
-  if (contexts['account']['id'] != post['author']['id']) or ('supervisor' not in contexts['account']['groups']) or not (('post' in contexts['account']['subsupervisor_permissions']) and 'subsupervisor' in contexts['account']['groups']):
-    return redirect('/?redirect_message=not_allowed')
-
-  # 리뷰 대상 게시글 확인
-  review_post = daos.get_post_info(post['review_post']['id'])
-
-  # 게시글 수정 요청 처리
-  '''
-  if request.method == 'POST':
-    title = request.POST.get('title', po.title)
-    content = request.POST.get('content', po.content)
-    images = request.POST.get('images', po.images)
-    po.title = title
-    po.content = content
-    po.images = images
-    po.save()
-
-    # 사용자 활동 기록 추가
-    # 사용자 계정만 해당
-    if any(context['account']['account_type'] in s for s in ['user', 'dame']):
-      act = user_mo.ACTIVITY(
-        user_id=context['account']['id'],
-        location='/post/post_view?post=' + post_id,
-        message=f'[{boards[-1]["name"]}] 게시글 수정. ({title})',
-        point_change='0',
-      )
-      act.save()
-
-    return JsonResponse({
-      'result': 'success',
-      'post_id': po.id,
-    })
-  '''
-
-  return render(request, 'post/rewrite_review.html', {
-    **contexts,
-    'boards': boards, # 게시판 정보
-    'board': board, # 리뷰 게시판
-    'post': post, # 리뷰 게시글
-    'review_post': review_post, # 리뷰 대상 게시글
-  })
-
 # 리뷰 게시글 상세
 def review_view(request):
+  # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
-  account_type = 'guest' # 기본값은 guest
-  if request.user.is_authenticated:
-    account_type = 'user'
-    if 'dame' in contexts['account']['groups']:
-      account_type = 'dame'
-    elif 'partner' in contexts['account']['groups']:
-      account_type = 'partner'
-    elif 'subsupervisor' in contexts['account']['groups']:
-      account_type = 'subsupervisor'
-    elif 'supervisor' in contexts['account']['groups']:
-      account_type = 'supervisor'
-  contexts['account']['account_type'] = account_type
-  boards = daos.get_board_tree(account_type) # 게시판 정보
+  boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보
 
   # 데이터 가져오기
   post_id = request.GET.get('post_id')
@@ -726,20 +548,9 @@ def review_view(request):
 
 # 여행 게시판
 def travel(request):
+  # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
-  account_type = 'guest' # 기본값은 guest
-  if request.user.is_authenticated:
-    account_type = 'user'
-    if 'dame' in contexts['account']['groups']:
-      account_type = 'dame'
-    elif 'partner' in contexts['account']['groups']:
-      account_type = 'partner'
-    elif 'subsupervisor' in contexts['account']['groups']:
-      account_type = 'subsupervisor'
-    elif 'supervisor' in contexts['account']['groups']:
-      account_type = 'supervisor'
-  contexts['account']['account_type'] = account_type
-  boards = daos.get_board_tree(account_type) # 게시판 정보
+  boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보
 
   # 데이터 가져오기
   board_ids = request.GET.get('board_ids')
@@ -795,6 +606,7 @@ def travel(request):
 
 # 여행 게시글 상세보기
 def travel_view(request):
+  # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
   boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보
 

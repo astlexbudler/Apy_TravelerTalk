@@ -85,7 +85,9 @@ def get_default_contexts(request):
   account_type = 'guest' # 기본값은 guest
   if request.user.is_authenticated:
     account_type = 'user'
-    if 'supervisor' in account['groups']:
+    if 'admin' in account['groups']:
+      account_type = 'admin'
+    elif 'supervisor' in account['groups']:
       account_type = 'supervisor'
     elif 'subsupervisor' in account['groups']:
       account_type = 'subsupervisor'
@@ -97,7 +99,9 @@ def get_default_contexts(request):
 
   # 서버 설정 확인
   server_settings = {
+    'service_name': models.SERVER_SETTING.objects.get(name='service_name').value,
     'logo': models.SERVER_SETTING.objects.get(name='site_logo').value,
+    'header_image': models.SERVER_SETTING.objects.get(name='site_header').value,
     'company_info': models.SERVER_SETTING.objects.get(name='company_info').value,
     'social_network': models.SERVER_SETTING.objects.get(name='social_network').value,
   }
@@ -373,6 +377,8 @@ def get_user_profile_by_id(user_id):
 
   # 계정 타입 설정
   account_type = 'user'
+  if 'admin' in user_info['groups']:
+    account_type = 'admin'
   if 'supervisor' in user_info['groups']:
     account_type = 'supervisor'
   elif 'subsupervisor' in user_info['groups']:

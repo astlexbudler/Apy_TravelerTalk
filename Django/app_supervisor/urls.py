@@ -7,7 +7,6 @@ urlpatterns = [
   # views as v
   # 관리자 메인 페이지
   # 계정 관리, 게시글 관리, 쿠폰 관리, 메세지 관리, 배너 관리, 설정 메뉴 제공
-  # TODO: 현재 해당 페이지에 아무것도 없음. 추후 추가 예정. 디자인 담당자 확인 필요
   path('', v.index, name='index'),
 
   # 계정 관리 페이지
@@ -24,7 +23,7 @@ urlpatterns = [
   path('post', v.post, name='post'),
 
   # 쿠폰 관리 페이지
-  # 쿠폰 발행 및 관리. 쿠폰 사용 내역 확인 기능 제공\
+  # 쿠폰 발행 및 관리. 쿠폰 사용 내역 확인 기능 제공
   # 쿠폰 생성 및 쿠폰 수정 가능
   # 모든 파트너 및 관리자의 쿠폰 일괄 조회
   path('coupon', v.coupon, name='coupon'),

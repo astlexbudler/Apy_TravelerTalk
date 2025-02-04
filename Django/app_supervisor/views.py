@@ -6,67 +6,58 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, logout, get_user_model
 from django.db.models import Q
+from django.contrib.auth.models import Group
 
 from app_core import models
 from app_core import daos
 
 # 관리자 메인 페이지
 def index(request):
-  contexts = daos.get_default_contexts(request)
+  # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
+  contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
 
-  # 관리자 여부 확인, 관리자가 아닌 경우, 리다이렉트 후 권한 없음 메세지 표시
-  if not request.user.is_authenticated:
+  # 관리자 여부 확인, 관리자가 아닌 경우, 리다이렉트 후 권한 없은 메세지 표시
+  if contexts['account']['account_type'] == 'guest':
+    return redirect('/?redirect_message=need_login')
+  elif contexts['account']['account_type'] not in ['supervisor', 'subsupervisor']:
     return redirect('/?redirect_message=permission_denied')
-  if 'supervisor' not in contexts['account']['groups']:
-    return redirect('/?redirect_message=permission_denied')
-  return render(request, 'supervisor/index.html', contexts)
+
+  return render(request, 'supervisor/index.html', {
+    **contexts,
+  })
 
 # 계정 관리 페이지
 # 계정별 마지막 로그인 시간 및 회원가입일, 관리자 노트 등 포함
 # 관리자 생성 및 사용자 정보 수정 기능 포함(삭제도 사용자 정보 수정으로 가능)
 def account(request):
-  contexts = daos.get_default_contexts(request)
+  # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
+  contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
+
   # 관리자 여부 확인, 관리자가 아닌 경우, 리다이렉트 후 권한 없은 메세지 표시
-  if not request.user.is_authenticated:
-    return redirect('/?redirect_message=permission_denied')
-  if 'supervisor' not in contexts['account']['groups'] and 'subsupervisor' not in contexts['account']['groups']:
+  if contexts['account']['account_type'] == 'guest':
+    return redirect('/?redirect_message=need_login')
+  elif not (contexts['account']['account_type'] == 'supervisor' or (contexts['account']['account_type'] == 'subsupervisor' and 'account' in contexts and contexts['account']['subsupervisor_permissions'])):
     return redirect('/?redirect_message=permission_denied')
 
-  # 관리자 신규 생성 처리
-  # method='POST', action='create_supervisor'일 경우, 관리자 계정 생성 요청으로 처리
-  '''
-  if request.method == 'POST' and request.POST.get('action') == 'create_supervisor':
+  # 부관리자 신규 생성 처리
+  if request.method == 'POST':
     id = request.POST['id']
     password = request.POST['password']
-    permissions = request.POST.get('permissions', '')
-    account = get_user_model().objects.create_user(
+    nickname = '관리자' + ''.join(random.choices(string.ascii_letters + string.digits, k=6))
+
+    subsupervisor_group = Group.objects.get(name='subsupervisor')
+
+    account = models.ACCOUNT.objects.create_user(
       username = id,
-      first_name = '관리자',
-      account_type = 'sub_supervisor',
-      supervisor_permissions = permissions,
+      first_name = nickname,
     )
     account.set_password(password)
     account.save()
-    return JsonResponse({'result': 'success'})
-
-  # 계정 정보 수정 요청 처리(삭제도 포함) 삭제는 status를 deleted로 변경
-  # method='POST', action='update_account'일 경우, 계정 정보 수정 요청으로 처리
-  # 비밀번호, 닉네임, 계정 상태, 쿠폰 포인트, 레벨업 포인트, 관리자 권한 수정 가능
-  if request.method == 'POST' and request.POST.get('action') == 'update_account':
-    id = request.POST['id']
-    acnt = get_user_model().objects.get(username=id)
-    acnt.status = request.POST.get('status', acnt.status)
-    new_password = request.POST.get('password', '')
-    if new_password != '':
-      acnt.set_password(new_password)
-    acnt.first_name = request.POST.get('nickname', acnt.first_name)
-    acnt.user_level_point = request.POST.get('levelPoint', acnt.user_level_point)
-    acnt.user_usable_point = request.POST.get('usablePoint', acnt.user_usable_point)
-    acnt.super_permissions = request.POST.get('permissions', acnt.super_permissions)
-    acnt.save()
+    account = models.ACCOUNT.objects.get(username=id)
+    account.groups.add(subsupervisor_group)
+    account.save()
 
     return JsonResponse({'result': 'success'})
-  '''
 
   # data
   tab = request.GET.get('tab', 'user') # user, dame, partner, supervisor
@@ -125,18 +116,18 @@ def account(request):
   # 사용자 검색
   if tab == 'user': # 사용자 탭일 경우, user와 dame을 같이 검색
     sats = all_accounts.exclude(
-      groups__name__in=['partner', 'supervisor', 'subsupervisor']
+      groups__name__in=['partner', 'supervisor', 'subsupervisor', 'admin']
     ).select_related('level').filter(
       Q(username__contains=search_account_id) | Q(first_name__contains=search_account_nickname) | Q(status__contains=search_account_status)
     )
   elif tab == 'supervisor': # 관리자 탭일 경우, 관리자만 검색
     sats = all_accounts.filter(
-      Q(groups__name='supervisor') | Q(groups__name='subsupervisor'),
+      Q(groups__name='supervisor') | Q(groups__name='subsupervisor') | Q(groups__name='admin'),
       Q(username__contains=search_account_id) | Q(first_name__contains=search_account_nickname) | Q(status__contains=search_account_status)
     )
   elif tab == 'partner': # 파트너 탭일 경우, 파트너만 검색
     sats = all_accounts.filter(
-      Q(groups__name='partner') | Q(status__contains='pending_partner'),
+      Q(groups__name='partner'),
       Q(username__contains=search_account_id) | Q(first_name__contains=search_account_nickname) | Q(status__contains=search_account_status)
     )
 
@@ -169,54 +160,154 @@ def account(request):
       } if account.level else None,
     })
 
+  # 그룹 정보
+  all_groups = Group.objects.all()
+  groups = [{
+    'name': group.name
+  } for group in all_groups]
+
   return render(request, 'supervisor/account.html', {
     **contexts,
     'accounts': search_accounts, # 검색된 계정 정보
+    'groups': groups, # 그룹 정보
     'last_page': last_page, # 페이지 처리를 위해 필요한 정보
     'status': status, # 사용자 종류(탭) 별 통계 데이터(관리자는 없음)
   })
 
 # 게시글 관리 페이지
 def post(request):
-  contexts = daos.get_default_contexts(request)
+  # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
+  contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
 
   # 관리자 여부 확인, 관리자가 아닌 경우, 리다이렉트 후 권한 없은 메세지 표시
-  if not request.user.is_authenticated:
+  if contexts['account']['account_type'] == 'guest':
+    return redirect('/?redirect_message=need_login')
+  elif not (contexts['account']['account_type'] == 'supervisor' or (contexts['account']['account_type'] == 'subsupervisor' and 'post' in contexts and contexts['account']['subsupervisor_permissions'])):
     return redirect('/?redirect_message=permission_denied')
-  if 'supervisor' not in contexts['account']['groups'] and 'subsupervisor' not in contexts['account']['groups']:
-    return redirect('/?redirect_message=permission_denied')
 
-  # post_id 게시글 강제 삭제
-  '''
-  if request.method == 'DELETE':
-    post_id = request.GET.get('post_id', '')
+  # 여행지 정보 수정 요청 처리
+  if request.method == 'POST' and request.GET.get('modify_travel_info'):
+    post_id = request.POST.get('post_id', '')
+    post = models.POST.objects.select_related('place_info').get(id=post_id)
 
-    # 댓글 삭제
-    post_mo.COMMENT.objects.filter(post_id=post_id).delete()
+    place_status = request.POST.get('place_status', post.place_info.status)
+    post_search_weight = request.POST.get('post_search_weight', post.search_weight)
+    ad_start_at = request.POST.get('ad_start_at', post.place_info.ad_start_at)
+    ad_end_at = request.POST.get('ad_end_at', post.place_info.ad_end_at)
+    place_info_note = request.POST.get('place_info_note', post.place_info.note)
 
-    # 게시글 확인
-    po = post_mo.POST.objects.get(id=post_id)
-
-    # 게시글 작성자 포인트 회수
-    author = get_user_model().objects.get(username=po.author_id)
-    author.user_usable_point -= int(core_mo.SERVER_SETTING.objects.get(id='post_point').value)
-    if author.user_usable_point < 0:
-      author.user_usable_point = 0
-    author.save()
-
-    # 게시글 작성자에게 활동 기록 생성
-    act = user_mo.ACTIVITY(
-      message = f'[관리자] {po.title} 게시글이 관리자에 의해 삭제되었습니다.',
-      user_id = po.author_id,
-      point_change = f'-{core_mo.SERVER_SETTING.objects.get(id="post_point").value}',
-    )
-    act.save()
-
-    # 게시글 삭제
-    po.delete()
+    # 여행지 정보 수정
+    post.place_info.status = place_status
+    if ad_start_at:
+      post.place_info.ad_start_at = ad_start_at
+    if ad_end_at:
+      post.place_info.ad_end_at = ad_end_at
+    post.place_info.note = place_info_note
+    post.place_info.save()
+    post.search_weight = post_search_weight
+    post.save()
 
     return JsonResponse({'result': 'success'})
-  '''
+
+  # 새 게시판 생성 요청 처리
+  if request.method == 'POST':
+    board_id = request.POST.get('board_id', '')
+    board_name = request.POST.get('board_name', '')
+    board_type = request.POST.get('board_type', '')
+    parent_board_id = request.POST.get('parent_board_id', '')
+    display_weight = request.POST.get('display_weight', '')
+    level_cut = int(request.POST.get('level_cut', '0'))
+    display_groups = request.POST.getlist('display_groups', [])
+    enter_groups = request.POST.getlist('enter_groups', [])
+    write_groups = request.POST.getlist('write_groups', [])
+    comment_groups = request.POST.getlist('comment_groups', [])
+
+    # 부모 게시판 확인
+    parent_board = models.BOARD.objects.get(id=parent_board_id) if parent_board_id else None
+
+    if board_id:
+      # 수정
+      board = models.BOARD.objects.get(id=board_id)
+      board.name = board_name
+      board.board_type = board_type
+      board.parent_board = parent_board
+      board.display_weight = display_weight
+      board.level_cut = level_cut
+      board.display_groups.clear()
+      board.enter_groups.clear()
+      board.write_groups.clear()
+      board.comment_groups.clear()
+      board.save()
+    else:
+      # 생성
+      board = models.BOARD.objects.create(
+        name=board_name,
+        board_type=board_type,
+        parent_board=parent_board,
+        display_weight=display_weight,
+        level_cut=level_cut,
+      )
+
+    # 그룹 추가
+    user_group = Group.objects.get(name='user')
+    dame_group = Group.objects.get(name='dame')
+    partner_group = Group.objects.get(name='partner')
+    subsupervisor_group = Group.objects.get(name='subsupervisor')
+    supervisor_group = Group.objects.get(name='supervisor')
+    for group in display_groups:
+      if group == 'user':
+        board.display_groups.add(user_group)
+      elif group == 'dame':
+        board.display_groups.add(dame_group)
+      elif group == 'partner':
+        board.display_groups.add(partner_group)
+      elif group == 'subsupervisor':
+        board.display_groups.add(subsupervisor_group)
+      elif group == 'supervisor':
+        board.display_groups.add(supervisor_group)
+    for group in enter_groups:
+      if group == 'user':
+        board.enter_groups.add(user_group)
+      elif group == 'dame':
+        board.enter_groups.add(dame_group)
+      elif group == 'partner':
+        board.enter_groups.add(partner_group)
+      elif group == 'subsupervisor':
+        board.enter_groups.add(subsupervisor_group)
+      elif group == 'supervisor':
+        board.enter_groups.add(supervisor_group)
+    for group in write_groups:
+      if group == 'user':
+        board.write_groups.add(user_group)
+      elif group == 'dame':
+        board.write_groups.add(dame_group)
+      elif group == 'partner':
+        board.write_groups.add(partner_group)
+      elif group == 'subsupervisor':
+        board.write_groups.add(subsupervisor_group)
+      elif group == 'supervisor':
+        board.write_groups.add(supervisor_group)
+    for group in comment_groups:
+      if group == 'user':
+        board.comment_groups.add(user_group)
+      elif group == 'dame':
+        board.comment_groups.add(dame_group)
+      elif group == 'partner':
+        board.comment_groups.add(partner_group)
+      elif group == 'subsupervisor':
+        board.comment_groups.add(subsupervisor_group)
+      elif group == 'supervisor':
+        board.comment_groups.add(supervisor_group)
+    board.save()
+
+    return JsonResponse({'result': 'success'})
+
+  # 게시판 삭제 요청 처리
+  if request.method == 'DELETE':
+    board_id = request.GET.get('board_id', '')
+    board = models.BOARD.objects.get(id=board_id)
+    board.delete()
+    return JsonResponse({'result': 'success'})
 
   # data
   page = int(request.GET.get('page', '1'))
@@ -234,6 +325,8 @@ def post(request):
       'board_type': board.board_type,
       'total_views': int(math.fsum([post.view_count for post in models.POST.objects.filter(Q(boards__id__in=str(board.id)))])),
       'total_posts': models.POST.objects.filter(Q(boards__id__in=str(board.id))).count(),
+      'level_cut': board.level_cut,
+      'display_weight': board.display_weight,
       'display': [g.name for g in board.display_groups.all()],
       'enter': [g.name for g in board.enter_groups.all()],
       'write': [g.name for g in board.write_groups.all()],
@@ -249,6 +342,8 @@ def post(request):
           'name': board.name,
           'board_type': board.board_type,
           'total_views': int(math.fsum([post.view_count for post in models.POST.objects.filter(Q(boards__id__in=str(board.id)))])),
+          'level_cut': board.level_cut,
+          'display_weight': board.display_weight,
           'total_posts': models.POST.objects.filter(Q(boards__id__in=str(board.id))).count(),
           'display': [g.name for g in board.display_groups.all()],
           'enter': [g.name for g in board.enter_groups.all()],
@@ -269,6 +364,8 @@ def post(request):
                 'board_type': board.board_type,
                 'total_views': int(math.fsum([post.view_count for post in models.POST.objects.filter(Q(boards__id__in=str(board.id)))])),
                 'total_posts': models.POST.objects.filter(Q(boards__id__in=str(board.id))).count(),
+                'level_cut': board.level_cut,
+                'display_weight': board.display_weight,
                 'display': [g.name for g in board.display_groups.all()],
                 'enter': [g.name for g in board.enter_groups.all()],
                 'write': [g.name for g in board.write_groups.all()],
@@ -287,6 +384,8 @@ def post(request):
                     'board_type': board.board_type,
                     'total_views': int(math.fsum([post.view_count for post in models.POST.objects.filter(Q(boards__id__in=str(board.id)))])),
                     'total_posts': models.POST.objects.filter(Q(boards__id__in=str(board.id))).count(),
+                    'level_cut': board.level_cut,
+                    'display_weight': board.display_weight,
                     'display': [g.name for g in board.display_groups.all],
                     'enter': [g.name for g in board.enter_groups.all()],
                     'write': [g.name for g in board.write_groups.all()],
@@ -299,22 +398,28 @@ def post(request):
     boards.append(board_dict[child])
 
   # 게시글 검색
-  sps = all_post.filter(
+  sps = all_post.exclude(
+    Q(title__contains='greeting') | Q(title__contains='attendance')
+  ).filter(
     Q(title__contains=search_post_title),
     Q(boards__id__contains=search_board_id),
   )
   last_page = sps.count() // 20 + 1 # 20개씩 표시
   search_posts = []
   for post in sps[(page - 1) * 20:page * 20]:
-
     search_posts.append({
       'id': post.id,
       'title': post.title,
-      'image_paths': post.image_paths, # 여행지 또는 리뷰, 이벤트 게시글의 대표 이미지 경로
+      'image': '/media/' + str(post.image) if post.image else '/media/default.png',
       'view_count': post.view_count,
       'like_count': post.like_count,
       'created_at': post.created_at,
+      'search_weight': post.search_weight,
+      'board': {
+        'board_type': post.boards.all().last().board_type,
+      },
       'author': {
+        'id': post.author.username, # 작성자 아이디
         'nickname': post.author.first_name, # 작성자 닉네임
         'partner_name': post.author.last_name, # 작성자 파트너 이름
       },
@@ -323,7 +428,10 @@ def post(request):
         'address': post.place_info.address,
         'location_info': post.place_info.location_info,
         'open_info': post.place_info.open_info,
+        'ad_start_at': post.place_info.ad_start_at,
+        'ad_end_at': post.place_info.ad_end_at,
         'status': post.place_info.status,
+        'note': post.place_info.note,
       } if post.place_info else None,
       'review_post': { # 리뷰 게시글인 경우, 리뷰 대상 게시글 정보
         'id': post.review_post.id,
@@ -445,12 +553,13 @@ def ad_post(request):
 # 쿠폰 관리 페이지
 # 별도의 쿠폰 수정 삭제 기능은 없음
 def coupon(request):
-  contexts = daos.get_default_contexts(request)
+  # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
+  contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
 
   # 관리자 여부 확인, 관리자가 아닌 경우, 리다이렉트 후 권한 없은 메세지 표시
-  if not request.user.is_authenticated:
-    return redirect('/?redirect_message=permission_denied')
-  if 'supervisor' not in contexts['account']['groups'] and 'subsupervisor' not in contexts['account']['groups']:
+  if contexts['account']['account_type'] == 'guest':
+    return redirect('/?redirect_message=need_login')
+  elif not (contexts['account']['account_type'] == 'supervisor' or (contexts['account']['account_type'] == 'subsupervisor' and 'coupon' in contexts and contexts['account']['subsupervisor_permissions'])):
     return redirect('/?redirect_message=permission_denied')
 
   # data
@@ -503,12 +612,13 @@ def coupon(request):
 
 # 쪽지 관리 페이지
 def message(request):
-  contexts = daos.get_default_contexts(request)
+  # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
+  contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
 
   # 관리자 여부 확인, 관리자가 아닌 경우, 리다이렉트 후 권한 없은 메세지 표시
-  if not request.user.is_authenticated:
-    return redirect('/?redirect_message=permission_denied')
-  if 'supervisor' not in contexts['account']['groups'] and 'subsupervisor' not in contexts['account']['groups']:
+  if contexts['account']['account_type'] == 'guest':
+    return redirect('/?redirect_message=need_login')
+  elif not (contexts['account']['account_type'] == 'supervisor' or (contexts['account']['account_type'] == 'subsupervisor' and 'message' in contexts and contexts['account']['subsupervisor_permissions'])):
     return redirect('/?redirect_message=permission_denied')
 
   # data
@@ -556,7 +666,7 @@ def message(request):
       'last_page': last_page,
     })
 
-  elif tab == 'outbox':
+  elif tab == 'outbox': # 보낸 쪽지함
     msgs = models.MESSAGE.objects.select_related('include_coupon').filter(
       sender_account='supervisor',
       title__contains=search_message_title,
@@ -594,93 +704,42 @@ def message(request):
       'last_page': last_page,
     })
 
-'''
-def write_message(request):
-  context = get_default_context(request)
-  if context['account'] == None:
-    return redirect('/')
-
-  if request.method == 'POST':
-    title = request.POST.get('title', '')
-    receiver_id = request.POST.get('receiver_id', '')
-    content = request.POST.get('content', '')
-    message_mo.MESSAGE(
-      title=title,
-      sender_id='supervisor',
-      receiver_id=receiver_id,
-      content=content,
-    ).save()
-    return JsonResponse({'result': 'success'})
-  return render(request, 'supervisor/write_message.html', context)
-
-def read_message(request, message_id):
-  context = get_default_context(request)
-  if context['account'] == None:
-    return redirect('/')
-
-  message = message_mo.MESSAGE.objects.get(id=message_id)
-  if message.receiver_id != 'supervisor':
-    return redirect('/supervisor/message')
-  if message.read_dt == '':
-    message.read_dt = message.send_dt
-    message.save()
-  return render(request, 'supervisor/read_message.html', {
-    **context,
-    'message': {
-      'id': message.id,
-      'title': message.title,
-      'sender': {
-        'id': message.sender_id,
-        'nickname': get_user_model().objects.get(username=message.sender_id).first_name,
-      },
-      'receiver': {
-        'id': message.receiver_id,
-        'nickname': get_user_model().objects.get(username=message.receiver_id).first_name,
-      },
-      'content': message.content,
-      'send_dt': message.send_dt,
-      'read_dt': message.read_dt,
-    },
-  })
-'''
-
 # 배너 관리 페이지
 def banner(request):
-  contexts = daos.get_default_contexts(request)
+  # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
+  contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
 
   # 관리자 여부 확인, 관리자가 아닌 경우, 리다이렉트 후 권한 없은 메세지 표시
-  if not request.user.is_authenticated:
-    return redirect('/?redirect_message=permission_denied')
-  if 'supervisor' not in contexts['account']['groups'] and 'subsupervisor' not in contexts['account']['groups']:
+  if contexts['account']['account_type'] == 'guest':
+    return redirect('/?redirect_message=need_login')
+  elif not (contexts['account']['account_type'] == 'supervisor' or (contexts['account']['account_type'] == 'subsupervisor' and 'post' in contexts and contexts['account']['subsupervisor_permissions'])):
     return redirect('/?redirect_message=permission_denied')
 
   # 배너 생성 및 수정 요청 처리
   # 아이디가 있으면 수정, 없으면 생성
-  '''
   if request.method == 'POST':
     id = request.POST.get('id')
     if id:
-      banner = supervisor_mo.BANNER.objects.get(id=id)
+      banner = models.BANNER.objects.get(id=id)
       banner.location = request.POST.get('location', banner.location)
-      banner.display_order = request.POST.get('display_order', banner.display_order)
+      banner.display_weight = request.POST.get('display_weight', banner.display_weight)
       banner.image = request.POST.get('image', banner.image)
       banner.link = request.POST.get('link', banner.link)
       banner.save()
     else:
-      supervisor_mo.BANNER(
+      models.BANNER.objects.create(
         location = request.POST.get('location', ''),
-        display_order = request.POST.get('display_order', ''),
+        display_weight = request.POST.get('display_weight', ''),
         image = request.POST.get('image', ''),
         link = request.POST.get('link', ''),
-      ).save()
+      )
     return JsonResponse({'result': 'success'})
 
   # 배너 삭제
   if request.method == 'DELETE':
-    banner_id = request.GET.get('banner_id', '')
-    supervisor_mo.BANNER.objects.get(id=banner_id).delete()
+    banner_id = request.GET.get('id', '')
+    models.BANNER.objects.get(id=banner_id).delete()
     return JsonResponse({'result': 'success'})
-  '''
 
   # search
   banners = {
@@ -688,13 +747,22 @@ def banner(request):
     'side': [], # 사이드 및 하단 배너
   }
   for b in models.BANNER.objects.all().order_by('display_weight'):
-    banners['top'].append({
-      'id': b.id,
-      'location': b.location,
-      'image': b.image,
-      'link': b.link,
-      'display_weight': b.display_weight,
-    })
+    if b.location == 'side':
+      banners['side'].append({
+        'id': b.id,
+        'location': b.location,
+        'image': b.image,
+        'link': b.link,
+        'display_weight': b.display_weight,
+      })
+    elif b.location == 'top':
+      banners['top'].append({
+        'id': b.id,
+        'location': b.location,
+        'image': b.image,
+        'link': b.link,
+        'display_weight': b.display_weight,
+      })
 
   return render(request, 'supervisor/banner.html', {
     **contexts,
@@ -703,29 +771,32 @@ def banner(request):
 
 # 레벨 관리 페이지
 def level(request):
-  contexts = daos.get_default_contexts(request)
+  # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
+  contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
 
   # 관리자 여부 확인, 관리자가 아닌 경우, 리다이렉트 후 권한 없은 메세지 표시
-  if not request.user.is_authenticated:
-    return redirect('/?redirect_message=permission_denied')
-  if 'supervisor' not in contexts['account']['groups'] and 'subsupervisor' not in contexts['account']['groups']:
+  if contexts['account']['account_type'] == 'guest':
+    return redirect('/?redirect_message=need_login')
+  elif not (contexts['account']['account_type'] == 'supervisor' or (contexts['account']['account_type'] == 'subsupervisor' and 'level' in contexts and contexts['account']['subsupervisor_permissions'])):
     return redirect('/?redirect_message=permission_denied')
 
-  '''
-  # 레벨 생성 및 수정 요청 철;
+  # 레벨 생성 및 수정 요청 처리
   if request.method == 'POST':
     level = request.POST.get('level', '')
+    image = request.FILES.get('image', '')
     text_color = request.POST.get('text_color', '')
     background_color = request.POST.get('background_color', '')
-    name = request.POST.get('name', '')
-    core_mo.LEVEL_RULE( # 그냥 덮어쓰기로 처리
+    text = request.POST.get('text', '')
+    required_point = request.POST.get('required_point', '')
+    models.LEVEL_RULE( # 그냥 덮어쓰기로 처리
       level=level,
+      image=image,
       text_color=text_color,
       background_color=background_color,
-      name=name,
+      text=text,
+      required_point=required_point
     ).save()
     return JsonResponse({'result': 'success'})
-  '''
 
   lvs = models.LEVEL_RULE.objects.all().order_by('level')
   levels = [{
@@ -744,33 +815,145 @@ def level(request):
 
 # 시스템 설정 페이지
 def setting(request):
-  contexts = daos.get_default_contexts(request)
+  # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
+  contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
 
   # 관리자 여부 확인, 관리자가 아닌 경우, 리다이렉트 후 권한 없은 메세지 표시
-  if not request.user.is_authenticated:
+  if contexts['account']['account_type'] == 'guest':
+    return redirect('/?redirect_message=need_login')
+  elif not (contexts['account']['account_type'] == 'supervisor' or (contexts['account']['account_type'] == 'subsupervisor' and 'setting' in contexts and contexts['account']['subsupervisor_permissions'])):
     return redirect('/?redirect_message=permission_denied')
-  if 'supervisor' not in contexts['account']['groups'] and 'subsupervisor' not in contexts['account']['groups']:
-    return redirect('/?redirect_message=permission_denied')
+  
+  print(request.method)
 
-  '''
   # 설정 정보 변경 요청 처리
   if request.method == 'POST':
-    id = request.POST.get('id', '')
-    value = request.POST.get('value', '')
-    core_mo.SERVER_SETTING( # 그냥 덮어쓰기로 처리
-      id=id,
-      value=value,
-    ).save()
-    return JsonResponse({'result': 'success'})
-  '''
+    new_service_name = request.POST.get('service_name', models.SERVER_SETTING.objects.get(name='service_name').value)
+    new_site_logo = request.POST.get('site_logo', models.SERVER_SETTING.objects.get(name='site_logo').value)
+    new_site_header = request.POST.get('site_header', models.SERVER_SETTING.objects.get(name='site_header').value)
+    new_company_info = request.POST.get('company_info', models.SERVER_SETTING.objects.get(name='company_info').value)
+    new_social_network = request.POST.get('social_network', models.SERVER_SETTING.objects.get(name='social_network').value)
+    new_terms = request.POST.get('terms', models.SERVER_SETTING.objects.get(name='terms').value)
+    new_register_point = request.POST.get('register_point', models.SERVER_SETTING.objects.get(name='register_point').value)
+    new_attend_point = request.POST.get('attend_point', models.SERVER_SETTING.objects.get(name='attend_point').value)
+    new_post_point = request.POST.get('post_point', models.SERVER_SETTING.objects.get(name='post_point').value)
+    new_review_point = request.POST.get('review_point', models.SERVER_SETTING.objects.get(name='review_point').value)
+    new_comment_point = request.POST.get('comment_point', models.SERVER_SETTING.objects.get(name='comment_point').value)
 
-  sts = models.SERVER_SETTING.objects.all()
-  settings = [{
-    'name': st.name,
-    'value': st.value,
-  } for st in sts]
+    # 설정 정보 변경
+    service_name = models.SERVER_SETTING.objects.get(name='service_name')
+    service_name.value = new_service_name
+    service_name.save()
+    site_logo = models.SERVER_SETTING.objects.get(name='site_logo')
+    site_logo.value = new_site_logo
+    site_logo.save()
+    site_header = models.SERVER_SETTING.objects.get(name='site_header')
+    site_header.value = new_site_header
+    site_header.save()
+    company_info = models.SERVER_SETTING.objects.get(name='company_info')
+    company_info.value = new_company_info
+    company_info.save()
+    social_network = models.SERVER_SETTING.objects.get(name='social_network')
+    social_network.value = new_social_network
+    social_network.save()
+    terms = models.SERVER_SETTING.objects.get(name='terms')
+    terms.value = new_terms
+    terms.save()
+    register_point = models.SERVER_SETTING.objects.get(name='register_point')
+    register_point.value = new_register_point
+    register_point.save()
+    attend_point = models.SERVER_SETTING.objects.get(name='attend_point')
+    attend_point.value = new_attend_point
+    attend_point.save()
+    post_point = models.SERVER_SETTING.objects.get(name='post_point')
+    post_point.value = new_post_point
+    post_point.save()
+    review_point = models.SERVER_SETTING.objects.get(name='review_point')
+    review_point.value = new_review_point
+    review_point.save()
+    comment_point = models.SERVER_SETTING.objects.get(name='comment_point')
+    comment_point.value = new_comment_point
+    comment_point.save()
+
+  # service_name
+  service_name = {
+    'name': 'service_name',
+    'value': models.SERVER_SETTING.objects.get(name='service_name').value,
+  }
+
+  # site_logo
+  site_logo = {
+    'name': 'site_logo',
+    'value': models.SERVER_SETTING.objects.get(name='site_logo').value,
+  }
+
+  # site_header
+  site_header = {
+    'name': 'site_header',
+    'value': models.SERVER_SETTING.objects.get(name='site_header').value,
+  }
+
+  # company_info
+  company_info = {
+    'name': 'company_info',
+    'value': models.SERVER_SETTING.objects.get(name='company_info').value,
+  }
+
+  # social_network
+  social_network = {
+    'name': 'social_network',
+    'value': models.SERVER_SETTING.objects.get(name='social_network').value,
+  }
+
+  # terms
+  terms = {
+    'name': 'terms',
+    'value': models.SERVER_SETTING.objects.get(name='terms').value,
+  }
+
+  # register_point
+  register_point = {
+    'name': 'register_point',
+    'value': models.SERVER_SETTING.objects.get(name='register_point').value,
+  }
+
+  # attend_point
+  attend_point = {
+    'name': 'attend_point',
+    'value': models.SERVER_SETTING.objects.get(name='attend_point').value,
+  }
+
+  # post_point
+  post_point = {
+    'name': 'post_point',
+    'value': models.SERVER_SETTING.objects.get(name='post_point').value,
+  }
+
+  # review_point
+  review_point = {
+    'name': 'review_point',
+    'value': models.SERVER_SETTING.objects.get(name='review_point').value,
+  }
+
+  # comment_point
+  comment_point = {
+    'name': 'comment_point',
+    'value': models.SERVER_SETTING.objects.get(name='comment_point').value,
+  }
 
   return render(request, 'supervisor/setting.html', {
     **contexts,
-    'settings': settings,
+    'settings': {
+      'service_name': service_name,
+      'site_logo': site_logo,
+      'site_header': site_header,
+      'company_info': company_info,
+      'social_network': social_network,
+      'terms': terms,
+      'register_point': register_point,
+      'attend_point': attend_point,
+      'post_point': post_point,
+      'review_point': review_point,
+      'comment_point': comment_point,
+    },
   })

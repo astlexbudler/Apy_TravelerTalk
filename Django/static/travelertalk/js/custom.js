@@ -172,11 +172,17 @@ logout = async () => {
 // 검색바 검색 버튼 클릭 시
 searchPost = async () => {
   // 현재 게시판 정보 확인
-  var board_ids = '{{ request.GET.board_ids }}';
   var mobileSearchKeyword = document.getElementById('mobileSearchKeyword').value; // 검색어 가져오기 1
   var pcSearchKeyword = document.getElementById('pcSearchKeyword').value; // 검색어 가져오기 2 (모바일 검색바)
-  location.href = `/post?board_ids=${board_ids}&search=${mobileSearchKeyword + pcSearchKeyword}`;
-  return;
+  location.href = `/?search=${mobileSearchKeyword + pcSearchKeyword}`;
+}
+
+// 게시판 내 검색바 검색 버튼 클릭 시
+searchBoard = async () => {
+  // 현재 게시판 정보 확인
+  var board_ids = '{{request.GET.board_ids}}';
+  var searchInputValue = document.getElementById('searchInput').value; // 검색어 가져오기 1
+  location.href = `/post?search=${searchInputValue}&board_ids=${board_ids}`;
 }
 
 // 댓글 삭제 함수

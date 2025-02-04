@@ -56,7 +56,7 @@ def signup(request):
 
     # 파트너 또는 여성 회원일 경우
     if account_type == 'partner' or account_type == 'dame':
-      status = 'pending_' + account_type
+      status = 'pending'
       # 승인 대기는 관리자가 확인 후 활성화 가능.
       # 승인 대기 상태에서는 일부 기능 제한
       # 글 작성, 댓글 작성, 출석 불가
@@ -85,7 +85,12 @@ def signup(request):
     account.set_password(password) # 비밀번호 설정
     account.save()
     account.level = models.LEVEL_RULE.objects.get(level=1) # 레벨 설정
-    account.groups.add(Group.objects.get(name='user'))
+    if account_type == 'partner':
+      account.groups.add(Group.objects.get(name='partner'))
+    elif account_type == 'dame':
+      account.groups.add(Group.objects.get(name='dame'))
+    elif account_type == 'user':
+      account.groups.add(Group.objects.get(name='user'))
     account.save()
 
     # account_type이 partner인 경우, 여행지 게시글 프리셋 생성

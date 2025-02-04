@@ -31,10 +31,7 @@
           레벨
         </th>
         <th>
-          레벨 텍스트 색상
-        </th>
-        <th>
-          레벨 배경 색상
+          이미지
         </th>
         <th>
           레벨 텍스트
@@ -54,17 +51,22 @@
           {{ level.level }}
         </td>
         <td>
-          {{ level.text_color }}
+          {% if level.image %}
+          <img src="{{ level.image }}" alt="레벨 이미지" style="height: 20px;">
+          {% else %}
+          <span>설정된 이미지 없음</span>
+          {% endif %}
         </td>
         <td>
-          {{ level.background_color }}
+          {% if not level.image %}
+          <span class="badge" style="color: {{level.text_color}}; background-color: {{level.background_color}};">
+            {{ level.text }}
+          </span>
+          {% endif %}
         </td>
         <td>
-          <span class="badge" style="color: {{level.text_color}}; background-color: {{level.background_color}};">{{ level.name }}</span>
-        </td>
-        <td>
-          <a href="#" class="text-dark">
-            <i class="fi fi-rr-edit"></i> 수정
+          <a href="#">
+            <i class="fi fi-rr-edit"></i>
           </a>
         </td>
       </tr>

@@ -18,22 +18,12 @@
   </div>
 
   <!-- 연락처 -->
-  <div class="shadow rounded p-3 border py-5 mb-5 pastel-beige-background mt-4">
-    <h6 class="mb-4 text-dark">
+  <div class="shadow rounded p-3 border py-5 mb-5 mt-4">
+    <p class="mb-4 text-dark">
       연락처 및 회사정보
-    </h6>
-    <p>
-      {{server.company_info}}
     </p>
-  </div>
-
-  <!-- 제휴 문의 안내 -->
-  <div class="shadow rounded border p-3 py-5 mt-5 pastel-beige-background">
-    <h6 class="mb-4 text-dark">
-      제휴 문의
-    </h6>
-    <p>
-      파트너 계정의 경우, 제휴문의 게시판에 제휴 문의 게시글을 작성해주세요.
+    <p class="small text-black-50">
+      {{server.company_info|safe}}
     </p>
   </div>
 

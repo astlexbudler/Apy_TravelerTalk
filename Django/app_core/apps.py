@@ -27,8 +27,16 @@ class AppCoreConfig(AppConfig):
 
         # SERVER_SETTING: 서버 설정 테이블
         models.SERVER_SETTING.objects.create(
+          name='service_name', # 서비스명
+          value='여행자들의 대화'
+        )
+        models.SERVER_SETTING.objects.create(
           name='site_logo', # 로고
           value='/media/default.png'
+        )
+        models.SERVER_SETTING.objects.create(
+          name='site_header', # 로고
+          value='/media/header-image.jpg'
         )
         models.SERVER_SETTING.objects.create(
           name='company_info', # 회사 정보
@@ -103,7 +111,10 @@ class AppCoreConfig(AppConfig):
           name='subsupervisor' # 부관리자 그룹
         )
         supervisor_group = Group.objects.create(
-          name='supervisor' # 관리자 그룹
+          name='supervisor' # 사이트 관리자 그룹
+        )
+        admin_group = Group.objects.create(
+          name='admin' # 데이터베이스 관리자 그룹
         )
 
         # ACCOUNT: 계정 테이블
@@ -138,7 +149,7 @@ class AppCoreConfig(AppConfig):
         )
         dame.set_password('dame1!')
         dame.save()
-        dame.groups.add(user_group)
+        dame.groups.add(user_group, dame_group)
         dame.save()
 
         partner = models.ACCOUNT(
@@ -155,7 +166,6 @@ class AppCoreConfig(AppConfig):
         )
         partner.set_password('partner1!')
         partner.save()
-        partner.groups.add(user_group)
         partner.groups.add(partner_group)
         partner.save()
 
@@ -173,12 +183,21 @@ class AppCoreConfig(AppConfig):
         )
         supervisor.set_password('supervisor1!')
         supervisor.save()
-        supervisor.groups.add(user_group)
-        supervisor.groups.add(dame_group)
-        supervisor.groups.add(partner_group)
-        supervisor.groups.add(subsupervisor_group)
         supervisor.groups.add(supervisor_group)
         supervisor.save()
+
+        subsupervisor = models.ACCOUNT(
+          username='subsupervisor', # 부관리자 아이디
+          first_name='닉네임6', # 닉네임
+          last_name='',
+          email='',
+          status = 'active', # 계정 상태
+          note='테스트용 부관리자 데이터입니다. 아이디: subsupervisor, 비밀번호: subsupervisor1!',
+          coupon_point=0,
+          level_point=0,
+          tel='', # 연락처
+          subsupervisor_permissions='account, post, banner, level, server', # 부관리자 권한
+        )
 
         admin = models.ACCOUNT(
           username='admin', # 관리자 아이디
@@ -187,6 +206,8 @@ class AppCoreConfig(AppConfig):
           is_superuser=True,
         )
         admin.set_password('admin1!')
+        admin.save()
+        admin.groups.add(admin_group)
         admin.save()
 
         # CATEGORY: 카테고리 테이블

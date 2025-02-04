@@ -44,6 +44,7 @@ INSTALLED_APPS = [
   'app_coupon',
   'app_message',
   'corsheaders',
+  #'django_hosts',
 ]
 
 AUTHENTICATION_BACKENDS = [
@@ -51,6 +52,7 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 MIDDLEWARE = [
+  #'django_hosts.middleware.HostsRequestMiddleware',
   'django.middleware.security.SecurityMiddleware',
   'django.contrib.sessions.middleware.SessionMiddleware',
   'django.middleware.common.CommonMiddleware',
@@ -58,6 +60,7 @@ MIDDLEWARE = [
   'django.contrib.auth.middleware.AuthenticationMiddleware',
   'django.contrib.messages.middleware.MessageMiddleware',
   'django.middleware.clickjacking.XFrameOptionsMiddleware',
+  #'django_hosts.middleware.HostsResponseMiddleware',
   'corsheaders.middleware.CorsMiddleware',
 ]
 
@@ -71,6 +74,10 @@ SITE_DOMAIN = 'travelertalk.com'
 CSRF_TRUSTED_ORIGINS=['https://travelertalk.com', 'http://127.0.0.1:8000']
 
 ROOT_URLCONF = 'apptoaster.urls'
+
+# django-host 설정
+#ROOT_HOSTCONF = 'apptoaster.hosts'
+#DEFAULT_HOST = 'main'
 
 # CORS 설정
 CORS_ORIGIN_ALLOW_ALL = True
