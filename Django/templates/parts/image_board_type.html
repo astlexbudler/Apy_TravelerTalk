@@ -1,5 +1,5 @@
 <div class="col-12 col-md-6 col-lg-4 p-2 mb-2 pb-3 w-100">
-  <a href="/post/post_view?post_id={{ post.id }}" class="text-dark text-decoration-none">
+  <a href="{{main_url}}/post/post_view?post_id={{ post.id }}" class="text-dark text-decoration-none">
     <div class="col-12 p-2 mb-2 pb-3 border-bottom">
       <div class="row g-0">
         <div class="col-2 col-md-2">
@@ -32,21 +32,32 @@
               </div>
             </div>
             <div>
+              <!-- 익명 게시판이 아닐경우, 작성자 표시 -->
+              {% if board.board_type != 'anonymous' %}
               <span class="text-black-50">
+
+                <!-- 작성자가 파트너일 경우, 파트너 명 표시 -->
                 {% if post.author.partner_name != '' %}
-                  <i class="fi fi-rr-heart"></i> {{ post.author.partner_name }}
+                <i class="fi fi-rr-heart"></i> {{ post.author.partner_name }}
+
+                <!-- 작성자가 파트너가 아닐 경우, 닉네임 표시 -->
                 {% else %}
-                  <i class="fi fi-rr-user"></i> {{ post.author.nickname }}
+                <i class="fi fi-rr-user"></i> {{ post.author.nickname }} 
+
+                <!-- 사용자일 경우 레벨 뱃지 표시 -->
+                {% if account.account_type in 'user,dame' %}
+
+                <!-- 레벨 뱃지 -->
+                {% with level=profile.level %}
+                {% include 'parts/level_badge.html' %}
+                {% endwith %}
+
                 {% endif %}
 
-                {% if account.account_type == 'user' or account.account_type == 'dame' %}
-                  {% if account.level.image %}
-                    <img src="{{ account.level.image }}" style="height: 16px; width: auto;">
-                  {% else %}
-                    <span class="badge user-level-badge" style="color: {{ account.level.text_color }}; background-color: {{ account.level.background_color }};">{{ account.level.text }}</span>
-                  {% endif %}
                 {% endif %}
+
               </span>
+              {% endif %}
             </div>
             <div>
               <small class="text-black-50 mt-1">

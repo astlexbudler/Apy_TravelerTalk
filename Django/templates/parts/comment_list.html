@@ -9,7 +9,7 @@
       <h6 class="mt-0 mb-1 me-2">{{ comment.author.nickname }}</h6>
       {% endif %}
 
-      {% if account.id == comment.author.id %}
+      {% if account.id == comment.author.id or account.account_type == 'supervisor' or account.account_type == 'subsupervisor' and 'post' in account.subsupervisor_permissions %}
       <a class="small text-black-50" href="javascript: deleteComment('{{ comment.id }}');">
         <i class="fi fi-rr-trash"></i> 댓글 삭제
       </a>

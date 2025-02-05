@@ -10,35 +10,24 @@
           <!-- search(mobile) -->
           <div class="col-auto col-lg-4 d-block d-lg-none m-2 mt-0">
             <div style="display: inline-block;">
-              <a href="/">
+              <a href="{{main_url}}">
                 <img src="{{ server.logo }}" alt="" style="width: 80px;">
               </a>
-            </div>
-            <div class="header-search" style="display: inline-block;">
-              <div class="form-group position-relative" onkeyup="if(event.keyCode == 13) searchPost('mobile');"
-                style="width: calc(100vw - 240px);">
-                <input id="mobileSearchKeyword" class="form-control border-0 border-bottom p-2 pe-6 ms-2"
-                  style="font-size: 14px; background: transparent" placeholder="검색어를 입력해주세요." value="{{ request.GET.search }}">
-                <a href="javascript: searchPost('pc');" class="position-absolute text-black-50"
-                  style="right: 15px; top: 50%; transform: translateY(-50%); font-size: 14px;">
-                  <i class="fi fi-rr-search"></i>
-                </a>
-              </div>
             </div>
           </div>
 
           <!-- 메뉴 - 좌 -->
           <div class="col-auto col-lg-4 d-none d-lg-block">
             <a class="me-4 text-black-50 small" style="white-space: nowrap;"
-              href="{% if not user.is_authenticated %}javascript: needLogin();{% else %}/post/attendance{% endif %}">
+              href="{% if not user.is_authenticated %}javascript: needLogin();{% else %}{{main_url}}/post/attendance{% endif %}">
               <i class="fi fi-rr-calendar-check"></i> 출석체크
             </a>
             <a class="text-black-50 small me-3" style="white-space: nowrap;"
-              href="{% if not user.is_authenticated %}javascript: needLogin();{% else %}/bookmark{% endif %}">
+              href="{% if not user.is_authenticated %}javascript: needLogin();{% else %}{{main_url}}/bookmark{% endif %}">
               <i class="fi fi-rr-bookmark"></i> 즐겨찾기
             </a>
             <a class="text-black-50 small" style="white-space: nowrap;"
-              href="{% if not user.is_authenticated %}javascript: needLogin();{% else %}/coupon{% endif %}">
+              href="{% if not user.is_authenticated %}javascript: needLogin();{% else %}{{main_url}}/coupon{% endif %}">
               <i class="fi fi-rr-ticket"></i> 쿠폰함
             </a>
           </div>
@@ -50,7 +39,7 @@
               <!-- 사용자 -->
               <div class="h-col h-user dropdown d-none d-lg-block me-3">
                 <a class="text-black-50 small" style="white-space: nowrap;"
-                  href="{% if not user.is_authenticated %}javascript: needLogin();{% else %}/profile{% endif %}">
+                  href="{% if not user.is_authenticated %}javascript: needLogin();{% else %}{{main_url}}/profile{% endif %}">
                   <i class="fi fi-rr-user"></i> 프로필
                 </a>
               </div>
@@ -58,7 +47,7 @@
               <!-- 쪽지 메뉴 -->
               {% if not user.is_authenticated %}
               <div class="h-col h-switch dropdown d-none d-lg-block me-3">
-                <a class="text-black-50 small" href="/message" style="white-space: nowrap;">
+                <a class="text-black-50 small" href="{{main_url}}/message" style="white-space: nowrap;">
                   <i class="fi fi-rr-envelope"></i> 1:1 문의
                 </a>
               </div>
@@ -73,34 +62,28 @@
                 <ul class="dropdown-menu dropdown-menu-end p-0" aria-labelledby="bd-theme">
                   <li>
                     <div style="width: 240px;" class="pt-3">
-                      {% if messages|length == 0 %}
+                      {% if unread_messages|length == 0 %}
                       <p class="p-2">
                         새로운 쪽지가 없습니다.
                       </p>
                       {% endif %}
-                      {% for message in messages %}
+                      {% for message in unread_messages %}
                       <div class="mb-2 p-2 border-bottom">
-                        <a href="javascript: readMessage('{{ message.id }}');">
-                          <small class="text-black-50">
-                            {{ message.send_dt }}
-                          </small>
-                          <p class="text-black mb-1">
-                            {{ message.title }}
-                          </p>
-                          <p class="text-black-50 small">
-                            {{ message.sender.nickname }}
-                          </p>
-                        </a>
+                        <small class="text-black-50">
+                          {{ message.created_at }}
+                        </small>
+                        <p class="text-black mb-1">
+                          {{ message.title }}
+                        </p>
                       </div>
                       {% endfor %}
                     </div>
                   </li>
                   <li class="text-end p-2 border-top">
                     <div style="display: flex; justify-content: space-between; white-space: nowrap;">
-                      <a class="text-black-50"
-                          href="/message">
-                          <i class="fi fi-rr-envelope"></i> 쪽지함
-                        </a>
+                      <a class="text-black-50"href="{{main_url}}/message">
+                        <i class="fi fi-rr-envelope"></i> 쪽지함
+                      </a>
                     </div>
                   </li>
                 </ul>
@@ -109,7 +92,7 @@
 
               <!-- 제휴문의 -->
               <div class="h-col h-switch dropdown d-none d-lg-block me-3">
-                <a class="text-black-50 small" href="/contact" style="white-space: nowrap;">
+                <a class="text-black-50 small" href="{{main_url}}/contact" style="white-space: nowrap;">
                   연락처
                 </a>
               </div>
@@ -184,13 +167,13 @@
         <!-- pc -->
         <div class="d-none d-lg-block">
           <div style="display: inline-block;">
-            <a href="/">
+            <a href="{{main_url}}">
               <img src="{{ server.logo }}" alt="" style="width: 80px;" class="me-2">
             </a>
           </div>
           <div class="header-search" style="display: inline-block;">
             <form class="header-search-form" onkeyup="if(event.keyCode == 13) searchPost('pc');">
-              <input id="pcSearchKeyword" placeholder="검색어를 입력해주세요." value="{{ request.GET.keyword }}" class="form-control">
+              <input id="pcSearchKeyword" placeholder="검색어를 입력해주세요." value="{{ request.GET.search }}" class="form-control">
               <button class="btn search-btn" onclick="searchPost('pc');">
                 <i class="fi fi-rr-search"></i>
               </button>
@@ -225,7 +208,7 @@
                         {{ board.name }}
                       </a>
                       {% else %}
-                      <a class="nav-link text-dark" href="/post?board_ids={{board.id}}">
+                      <a class="nav-link text-dark" href="{{main_url}}/post?board_ids={{board.id}}">
                         {{ board.name }}
                       </a>
                       {% endif %}
@@ -243,7 +226,7 @@
         <div class="p-0 mt-2 px-2">
           {% for board in boards %}
             {% if board.children|length > 0 %}
-  
+
             <!-- 2차 -->
             <div class="mb-3 ps-3 border-bottom pb-2 d-none sub_board" id="sub_board_{{ board.id }}">
               {% for sub1_board in board.children %}
@@ -259,14 +242,14 @@
               </div>
               {% else %}
               <div class="p-2 text-center" style="white-space: nowrap; display: inline;">
-                <a href="/post?board_ids={{board.id}},{{ sub1_board.id }}" class="text-decoration-none text-black-50 small">
+                <a href="{{main_url}}/post?board_ids={{board.id}},{{ sub1_board.id }}" class="text-decoration-none text-black-50 small">
                   {{ sub1_board.name }}
                 </a>
               </div>
               {% endif %}
               {% endfor %}
             </div>
-  
+
             <!-- 3차 -->
             {% for sub1_board in board.children %}
               {% if sub1_board.children|length > 0 %}
@@ -285,7 +268,7 @@
                 </div>
                 {% else %}
                 <div class="p-2 text-center" style="white-space: nowrap; display: inline;">
-                  <a href="/post?board_ids={{board.id}},{{ sub1_board.id }},{{ sub2_board.id }}" class="text-decoration-none text-black-50 small">
+                  <a href="{{main_url}}/post?board_ids={{board.id}},{{ sub1_board.id }},{{ sub2_board.id }}" class="text-decoration-none text-black-50 small">
                     {{ sub2_board.name }}
                   </a>
                 </div>
@@ -313,7 +296,7 @@
                   </div>
                   {% else %}
                   <div class="p-2 text-center" style="white-space: nowrap; display: inline;">
-                    <a href="/post?board_ids={{board.id}},{{ sub1_board.id }},{{ sub2_board.id }},{{ sub3_board.id }}" class="text-decoration-none text-black-50 small">
+                    <a href="{{main_url}}/post?board_ids={{board.id}},{{ sub1_board.id }},{{ sub2_board.id }},{{ sub3_board.id }}" class="text-decoration-none text-black-50 small">
                       {{ sub3_board.name }}
                     </a>
                   </div>

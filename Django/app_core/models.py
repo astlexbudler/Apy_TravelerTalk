@@ -42,12 +42,13 @@ class ACCOUNT(AbstractUser):
   # groups = models.ManyToManyField(Group)
   status = models.CharField(max_length=100, help_text='계정 상태(active, pending, deleted, blocked, banned)')
   note = models.TextField(blank=True, help_text='관리자 메모')
-  coupon_point = models.IntegerField(help_text='쿠폰 포인트', default=0)
-  level_point = models.IntegerField(help_text='레벨업 포인트', default=0)
+  mileage = models.IntegerField(help_text='쿠폰 마일리지', default=0)
+  exp = models.IntegerField(help_text='레벨업 경험치', default=0)
   tel = models.CharField(blank=True, max_length=20, help_text='연락처')
   subsupervisor_permissions = models.CharField(blank=True, max_length=200, help_text='관리자 권한(account, post, coupon, message, banner, setting)')
   bookmarked_places = models.ManyToManyField('POST', help_text='즐겨찾기 여행지', related_name='account_bookmarked_places')
   level = models.ForeignKey('LEVEL_RULE', on_delete=models.CASCADE, null=True, help_text='사용자 레벨', related_name='account_level')
+  recent_ip = models.CharField(max_length=20, blank=True, help_text='최근 접속 IP')
 
 # GROUP: 그룹 테이블
 # class GROUP(models.Model):
@@ -59,7 +60,8 @@ class ACTIVITY(models.Model):
   id = models.AutoField(primary_key=True)
   account = models.ForeignKey('ACCOUNT', on_delete=models.CASCADE, help_text='계정', related_name='activity_account')
   message = models.TextField(help_text='활동 내용')
-  point_change = models.CharField(blank=True, max_length=20, help_text='포인트 변동')
+  exp_change = models.IntegerField(help_text='경험치 변화', default=0)
+  mileage_change = models.IntegerField(help_text='마일리지 변화', default=0)
   created_at = models.DateTimeField(auto_now_add=True, help_text='활동 일시')
 
 # LEVEL_RULE: 레벨 규칙 테이블
@@ -69,7 +71,7 @@ class LEVEL_RULE(models.Model):
   text = models.CharField(max_length=20, blank=True, help_text='레벨 이름')
   text_color = models.CharField(max_length=20, blank=True, help_text='레벨 텍스트 색상')
   background_color = models.CharField(max_length=20, blank=True, help_text='레벨 배경 색상')
-  required_point = models.IntegerField(help_text='레벨업 필요 포인트')
+  required_exp = models.IntegerField(help_text='레벨업 필요 경험치')
 
 # CATEGORY: 카테고리 테이블
 class CATEGORY(models.Model):
@@ -88,7 +90,16 @@ class BOARD(models.Model):
   comment_groups = models.ManyToManyField(Group, help_text='댓글 그룹', related_name='board_comment_groups')
   level_cut = models.IntegerField(help_text='레벨 제한', default=0)
   name = models.CharField(max_length=100, help_text='게시판 이름')
-  board_type = models.CharField(max_length=20, help_text='게시물 타입(tree, travel, event, review, board, attendance, greeting, anonymous)')
+  # attendance: 출석 게시판. *특수 게시판
+  # greeting: 인사 게시판. *특수 게시판
+  # anonymous: 익명 게시판. 모두 글 작성 가능.*특수 게시판
+  # qna: 질문 게시판. 모두 글 작성 가능. 댓글은 관리자만 작성 가능.*특수 게시판
+  # travel: 여행지 정보 게시판. 파트너만 글 작성 가능.*특수 게시판
+  # coupon: 쿠폰 게시판. 파트너와 관리자만 글 작성 가능.*특수 게시판
+  # review: 리뷰 게시판. 사용자만 글 작성 가능.*특수 게시판
+  # tree: 다른 게시판을 포함하는 게시판. 글 작성 불가.
+  # board: 일반 게시판. 모두 글 작성 가능.
+  board_type = models.CharField(max_length=20, help_text='게시물 타입(tree, travel, event, review, board, attendance, greeting, anonymous, qna, coupon)')
   display_weight = models.IntegerField(help_text='표시 순서', default=0)
 
 # POST: 게시물 테이블
@@ -138,10 +149,10 @@ class COUPON(models.Model):
   name = models.CharField(max_length=100, help_text='쿠폰 이름')
   image = models.FileField(upload_to=upload_to, null=True, help_text='이미지')
   content = models.TextField(help_text='내용')
-  required_point = models.IntegerField(help_text='필요 포인트')
+  required_mileage = models.IntegerField(help_text='필요 마일리지', default=0)
   expire_at = models.DateTimeField(help_text='만료 일시')
   created_at = models.DateTimeField(auto_now_add=True, help_text='생성 일시')
-  status = models.CharField(max_length=20, default='normal', help_text='상태(normal, used, expired, deleted)')
+  status = models.CharField(max_length=20, default='active', help_text='상태(active, used, expired, deleted)')
   note = models.TextField(help_text='관리자 메모')
 
 # MESSAGE: 메시지 테이블
@@ -178,3 +189,13 @@ class BANNER(models.Model):
   image = models.FileField(upload_to=upload_to, help_text='이미지')
   link = models.CharField(max_length=300, help_text='링크')
   display_weight = models.IntegerField(help_text='표시 순서', default=0)
+
+# STATISTIC: 통계 테이블
+class STATISTIC(models.Model):
+  name = models.CharField(max_length=100, primary_key=True, help_text='통계 이름')
+  value = models.IntegerField(help_text='통계 값', default=0)
+  date = models.DateTimeField(auto_now_add=True, help_text='통계 일시')
+
+# BLOCKED_IP: 차단 IP 테이블
+class BLOCKED_IP(models.Model):
+  ip = models.CharField(max_length=20, primary_key=True, help_text='차단 IP')

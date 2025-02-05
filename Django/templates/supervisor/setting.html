@@ -2,7 +2,7 @@
 {% block content %}
 <!-- 왼쪽 사이드바 -->
 <aside class="d-none d-lg-block" style="width: 320px;">
-  {% include 'parts/left_aside_supervisor.html' %}
+  {% include 'parts/left_aside_main.html' %}
 </aside>
 
 <!-- 중앙 섹션 -->
@@ -29,7 +29,7 @@
       </small>
     </div>
 
-    <form method="POST" action="/supervisor/setting" class="mb-5">
+    <form method="POST" action="{{supervisor_url}}/setting" class="mb-5">
       {% csrf_token %}
 
       <!-- service_name -->
@@ -150,7 +150,7 @@
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await fetch('/api/upload', {
+    const response = await fetch('{{main_url}}/api/upload', {
       method: 'POST',
       body: formData,
       headers: {

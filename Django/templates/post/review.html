@@ -20,10 +20,11 @@
   <div class="row mb-5 border rounded p-3">
     <div class="col-4 col-lg-4">
       <h6 class="mb-3">오늘의 추천 리뷰</h6>
-      {% if daily_reviews|length == 0 %}
+      {% if today_reviews|length == 0 %}
       <p>오늘의 추천 리뷰가 없습니다.</p>
       {% else %}
-      {% for review in daily_reviews %}
+      {% for post in today_reviews %}
+      {% include 'parts/simplified_board_type.html' %}
       {% endfor %}
       {% endif %}
     </div>
@@ -32,7 +33,8 @@
       {% if weekly_reviews|length == 0 %}
       <p>오늘의 추천 리뷰가 없습니다.</p>
       {% else %}
-      {% for review in weekly_reviews %}
+      {% for post in weekly_reviews %}
+      {% include 'parts/simplified_board_type.html' %}
       {% endfor %}
       {% endif %}
     </div>
@@ -41,7 +43,8 @@
       {% if monthly_reviews|length == 0 %}
       <p>오늘의 추천 리뷰가 없습니다.</p>
       {% else %}
-      {% for review in monthly_reviews %}
+      {% for post in monthly_reviews %}
+      {% include 'parts/simplified_board_type.html' %}
       {% endfor %}
       {% endif %}
     </div>

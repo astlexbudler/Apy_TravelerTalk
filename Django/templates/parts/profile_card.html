@@ -1,7 +1,7 @@
 {% if profile.account_type == 'partner' %}
 <!-- 파트너 계정의 프로필 카드 -->
 <div class="col-12 border p-3 mb-5 shadow">
-  <a href="/profile" class="text-dark text-decoration-none">
+  <a href="{{main_url}}/profile" class="text-dark text-decoration-none">
     <div style="display: flex; justify-content: space-between; white-space: nowrap;">
       <div style="display: inline-block; text-align: left;">
         <span class="text-black-50" style="font-size: 14px;">
@@ -37,7 +37,7 @@
 {% elif profile.account_type == 'user' or profile.account_type == 'dame' %}
 <!-- 사용자 계정의 프로필 카드 -->
 <div class="col-12 border p-3 mb-5 shadow">
-  <a href="/profile" class="text-dark text-decoration-none">
+  <a href="{{main_url}}/profile" class="text-dark text-decoration-none">
     <div style="display: flex; justify-content: space-between; white-space: nowrap;">
       <div style="display: inline-block; text-align: left;">
         <span class="text-black-50" style="font-size: 14px;">
@@ -68,11 +68,11 @@
     <div class="row mt-4">
       <div class="col-6">
         <p class="text-dark m-0">
-          레벨 포인트
+          경험치
         </p>
         <p class="text-black-50">
           <i class="fi fi-ss-coins"></i> 
-          <span class="numberComma">{{ profile.level_point }}</span> 포인트 
+          <span class="numberComma">{{ profile.exp }}</span> Exp 
 
           <!-- 레벨 뱃지 -->
           {% with level=profile.level %}
@@ -83,11 +83,11 @@
       </div>
       <div class="col-6">
         <p class="text-dark m-0">
-          쿠폰 포인트
+          마일리지
         </p>
         <p class="text-black-50">
           <i class="fi fi-ss-coins text-secondary"></i> 
-          <span class="numberComma">{{ profile.coupon_point }}</span> 포인트
+          <span class="numberComma">{{ profile.mileage }}</span> <small class="me-2">마일리지</small>
         </p>
       </div>
     </div>
@@ -96,7 +96,7 @@
 {% else %}
 <!-- 관리자 계정의 프로필 카드 -->
 <div class="col-12 border p-3 mb-5 shadow">
-  <a href="/profile" class="text-dark text-decoration-none">
+  <a href="{{main_url}}/profile" class="text-dark text-decoration-none">
     <div style="display: flex; justify-content: space-between; white-space: nowrap;">
       <div style="display: inline-block; text-align: left;">
         <span class="text-black-50" style="font-size: 14px;">

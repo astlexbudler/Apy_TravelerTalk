@@ -20,19 +20,19 @@
   <!-- 선택지 버튼 그룹 -->
   <div class="btn-group w-100 d-flex">
     <div class="w-100 d-flex justify-content-center rounded-2">
-      <a class="w-100 btn" href="/signup?tab=user" id="userTab">
+      <a class="w-100 btn" href="{{main_url}}/signup?tab=user" id="userTab">
         일반 회원
       </a>
     </div>
     <span class="divider"></span>
     <div class="w-100 d-flex justify-content-center rounded-2">
-      <a class="w-100 btn" id="dameTab">
+      <a class="w-100 btn" id="dameTab" href="{{main_url}}/signup?tab=dame">
         여성회원
       </a>
     </div>
     <span class="divider"></span>
     <div class="w-100 d-flex justify-content-center rounded-2">
-      <a class="w-100 btn" href="/signup?tab=partner" id="partnerTab">
+      <a class="w-100 btn" href="{{main_url}}/signup?tab=partner" id="partnerTab">
         파트너 업체
       </a>
     </div>
@@ -75,9 +75,6 @@
 
       <!-- 일반 회원 가입 폼 -->
       <div id="user-form">
-        <p class="text-dark">
-          사용자 프로필 정보
-        </p>
       </div>
 
       <!-- 파트너 업체 가입 폼 -->
@@ -235,6 +232,10 @@
             <label for="tel">연락처</label>
             <input class="form-control" placeholder="연락처를 입력해주세요." id="tel">
           </div>
+          <div class="form-group mt-5">
+            <label for="email">이메일</label>
+            <input class="form-control" placeholder="이메일을 입력해주세요." id="email">
+          </div>
           <div class="form-group mb-4">
             <div style="display: flex; justify-content: space-between; white-space: nowrap;">
               <div style="display: inline-block; text-align: left;">
@@ -368,6 +369,7 @@
   var serviceCategoryOk = false;
   var telOk = false;
   var addressOk = false;
+  var emailOk = false;
   var nowRegisterType = '{{request.GET.tab}}';
 
   window.onload = () => {
@@ -376,7 +378,7 @@
     // Tab
     tab = '{{request.GET.tab}}';
     if (tab == '') {
-      location.href = '/signup?tab=user';
+      location.href = '{{main_url}}/signup?tab=user';
     }
     var userTab = document.getElementById('userTab');
     var dameTab = document.getElementById('dameTab');
@@ -400,9 +402,9 @@
       dameTab.classList.add('pastel-pink-background');
       dameTab.classList.add('text-dark');
       dameTab.style.fontWeight = 'semibold';
-      document.getElementById('user-form').classList.remove('d-none');
+      document.getElementById('user-form').classList.add('d-none');
       document.getElementById('partner-form').classList.add('d-none');
-      document.getElementById('dame-form').classList.add('d-none');
+      document.getElementById('dame-form').classList.remove('d-none');
     } else if (tab == 'partner') {
       userTab.classList.add('pastel-beige-background');
       userTab.classList.remove('text-dark');
@@ -411,8 +413,8 @@
       partnerTab.style.fontWeight = 'semibold';
       dameTab.classList.add('pastel-beige-background');
       dameTab.classList.remove('text-dark');
-      document.getElementById('user-form').classList.remove('d-none');
-      document.getElementById('partner-form').classList.add('d-none');
+      document.getElementById('user-form').classList.add('d-none');
+      document.getElementById('partner-form').classList.remove('d-none');
       document.getElementById('dame-form').classList.add('d-none');
     }
 
@@ -570,6 +572,20 @@
     telOk = true;
   });
 
+  // 이메일 확인. 이메일 형식인지 확인
+  document.querySelector('#email').addEventListener('input', () => {
+    var email = document.getElementById('email').value;
+    if (email.length < 5) {
+      emailOk = false;
+      return;
+    }
+    if (email.indexOf('@') == -1 || email.indexOf('.') == -1) {
+      emailOk = false;
+      return;
+    }
+    emailOk = true;
+  });
+
   // 주소 확인. 10자리 이상 입력되었는지 확인
   document.querySelector('#address').addEventListener('input', () => {
     if (document.getElementById('address').value.length < 10) {
@@ -612,11 +628,12 @@
     formData.append('password', document.getElementById('password').value);
     formData.append('nickname', document.getElementById('nickname').value);
     formData.append('partner_name', document.getElementById('partnerName').value);
+    formData.append('email', document.getElementById('email').value);
     formData.append('location_category', document.getElementById('selectedBoard').value);
     formData.append('service_category', document.getElementById('serviceCategory').value);
     formData.append('tel', document.getElementById('tel').value);
-    formData.append('address', document.getElementById('address').value);
-    var result = await fetch('/api/signup', {
+    formData.append('address', document.getElementById('address').value + ' ' + document.getElementById('addressDetail').value);
+    var result = await fetch('/api/account?create=y', {
       method: 'POST',
       body: formData,
       headers: {

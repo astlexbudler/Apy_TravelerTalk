@@ -24,19 +24,9 @@
     </p>
     {% else %}
 
-    <!-- 일반 게시글 형태 -->
-    {% if board.board_type in 'board, anonymous' %}
     {% for post in posts %}
     {% include 'parts/normal_board_type.html' %}
     {% endfor %}
-    {% endif %}
-
-    <!-- 이미지가 있는 게시글 형태 -->
-    {% if board.board_type in 'event, review' %}
-    {% for post in posts %}
-    {% include 'parts/image_board_type.html' %}
-    {% endfor %}
-    {% endif %}
 
     {% endif %}
 

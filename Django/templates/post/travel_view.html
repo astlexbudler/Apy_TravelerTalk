@@ -22,7 +22,7 @@
         <h5>
           {{post.title}}
           {% if account.id == post.author.id %}
-          <a href="#" class="text-black-50 small">
+          <a href="/partner/rewrite_post" class="text-black-50 small">
             <i class="fi fi-rr-edit"></i>
           </a>
           {% endif %}
@@ -60,7 +60,7 @@
           <i class="fi fi-rr-star-filled"></i> 즐겨찾기 해제
         </a>
         {% endif %}
-        <a href="/post/write_review?post_id={{ post.id }}"
+        <a href="/post/write_post?review_post_id={{ post.id }}"
           class="btn btn-sm btn-primary mt-2 p-1 px-2">
           <i class="fi fi-rr-comment-alt-dots"></i> 리뷰 작성
         </a>
@@ -68,14 +68,6 @@
       </div>
     </div>
   </div>
-
-
-  <!-- 대표 이미지가 있는 경우 -->
-  {% if post.image and post.image != '/media/default.png' %}
-  <div class="my-4">
-    <img src="{{ post.image }}" class="img-fluid w-100" alt="대표 이미지">
-  </div>
-  {% endif %}
 
   <!-- 게시글 내용 -->
   <div class="my-4">

@@ -18,9 +18,10 @@
   </div>
 
   <!-- 대표 이미지 -->
-  {% if board.board_type in 'event, review' %}
   <div class="my-4">
-    <label>대표 이미지</label>
+    <p>
+      썸네일 등록
+    </p>
     <div id="imagePreview" class="mb-2 row">
       {% for image in travel_post.images %}
       {% if image != '' %}
@@ -40,12 +41,12 @@
     <input type="file" class="d-none" id="imageInput" multiple>
     <input id="imagePaths" value="{% for image in travel_post.images %}{{ image }},{% endfor %}" class="d-none">
   </div>
-  {% endif %}
 
   <!-- 제목 -->
   <div class="form-group mt-2 mb-3">
     <label>제목</label>
-    <input type="text" id="postTitle" class="form-control" placeholder="제목을 입력해주세요">
+    <input type="text" id="postTitle" class="form-control" placeholder="제목을 입력해주세요"
+    value="{% if request.GET.revie_post_id != '' %}{{review_post.title}} 후기: {% endif %}">
   </div>
 
   <div class="form-group mt-2 mb-3">
@@ -120,11 +121,12 @@
     var formData = new FormData();
     formData.append('title', title);
     formData.append('content', content);
+    formData.append('review_post_id', '{{ request.GET.review_post_id }}');
     if (document.getElementById('imageInput')) {
       formData.append('image', document.getElementById('imageInput').files[0]); // 대표 이미지
     }
 
-    await fetch('/post/write_post?board_ids={{request.GET.board_ids}}', {
+    await fetch('/post/write_post?board_ids={{board_ids}}', {
       method: 'POST',
       headers: {
         'X-CSRFToken': csrftoken

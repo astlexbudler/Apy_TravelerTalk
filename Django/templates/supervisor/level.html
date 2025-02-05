@@ -2,7 +2,7 @@
 {% block content %}
 <!-- 왼쪽 사이드바 -->
 <aside class="d-none d-lg-block" style="width: 320px;">
-  {% include 'parts/left_aside_supervisor.html' %}
+  {% include 'parts/left_aside_main.html' %}
 </aside>
 
 <!-- 중앙 섹션 -->
@@ -18,8 +18,9 @@
     </p>
   </div>
 
-  <div class="text-end mb-5">
-    <a href="#" class="btn btn-success">
+  <div class="text-end p-3 mb-5">
+    <a href="javascript: $('#addNewLevel').modal('show');"
+    class="btn btn-success btn-sm">
       <i class="fi fi-rr-plus"></i> 레벨 정책 추가
     </a>
   </div>
@@ -65,9 +66,68 @@
           {% endif %}
         </td>
         <td>
-          <a href="#">
+          <a href="javascript: $('#editLevel{{level.level}}').modal('show');">
             <i class="fi fi-rr-edit"></i>
           </a>
+          <div class="modal fade" id="editLevel{{level.level}}" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">
+                    레벨 정책 수정
+                  </h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-start">
+          
+                    <!-- image -->
+                    <div id="imagePreview" class="mb-2">
+                      {% if level.image %}
+                      <img src="{{ level.image }}" alt="레벨 이미지" style="height: 100px;">
+                      {% endif %}
+                    </div>
+                    <input type="file" class="d-none" id="levelImage{{level.level}}" accept="image/*" onchange="previewImage(this);">
+                    <input type="hidden" id="uploadedImagePath" name="image">
+          
+                    <!-- 레벨 텍스트 -->
+                    <div class="form-group mb-2">
+                      <label>레벨 텍스트</label>
+                      <input class="form-control" placeholder="레벨 텍스트를 입력하세요." id="levelText" name="text" value="{{ level.text }}">
+                    </div>
+          
+                    <!-- 레벨 텍스트 색상 -->
+                    <div class="form-group mb-2">
+                      <label>레벨 텍스트 색상</label>
+                      <input class="form-control" placeholder="레벨 텍스트 색상을 입력하세요." id="levelTextColor" name="text_color" value="{{ level.text_color }}">
+                    </div>
+          
+                    <!-- 레벨 배경 색상 -->
+                    <div class="form-group mb-2">
+                      <label>레벨 배경 색상</label>
+                      <input class="form-control" placeholder="레벨 배경 색상을 입력하세요." id="levelBackgroundColor" name="background_color" value="{{ level.background_color }}">
+                    </div>
+          
+                    <div class="text-end mt-3">
+                      <p>
+                        <a href="javascript: document.getElementById('newCouponImage').click();" class="btn btn-success small p-1 px-2">
+                          <i class="fi fi-rr-file-image"></i> 이미지 변경
+                        </a>
+                      </p>
+                      <small>
+                        레벨 뱃지 이미지를 업로드하면 텍스트는 표시되지 않습니다.
+                      </small>
+                    </div>
+          
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-primary" onclick="editLevel();">
+                    수정
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          
         </td>
       </tr>
       {% endfor %}
@@ -79,11 +139,69 @@
 
 <!-- 오른쪽 사이드바 -->
 <aside class="d-none d-lg-block" style="width: 320px;"></aside>
+<!--
+  Modals
+-->
+<!-- 새 레벨 생성 모달 -->
+<div class="modal fade" id="addNewLevel" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          새 레벨 정책 추가
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+          <!-- image -->
+          <div id="imagePreview" class="mb-2"></div>
+          <input type="file" class="d-none" id="levelImage" accept="image/*" onchange="previewImage(this);">
+          <input type="hidden" id="uploadedImagePath" name="image">
+
+          <!-- 레벨 텍스트 -->
+          <div class="form-group mb-2">
+            <label>레벨 텍스트</label>
+            <input class="form-control" placeholder="레벨 텍스트를 입력하세요." id="levelText" name="text">
+          </div>
+
+          <!-- 레벨 텍스트 색상 -->
+          <div class="form-group mb-2">
+            <label>레벨 텍스트 색상</label>
+            <input class="form-control" placeholder="레벨 텍스트 색상을 입력하세요." id="levelTextColor" name="text_color">
+          </div>
+
+          <!-- 레벨 배경 색상 -->
+          <div class="form-group mb-2">
+            <label>레벨 배경 색상</label>
+            <input class="form-control" placeholder="레벨 배경 색상을 입력하세요." id="levelBackgroundColor" name="background_color">
+          </div>
+
+          <div class="text-end mt-3">
+            <p>
+              <a href="javascript: document.getElementById('newCouponImage').click();" class="btn btn-success small p-1 px-2">
+                <i class="fi fi-rr-file-image"></i> 이미지 업로드
+              </a>
+            </p>
+            <small>
+              레벨 뱃지 이미지를 업로드하면 텍스트는 표시되지 않습니다.
+            </small>
+          </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="addNewLevel();">
+          추가
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
 
   window.onload = () => {
-    console.log(`Window loaded at ${getNowDt()}`);
+    console.log(`Window loaded at ${getNowDatetimeString()}`);
   }
 
 </script>

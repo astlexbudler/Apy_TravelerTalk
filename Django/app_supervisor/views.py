@@ -22,8 +22,437 @@ def index(request):
   elif contexts['account']['account_type'] not in ['supervisor', 'subsupervisor']:
     return redirect('/?redirect_message=permission_denied')
 
+  # 파트너 가입 및 파트너 가입 대기중인 사용자 수
+  all_partner = models.ACCOUNT.objects.prefetch_related('groups').filter(
+    Q(groups__name='partner')
+  )
+  active_partner = all_partner.filter(status='active').count()
+  pending_partner = all_partner.filter(status='pending').count()
+
+  # qna 게시판에 개시글 중 댓글이 없는 게시글과 있는 게시글 수
+  all_qna = models.POST.objects.prefetch_related('boards').filter(
+    Q(boards__board_type='qna')
+  )
+  qna_no_answer = 0
+  qna_answer = 0
+  for qna in all_qna:
+    comment_count = models.COMMENT.objects.filter(post=qna).count()
+    if comment_count == 0:
+      qna_no_answer += 1
+    else:
+      qna_answer += 1
+
+  # 사용 가능한 쿠폰 갯수와 사용된 쿠폰 갯수. 관리자에게 도착한 쿠폰 요청 메세지 갯수
+  active_coupon_count = models.COUPON.objects.filter(
+    status='active'
+  ).count()
+  used_coupon_count = models.COUPON.objects.filter(
+    status='used'
+  ).count()
+  coupon_request_message_count = models.MESSAGE.objects.filter(
+    title__startswith='쿠폰 요청:',
+    is_read=False,
+    to_account='supervisor'
+  ).count()
+
+  # 여행지 게시글 광고 정보
+  place_on_ad_count = models.PLACE_INFO.objects.filter(
+    status='ad'
+  ).count()
+  place_ad_request_message_count = models.MESSAGE.objects.filter(
+    title__startswith='여행지 광고 요청:',
+    is_read=False,
+    to_account='supervisor'
+  ).count()
+
+  # 통계 데이터 가져오기
+  today = datetime.datetime.now()
+  ago_7day = today - datetime.timedelta(days=7)
+  ago_6day = today - datetime.timedelta(days=6)
+  ago_5day = today - datetime.timedelta(days=5)
+  ago_4day = today - datetime.timedelta(days=4)
+  ago_3day = today - datetime.timedelta(days=3)
+  ago_2day = today - datetime.timedelta(days=2)
+  ago_1day = today - datetime.timedelta(days=1)
+
+  # 쿠폰 생성 건수
+  coupon_create_7_to_6 = models.STATISTIC.objects.filter(
+    name='coupon_create',
+    date=ago_7day
+  ).first()
+  if not coupon_create_7_to_6:
+    coupon_create_7_to_6 = 0
+  else:
+    coupon_create_7_to_6 = coupon_create_7_to_6.value
+  coupon_create_6_to_5 = models.STATISTIC.objects.filter(
+    name='coupon_create',
+    date=ago_6day
+  ).first()
+  if not coupon_create_6_to_5:
+    coupon_create_6_to_5 = 0
+  else:
+    coupon_create_6_to_5 = coupon_create_6_to_5.value
+  coupon_create_5_to_4 = models.STATISTIC.objects.filter(
+    name='coupon_create',
+    date=ago_5day
+  ).first()
+  if not coupon_create_5_to_4:
+    coupon_create_5_to_4 = 0
+  else:
+    coupon_create_5_to_4 = coupon_create_5_to_4.value
+  coupon_create_4_to_3 = models.STATISTIC.objects.filter(
+    name='coupon_create',
+    date=ago_4day
+  ).first()
+  if not coupon_create_4_to_3:
+    coupon_create_4_to_3 = 0
+  else:
+    coupon_create_4_to_3 = coupon_create_4_to_3.value
+  coupon_create_3_to_2 = models.STATISTIC.objects.filter(
+    name='coupon_create',
+    date=ago_3day
+  ).first()
+  if not coupon_create_3_to_2:
+    coupon_create_3_to_2 = 0
+  else:
+    coupon_create_3_to_2 = coupon_create_3_to_2.value
+  coupon_create_2_to_1 = models.STATISTIC.objects.filter(
+    name='coupon_create',
+    date=ago_2day
+  ).first()
+  if not coupon_create_2_to_1:
+    coupon_create_2_to_1 = 0
+  else:
+    coupon_create_2_to_1 = coupon_create_2_to_1.value
+  coupon_create_1_to_0 = models.STATISTIC.objects.filter(
+    name='coupon_create',
+    date=ago_1day
+  ).first()
+  if not coupon_create_1_to_0:
+    coupon_create_1_to_0 = 0
+  else:
+    coupon_create_1_to_0 = coupon_create_1_to_0.value
+
+  # 쿠폰 사용 건수
+  coupon_use_7_to_6 = models.STATISTIC.objects.filter(
+    name='coupon_use',
+    date=ago_7day
+  ).first()
+  if not coupon_use_7_to_6:
+    coupon_use_7_to_6 = 0
+  else:
+    coupon_use_7_to_6 = coupon_use_7_to_6.value
+  coupon_use_6_to_5 = models.STATISTIC.objects.filter(
+    name='coupon_use',
+    date=ago_6day
+  ).first()
+  if not coupon_use_6_to_5:
+    coupon_use_6_to_5 = 0
+  else:
+    coupon_use_6_to_5 = coupon_use_6_to_5.value
+  coupon_use_5_to_4 = models.STATISTIC.objects.filter(
+    name='coupon_use',
+    date=ago_5day
+  ).first()
+  if not coupon_use_5_to_4:
+    coupon_use_5_to_4 = 0
+  else:
+    coupon_use_5_to_4 = coupon_use_5_to_4.value
+  coupon_use_4_to_3 = models.STATISTIC.objects.filter(
+    name='coupon_use',
+    date=ago_4day
+  ).first()
+  if not coupon_use_4_to_3:
+    coupon_use_4_to_3 = 0
+  else:
+    coupon_use_4_to_3 = coupon_use_4_to_3.value
+  coupon_use_3_to_2 = models.STATISTIC.objects.filter(
+    name='coupon_use',
+    date=ago_3day
+  ).first()
+  if not coupon_use_3_to_2:
+    coupon_use_3_to_2 = 0
+  else:
+    coupon_use_3_to_2 = coupon_use_3_to_2.value
+  coupon_use_2_to_1 = models.STATISTIC.objects.filter(
+    name='coupon_use',
+    date=ago_2day
+  ).first()
+  if not coupon_use_2_to_1:
+    coupon_use_2_to_1 = 0
+  else:
+    coupon_use_2_to_1 = coupon_use_2_to_1.value
+  coupon_use_1_to_0 = models.STATISTIC.objects.filter(
+    name='coupon_use',
+    date=ago_1day
+  ).first()
+  if not coupon_use_1_to_0:
+    coupon_use_1_to_0 = 0
+  else:
+    coupon_use_1_to_0 = coupon_use_1_to_0.value
+
+  # 마일리지 사용 총합
+  mileage_use_7_to_6 = models.STATISTIC.objects.filter(
+    name='mileage_use',
+    date=ago_7day
+  ).first()
+  if not mileage_use_7_to_6:
+    mileage_use_7_to_6 = 0
+  else:
+    mileage_use_7_to_6 = mileage_use_7_to_6.value
+  mileage_use_6_to_5 = models.STATISTIC.objects.filter(
+    name='mileage_use',
+    date=ago_6day
+  ).first()
+  if not mileage_use_6_to_5:
+    mileage_use_6_to_5 = 0
+  else:
+    mileage_use_6_to_5 = mileage_use_6_to_5.value
+  mileage_use_5_to_4 = models.STATISTIC.objects.filter(
+    name='mileage_use',
+    date=ago_5day
+  ).first()
+  if not mileage_use_5_to_4:
+    mileage_use_5_to_4 = 0
+  else:
+    mileage_use_5_to_4 = mileage_use_5_to_4.value
+  mileage_use_4_to_3 = models.STATISTIC.objects.filter(
+    name='mileage_use',
+    date=ago_4day
+  ).first()
+  if not mileage_use_4_to_3:
+    mileage_use_4_to_3 = 0
+  else:
+    mileage_use_4_to_3 = mileage_use_4_to_3.value
+  mileage_use_3_to_2 = models.STATISTIC.objects.filter(
+    name='mileage_use',
+    date=ago_3day
+  ).first()
+  if not mileage_use_3_to_2:
+    mileage_use_3_to_2 = 0
+  else:
+    mileage_use_3_to_2 = mileage_use_3_to_2.value
+  mileage_use_2_to_1 = models.STATISTIC.objects.filter(
+    name='mileage_use',
+    date=ago_2day
+  ).first()
+  if not mileage_use_2_to_1:
+    mileage_use_2_to_1 = 0
+  else:
+    mileage_use_2_to_1 = mileage_use_2_to_1.value
+  mileage_use_1_to_0 = models.STATISTIC.objects.filter(
+    name='mileage_use',
+    date=ago_1day
+  ).first()
+  if not mileage_use_1_to_0:
+    mileage_use_1_to_0 = 0
+  else:
+    mileage_use_1_to_0 = mileage_use_1_to_0.value
+
+  # 광고 신청 건수
+  ad_request_7_to_6 = models.STATISTIC.objects.filter(
+    name='place_ad_request',
+    date=ago_7day
+  ).first()
+  if not ad_request_7_to_6:
+    ad_request_7_to_6 = 0
+  else:
+    ad_request_7_to_6 = ad_request_7_to_6.value
+  ad_request_6_to_5 = models.STATISTIC.objects.filter(
+    name='place_ad_request',
+    date=ago_6day
+  ).first()
+  if not ad_request_6_to_5:
+    ad_request_6_to_5 = 0
+  else:
+    ad_request_6_to_5 = ad_request_6_to_5.value
+  ad_request_5_to_4 = models.STATISTIC.objects.filter(
+    name='place_ad_request',
+    date=ago_5day
+  ).first()
+  if not ad_request_5_to_4:
+    ad_request_5_to_4 = 0
+  else:
+    ad_request_5_to_4 = ad_request_5_to_4.value
+  ad_request_4_to_3 = models.STATISTIC.objects.filter(
+    name='place_ad_request',
+    date=ago_4day
+  ).first()
+  if not ad_request_4_to_3:
+    ad_request_4_to_3 = 0
+  else:
+    ad_request_4_to_3 = ad_request_4_to_3.value
+  ad_request_3_to_2 = models.STATISTIC.objects.filter(
+    name='place_ad_request',
+    date=ago_3day
+  ).first()
+  if not ad_request_3_to_2:
+    ad_request_3_to_2 = 0
+  else:
+    ad_request_3_to_2 = ad_request_3_to_2.value
+  ad_request_2_to_1 = models.STATISTIC.objects.filter(
+    name='place_ad_request',
+    date=ago_2day
+  ).first()
+  if not ad_request_2_to_1:
+    ad_request_2_to_1 = 0
+  else:
+    ad_request_2_to_1 = ad_request_2_to_1.value
+  ad_request_1_to_0 = models.STATISTIC.objects.filter(
+    name='place_ad_request',
+    date=ago_1day
+  ).first()
+  if not ad_request_1_to_0:
+    ad_request_1_to_0 = 0
+  else:
+    ad_request_1_to_0 = ad_request_1_to_0.value
+
+  # 광고 집행 건수
+  ad_execute_7_to_6 = models.STATISTIC.objects.filter(
+    name='place_on_ad',
+    date=ago_7day
+  ).first()
+  if not ad_execute_7_to_6:
+    ad_execute_7_to_6 = 0
+  else:
+    ad_execute_7_to_6 = ad_execute_7_to_6.value
+  ad_execute_6_to_5 = models.STATISTIC.objects.filter(
+    name='place_on_ad',
+    date=ago_6day
+  ).first()
+  if not ad_execute_6_to_5:
+    ad_execute_6_to_5 = 0
+  else:
+    ad_execute_6_to_5 = ad_execute_6_to_5.value
+  ad_execute_5_to_4 = models.STATISTIC.objects.filter(
+    name='place_on_ad',
+    date=ago_5day
+  ).first()
+  if not ad_execute_5_to_4:
+    ad_execute_5_to_4 = 0
+  else:
+    ad_execute_5_to_4 = ad_execute_5_to_4.value
+  ad_execute_4_to_3 = models.STATISTIC.objects.filter(
+    name='place_on_ad',
+    date=ago_4day
+  ).first()
+  if not ad_execute_4_to_3:
+    ad_execute_4_to_3 = 0
+  else:
+    ad_execute_4_to_3 = ad_execute_4_to_3.value
+  ad_execute_3_to_2 = models.STATISTIC.objects.filter(
+    name='place_on_ad',
+    date=ago_3day
+  ).first()
+  if not ad_execute_3_to_2:
+    ad_execute_3_to_2 = 0
+  else:
+    ad_execute_3_to_2 = ad_execute_3_to_2.value
+  ad_execute_2_to_1 = models.STATISTIC.objects.filter(
+    name='place_on_ad',
+    date=ago_2day
+  ).first()
+  if not ad_execute_2_to_1:
+    ad_execute_2_to_1 = 0
+  else:
+    ad_execute_2_to_1 = ad_execute_2_to_1.value
+  ad_execute_1_to_0 = models.STATISTIC.objects.filter(
+    name='place_on_ad',
+    date=ago_1day
+  ).first()
+  if not ad_execute_1_to_0:
+    ad_execute_1_to_0 = 0
+  else:
+    ad_execute_1_to_0 = ad_execute_1_to_0.value
+
+  # 시간
+  ago_7day = ago_7day.strftime('%Y-%m-%d')
+  ago_6day = ago_6day.strftime('%Y-%m-%d')
+  ago_5day = ago_5day.strftime('%Y-%m-%d')
+  ago_4day = ago_4day.strftime('%Y-%m-%d')
+  ago_3day = ago_3day.strftime('%Y-%m-%d')
+  ago_2day = ago_2day.strftime('%Y-%m-%d')
+  ago_1day = ago_1day.strftime('%Y-%m-%d')
+  today = today.strftime('%Y-%m-%d')
+
+  # export
+  if request.GET.get('export'):
+    headers = ['', ago_6day, ago_5day, ago_4day, ago_3day, ago_2day, ago_1day, today]
+    values = [
+      ['coupon_create', 'coupon_use', 'mileage_use', 'ad_request', 'ad_excute'],
+      [coupon_create_7_to_6, mileage_use_7_to_6, ad_request_7_to_6, ad_execute_7_to_6],
+      [coupon_create_6_to_5, mileage_use_6_to_5, ad_request_6_to_5, ad_execute_6_to_5],
+      [coupon_create_5_to_4, mileage_use_5_to_4, ad_request_5_to_4, ad_execute_5_to_4],
+      [coupon_create_4_to_3, mileage_use_4_to_3, ad_request_4_to_3, ad_execute_4_to_3],
+      [coupon_create_3_to_2, mileage_use_3_to_2, ad_request_3_to_2, ad_execute_3_to_2],
+      [coupon_create_2_to_1, mileage_use_2_to_1, ad_request_2_to_1, ad_execute_2_to_1],
+      [coupon_create_1_to_0, mileage_use_1_to_0, ad_request_1_to_0, ad_execute_1_to_0],
+    ]
+    table_data = list(zip(*values))
+    return render(request, 'export.html', {
+      'headers': headers,
+      'table_data': table_data,
+    })
+
   return render(request, 'supervisor/index.html', {
     **contexts,
+    'active_partner': active_partner, # 파트너 가입 수
+    'pending_partner': pending_partner, # 파트너 가입 대기 수
+    'qna_no_answer': qna_no_answer, # qna 게시판에 답변이 없는 게시글 수
+    'qna_answer': qna_answer, # qna 게시판에 답변이 있는 게시글 수
+    'active_coupon_count': active_coupon_count, # 사용 가능한 쿠폰 수
+    'used_coupon_count': used_coupon_count, # 사용된 쿠폰 수
+    'coupon_request_message_count': coupon_request_message_count, # 관리자에게 도착한 쿠폰 요청 메세지 수
+    'place_on_ad_count': place_on_ad_count, # 광고 중인 여행지 수
+    'place_ad_request_message_count': place_ad_request_message_count, # 관리자에게 도착한 여행지 광고 요청 메세지 수
+    'stats': zip(
+      [ago_7day, ago_6day, ago_5day, ago_4day, ago_3day, ago_2day, ago_1day, today],
+      [
+        coupon_create_7_to_6,
+        coupon_create_6_to_5,
+        coupon_create_5_to_4,
+        coupon_create_4_to_3,
+        coupon_create_3_to_2,
+        coupon_create_2_to_1,
+        coupon_create_1_to_0,
+      ],
+      [
+        coupon_use_7_to_6,
+        coupon_use_6_to_5,
+        coupon_use_5_to_4,
+        coupon_use_4_to_3,
+        coupon_use_3_to_2,
+        coupon_use_2_to_1,
+        coupon_use_1_to_0,
+      ],
+      [
+        mileage_use_7_to_6,
+        mileage_use_6_to_5,
+        mileage_use_5_to_4,
+        mileage_use_4_to_3,
+        mileage_use_3_to_2,
+        mileage_use_2_to_1,
+        mileage_use_1_to_0,
+      ],
+      [
+        ad_request_7_to_6,
+        ad_request_6_to_5,
+        ad_request_5_to_4,
+        ad_request_4_to_3,
+        ad_request_3_to_2,
+        ad_request_2_to_1,
+        ad_request_1_to_0,
+      ],
+      [
+        ad_execute_7_to_6,
+        ad_execute_6_to_5,
+        ad_execute_5_to_4,
+        ad_execute_4_to_3,
+        ad_execute_3_to_2,
+        ad_execute_2_to_1,
+        ad_execute_1_to_0,
+      ]
+    )
   })
 
 # 계정 관리 페이지
@@ -39,8 +468,55 @@ def account(request):
   elif not (contexts['account']['account_type'] == 'supervisor' or (contexts['account']['account_type'] == 'subsupervisor' and 'account' in contexts and contexts['account']['subsupervisor_permissions'])):
     return redirect('/?redirect_message=permission_denied')
 
+  # 사용자 계정 생성
+  if request.method == 'POST' and request.GET.get('create_user'):
+    id = request.POST['id']
+    password = request.POST['password']
+    nickname = request.POST['nickname']
+    number = int(request.POST.get('number', '1'))
+
+    user_group = Group.objects.get(name='user')
+    level = models.LEVEL_RULE.objects.get(level=1)
+
+    # number가 2 이상인 경우, 반복
+    if number > 1:
+      for i in range(number):
+        repeat_id = id + str(i)
+        repeat_nickname = nickname + str(i)
+        id_exist = models.ACCOUNT.objects.filter(username=repeat_id).exists()
+        nickname_exist = models.ACCOUNT.objects.filter(first_name=repeat_nickname).exists()
+        if not id_exist and not nickname_exist:
+          account = models.ACCOUNT.objects.create_user(
+            username = repeat_id,
+            first_name = repeat_nickname,
+            note = '관리자에 의해 생성됨.',
+            level = level,
+            recent_ip = '',
+          )
+          account.set_password(password)
+          account.save()
+          account.groups.add(user_group)
+          account.save()
+    else:
+      id_exist = models.ACCOUNT.objects.filter(username=id).exists()
+      nickname_exist = models.ACCOUNT.objects.filter(first_name=nickname).exists()
+      if not id_exist and not nickname_exist:
+        account = models.ACCOUNT.objects.create_user(
+          username = id,
+          first_name = nickname,
+          note = '관리자에 의해 생성됨.',
+          level = level,
+          recent_ip = '',
+        )
+        account.set_password(password)
+        account.save()
+        account.groups.add(user_group)
+        account.save()
+
+    return JsonResponse({'result': 'success'})
+
   # 부관리자 신규 생성 처리
-  if request.method == 'POST':
+  if request.method == 'POST' and request.GET.get('create_subsupervisor'):
     id = request.POST['id']
     password = request.POST['password']
     nickname = '관리자' + ''.join(random.choices(string.ascii_letters + string.digits, k=6))
@@ -62,26 +538,25 @@ def account(request):
   # data
   tab = request.GET.get('tab', 'user') # user, dame, partner, supervisor
   page = int(request.GET.get('page', '1'))
-  search_account_id = request.GET.get('accountId', '')
-  search_account_nickname = request.GET.get('accountNickname', '')
-  search_account_status = request.GET.get('accountStatus', '')
+  search_account_id = request.GET.get('account_id', '')
+  search_account_nickname = request.GET.get('account_nickname', '')
+  search_account_level_at_least = int(request.GET.get('account_level_at_least', '0'))
+  search_account_status = request.GET.get('account_status', '')
+  search_account_ip = request.GET.get('account_ip', '')
+  search_account_mileage_at_least = int(request.GET.get('account_mileage_at_least', '0'))
 
   # 계정 타입별로 계정 통계 가져오기
   # 관리자 계정 탭은 별도의 통계 없음.
   # 파트너는 각 카테고리면 파트너 계정 통계 제공
   # 사용자는 사용자 및 여성 회원의 계정 통계 제공
-  all_accounts = get_user_model().objects.all().order_by('-date_joined')
+  all_accounts = models.ACCOUNT.objects.prefetch_related('groups').select_related('level').all().order_by('date_joined')
   if tab == 'supervisor': # 관리자 검색 탭일 경우, 별도의 사용자 통계 기능 없음.
     status = {}
   elif tab == 'user': # 사용자 검색 탭일 경우, 사용자 및 여성회원 정보 제공
-    dame_accounts = all_accounts.exclude(
-      groups__name__in=['partner', 'supervisor', 'subsupervisor']
-    ).filter(
-      Q(groups__name='dame') | Q(status='pending_dame')
+    dame_accounts = all_accounts.filter(
+      groups__name='dame'
     )
-    user_accounts = all_accounts.exclude(
-      groups__name__in=['partner', 'supervisor', 'subsupervisor', 'dame']
-    ).filter(
+    user_accounts = all_accounts.filter(
       groups__name='user'
     )
     status = {
@@ -94,7 +569,7 @@ def account(request):
       },
       'dame': {
         'active': dame_accounts.filter(status='active').count(),
-        'pending': dame_accounts.filter(status='pending_dame').count(),
+        'pending': dame_accounts.filter(status='pending').count(),
         'deleted': dame_accounts.filter(status='deleted').count(),
         'blocked': dame_accounts.filter(status='blocked').count(),
         'banned': dame_accounts.filter(status='banned').count(),
@@ -102,34 +577,78 @@ def account(request):
     }
   elif tab == 'partner': # 파트너 검색 탭일 경우, 파트너 정보 제공
     partner_accounts = all_accounts.filter(
-      Q(groups__name='partner') | Q(status='pending_partner')
+      Q(groups__name='partner')
     )
     status = {
       'partner': {
         'active': partner_accounts.filter(status='active').count(),
-        'pending': partner_accounts.filter(status='pending_partner').count(),
+        'pending': partner_accounts.filter(status='pending').count(),
         'deleted': partner_accounts.filter(status='deleted').count(),
         'blocked': partner_accounts.filter(status='blocked').count(),
         'banned': partner_accounts.filter(status='banned').count(),
       }
     }
+
   # 사용자 검색
   if tab == 'user': # 사용자 탭일 경우, user와 dame을 같이 검색
-    sats = all_accounts.exclude(
-      groups__name__in=['partner', 'supervisor', 'subsupervisor', 'admin']
-    ).select_related('level').filter(
-      Q(username__contains=search_account_id) | Q(first_name__contains=search_account_nickname) | Q(status__contains=search_account_status)
+    sats = all_accounts.select_related('level').filter(
+      Q(groups__name='user') | Q(groups__name='dame'),
+      Q(username__contains=search_account_id),
+      Q(first_name__contains=search_account_nickname),
+      Q(level__level__gte=search_account_level_at_least),
+      Q(status__contains=search_account_status),
+      Q(recent_ip__contains=search_account_ip),
+      Q(mileage__gte=search_account_mileage_at_least)
     )
   elif tab == 'supervisor': # 관리자 탭일 경우, 관리자만 검색
     sats = all_accounts.filter(
-      Q(groups__name='supervisor') | Q(groups__name='subsupervisor') | Q(groups__name='admin'),
-      Q(username__contains=search_account_id) | Q(first_name__contains=search_account_nickname) | Q(status__contains=search_account_status)
+      Q(groups__name__in=['supervisor', 'subsupervisor', 'admin']),
+      Q(username__contains=search_account_id),
+      Q(first_name__contains=search_account_nickname),
+      Q(recent_ip__contains=search_account_ip),
     )
   elif tab == 'partner': # 파트너 탭일 경우, 파트너만 검색
     sats = all_accounts.filter(
       Q(groups__name='partner'),
-      Q(username__contains=search_account_id) | Q(first_name__contains=search_account_nickname) | Q(status__contains=search_account_status)
+      Q(username__contains=search_account_id),
+      Q(first_name__contains=search_account_nickname),
+      Q(level__level__gte=search_account_level_at_least),
+      Q(status__contains=search_account_status),
+      Q(recent_ip__contains=search_account_ip),
+      Q(mileage__gte=search_account_mileage_at_least)
     )
+
+  # 만약 출력 요청일 경우, 모든 줄 출력
+  if request.GET.get('print'):
+    return render(request, 'supervisor/account_print.html', {
+      'accounts': sats,
+    })
+
+  # export
+  if request.GET.get('export'):
+    headers = ['ID', '닉네임', '이메일', '그룹', '계정 종류', '가입일', '마지막 로그인', '상태', '노트', '마일리지', '경험치', '전화번호', '부관리자 권한', '최근 접속 IP', '레벨']
+    values = [
+      [acnt.username for acnt in sats],
+      [acnt.first_name for acnt in sats],
+      [acnt.email for acnt in sats],
+      [[group.name for group in acnt.groups.all()] for acnt in sats],
+      ['admin' if 'admin' in [group.name for group in acnt.groups.all()] else 'subsupervisor' if 'subsupervisor' in [group.name for group in acnt.groups.all()] else 'supervisor' if 'supervisor' in [group.name for group in acnt.groups.all()] else 'partner' if 'partner' in [group.name for group in acnt.groups.all()] else 'dame' if 'dame' in [group.name for group in acnt.groups.all()] else 'user' for acnt in sats],
+      [str(acnt.date_joined).replace('.', '/') for acnt in sats],
+      [str(acnt.last_login).replace('.', '/') for acnt in sats],
+      [acnt.status for acnt in sats],
+      [acnt.note for acnt in sats],
+      [acnt.mileage for acnt in sats],
+      [acnt.exp for acnt in sats],
+      [acnt.tel for acnt in sats],
+      [acnt.subsupervisor_permissions for acnt in sats],
+      [acnt.recent_ip.replace('.', '/') for acnt in sats],
+      [acnt.level.level for acnt in sats],
+    ]
+    table_data = list(zip(*values))
+    return render(request, 'export.html', {
+      'headers': headers,
+      'table_data': table_data,
+    })
 
   last_page = sats.count() // 20 + 1 # 20개씩 표시
   search_accounts = []
@@ -142,21 +661,23 @@ def account(request):
       'partner_name': account.last_name,
       'email': account.email,
       'groups': [group.name for group in account.groups.all()],
+      'account_type': 'admin' if 'admin' in [group.name for group in account.groups.all()] else 'subsupervisor' if 'subsupervisor' in [group.name for group in account.groups.all()] else 'supervisor' if 'supervisor' in [group.name for group in account.groups.all()] else 'partner' if 'partner' in [group.name for group in account.groups.all()] else 'dame' if 'dame' in [group.name for group in account.groups.all()] else 'user',
       'date_joined': account.date_joined,
       'last_login': account.last_login,
       'status': account.status,
       'note': account.note,
-      'coupon_point': account.coupon_point,
-      'level_point': account.level_point,
+      'mileage': account.mileage,
+      'exp': account.exp,
       'tel': account.tel,
       'subsupervisor_permissions': account.subsupervisor_permissions,
+      'recent_ip': account.recent_ip,
       'level': {
         'level': account.level.level,
         'image': account.level.image,
         'text': account.level.text,
         'text_color': account.level.text_color,
         'background_color': account.level.background_color,
-        'required_point': account.level.required_point,
+        'required_exp': account.level.required_exp,
       } if account.level else None,
     })
 
@@ -166,12 +687,16 @@ def account(request):
     'name': group.name
   } for group in all_groups]
 
+  # 차단 IP 목록
+  blocked_ips = models.BLOCKED_IP.objects.all()
+
   return render(request, 'supervisor/account.html', {
     **contexts,
     'accounts': search_accounts, # 검색된 계정 정보
     'groups': groups, # 그룹 정보
     'last_page': last_page, # 페이지 처리를 위해 필요한 정보
     'status': status, # 사용자 종류(탭) 별 통계 데이터(관리자는 없음)
+    'blocked_ips': blocked_ips, # 차단 IP 목록
   })
 
 # 게시글 관리 페이지
@@ -313,11 +838,18 @@ def post(request):
   page = int(request.GET.get('page', '1'))
   search_post_title = request.GET.get('post_title', '')
   search_board_id = request.GET.get('board_id', '')
+  search_author_id = request.GET.get('author_id', '')
+  is_place_search = request.GET.get('is_place_search', 'n')
+  search_category_id = request.GET.get('category_id', '')
+  search_address = request.GET.get('address', '')
+  place_status = request.GET.get('place_status', '')
 
   # status
   # 각 게시판 별 게시글 수와 댓글 수, 조회수, 좋아요 수 통계 제공
   all_post = models.POST.objects.prefetch_related('boards').select_related('author', 'place_info', 'review_post').prefetch_related('place_info__categories').all()
-  boards = models.BOARD.objects.all().order_by('display_weight')
+  boards = models.BOARD.objects.exclude(
+    Q(name='greeting') | Q(name='attendance') | Q(name='travel')
+  ).prefetch_related('display_groups', 'enter_groups', 'write_groups', 'comment_groups').all()
   board_dict = {
     board.name: {
       'id': board.id,
@@ -398,12 +930,49 @@ def post(request):
     boards.append(board_dict[child])
 
   # 게시글 검색
-  sps = all_post.exclude(
-    Q(title__contains='greeting') | Q(title__contains='attendance')
-  ).filter(
-    Q(title__contains=search_post_title),
-    Q(boards__id__contains=search_board_id),
-  )
+  if is_place_search == 'y':
+    sps = all_post.filter(
+      Q(place_info__isnull=False), # 여행지 정보가 있는 게시글만 검색
+      Q(title__contains=search_post_title),
+      Q(boards__id__contains=search_board_id),
+      Q(author__username__contains=search_author_id),
+      Q(place_info__categories__id__contains=search_category_id),
+      Q(place_info__address__contains=search_address),
+      Q(place_info__status__contains=place_status),
+    )
+  else:
+    sps = all_post.filter(
+      Q(place_info__isnull=True), # 여행지 정보가 없는 게시글만 검색
+      Q(title__contains=search_post_title),
+      Q(boards__id__contains=search_board_id),
+      Q(author__username__contains=search_author_id),
+    )
+
+  # export
+  if request.GET.get('export'):
+    headers = ['id', 'title', 'image', 'view_count', 'like_count', 'created_at', 'search_weight', 'board', 'author', 'place_info', 'review_post']
+    values = [
+        [str(post.id) for post in sps],
+        [post.title for post in sps],
+        [str(post.image) for post in sps],
+        [str(post.view_count) for post in sps],
+        [str(post.like_count) for post in sps],
+        [str(post.created_at) for post in sps],
+        [str(post.search_weight) for post in sps],
+        [str(post.boards.all().last().name) for post in sps],
+        [str(post.author.username) for post in sps],
+        [str(post.place_info) for post in sps],
+        [str(post.review_post) for post in sps],
+    ]
+
+    # 행(row) 중심 데이터 변환 (Transpose)
+    table_data = list(zip(*values))
+
+    return render(request, 'export.html', {
+        'headers': headers,
+        'table_data': table_data,
+    })
+
   last_page = sps.count() // 20 + 1 # 20개씩 표시
   search_posts = []
   for post in sps[(page - 1) * 20:page * 20]:
@@ -416,6 +985,7 @@ def post(request):
       'created_at': post.created_at,
       'search_weight': post.search_weight,
       'board': {
+        'name': post.boards.all().last().name,
         'board_type': post.boards.all().last().board_type,
       },
       'author': {
@@ -439,116 +1009,19 @@ def post(request):
       } if post.review_post else None,
     })
 
+  all_categories = models.CATEGORY.objects.all()
+  categories = [{
+    'id': category.id,
+    'name': category.name,
+  } for category in all_categories]
+
   return render(request, 'supervisor/post.html', {
     **contexts,
     'posts': search_posts, # 검색된 게시글 정보
     'last_page': last_page, # 페이지 처리를 위해 필요한 정보
     'status': boards, # 게시판 별 통계 데이터. 게시판 별로 게시글 수, 댓글 수, 조회수, 좋아요 수 제공
+    'categories': categories, # 카테고리 정보
   })
-
-'''
-# 광고 게시글 관리 페이지
-def ad_post(request):
-  context = get_default_context(request)
-  # 관리자 여부 확인, 관리자가 아닌 경우, 리다이렉트 후 권한 없은 메세지 표시
-  if 'supervisor' not in context['account']['account_type']:
-    return redirect('/?redirect_message=permission_denied')
-
-  # 광고 정책 수정 요청 처리
-  # 광고 게시글은 파트너가 생성하므로 삭제 또는 생성 불가. 수정만 가능
-  if request.method == 'PATCH':
-    update_ad_id = request.GET.get('ad_id', '')
-    ad = post_mo.AD.objects.get(id=update_ad_id)
-    ad.weight = request.GET.get('ad_weight', ad.weight)
-    ad.note = request.GET.get('ad_note', ad.note)
-    ad.start_dt = request.GET.get('ad_start_dt', ad.start_dt)
-    ad.end_dt = request.GET.get('ad_end_dt', ad.end_dt)
-    ad.save()
-    return JsonResponse({'result': 'success'})
-
-  # data
-  page = int(request.GET.get('page', '1'))
-  search_post_title = request.GET.get('postTItle', '')
-  search_ad_status = request.GET.get('adStatus', '')
-
-  # status
-  # 광고 게시글 통계 정보 제공
-  # 광고 상태별 통계 제공(활성, 만료). 활성 상태인 경우, 베시트 업체 뱃지가 표시됨
-  all_ads = post_mo.AD.objects.all().order_by('status', '-end_dt', '-weight')
-  status = {
-    'active': all_ads.filter(status='active').count(),
-    'expired': all_ads.filter(status='expired').count(),
-  }
-
-  # search
-  sas = all_ads.filter(
-    Q(status__contains=search_ad_status),
-  )
-  last_page = sas.count() // 20 + 1 # 20개씩 표시
-  search_ads = []
-  for ad in sas[(page - 1) * 20:page * 20]:
-
-    # 광고 게시글 정보
-    post = post_mo.POST.objects.filter(
-      Q(title__contains=search_post_title),
-      id = ad.post_id,
-    ).first()
-    if not post:
-      continue
-
-    # 광고 게시글 작성자 정보
-    at = get_user_model().objects.get(username=post.author_id)
-    author = {
-      'id': post.author_id,
-      'nickname': at.first_name,
-      'partner_categories': at.partner_categories,
-      'partner_address': at.partner_address,
-      'partner_tel': at.partner_tel,
-    }
-
-    # 광고 게시글이 속한 게시판 정보
-    boards = []
-    for b in str(post.board_id).split(','):
-      if b == '':
-        continue
-      board = post_mo.BOARD.objects.get(id=b)
-      boards.append({
-        'id': board.id,
-        'name': board.name,
-      })
-
-    # 광고 게시글 정보
-    post = {
-      'id': post.id,
-      'status': ad.status,
-      'title': post.title,
-      'boards': boards,
-      'author': author,
-      'created_dt': post.created_dt,
-      'view_count': len(str(post.views).split(',')) - 1,
-      'bookmark_count': len(str(post.bookmarks).split(',')) - 1,
-      'image': str(post.images).split(',')[0],
-      'comment_count': post_mo.COMMENT.objects.filter(post_id=post.id).count
-    }
-
-    # 광고 정보
-    search_ads.append({
-      'id': ad.id,
-      'post': post,
-      'start_dt': ad.start_dt,
-      'end_dt': ad.end_dt,
-      'status': ad.status,
-      'weight': ad.weight, # 광고 게시글의 가중치. 이 필드로 우선 순위가 결정됨
-      'note': ad.note,
-    })
-
-  return render(request, 'supervisor/ad_post.html', {
-    **context,
-    'search_ads': search_ads, # 검색된 광고 게시글 정보
-    'last_page': last_page, # 페이지 처리를 위해 필요한 정보
-    'status': status, # 광고 상태별 통계 데이터 제공
-  })
-'''
 
 # 쿠폰 관리 페이지
 # 별도의 쿠폰 수정 삭제 기능은 없음
@@ -583,6 +1056,29 @@ def coupon(request):
       code__contains=search_coupon_code,
       name__contains=search_coupon_name,
     ).order_by('-created_at')
+
+  if request.GET.get('export'):
+    headers = ['code', 'name', 'image', 'content', 'required_mileage', 'expire_at', 'status', 'post', 'create_account']
+    values = [
+        [coupon.code for coupon in cs],
+        [coupon.name for coupon in cs],
+        [str(coupon.image) for coupon in cs],
+        [coupon.content for coupon in cs],
+        [coupon.required_mileage for coupon in cs],
+        [coupon.expire_at for coupon in cs],
+        [coupon.status for coupon in cs],
+        [coupon.post.title for coupon in cs],
+        [coupon.create_account.last_name for coupon in cs],
+    ]
+
+    # 행(row) 중심 데이터 변환 (Transpose)
+    table_data = list(zip(*values))
+
+    return render(request, 'export.html', {
+        'headers': headers,
+        'table_data': table_data,
+    })
+
   last_page = cs.count() // 20 + 1 # 20개씩 표시
   coupons = []
   for coupon in cs[(page - 1) * 20:page * 20]:
@@ -591,8 +1087,8 @@ def coupon(request):
       'name': coupon.name,
       'image': coupon.image,
       'content': coupon.content,
-      'required_point': coupon.required_point,
-      'expire_at': coupon.expire_at,
+      'required_mileage': coupon.required_mileage,
+      'expire_at': datetime.datetime.strftime(coupon.expire_at, '%Y-%m-%d'),
       'status': coupon.status,
       'post': {
         'id': coupon.post.id,
@@ -634,6 +1130,28 @@ def message(request):
       title__contains=search_message_title,
       sender_account__contains=search_message_receiver,
     )
+
+    # export
+    if request.GET.get('export'):
+      headers = ['id', 'title', 'content', 'is_read', 'created_at', 'include_coupon', 'sender']
+      values = [
+        [m.id for m in msgs],
+        [m.title for m in msgs],
+        [m.content for m in msgs],
+        [m.is_read for m in msgs],
+        [m.created_at for m in msgs],
+        [m.include_coupon.code for m in msgs],
+        [m.sender_account for m in msgs],
+      ]
+
+      # 행(row) 중심 데이터 변환 (Transpose)
+      table_data = list(zip(*values))
+
+      return render(request, 'export.html', {
+        'headers': headers,
+        'table_data': table_data
+      })
+
     last_page = len(msgs) // 20 + 1
     messages = [{
       'id': m.id,
@@ -672,6 +1190,28 @@ def message(request):
       title__contains=search_message_title,
       to_account__contains=search_message_receiver,
     )
+
+    # export
+    if request.GET.get('export'):
+      headers = ['id', 'title', 'content', 'is_read', 'created_at', 'include_coupon', 'to']
+      values = [
+        [m.id for m in msgs],
+        [m.title for m in msgs],
+        [m.content for m in msgs],
+        [m.is_read for m in msgs],
+        [m.created_at for m in msgs],
+        [m.include_coupon.code for m in msgs],
+        [m.to_account for m in msgs],
+      ]
+
+      # 행(row) 중심 데이터 변환 (Transpose)
+      table_data = list(zip(*values))
+
+      return render(request, 'export.html', {
+        'headers': headers,
+        'table_data': table_data
+      })
+
     last_page = len(msgs) // 20 + 1
     messages = [{
       'id': m.id,
@@ -787,14 +1327,14 @@ def level(request):
     text_color = request.POST.get('text_color', '')
     background_color = request.POST.get('background_color', '')
     text = request.POST.get('text', '')
-    required_point = request.POST.get('required_point', '')
+    required_exp = request.POST.get('required_exp', '')
     models.LEVEL_RULE( # 그냥 덮어쓰기로 처리
       level=level,
       image=image,
       text_color=text_color,
       background_color=background_color,
       text=text,
-      required_point=required_point
+      required_exp=required_exp
     ).save()
     return JsonResponse({'result': 'success'})
 
@@ -805,7 +1345,7 @@ def level(request):
     'text': lv.text,
     'text_color': lv.text_color,
     'background_color': lv.background_color,
-    'required_point': lv.required_point,
+    'required_exp': lv.required_exp,
   } for lv in lvs]
 
   return render(request, 'supervisor/level.html', {
@@ -823,8 +1363,6 @@ def setting(request):
     return redirect('/?redirect_message=need_login')
   elif not (contexts['account']['account_type'] == 'supervisor' or (contexts['account']['account_type'] == 'subsupervisor' and 'setting' in contexts and contexts['account']['subsupervisor_permissions'])):
     return redirect('/?redirect_message=permission_denied')
-  
-  print(request.method)
 
   # 설정 정보 변경 요청 처리
   if request.method == 'POST':

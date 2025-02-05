@@ -46,9 +46,6 @@
 
   </div>
 
-  <!-- 검색 컴포넌트 -->
-  {% include 'parts/search.html' %}
-
   <!-- 페이지 버튼 -->
   <div id="pageButton"></div>
 
@@ -110,6 +107,15 @@
       location.href = '/';
     } else if (redirect_message == 'not_allowed_board') {
       await showAlert('권한 없음', '해당 게시판에 대한 권한이 없습니다.', 'error');
+      location.href = '/';
+    } else if (redirect_message == 'not_allowed') {
+      await showAlert('권한 없음', '해당 페이지에 대한 권한이 없습니다.', 'error');
+      location.href = '/';
+    } else if (redirect_message == 'permission_denied') {
+      await showAlert('권한 없음', '해당 페이지에 대한 권한이 없습니다.', 'error');
+      location.href = '/';
+    } else if (redirect_message == 'partner_status_error') {
+      await showAlert('파트너 승인 필요', '파트너 승인 후 이용해주세요.', 'error');
       location.href = '/';
     }
   }

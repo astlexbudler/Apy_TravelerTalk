@@ -23,7 +23,7 @@
   <!-- 게시글 -->
   {% if travel_post != None %}
   <div class="col-12 border rounded p-3 mb-5">
-    <a href="/post/travel_view?post={{travel_post.id}}" class="text-dark text-decoration-none">
+    <a href="{{main_url}}/post/travel_view?post={{travel_post.id}}" class="text-dark text-decoration-none">
       <div style="display: flex; justify-content: space-between; white-space: nowrap;">
         <div style="display: inline-block; text-align: left;">
           <span class="text-black-50" style="font-size: 12px;">
@@ -64,7 +64,7 @@
 
     <div class="col-md-6 col-lg-4 mt-4">
       <div class="pt-2-8 pb-2-4 px-1-6 border rounded shadow p-3">
-        <a href="/partner/coupon">
+        <a href="{{partner_url}}/coupon">
           <div class="text-center mb-3">
             <div class="icon icon-xl bg-primary text-white rounded-circle mb-3">
               <i class="fi fi-rr-ticket"></i>
@@ -79,47 +79,27 @@
         </a>
       </div>
     </div>
-    {% if travel_post == None %}
     <div class="col-md-6 col-lg-4 mt-4">
       <div class="pt-2-8 pb-2-4 px-1-6 border rounded shadow p-3">
-        <a href="/partner/write_post">
+        <a href="{{partner_url}}/write_post">
           <div class="text-center mb-3">
             <div class="icon icon-xl bg-primary text-white rounded-circle mb-3">
               <i class="fi fi-rr-edit"></i>
             </div>
           </div>
           <h5 class="mb-3">
-            여행지 등록
+            여행지 등록 또는 수정
           </h5>
           <p class="text-black-50">
-            새 여행지 등록 및 광고 생성
+            여행지 등록 및 광고 생성
           </p>
         </a>
       </div>
     </div>
-    {% else %}
-    <div class="col-md-6 col-lg-4 mt-4">
-      <div class="pt-2-8 pb-2-4 px-1-6 border rounded shadow p-3">
-        <a href="/partner/rewrite_post">
-          <div class="text-center mb-3">
-            <div class="icon icon-xl bg-primary text-white rounded-circle mb-3">
-              <i class="fi fi-rr-edit"></i>
-            </div>
-          </div>
-          <h5 class="mb-3">
-            여행지 관리
-          </h5>
-          <p class="text-black-50">
-            내가 등록한 여행지 게시글을 수정하거나, 광고 정책을 확인합니다.
-          </p>
-        </a>
-      </div>
-    </div>
-    {% endif %}
 
     <div class="col-md-6 col-lg-4 mt-4">
       <div class="pt-2-8 pb-2-4 px-1-6 border rounded shadow p-3">
-        <a href="/message">
+        <a href="{{main_url}}/message">
           <div class="text-center mb-3">
             <div class="icon icon-xl bg-primary text-white rounded-circle mb-3">
               <i class="fi fi-rr-envelope"></i>

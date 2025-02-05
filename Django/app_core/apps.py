@@ -32,7 +32,7 @@ class AppCoreConfig(AppConfig):
         )
         models.SERVER_SETTING.objects.create(
           name='site_logo', # 로고
-          value='/media/default.png'
+          value='/media/icon.png'
         )
         models.SERVER_SETTING.objects.create(
           name='site_header', # 로고
@@ -63,7 +63,7 @@ class AppCoreConfig(AppConfig):
           value='100'
         )
         models.SERVER_SETTING.objects.create(
-          name='review_point', # 리뷰 게시물 작성 시 제공 포인트
+          name='review_point', # 후기 게시물 작성 시 제공 포인트
           value='200'
         )
         models.SERVER_SETTING.objects.create(
@@ -77,21 +77,14 @@ class AppCoreConfig(AppConfig):
           text='1레벨', # 레벨 이름
           text_color='#000000', # 레벨 텍스트 색상
           background_color='#cd7f32', # 레벨 배경 색상
-          required_point=0 # 레벨업 포인트
+          required_exp=0 # 레벨업 포인트
         )
         models.LEVEL_RULE.objects.create(
           level=2, # 레벨
           text='2레벨', # 레벨 이름
           text_color='#000000', # 레벨 텍스트 색상
           background_color='#cd7f32', # 레벨 배경 색상
-          required_point=100 # 레벨업 포인트
-        )
-        models.LEVEL_RULE.objects.create(
-          level=3, # 레벨
-          text='3레벨', # 레벨 이름
-          text_color='#000000', # 레벨 텍스트 색상
-          background_color='#cd7f32', # 레벨 배경 색상
-          required_point=200 # 레벨업 포인트
+          required_exp=100 # 레벨업 포인트
         )
 
         # GROUP: 그룹 테이블
@@ -118,66 +111,13 @@ class AppCoreConfig(AppConfig):
         )
 
         # ACCOUNT: 계정 테이블
-        user = models.ACCOUNT(
-          username='user', # 사용자 아이디
-          first_name='닉네임1', # 사용자 이름
-          last_name='',
-          email='',
-          status = 'active', # 계정 상태
-          note='테스트용 사용자 데이터입니다. 아이디: user, 비밀번호: user1!',
-          coupon_point=1000, # 쿠폰 포인트
-          level_point=100, # 레벨 포인트
-          tel='', # 연락처
-          subsupervisor_permissions='', # 부관리자 권한
-        )
-        user.set_password('user1!')
-        user.save()
-        user.groups.add(user_group)
-        user.save()
-
-        dame = models.ACCOUNT(
-          username='dame', # Dame 아이디
-          first_name='닉네임2', # 낙네임
-          last_name='',
-          email='',
-          status = 'pending', # 계정 상태
-          note='테스트용 사용자 데이터입니다. 아이디: dame, 비밀번호: dame1!',
-          coupon_point=100, # 쿠폰 포인트
-          level_point=200, # 레벨 포인트
-          tel='', # 연락처
-          subsupervisor_permissions='', # 부관리자 권한
-        )
-        dame.set_password('dame1!')
-        dame.save()
-        dame.groups.add(user_group, dame_group)
-        dame.save()
-
-        partner = models.ACCOUNT(
-          username='partner', # 파트너 아이디
-          first_name='닉네임4', # 닉네임
-          last_name='업체명1', # 파트너 업체명
-          email='applify.kr@gmail.com',
-          status = 'active', # 계정 상태
-          note='테스트용 파트너 데이터입니다. 아이디: partner, 비밀번호: partner1!',
-          coupon_point=0,
-          level_point=0,
-          tel='01041098317', # 연락처
-          subsupervisor_permissions='', # 부관리자 권한
-        )
-        partner.set_password('partner1!')
-        partner.save()
-        partner.groups.add(partner_group)
-        partner.save()
-
         supervisor = models.ACCOUNT(
           username='supervisor', # 관리자 아이디
-          first_name='닉네임5', # 닉네임
+          first_name='관리자', # 닉네임
           last_name='',
           email='',
           status = 'active', # 계정 상태
-          note='테스트용 관리자 데이터입니다. 아이디: supervisor, 비밀번호: supervisor1!',
-          coupon_point=0,
-          level_point=0,
+          note='',
           tel='', # 연락처
           subsupervisor_permissions='', # 부관리자 권한
         )
@@ -185,19 +125,6 @@ class AppCoreConfig(AppConfig):
         supervisor.save()
         supervisor.groups.add(supervisor_group)
         supervisor.save()
-
-        subsupervisor = models.ACCOUNT(
-          username='subsupervisor', # 부관리자 아이디
-          first_name='닉네임6', # 닉네임
-          last_name='',
-          email='',
-          status = 'active', # 계정 상태
-          note='테스트용 부관리자 데이터입니다. 아이디: subsupervisor, 비밀번호: subsupervisor1!',
-          coupon_point=0,
-          level_point=0,
-          tel='', # 연락처
-          subsupervisor_permissions='account, post, banner, level, server', # 부관리자 권한
-        )
 
         admin = models.ACCOUNT(
           username='admin', # 관리자 아이디
@@ -212,46 +139,129 @@ class AppCoreConfig(AppConfig):
 
         # CATEGORY: 카테고리 테이블
         abroad = models.CATEGORY.objects.create(
-          name='해외'
-        )
-        service = models.CATEGORY.objects.create(
-          parent_category=abroad,
-          name='서비스'
-        )
-        tour = models.CATEGORY.objects.create(
-          parent_category=service,
-          name='투어'
+          name='국내'
         )
 
         # BOARD: 게시판 테이블
+        # 출석체크 게시판
+        attend = models.BOARD.objects.create(
+          name='출석체크',
+          board_type='attendance',
+        )
+        # display_groups - all
+        # enter_groups - all
+        # write_groups - none
+        # comment_groups - all
+        attend.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        attend.enter_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        attend.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        attend.save()
+
+        # 가입인사 게시판
+        hello = models.BOARD.objects.create(
+          name='가입인사',
+          board_type='greeting',
+        )
+        # display_groups - all
+        # enter_groups - all
+        # write_groups - none
+        # comment_groups - all
+        hello.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        hello.enter_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        hello.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        hello.save()
+
+        # 익명 게시판
+        anonymous = models.BOARD.objects.create(
+          name='익명 게시판',
+          board_type='anonymous',
+        )
+        # display_groups - all
+        # enter_groups - all
+        # write_groups - user, dame, partner, supervisor, sub_supervisor
+        # comment_groups - user, dame, partner, supervisor, sub_supervisor
+        anonymous.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        anonymous.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        anonymous.write_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        anonymous.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        anonymous.save()
+
+        # 문의 게시판
+        qna = models.BOARD.objects.create(
+          name='문의',
+          board_type='qna',
+        )
+        # display_groups - all
+        # enter_groups - all
+        # write_groups - user, dame, partner, supervisor, sub_supervisor
+        # comment_groups - supervisor, sub_supervisor
+        qna.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        qna.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        qna.write_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        qna.comment_groups.add(supervisor_group, subsupervisor_group)
+        qna.save()
+
+        # 여행지 게시판
         travel_abroad = models.BOARD.objects.create(
-          name='해외 여행지',
+          name='여행지',
           board_type='travel',
         )
         # display_groups - all
         # enter_groups - all
         # write_groups - partner
-        # comment_groups - user, dame
+        # comment_groups - user, dame, partner, supervisor, sub_supervisor
         travel_abroad.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         travel_abroad.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         travel_abroad.write_groups.add(partner_group)
-        travel_abroad.comment_groups.add(user_group, dame_group)
+        travel_abroad.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         travel_abroad.save()
 
-        event = models.BOARD.objects.create(
-          name='이벤트',
-          board_type='event',
+        # 쿠폰 거래 게시판
+        coupon = models.BOARD.objects.create(
+          name='쿠폰 거래',
+          board_type='coupon',
+        )
+        # display_groups - all
+        # enter_groups - all
+        # write_groups - partner, supervisor, sub_supervisor
+        # comment_groups - user, dame, partner, supervisor, sub_supervisor
+        coupon.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        coupon.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        coupon.write_groups.add(partner_group, supervisor_group, subsupervisor_group)
+        coupon.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        coupon.save()
+
+        # 후기 게시판
+        review = models.BOARD.objects.create(
+          name='후기 게시판',
+          board_type='review',
+        )
+        # display_groups - all
+        # enter_groups - all
+        # write_groups - user, dame
+        # comment_groups - user, dame, partner, supervisor, sub_supervisor
+        review.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        review.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        review.write_groups.add(user_group, dame_group)
+        review.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        review.save()
+
+        # 공지사항
+        notice = models.BOARD.objects.create(
+          name='공지사항',
+          board_type='board',
         )
         # display_groups - all
         # enter_groups - all
         # write_groups - supervisor, sub_supervisor
         # comment_groups - user, dame, partner, supervisor, sub_supervisor
-        event.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        event.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        event.write_groups.add(supervisor_group, subsupervisor_group)
-        event.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        event.save()
+        notice.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        notice.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        notice.write_groups.add(supervisor_group, subsupervisor_group)
+        notice.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        notice.save()
 
+        # 커뮤니티
         community = models.BOARD.objects.create(
           name='커뮤니티',
           board_type='tree',
@@ -266,6 +276,7 @@ class AppCoreConfig(AppConfig):
         community.comment_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         community.save()
 
+        # 자유 게시판
         free = models.BOARD.objects.create(
           parent_board=community,
           name='자유 게시판',
@@ -277,10 +288,11 @@ class AppCoreConfig(AppConfig):
         # comment_groups - user, dame, partner, supervisor, sub_supervisor
         free.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         free.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        free.write_groups.add(user_group, dame_group)
+        free.write_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         free.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         free.save()
 
+        # 여성 게시판
         dame = models.BOARD.objects.create(
           parent_board=community,
           name='여성 게시판',
@@ -296,81 +308,6 @@ class AppCoreConfig(AppConfig):
         dame.comment_groups.add(dame_group, supervisor_group, subsupervisor_group)
         dame.save()
 
-        review = models.BOARD.objects.create(
-          parent_board=community,
-          name='리뷰 게시판',
-          board_type='review',
-        )
-        # display_groups - all
-        # enter_groups - all
-        # write_groups - user, dame
-        # comment_groups - user, dame, partner, supervisor, sub_supervisor
-        review.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        review.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        review.write_groups.add(user_group, dame_group)
-        review.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        review.save()
-
-        anonymous = models.BOARD.objects.create(
-          parent_board=community,
-          name='익명 게시판',
-          board_type='anonymous',
-        )
-        # display_groups - all
-        # enter_groups - all
-        # write_groups - user, dame
-        # comment_groups - user, dame, partner, supervisor, sub_supervisor
-        anonymous.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        anonymous.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        anonymous.write_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        anonymous.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        anonymous.save()
-
-        # 출석체크 게시판
-        attend = models.BOARD.objects.create(
-          name='출석체크',
-          board_type='attendance',
-        )
-        # display_groups - all
-        # enter_groups - all
-        # write_groups - none
-        # comment_groups - all
-        attend.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        attend.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        attend.comment_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        attend.save()
-
-        # 가입인사 게시판
-        hello = models.BOARD.objects.create(
-          name='가입인사',
-          board_type='greeting',
-        )
-        # display_groups - all
-        # enter_groups - all
-        # write_groups - none
-        # comment_groups - all
-        hello.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        hello.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        hello.comment_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        hello.save()
-
-        # 자유 개시판에 글 101개 생성
-        for i in range(1, 101):
-          post = models.POST.objects.create(
-            author=user,
-            title='자유 게시판 게시글 ' + str(i),
-            content='자유 게시판 게시글 ' + str(i) + ' 내용입니다.',
-          )
-          post.boards.add(community, free)
-          post.save()
-          # 게시글에 댓글 5개 생성
-          for j in range(1, 6):
-            comment = models.COMMENT.objects.create(
-              post=post,
-              author=user,
-              content='자유 게시판 게시글 ' + str(i) + ' 댓글 ' + str(j) + ' 내용입니다.'
-            )
-
         # 배너 생성
         top_banner = models.BANNER.objects.create(
           location='top',
@@ -382,26 +319,6 @@ class AppCoreConfig(AppConfig):
           image='/media/default.png',
           link='https://naver.com',
         )
-
-        # 파트너 여행지 게시글 작성
-        travel_post = models.POST.objects.create(
-          author=partner,
-          title='파트너 여행지 게시글',
-          content='파트너 여행지 게시글 내용입니다.',
-        )
-        place_info = models.PLACE_INFO.objects.create(
-          post=travel_post,
-          address='파트너 여행지 주소',
-          location_info='파트너 여행지 위치 정보',
-          open_info='파트너 여행지 영업 정보',
-          ad_end_at=datetime.now() + timedelta(days=30),
-          status='ad',
-        )
-        place_info.categories.add(abroad, service, tour)
-        place_info.save()
-        travel_post.boards.add(travel_abroad)
-        travel_post.place_info = place_info
-        travel_post.save()
 
         print('데이터베이스 기본 데이터 생성 완료')
     except Exception as e:

@@ -43,21 +43,23 @@
   {% for act in activities %}
   <!-- 활동 내역. 일시, 메세지, 포인트 변동 표시 -->
   <div class="col-12 p-2 mb-2 pb-3 border-bottom">
-    <a {% if act.location != '' %}href="{{act.location}}" target="_blank"{% else %}href="#"{% endif %}>
 
-      <span class="text-black-50" style="font-size: 12px;">
-        {{ act.created_at }}<br>
-      </span>
-      <p class="mb-2 text-dark">
-        {{ act.message }}
-      </p>
-      {% if act.point_change %}
-      <span class="text-black-50" style="font-size: 12px;">
-        <i class="fi fi-ss-coins"></i><i class="fi fi-ss-coins text-secondary"></i> {{ act.point_change }}
-      </span>
+    <span class="text-black-50" style="font-size: 12px;">
+      {{ act.created_at }}<br>
+    </span>
+    <p class="mb-2 text-dark">
+      {{ act.message }}
+    </p>
+    <span class="text-black-50" style="font-size: 12px;">
+      {% if act.mileage_change > 0 %}
+      <i class="fi fi-ss-coins"></i> <span class="numberComma">{{ act.mileage_change }}</span> 마일리지
+      <span class="me-2"></span>
       {% endif %}
+      {% if act.exp_change > 0 %}
+      <i class="fi fi-ss-coins text-secondary"></i> <span class="numberComma">{{ act.exp_change }}</span> Exp
+      {% endif %}
+    </span>
 
-    </a>
   </div>
   {% endfor %}
   {% endif %}

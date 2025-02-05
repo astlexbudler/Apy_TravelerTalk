@@ -160,7 +160,7 @@
     var formdata = new FormData();
     formdata.append('post_id', '{{ post.id }}');
     formdata.append('content', comment);
-    var result = await fetch('/api/write_comment', {
+    var result = await fetch('/api/comment', {
       method: 'POST',
       headers: {
         'X-CSRFToken': csrftoken

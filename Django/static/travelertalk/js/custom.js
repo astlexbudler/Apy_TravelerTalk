@@ -165,24 +165,23 @@ logout = async () => {
 
   // 로그아웃 메세지 출럭
   await showAlert('로그아웃 완료', '로그아웃되었습니다. 메인 페이지로 이동합니다.', 'success');
-  location.href = '/'; // 메인 페이지로 이동
+  location.href = 'http://kibang01.com'; // 메인 페이지로 이동.
   return;
 }
 
 // 검색바 검색 버튼 클릭 시
 searchPost = async () => {
   // 현재 게시판 정보 확인
-  var mobileSearchKeyword = document.getElementById('mobileSearchKeyword').value; // 검색어 가져오기 1
   var pcSearchKeyword = document.getElementById('pcSearchKeyword').value; // 검색어 가져오기 2 (모바일 검색바)
-  location.href = `/?search=${mobileSearchKeyword + pcSearchKeyword}`;
+  location.href = `http://kibang01.com/?search=${mobileSearchKeyword + pcSearchKeyword}`;
 }
 
 // 게시판 내 검색바 검색 버튼 클릭 시
-searchBoard = async () => {
+searchBoard = async (board_ids) => {
+  console.log(board_ids);
   // 현재 게시판 정보 확인
-  var board_ids = '{{request.GET.board_ids}}';
   var searchInputValue = document.getElementById('searchInput').value; // 검색어 가져오기 1
-  location.href = `/post?search=${searchInputValue}&board_ids=${board_ids}`;
+  location.href = `http://kibang01.com/post?search=${searchInputValue}&board_ids=${board_ids}`;
 }
 
 // 댓글 삭제 함수
@@ -317,4 +316,14 @@ makePaegeButton = (page, lastPage, url) => {
 
 needLogin = () => {
   showAlert('로그인 필요', '로그인이 필요한 서비스입니다.', 'warning');
+}
+
+openExportDataPage = () => {
+  nowUrl = window.location.href;
+  if (nowUrl.indexOf('?') > -1) {
+    nowUrl = nowUrl + '&export=y';
+  } else {
+    nowUrl = nowUrl + '?export=y';
+  }
+  window.open(nowUrl, '_blank');
 }

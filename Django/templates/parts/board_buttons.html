@@ -1,7 +1,7 @@
 <div class="text-end">
 
   {% if writable %}
-  <a href="/post/write_post?board_ids={{request.GET.board_ids}}" class="btn btn-primary me-2">
+  <a href="{{main_url}}/post/write_post?board_ids={{request.GET.board_ids}}" class="btn btn-primary me-2">
     글쓰기 <i class="fi fi-rr-edit"></i>
   </a>
   {% endif %}

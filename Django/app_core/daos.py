@@ -6,6 +6,7 @@ from django.shortcuts import redirect, render
 from django.contrib.auth import authenticate, logout, get_user_model
 from django.contrib.auth.models import Group
 from django.db.models import Q, Count
+from django.conf import settings
 from . import models
 
 # 기본 컨텍스트 정보 가져오기
@@ -19,8 +20,8 @@ def get_default_contexts(request):
       'nickname': user.first_name,
       'groups': [g.name for g in user.groups.all()],
       'status': user.status,
-      'subsupervisor_permissions': user.subsupervisor_permissions,
-      'coupon_point': user.coupon_point,
+      'subsupervisor_permissions': str(user.subsupervisor_permissions).split(','),
+      'mileage': user.mileage,
       'level': {
         'level': lv.level,
         'image': lv.image,
@@ -33,6 +34,9 @@ def get_default_contexts(request):
         'title': bp.title,
         'view_count': bp.view_count,
         'like_count': bp.like_count,
+        'author': {
+          'nickname': bp.author.last_name, # 작성자 파트너 이름
+        },
         'place_info': {
           'categories': [c.name for c in pi.categories.all()],
         } if (pi := bp.place_info) else None,
@@ -43,24 +47,17 @@ def get_default_contexts(request):
     activities = [{
       'id': a.id,
       'message': a.message,
+      'mileage_change': a.mileage_change,
+      'exp_change': a.exp_change,
       'created_at': a.created_at,
-    } for a in models.ACTIVITY.objects.filter(account=request.user)[:5]]
-
-
-    # 사용자 활동 내역 가져오기
-    activities = [{
-      'id': a.id,
-      'message': a.message,
-      'point_change': a.point_change,
-      'created_at': a.created_at,
-    } for a in models.ACTIVITY.objects.filter(account=request.user)[:5]]
+    } for a in models.ACTIVITY.objects.filter(account=request.user).order_by('-created_at')[:5]]
 
     # 받은 메세지 가져오기
     messages = [{
       'id': m.id,
       'title': m.title,
       'created_at': m.created_at,
-    } for m in models.MESSAGE.objects.filter(to_account=request.user.username, is_read=False)[:5]]
+    } for m in models.MESSAGE.objects.filter(to_account=request.user.username, is_read=False).order_by('-created_at')[:5]]
 
     # 내 쿠폰 가져오기
     coupons = [{
@@ -69,7 +66,7 @@ def get_default_contexts(request):
       'post': {
         'title': p.title,
       } if (p := c.post) else None,
-    } for c in models.COUPON.objects.select_related('post').filter(own_accounts=request.user, status='normal')[:5]]
+    } for c in models.COUPON.objects.select_related('post').filter(own_accounts=request.user, status='normal').order_by('expire_at')[:5]]
 
   else: # 로그인 되어있지 않은 경우
     guest_id = request.session.get('guest_id', ''.join(random.choices(string.ascii_letters + string.digits, k=16)))
@@ -119,6 +116,10 @@ def get_default_contexts(request):
   } for r in models.POST.objects.select_related('author').filter(boards=review_board).order_by('-search_weight')[:5]]
 
   return {
+    'main_url': settings.MAIN_URL, # 메인 URL
+    'partner_url': settings.PARTNER_URL, # 파트너 URL
+    'supervisor_url': settings.SUPERVISOR_URL, # 관리자 URL
+
     'account': account, # 사용자 정보
     'activities': activities, # 사용자 활동 내역
     'unread_messages': messages, # 받은 메세지
@@ -370,8 +371,8 @@ def get_user_profile_by_id(user_id):
       'background_color': lv.background_color,
     } if (lv := user.level) else None,
     'tel': user.tel,
-    'level_point': user.level_point,
-    'coupon_point': user.coupon_point,
+    'exp': user.exp,
+    'mileage': user.mileage,
     'note': user.note,
   }
 
@@ -400,18 +401,19 @@ def get_all_level_rules():
     'text': rule.text,
     'text_color': rule.text_color,
     'background_color': rule.background_color,
-    'required_point': rule.required_point,
+    'required_exp': rule.required_exp,
   } for rule in rules]
 
 # 사용자 활동 내역 가져오기
 def get_user_activities(user_id, page):
   user_id = models.ACCOUNT.objects.get(username=user_id).id
-  acts = models.ACTIVITY.objects.filter(account=user_id)
+  acts = models.ACTIVITY.objects.filter(account=user_id).order_by('-created_at')
   last_page = len(acts) // 20 + 1
   activities = [{
     'id': a.id,
     'message': a.message,
-    'point_change': a.point_change,
+    'exp_change': a.exp_change,
+    'mileage_change': a.mileage_change,
     'created_at': a.created_at,
   } for a in acts[(page - 1) * 20:page * 20]]
   return activities, last_page
@@ -424,7 +426,7 @@ def get_all_bookmarked_places(user_id):
   return [{
     'id': b.id,
     'title': b.title,
-    'image': '/media/' + b.image if b.image else '/media/default.png',
+    'image': str(b.image) if b.image else '/media/default.png',
     'place_info': {
       'categories': [c.name for c in b.place_info.categories.all()],
       'address': b.place_info.address,
@@ -438,16 +440,17 @@ def get_all_bookmarked_places(user_id):
 def get_all_user_coupons(user_id, page):
   coupons = models.COUPON.objects.select_related('post', 'create_account').prefetch_related('own_accounts').filter(
     own_accounts__username=user_id,
-    status='normal',
+    status='active',
   ).order_by('expire_at')
+  print(coupons)
   last_page = len(coupons) // 20 + 1
   coupons = [{
     'code': c.code,
     'name': c.name,
-    'image': c.image,
+    'image': '/media/' + str(c.image) if c.image else None,
     'content': c.content,
-    'required_point': c.required_point,
-    'expire_at': c.expire_at,
+    'required_mileage': c.required_mileage,
+    'expire_at': datetime.datetime.strftime(c.expire_at, '%Y-%m-%d'),
     'status': c.status,
     'post': {
       'id': c.post.id,
@@ -462,7 +465,7 @@ def get_all_user_coupons(user_id, page):
 # 사용자의 사용된 쿠폰 내역 가져오기
 def get_all_coupon_histories(user_id, page):
   coupons = models.COUPON.objects.select_related('post', 'create_account').prefetch_related('used_account').exclude(
-    status='normal',
+    status='active',
   ).filter(
     used_account__username=user_id,
   )
@@ -470,9 +473,9 @@ def get_all_coupon_histories(user_id, page):
   coupons = [{
     'code': c.code,
     'name': c.name,
-    'image': c.image,
+    'image': '/media/' + str(c.image) if c.image else None,
     'content': c.content,
-    'required_point': c.required_point,
+    'required_mileage': c.required_mileage,
     'expire_at': c.expire_at,
     'status': c.status,
     'post': {
@@ -634,8 +637,9 @@ def get_post_info(post_id):
   return {
     'id': post.id,
     'boards': [b.name for b in post.boards.all()],
+    'board_ids': [b.id for b in post.boards.all()],
     'title': post.title,
-    'image': '/media/' + str(post.image) if post.image else '/media/default.png',
+    'image': str(post.image) if post.image else '/media/default.png',
     'content': post.content,
     'view_count': post.view_count,
     'like_count': post.like_count,

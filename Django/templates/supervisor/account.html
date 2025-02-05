@@ -2,7 +2,7 @@
 {% block content %}
 <!-- 왼쪽 사이드바 -->
 <aside class="d-none d-lg-block" style="width: 320px;">
-  {% include 'parts/left_aside_supervisor.html' %}
+  {% include 'parts/left_aside_main.html' %}
 </aside>
 
 <!-- 중앙 섹션 -->
@@ -21,19 +21,19 @@
   <!-- 선택지 버튼 그룹 -->
   <div class="btn-group w-100 d-flex">
     <div class="w-100 d-flex justify-content-center rounded-2">
-      <a class="btn w-100" href="/supervisor/account?tab=user" id="userTab">
+      <a class="btn w-100" href="/account?tab=user" id="userTab">
         사용자 계정
       </a>
     </div>
     <span class="divider"></span>
     <div class="w-100 d-flex justify-content-center rounded-2">
-      <a class="btn w-100" href="/supervisor/account?tab=partner" id="partnerTab">
+      <a class="btn w-100" href="/account?tab=partner" id="partnerTab">
         파트너 계정
       </a>
     </div>
     <span class="divider"></span>
     <div class="w-100 d-flex justify-content-center rounded-2">
-      <a class="btn w-100" href="/supervisor/account?tab=supervisor" id="supervisorTab">
+      <a class="btn w-100" href="/account?tab=supervisor" id="supervisorTab">
         관리자 계정
       </a>
     </div>
@@ -83,7 +83,7 @@
       <p>
         <i class="fi fi-rr-search"></i> 검색
       </p>
-      <form id="userSearchForm" method="get" action="/supervisor/account">
+      <form id="userSearchForm" method="get" action="/account">
         <div class="row">
           <input type="hidden" name="tab" value="{{request.GET.tab}}">
           <div class="form-group mt-4 col-6">
@@ -147,7 +147,7 @@
       <p>
         <i class="fi fi-rr-search"></i> 검색
       </p>
-      <form id="partnerSearchForm" method="get" action="/supervisor/account">
+      <form id="partnerSearchForm" method="get" action="/account">
         <div class="row">
           <input type="hidden" name="tab" value="{{request.GET.tab}}">
           <div class="form-group mt-4 col-6">
@@ -193,6 +193,13 @@
 
     </div>
 
+  </div>
+
+  <!-- 버튼 -->
+  <div class="text-end p-3 mb-5">
+    <a href="javascript: openExportDataPage();" class="btn btn-sm btn-success">
+      <i class="fi fi-rr-file-excel"></i> 다운로드
+    </a>
   </div>
 
   <div>
@@ -254,32 +261,37 @@
             </p>
           </div>
         </div>
+        {% if search_account.account_type in 'user,dame' %}
         <div class="row mt-2">
           <div class="col-6">
             <p class="text-dark m-0">
-              레벨 포인트
+              Exp
             </p>
             <p class="text-black-50">
               <i class="fi fi-ss-coins"></i> 
-              <span class="numberComma">{{ search_account.level_point }}</span> 포인트 
+              <span class="numberComma">{{ search_account.exp }}</span> Exp
             </p>
           </div>
           <div class="col-6">
             <p class="text-dark m-0">
-              쿠폰 포인트
+              마일리지
             </p>
             <p class="text-black-50">
               <i class="fi fi-ss-coins text-secondary"></i> 
-              <span class="numberComma">{{ search_account.coupon_point }}</span> 포인트
+              <span class="numberComma">{{ search_account.mileage }}</span> 마일리지
             </p>
           </div>
         </div>
+        {% endif %}
+        <p class="text-black-50 small">
+          최근 접속 IP {{ search_account.recent_ip }}
+        </p>
       </a>
       <!-- 버튼들 -->
-      <div class="mb-2">
+      <div class="my-3">
 
         <!-- 메세지 보내기 버튼 -->
-        <a class="btn btn-primary small p-1 px-2" href="/supervisor/message?tab=inbox&to={{ search_account.id }}">
+        <a class="btn btn-primary small p-1 px-2" href="/message?tab=inbox&to={{ search_account.id }}">
           <i class="fi fi-rr-envelope"></i> 메시지 보내기
         </a>
 
@@ -345,7 +357,7 @@
     // Tab
     tab = '{{request.GET.tab}}';
     if(tab == '') {
-      location.href='/supervisor/account?tab=user';
+      location.href='/account?tab=user';
     }
 
     var userTab = document.getElementById('userTab');
@@ -395,7 +407,7 @@
     var searchAccountNickname = '{{request.GET.accountNickname}}';
     var searchAccountStatus = '{{request.GET.accountStatus}}';
     console.log('{{request.GET.page}} | {{last_page}}');
-    makePaegeButton('{{request.GET.page}}', '{{last_page}}', `/supervisor/account?tab=${tab}&accountId=${searchAccountId}&accountNickname=${searchAccountNickname}&accountStatus=${searchAccountStatus}`);
+    makePaegeButton('{{request.GET.page}}', '{{last_page}}', `/account?tab=${tab}&accountId=${searchAccountId}&accountNickname=${searchAccountNickname}&accountStatus=${searchAccountStatus}`);
   }
 
   var subsupervisorIdOk = false;
@@ -412,7 +424,7 @@
     }
 
     // 중복검사
-    var exist = await fetch(`/api/check_id?id=${subsupervisorId}`)
+    var exist = await fetch(`{{main_url}}/api/check_id?id=${subsupervisorId}`)
       .then(res => res.json())
       .then(data => {
         console.log(data);
@@ -488,7 +500,7 @@
     }
 
     // 하위 관리자 추가
-    await fetch('/supervisor/account', {
+    await fetch('{{supervisor_url}}/account?create_subsupervisor=y', {
       method: 'POST',
       body: formData,
       headers: {

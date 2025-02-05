@@ -1,0 +1,166 @@
+{% extends 'base/main_base.html' %}
+{% block content %}
+<!-- 왼쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+
+<!-- 중앙 섹션 -->
+<section class="main-section" style="flex: 1; min-height: 100vh;">
+
+  <!-- 제목 -->
+  <div class="mt-4 mb-5">
+    {% include 'parts/goback.html' %}
+    <h5 class="mt-5">
+      게시글 수정
+    </h5>
+    <p class="small">
+      {% for board in post.boards %}
+      {{ board }} {% if forloop.counter < post.boards|length %} &gt; {% endif %}
+      {% endfor %}
+    </p>
+  </div>
+
+  <!-- 대표 이미지 -->
+  {% if board.board_type in 'event, review' %}
+  <div class="my-4">
+    <label>대표 이미지</label>
+    <div id="imagePreview" class="mb-2 row">
+      {% for image in travel_post.images %}
+      {% if image != '' %}
+      <div class="mb-2 me-2 shadow-sm text-end p-2" style="min-width: 150px; width: 12vw; background: url('{{ image }}') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw;">
+        {% if forloop.counter == 1 %}<span class="text-white">대표 이미지</span>{% endif %}
+        <a href="javascript: removeImage('{{ image }}')"
+          class="text-danger">
+          <i class="fi fi-rr-trash"></i>
+        </a>
+      </div>
+      {% endif %}
+      {% endfor %}
+    </div>
+    <a href="javascript: document.getElementById('imageInput').click();" class="btn btn-success">
+      이미지 추가
+    </a>
+    <input type="file" class="d-none" id="imageInput" multiple>
+    <input id="imagePaths" value="{% for image in travel_post.images %}{{ image }},{% endfor %}" class="d-none">
+  </div>
+  {% endif %}
+
+  <!-- 게시판 이동 -->
+  {% if board.board_type == 'travel' %}
+  <div class="my-4">
+    <label>게시판 이동</label>
+    <select id="board_ids" class="form-select">
+      <option value="travel">여행지</option>
+      <option value="event">이벤트</option>
+      <option value="review">리뷰</option>
+    </select>
+  </div>
+  {% else %}
+  <input id="board_ids" value="{% for board_id in post.board_ids %}{{ board_id }}{% if not forloop.last %},{% endif %}{% endfor %}" class="d-none">
+  {% endif %}
+
+  <!-- 제목 -->
+  <div class="form-group mt-2 mb-3">
+    <label>제목</label>
+    <input type="text" id="postTitle" class="form-control" placeholder="제목을 입력해주세요" value="{{ post.title }}">
+  </div>
+
+  <div class="form-group mt-2 mb-3">
+    <label>내용</label>
+    <div id="postContent">
+      {{ post.content|safe }}
+    </div>
+    <div class="d-none" id="viewer"></div>
+  </div>
+
+  <div class="my-5">
+    <a class="btn btn-primary" href="javascript: writePost()">
+      작성하기 <i class="fi fi-rr-edit"></i>
+    </a>
+  </div>
+
+</section>
+
+<!-- 오른쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+
+<script>
+
+  window.onload = () => {
+    console.log(`Window loaded at ${getNowDatetimeString()}`);
+  }
+
+  const editor = new toastui.Editor({
+    el: document.querySelector('#postContent'),
+    height: '500px',
+    initialEditType: 'wysiwyg',
+    initialValue: '내용을 입력해 주세요.',
+    previewStyle: 'vertical',
+    hideModeSwitch: true,
+    language: 'ko-KR'
+  });
+
+  // 대표 이미지 추가
+  try {
+    document.getElementById('imageInput').addEventListener('change', async (e) => {
+      const files = e.target.files;
+      const imagePaths = document.getElementById('imagePaths');
+      const imagePreview = document.getElementById('imagePreview');
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const imagePath = e.target.result;
+          imagePreview.innerHTML += `
+          <div class="mb-2 me-2 shadow-sm text-end p-2" style="min-width: 150px; width: 12vw; background: url('${imagePath}') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw;"></div>
+          `;
+        }
+        reader.readAsDataURL(file);
+      }
+    });
+  } catch (e) {
+    console.error(e);
+  }
+
+  writePost = async () => {
+    const title = document.querySelector('#postTitle').value;
+    const content = editor.getMarkdown();
+
+    if (title.length < 2) {
+      showAlert('제목 오류', '제목이 너무 짧습니다. 2자 이상 작성해주세요.', 'error');
+      return;
+    }
+    if (content.length < 10) {
+      showAlert('내용 오류', '내용이 너무 짧습니다. 10자 이상 입력해주세요.', 'error');
+      return;
+    }
+
+    var formData = new FormData();
+    formData.append('title', title);
+    formData.append('content', content);
+    formData.append('board_ids', document.getElementById('board_ids').value);
+    if (document.getElementById('imageInput')) {
+      formData.append('image', document.getElementById('imageInput').files[0]); // 대표 이미지
+    }
+
+    await fetch('/post/rewrite_post?post_id={{ post.id }}', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrftoken
+      },
+      body: formData,
+    })
+    .then(response => response.json())
+    .then(async (data) => {
+      if (data.result == 'success') {
+        await showAlert('게시글 수정 완료', '게시글이 성공적으로 작성되었습니다.', 'success');
+        window.location.href = '/post/post_view?post_id=' + data.post_id;
+      } else {
+        showAlert('게시글 수정 실패', '게시글 작성에 실패했습니다. 잠시 후 다시 시도해주세요.', 'error');
+      }
+    });
+  }
+
+</script>
+
+{% endblock %}

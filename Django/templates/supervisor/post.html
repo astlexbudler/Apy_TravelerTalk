@@ -2,7 +2,7 @@
 {% block content %}
 <!-- 왼쪽 사이드바 -->
 <aside class="d-none d-lg-block" style="width: 320px;">
-  {% include 'parts/left_aside_supervisor.html' %}
+  {% include 'parts/left_aside_main.html' %}
 </aside>
 
 <!-- 중앙 섹션 -->
@@ -24,7 +24,7 @@
     <!-- 버튼 -->
     <div class="p-3 mb-5 text-end">
 
-      <a class="btn btn-success" href="javascript: new bootstrap.Modal(document.getElementById('addTopBoardModal')).show()">
+      <a class="btn btn-success btn-sm me-2" href="javascript: new bootstrap.Modal(document.getElementById('addTopBoardModal')).show()">
         <i class="fi fi-rr-plus"></i> 최상위 게시판 추가
       </a>
 
@@ -172,7 +172,7 @@
       <p>
         <i class="fi fi-rr-search"></i> 검색
       </p>
-      <form id="postSearchForm" method="get" action="/supervisor/post">
+      <form id="postSearchForm" method="get" action="{{supervisor_url}}/post">
         <div class="row">
           <div class="form-group mt-4 col-12">
             <label>제목</label>
@@ -180,7 +180,7 @@
           </div>
           <div class="form-group mt-4 col-12">
             <label>게시판</label>
-            <select class="form-control" name="board_id">
+            <select class="form-select" name="board_id">
               <option value="">전체</option>
               {% for board in status %}
               <option value="{{ board.id }}">{{ board.name }}</option>
@@ -202,6 +202,43 @@
               {% endfor %}
             </select>
           </div>
+          <div class="form-group mt-4 mb-4">
+            <label>작성자 아이디</label>
+            <input class="form-control" name="author_id" placeholder="작성자">
+          </div>
+          <div id="searchPlace" class="d-none">
+            <div class="row p-0">
+              <div class="form-group mt-2 col-6">
+                <label>여행지 카테고리</label>
+                <select class="form-select" name="category_id">
+                  <option value="">전체</option>
+                  {% for category in categories %}
+                  <option value="{{ category.id }}">{{ category.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="form-group mt-2 col-6">
+                <label>여행지 게시글 상태</label>
+                <select class="form-select" name="place_status">
+                  <option value="">전체</option>
+                  <option value="writing">작성중</option>
+                  <option value="normal">일반</option>
+                  <option value="pending">승인대기</option>
+                  <option value="ad">광고</option>
+                  <option value="blocked">차단됨</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group mt-4 col-12">
+              <label>여행지 주소</label>
+              <input class="form-control" name="address" placeholder="여행지 주소">
+            </div>
+          </div>
+          <div class="form-group mt-4 col-12">
+            <input type="checkbox" class="form-check-input me-1" name="is_place_search" value="y" {% if request.GET.is_place_search == 'y' %}checked{% endif %}
+            onchange="if(this.checked) { document.getElementById('searchPlace').classList.remove('d-none'); } else { document.getElementById('searchPlace').classList.add('d-none'); }">
+            <label>여행지 게시글 검색</label>
+          </div>
         </div>
       </form>
 
@@ -210,6 +247,15 @@
           <i class="fi fi-rr-search"></i> 검색
         </a>
       </p>
+    </div>
+
+    <!-- 버튼 -->
+    <div class="p-3 mb-5 text-end">
+
+      <a href="javascript: openExportDataPage();" class="btn btn-sm btn-success">
+        <i class="fi fi-rr-file-excel"></i> 다운로드
+      </a>
+
     </div>
 
     <!-- 검색 결과 -->
@@ -221,21 +267,11 @@
 
     {% for post in posts %}
 
-    <!-- 일반 게시글 형태 -->
-    {% if post.board.board_type in 'board, anonymous' %}
-    {% include 'parts/normal_board_type.html' %}
-    {% endif %}
-
-    <!-- 이미지가 있는 게시글 형태 -->
-    {% if post.board.board_type in 'event, review' %}
-    {% include 'parts/image_board_type.html' %}
-    {% endif %}
-
     <!-- 여행지 게시글 형태 -->
     {% if post.board.board_type == 'travel' %}
     <div class="row">
       <div class="col-6 col-lg-4 col-xl-3 p-2">
-        <a href="/post/travel_view?post_id={{ post.id }}" class="text-dark text-decoration-none" target="_blank">
+        <a href="{{main_url}}/post/travel_view?post_id={{ post.id }}" class="text-dark text-decoration-none" target="_blank">
           <div class="card hover-scale overflow-hidden shadow-sm">
             <div class="hover-scale-in blog-card-ratio ratio ratio-4x3">
       
@@ -278,13 +314,13 @@
             <div class="card-footer">
       
               <!-- 댓글보기, 후기 검색, 정보 보기 버튼 -->
-              <a href="/post/travel_view?post_id={{ post.id }}" class="btn btn-sm btn-outline-dark small p-1 px-2">
+              <a href="{{main_url}}/post/travel_view?post_id={{ post.id }}" class="btn btn-sm btn-outline-dark small p-1 px-2">
                 <i class="fi fi-rr-eye"></i> 정보보기
               </a>
-              <a href="/post/review?search={{post.title}}" class="btn btn-sm btn-outline-dark small p-1 px-2">
+              <a href="{{main_url}}/post/review?search={{post.title}}" class="btn btn-sm btn-outline-dark small p-1 px-2">
                 <i class="fi fi-rr-star"></i> 후기검색
               </a>
-              <a href="/post/travel_view?post_id={{ post.id }}" class="btn btn-sm btn-outline-dark small p-1 px-2">
+              <a href="{{main_url}}/post/travel_view?post_id={{ post.id }}" class="btn btn-sm btn-outline-dark small p-1 px-2">
                 <i class="fi fi-rr-comment"></i> 댓글보기
               </a>
       
@@ -379,6 +415,84 @@
           </div>
         </div>
       </div>
+    </div>
+    {% else %}
+    <div class="col-12 col-md-6 col-lg-4 p-2 mb-2 pb-3 w-100">
+      <a href="{{main_url}}/post/post_view?post_id={{ post.id }}" class="text-dark text-decoration-none">
+        <div class="col-12 p-2 mb-2 pb-3 border-bottom">
+          <p class="mt-2">
+            {{post.board.name}}
+          </p>
+          <div class="row g-0">
+            {% if post.image and post.image != '/media/default.png' %}
+            <div class="col-2 col-md-2">
+              <img src="{{ post.image }}" class="img-fluid rounded-start img-web shadow" />
+            </div>
+            {% endif %}
+            <div class="{% if post.image and post.image != '/media/default.png' %}col-10 col-md-10{% else %}col-12 col-md-12{% endif %}">
+              <div class="p-3 px-0">
+                <div>
+                  <span class="text-black-50" style="font-size: 12px;">
+                    {% for board in post.boards %}
+                      {{ board.name }} {% if forloop.counter < post.boards|length %} &gt; {% endif %}
+                    {% endfor %}
+                  </span>
+                </div>
+                <div class="d-flex">
+                  <div class="d-flex w-100">
+                    <h6 class="mb-2">
+                      {{ post.title }}
+                    </h6>
+                  </div>
+                  <div class="d-flex w-100 justify-content-end">
+                    <p class="m-0 text-end text-black-50" style="font-size: 12px;">
+                      <span class="me-1" style="white-space: nowrap;">
+                        <i class="fi fi-rr-eye"></i> {{ post.view_count }}
+                      </span>
+                      <span class="me-1" style="white-space: nowrap;">
+                        <i class="fi fi-rr-social-network"></i> {{ post.like_count }}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+                <div>
+                  <!-- 익명 게시판이 아닐경우, 작성자 표시 -->
+                  {% if board.board_type != 'anonymous' %}
+                  <span class="text-black-50">
+    
+                    <!-- 작성자가 파트너일 경우, 파트너 명 표시 -->
+                    {% if post.author.partner_name != '' %}
+                    <i class="fi fi-rr-heart"></i> {{ post.author.partner_name }}
+    
+                    <!-- 작성자가 파트너가 아닐 경우, 닉네임 표시 -->
+                    {% else %}
+                    <i class="fi fi-rr-user"></i> {{ post.author.nickname }} 
+    
+                    <!-- 사용자일 경우 레벨 뱃지 표시 -->
+                    {% if account.account_type == 'user' or account.account_type == 'dame' %}
+    
+                    <!-- 레벨 뱃지 -->
+                    {% with level=profile.level %}
+                    {% include 'parts/level_badge.html' %}
+                    {% endwith %}
+    
+                    {% endif %}
+    
+                    {% endif %}
+    
+                  </span>
+                  {% endif %}
+                </div>
+                <div>
+                  <small class="text-black-50 mt-1">
+                    <i class="fi fi-rr-calendar"></i> {{ post.created_at }}
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </a>
     </div>
     {% endif %}
 
@@ -713,7 +827,12 @@
     var searchPostTItle = '{{request.GET.postTitle}}';
     var searchPostBoard = '{{request.GET.postBoard}}';
     console.log('{{request.GET.page}} | {{last_page}}');
-    makePaegeButton('{{request.GET.page}}', '{{last_page}}', `/supervisor/post?post_title=${searchPostTItle}&board_id=${searchPostBoard}`);
+    makePaegeButton('{{request.GET.page}}', '{{last_page}}', `{{supervisor_url}}/post?post_title=${searchPostTItle}&board_id=${searchPostBoard}`);
+
+    // 게시판 추가 모달
+    if ('{{request.GET.is_place_search}}' == 'y') {
+      document.getElementById('searchPlace').classList.remove('d-none');
+    }
   }
 
   // 최상위 게시판 추가
@@ -786,7 +905,7 @@
     formData.append('comment_groups', commentGroups);
 
     // 생성 요청
-    await fetch('/supervisor/post', {
+    await fetch('{{supervisor}}/post', {
       method: 'POST',
       body: formData,
       headers: {
@@ -874,7 +993,7 @@
     formData.append('comment_groups', commentGroups);
 
     // 생성 요청
-    await fetch('/supervisor/post', {
+    await fetch('{{supervisor_url}}/post', {
       method: 'POST',
       body: formData,
       headers: {
@@ -961,7 +1080,7 @@
     formData.append('comment_groups', commentGroups);
 
     // 수정 요청
-    await fetch('/supervisor/post', {
+    await fetch('{{supervisor_url}}/post', {
       method: 'POST',
       body: formData,
       headers: {
@@ -986,7 +1105,7 @@
     formData.append('board_id', board_id);
 
     // 삭제 요청
-    await fetch('/supervisor/post', {
+    await fetch('{{supervisor_url}}/post', {
       method: 'DELETE',
       body: formData,
       headers: {
@@ -1022,7 +1141,7 @@
     formData.append('place_info_note', adNote);
 
     // 수정 요청
-    await fetch('/supervisor/post?modify_travel_info=true', {
+    await fetch('{{supervisor_url}}/post?modify_travel_info=true', {
       method: 'POST',
       body: formData,
       headers: {

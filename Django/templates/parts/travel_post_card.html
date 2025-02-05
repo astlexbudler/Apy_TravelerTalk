@@ -1,5 +1,5 @@
 <div class="col-6 col-lg-4 col-xl-3 p-2">
-  <a href="/post/travel_view?post_id={{ post.id }}" class="text-dark text-decoration-none">
+  <a href="{{main_url}}/post/travel_view?post_id={{ post.id }}" class="text-dark text-decoration-none">
     <div class="card hover-scale overflow-hidden shadow-sm">
       <div class="hover-scale-in blog-card-ratio ratio ratio-4x3">
 
@@ -42,13 +42,13 @@
       <div class="card-footer">
 
         <!-- 댓글보기, 후기 검색, 정보 보기 버튼 -->
-        <a href="/post/travel_view?post_id={{ post.id }}" class="btn btn-sm btn-outline-dark small p-1 px-2">
+        <a href="{{main_url}}/post/travel_view?post_id={{ post.id }}" class="btn btn-sm btn-outline-dark small p-1 px-2">
           <i class="fi fi-rr-eye"></i> 정보보기
         </a>
-        <a href="/post/review?search={{post.title}}" class="btn btn-sm btn-outline-dark small p-1 px-2">
+        <a href="{{main_url}}/post/review?search={{post.title}}" class="btn btn-sm btn-outline-dark small p-1 px-2">
           <i class="fi fi-rr-star"></i> 후기검색
         </a>
-        <a href="/post/travel_view?post_id={{ post.id }}" class="btn btn-sm btn-outline-dark small p-1 px-2">
+        <a href="{{main_url}}/post/travel_view?post_id={{ post.id }}" class="btn btn-sm btn-outline-dark small p-1 px-2">
           <i class="fi fi-rr-comment"></i> 댓글보기
         </a>
 

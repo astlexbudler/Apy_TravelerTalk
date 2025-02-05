@@ -18,9 +18,14 @@ def account_login(request):
     id = request.POST.get('id', '')
     password = request.POST.get('password', '')
     user = authenticate(request, username=id, password=password)
+    ip = request.META.get('REMOTE_ADDR')
+    if models.BLOCKED_IP.objects.filter(ip=ip).exists():
+      return JsonResponse({'result': 'error'})
 
     # 로그인 성공
     if user is not None:
+      user.recent_ip = ip
+      user.save()
       if user.status == 'active': # 활성화 상태
         login(request, user)
       elif 'pending' in user.status: # 승인 대기 상태
@@ -35,35 +40,53 @@ def account_logout(request):
   logout(request)
   return JsonResponse({'result': 'success'})
 
-# 회원가입 API
-def signup(request):
-  if request.method == 'POST':
+# 파일 업로드 API
+def upload(request):
+  upload = models.UPLOAD(
+    file = request.FILES["file"]
+  )
+  upload.save()
+  path = "/media/" + str(upload.file)
+  return JsonResponse({
+      "path": path # 파일 업로드 후 경로 반환
+  })
+
+# 사용자 API
+# POST-create: 사용자 정보 생성
+# GET: 사용자 정보 검색
+# POST-update: 사용자 정보 수정
+# DELETE: 사용자 정보 삭제
+def account(request):
+
+  # 사용자 정보 생성
+  if request.method == 'POST' and request.GET.get('create'):
 
     # 회원가입 정보 확인
     account_type = request.POST['account_type']
     id = request.POST['id']
     password = request.POST['password']
-    nickname = request.POST.get('nickname', '')
+    nickname = request.POST['nickname']
     partner_name = request.POST.get('partner_name', '')
     email = request.POST.get('email', '')
     tel = request.POST.get('tel', '')
     address = request.POST.get('address', '') # place address
     service_category = request.POST.get('service_category', '') # category_ids
     location_category = request.POST.get('location_category', '') # board_ids
-    status = 'active'
-    level_point = 0
-    coupon_point = 0
 
-    # 파트너 또는 여성 회원일 경우
-    if account_type == 'partner' or account_type == 'dame':
+    # status
+    if account_type == 'partner' or account_type == 'dame': # 파트너 또는 여성 회원일 경우
       status = 'pending'
       # 승인 대기는 관리자가 확인 후 활성화 가능.
       # 승인 대기 상태에서는 일부 기능 제한
       # 글 작성, 댓글 작성, 출석 불가
+    else:
+      status = 'active'
 
-    # 사용자 또는 여성 회원일 경우
-    if account_type == 'user' or account_type == 'dame':
+    # point
+    if account_type == 'user' or account_type == 'dame': # 사용자 또는 여성 회원일 경우
       point = int(models.SERVER_SETTING.objects.get(name='register_point').value) # 가입 포인트 지급
+    else:
+      point = 0
 
     # 아이디 중복 확인
     id_exist = models.ACCOUNT.objects.filter(username=id).exists()
@@ -79,8 +102,8 @@ def signup(request):
       email=email, # 파트너 이메일
       status=status, # 계정 상태
       tel=tel, # 파트너 연락처
-      coupon_point=coupon_point, # 쿠폰 포인트
-      level_point=level_point # 레벨업 포인트
+      mileage=point, # 쿠폰 포인트
+      exp=point # 레벨업 포인트
     )
     account.set_password(password) # 비밀번호 설정
     account.save()
@@ -116,6 +139,8 @@ def signup(request):
         status='writing' # 상태
       )
       place_info.save()
+      post.place_info = place_info
+      post.save()
       for c in [int(c) for c in str(service_category).split(',')]:
         category = models.CATEGORY.objects.filter(id=c).first()
         if category:
@@ -132,282 +157,240 @@ def signup(request):
       models.ACTIVITY.objects.create(
         account=account,
         message = f'[계정] {nickname}님의 계정을 생성했습니다.',
-        point_change = '+' + str(point),
+        mileage_change = '+' + str(point),
+        exp_change = '+' + str(point),
       )
 
     return JsonResponse({'result': status})
-  return JsonResponse({'result': 'error'})
 
-# 파일 업로드 API
-def upload(request):
-  upload = models.UPLOAD(
-    file = request.FILES["file"]
-  )
-  upload.save()
-  path = "/media/" + str(upload.file)
-  return JsonResponse({
-      "path": path # 파일 업로드 후 경로 반환
-  })
+  # 사용자 정보 검색
+  elif request.method == 'GET':
+    id_or_nickname = request.GET.get('id_or_nickname', '')
 
-# 아이디 중복 확인 API
-def check_id(request):
-  id = request.GET.get('id', '')
-  User = get_user_model()
+    # 아이디 또는 닉네임으로 사용자 조회(일치 여부 확인)
+    users = models.ACCOUNT.objects.filter(
+      Q(username=id_or_nickname) | Q(first_name=id_or_nickname)
+    )
+    return JsonResponse({
+      'users': [{
+        'id': user.username,
+        'nickname': user.first_name,
+      } for user in users]
+    })
 
-  # 아이디가 이미 존재하는 경우
-  if User.objects.filter(username=id).exists():
-    return JsonResponse({'result': 'exist'}) # exist 반환
-  return JsonResponse({'result': 'not_exist'}) # not_exist 반환
+  # 사용자 정보 수정
+  elif request.method == 'POST' and request.GET.get('update'):
 
-# 닉네임 중복 확인 API(닉네임 == 파트너사 이름)
-def check_nickname(request):
-  nickname = request.GET.get('nickname', '')
-  User = get_user_model()
+    if not request.user.is_authenticated: # 비로그인 상태인 경우, 에러 반환
+      return JsonResponse({'result': 'error'})
 
-  # 닉네임이 이미 존재하는 경우
-  if User.objects.filter(first_name=nickname).exists():
-    return JsonResponse({'result': 'exist'}) # exist 반환
-  return JsonResponse({'result': 'not_exist'}) # not_exist 반환
+    # 수정 대상 설정
+    modifier = models.ACCOUNT.objects.prefetch_related('groups').filter(
+      username=request.user.username
+    ).first()
+    modifier_groups = [group.name for group in modifier.groups.all()]
+    modifier_type = 'user'
+    if 'dame' in modifier_groups:
+      modifier_type = 'dame'
+    elif 'partner' in modifier_groups:
+      modifier_type = 'partner'
+    elif 'subsupervisor' in modifier_groups:
+      modifier_type = 'subsupervisor'
+    elif 'supervisor' in modifier_groups:
+      modifier_type = 'supervisor'
 
-# 회원 정보 조회 API(쪽지 발송 시 수신자 확인에 사용)
-def search_user(request):
-  id_or_nickname = request.GET.get('id_or_nickname', '')
+    if 'supervisor' == modifier_type or ('subsupervisor' == modifier_type and 'user' in modifier.subsupervisor_permissions):
+      id = request.POST.get('edit_account_id')
+    else: # 그 외의 경우, 수정 대상을 로그인한 사용자로 설정
+      id = request.user.username
+    print(id)
+    # 수정 대상 확인
+    user = models.ACCOUNT.objects.get(username=id)
 
-  # 아이디 또는 닉네임으로 사용자 조회(일치 여부 확인)
-  users = models.ACCOUNT.objects.filter(
-    Q(username=id_or_nickname) or Q(first_name=id_or_nickname)
-  )
-  return JsonResponse({
-    'result': 'success',
-    'users': [{ # 사용자 정보 반환(list)
-      'id': user.username,
-      'nickname': user.first_name,
-    } for user in users]
-  })
+    # 정보 수정
+    # 닉네임
+    nickname = request.POST.get('nickname', user.first_name)
+    user.first_name = nickname
+    # 비밀번호
+    password = request.POST.get('password', '')
+    if password != '':
+      user.set_password(password)
+    # 파트너 업체명
+    partner_name = request.POST.get('partner_name', user.last_name)
+    user.last_name = partner_name
+    # 이메일
+    email = request.POST.get('email', user.email)
+    user.email = email
+    # 계정 상태
+    status = request.POST.get('status', user.status)
+    user.status = status
+    # 관리자 메모
+    note = request.POST.get('note', user.note)
+    user.note = note
+    # 마일리지
+    mileage = request.POST.get('mileage', user.mileage)
+    user.mileage = mileage
+    # 레벨 경험치
+    exp = request.POST.get('exp', user.exp)
+    user.exp = exp
+    # 연락처
+    tel = request.POST.get('tel', user.tel)
+    user.tel = tel
+    # 권한
+    subsupervisor_permissions = request.POST.get('subsupervisor_permissions', user.subsupervisor_permissions)
+    user.subsupervisor_permissions = subsupervisor_permissions
 
-# 쪽지 발송 API
-def send_message(request):
+    # 저장
+    user.save()
 
-  # 발신자 확인
-  sender = models.ACCOUNT.objects.prefetch_related('groups').filter(
-    username=request.user.username
-  ).first()
-  sender_groups = [group.name for group in sender.groups.all()]
-  account_type = 'guest'
-  if sender: # 발신자가 존재하는 경우
-    account_type = 'user'
-    if 'dame' in sender_groups:
-      account_type = 'dame'
-    elif 'partner' in sender_groups:
-      account_type = 'partner'
-    elif 'subsupervisor' in sender_groups:
-      account_type = 'subsupervisor'
-    elif 'supervisor' in sender_groups:
-      account_type = 'supervisor'
+    # 활동 기록 생성
+    if 'supervisor' in modifier_groups or ('subsupervisor' in modifier_groups and 'user' in modifier.subsupervisor_permissions): # 관리자 계정일 경우,
+      models.ACTIVITY.objects.create(
+        account=user,
+        message = f'[계정] {nickname}님의 계정 정보가 관리자에 의해 수정되었습니다.',
+      )
+    else: # 그 외의 경우,
+      models.ACTIVITY.objects.create(
+        account=user,
+        message = f'[계정] {nickname}님의 계정 정보를 수정했습니다.',
+      )
 
-  # 발신자 아이디 설정
-  if account_type == 'guest':
-    sender_id = request.session.get('guest_id', ''.join(random.choices(string.ascii_letters + string.digits, k=16)))
-    request.session['guest_id'] = sender_id
-  elif account_type == 'supervisor' or account_type == 'subsupervisor':
-    sender_id = 'supervisor'
-  else:
-    sender_id = sender.username
+    return JsonResponse({'success': 'y'})
 
-  # 쪽지 내용 설정
-  to_id = request.POST.get('to_id') # 수신자 아이디
-  title = request.POST.get('title') # 제목
-  content = request.POST.get('content') # 내용
-  coupon_code = request.POST.get('coupon_code') # 쿠폰 포함 여부(쿠폰은 쪽지를 통해 전달 가능)
-  image = request.FILES.get('image') # 이미지
+  # 사용자 정보 삭제
+  elif request.method == 'DELETE':
 
-  # 쪽지 확인
-  if not title or not content: # 제목 또는 내용이 없는 경우, 에러 반환
-    return JsonResponse({'result': 'error'})
+    if not request.user.is_authenticated: # 비로그인 상태인 경우, 에러 반환
+      return JsonResponse({'result': 'error'})
 
-  # 쪽지 저장
-  message = models.MESSAGE.objects.create(
-    to_account=to_id,
-    sender_account=sender_id,
-    title = title,
-    content = content,
-  )
-  if image: # 이미지가 있는 경우, 이미지 저장
-    message.images = image
-  if coupon_code: # 쿠폰 코드가 있는 경우, 쿠폰 저장
-    coupon = models.COUPON.objects.filter(code=coupon_code).first()
-    if coupon:
-      message.include_coupon = coupon
-  message.save()
+    # 삭제 대상 설정
+    deleter = models.ACCOUNT.objects.prefetch_related('groups').first()
+    deleter_groups = [group.name for group in deleter.groups.all()]
+    deleter_type = 'user'
+    if 'dame' in deleter_groups:
+      deleter_type = 'dame'
+    elif 'partner' in deleter_groups:
+      deleter_type = 'partner'
+    elif 'subsupervisor' in deleter_groups:
+      deleter_type = 'subsupervisor'
+    elif 'supervisor' in deleter_groups:
+      deleter_type = 'supervisor'
 
-  # 쪽지 발송 활동기록 생성
-  if request.user.is_authenticated: # 로그인 상태인 경우
+    if 'supervisor' == deleter_type or ('subsupervisor' == deleter_type and 'user' in deleter.subsupervisor_permissions):
+      id = request.POST.get('delete_account_id')
+    else: # 그 외의 경우, 삭제 대상을 로그인한 사용자로 설정
+      id = request.user.username
 
-    # 관리자에게 보낸 경우, receiver를 '관리자'로 설정
-    if to_id == 'supervisor':
-      receiver = '관리자'
+    # 삭제 대상 확인
+    user = models.ACCOUNT.objects.get(username=id)
+
+    # 삭제
+    user.status = 'deleted'
+    user.save()
+    # 이후 last_login이 90일 이상 지나면 DB에서 삭제됨.(scheduler로 구현)
+
+    return JsonResponse({'success': 'y'})
+
+# 메세지 API
+# POST: 메세지 발송
+# GET: 메세지 읽음 처리
+def message(request):
+
+  # 메세지 발송
+  if request.method == 'POST':
+
+    # 발신자 확인
+    sender = models.ACCOUNT.objects.prefetch_related('groups').filter(
+      username=request.user.username
+    ).first()
+    sender_groups = [group.name for group in sender.groups.all()]
+    account_type = 'guest'
+    if sender: # 발신자가 존재하는 경우
+      account_type = 'user'
+      if 'dame' in sender_groups:
+        account_type = 'dame'
+      elif 'partner' in sender_groups:
+        account_type = 'partner'
+      elif 'subsupervisor' in sender_groups:
+        account_type = 'subsupervisor'
+      elif 'supervisor' in sender_groups:
+        account_type = 'supervisor'
+
+    # 발신자 아이디 설정
+    if account_type == 'guest':
+      sender_id = request.session.get('guest_id', ''.join(random.choices(string.ascii_letters + string.digits, k=16)))
+      request.session['guest_id'] = sender_id
+    elif account_type == 'supervisor' or account_type == 'subsupervisor':
+      sender_id = 'supervisor'
     else:
-      receiver = get_user_model().objects.get(username=to_id).first_name
+      sender_id = sender.username
 
-    activity = models.ACTIVITY(
-      account=request.user,
-      message = f'[쪽지] {receiver}님에게 쪽지를 보냈습니다.',
+    # 쪽지 내용 설정
+    to_id = request.POST.get('to_id') # 수신자 아이디
+    title = request.POST.get('title') # 제목
+    content = request.POST.get('content') # 내용
+    coupon_code = request.POST.get('coupon_code') # 쿠폰 포함 여부(쿠폰은 쪽지를 통해 전달 가능)
+    image = request.FILES.get('image') # 이미지
+
+    # 쪽지 확인
+    if not title or not content: # 제목 또는 내용이 없는 경우, 에러 반환
+      return JsonResponse({'result': 'error'})
+
+    # 쪽지 저장
+    message = models.MESSAGE.objects.create(
+      to_account=to_id,
+      sender_account=sender_id,
+      title = title,
+      content = content,
     )
-    activity.save()
+    if image: # 이미지가 있는 경우, 이미지 저장
+      message.images = image
+    if coupon_code: # 쿠폰 코드가 있는 경우, 쿠폰 저장
+      coupon = models.COUPON.objects.filter(code=coupon_code).first()
+      if coupon:
+        message.include_coupon = coupon
+    message.save()
 
-  return JsonResponse({
-    'result': 'success',
-    'message_id': message.id
-  })
+    # 쪽지 발송 활동기록 생성
+    if request.user.is_authenticated: # 로그인 상태인 경우
 
-# 사용자 정보 수정 API
-def edit_user(request):
+      # 관리자에게 보낸 경우, receiver를 '관리자'로 설정
+      if to_id == 'supervisor':
+        receiver = '관리자'
+      else:
+        receiver = get_user_model().objects.get(username=to_id).first_name
 
-  if not request.user.is_authenticated: # 비로그인 상태인 경우, 에러 반환
-    return JsonResponse({'result': 'error'})
+      activity = models.ACTIVITY(
+        account=request.user,
+        message = f'[쪽지] {receiver}님에게 쪽지를 보냈습니다.',
+      )
+      activity.save()
 
-  # 수정 대상 설정
-  modifier = models.ACCOUNT.objects.prefetch_related('groups').first()
-  modifier_groups = [group.name for group in modifier.groups.all()]
-  modifier_type = 'user'
-  if 'dame' in modifier_groups:
-    modifier_type = 'dame'
-  elif 'partner' in modifier_groups:
-    modifier_type = 'partner'
-  elif 'subsupervisor' in modifier_groups:
-    modifier_type = 'subsupervisor'
-  elif 'supervisor' in modifier_groups:
-    modifier_type = 'supervisor'
+    return JsonResponse({
+      'result': 'success',
+      'message_id': message.id
+    })
 
-  if 'supervisor' == modifier_type or ('subsupervisor' == modifier_type and 'user' in modifier.subsupervisor_permissions):
-    id = request.POST.get('edit_account_id')
-  else: # 그 외의 경우, 수정 대상을 로그인한 사용자로 설정
-    id = request.user.username
+  # 메세지 읽음 처리
+  elif request.method == 'GET':
 
-  # 수정 대상 확인
-  user = models.ACCOUNT.objects.get(username=id)
+    message_id = request.GET.get('message_id', '')
+    message = models.MESSAGE.objects.filter(
+      id=message_id
+    ).first()
+    if message:
+      if not message.is_read:
+        message.is_read = True
+        message.save()
 
-  # 정보 수정
-  # 닉네임
-  nickname = request.POST.get('nickname', user.first_name)
-  user.first_name = nickname
-  # 비밀번호
-  password = request.POST.get('password', '')
-  if password != '':
-    user.set_password(password)
-  # 파트너 업체명
-  partner_name = request.POST.get('partner_name', user.last_name)
-  user.last_name = partner_name
-  # 이메일
-  email = request.POST.get('email', user.email)
-  user.email = email
-  # 계정 상태
-  status = request.POST.get('status', user.status)
-  user.status = status
-  # 관리자 메모
-  note = request.POST.get('note', user.note)
-  user.note = note
-  # 쿠폰 포인트
-  coupon_point = request.POST.get('coupon_point', user.coupon_point)
-  user.coupon_point = coupon_point
-  # 레벨 포인트
-  level_point = request.POST.get('level_point', user.level_point)
-  user.level_point = level_point
-  # 연락처
-  tel = request.POST.get('tel', user.tel)
-  user.tel = tel
-  # 권한
-  subsupervisor_permissions = request.POST.get('subsupervisor_permissions', user.subsupervisor_permissions)
-  user.subsupervisor_permissions = subsupervisor_permissions
+    return JsonResponse({'result': 'success'})
 
-  # 저장
-  user.save()
+# 댓글 API
+# POST: 댓글 작성
+# DELETE: 댓글 삭제
+def comment(request):
 
-  # 활동 기록 생성
-  if 'supervisor' in modifier_groups or ('subsupervisor' in modifier_groups and 'user' in modifier.subsupervisor_permissions): # 관리자 계정일 경우,
-    models.ACTIVITY.objects.create(
-      account=user,
-      message = f'[계정] {nickname}님의 계정 정보가 관리자에 의해 수정되었습니다.',
-    )
-  else: # 그 외의 경우,
-    models.ACTIVITY.objects.create(
-      account=user,
-      message = f'[계정] {nickname}님의 계정 정보를 수정했습니다.',
-    )
-
-  return JsonResponse({'success': 'y'})
-
-# 사용자 삭제 API
-def delete_user(request):
-  User = get_user_model()
-
-  # 로그인 상태 확인
-  if not request.user.is_authenticated: # 비로그인 상태인 경우, 에러 반환
-    return JsonResponse({'result': 'error'})
-  if 'supervisor' in User.groups or ('subsupervisor' in User.groups and 'user' in User.subsupervisor_permissions): # 관리자 계정일 경우,
-    id = request.POST.get('delete_account_id')
-  else: # 그 외의 경우,
-    id = request.user.username
-
-  if request.user.account_type == 'supervisor' or request.user.account_type == 'sub_supervisor': # 관리자 계정일 경우, 삭제 대상을 파라미터로 설정
-    id = request.POST.get('id')
-  else: # 그 외의 경우, 삭제 대상을 로그인한 사용자로 설정
-    id = request.user.username
-
-  # 삭제 대상 확인
-  user = User.objects.get(username=id)
-
-  # 삭제
-  user.is_active = False
-  user.status = 'deleted'
-  user.save()
-  # 이후 last_login이 90일 이상 지나면 DB에서 삭제됨.(scheduler로 구현)
-
-  return JsonResponse({'success': 'y'})
-
-# 쿠폰 정보 조회 API
-def search_coupon(request):
-
-  # 쿠폰 코드로 쿠폰 조회
-  coupon_code = request.GET.get('code', '')
-  cp = models.COUPON.objects.filter(
-    code=coupon_code
-  ).select_related('post', 'create_account').prefetch_related('own_accounts').first()
-
-  if cp is None: # 쿠폰이 존재하지 않는 경우, not_exist 반환
-    return JsonResponse({'result': 'not_exist', 'coupon_count': 0, 'coupon': {}})
-
-  # 쿠폰 정보 확인
-  coupon = {
-    'code': cp.code,
-    'name': cp.name,
-    'content': cp.content,
-    'required_point': cp.required_point,
-    'expire_at': cp.expire_at,
-    'created_at': cp.created_at,
-    'status': cp.status,
-    'post': {
-      'title': cp.post.title,
-    },
-    'create_account': {
-      'id': cp.create_account.username,
-      'nickname': cp.create_account.first_name,
-      'partner_name': cp.create_account.last_name,
-      'groups': [group.name for group in cp.create_account],
-    },
-    'own_accounts': [{
-      'id': account.username,
-      'nickname': account.first_name,
-    } for account in cp.own_accounts]
-  }
-
-  return JsonResponse({
-    'result': 'success',
-    'coupon': coupon
-  })
-
-# 댓글 작성 api
-def write_comment(request):
+  # 댓글 작성
   if request.method == 'POST':
     post_id = request.POST.get('post_id')
     content = request.POST.get('content')
@@ -439,7 +422,18 @@ def write_comment(request):
       models.ACTIVITY.objects.create(
         account=request.user,
         message = f'[출석체크] {today} 출석체크를 완료했습니다.',
-        point_change = '+' + add_point,
+        exp_change = add_point,
+        mileage_change = add_point,
+      )
+
+    elif 'greeting' in po.title:
+
+      # 댓글 작성 활동기록 생성
+      models.ACTIVITY.objects.create(
+        account=request.user,
+        message = f'[인사] 인사를 완료했습니다.',
+        exp_change = add_point,
+        mileage_change = add_point,
       )
 
     else: # 그 외의 경우,
@@ -449,19 +443,18 @@ def write_comment(request):
       models.ACTIVITY.objects.create(
         account=request.user,
         message = f'[게시판] {po.title} 게시글에 댓글을 작성했습니다.',
-        point_change = '+' + add_point,
+        exp_change = add_point,
+        mileage_change = add_point,
       )
 
-    request.user.coupon_point += int(add_point)
-    request.user.level_point += int(add_point)
+    request.user.mileage += int(add_point)
+    request.user.exp += int(add_point)
     request.user.save()
 
     return JsonResponse({'result': 'success'})
 
-# 댓글 삭제 api
-def delete_comment(request):
-  if request.method == 'POST':
-    comment_id = request.POST.get('comment_id', '')
+  if request.method == 'DELETE':
+    comment_id = request.GET.get('comment_id', '')
 
     # 댓글 확인
     comment = models.COMMENT.objects.select_related('author').filter(
@@ -487,18 +480,145 @@ def delete_comment(request):
 
     return JsonResponse({'result': 'success'})
 
-# 메세지 읽음 처리 api
-def read_message(request):
-  message_id = request.GET.get('message_id', '')
-  message = models.MESSAGE.objects.filter(
-    id=message_id
-  ).first()
-  if message:
-    if not message.is_read:
-      message.is_read = True
-      message.save()
+# 쿠폰 API
+# POST-create: 쿠폰 생성
+# GET: 쿠폰 검색
+# POST-patch: 쿠폰 수정
+def coupon(request):
 
-  return JsonResponse({'result': 'success'})
+  # 쿠폰 생성
+  if request.method == 'POST' and request.GET.get('create'):
+
+    # 쿠폰 정보 확인
+    code = request.POST.get('code', '')
+    name = request.POST.get('name', '')
+    image = request.FILES.get('image')
+    content = request.POST.get('content', '')
+    required_mileage = int(request.POST.get('required_mileage', '0'))
+    expire_at = request.POST.get('expire_at', '')
+    post_id = request.POST.get('post_id', '')
+
+    # 쿠폰 코드 중복 확인
+    if models.COUPON.objects.filter(code=code).exists():
+      return JsonResponse({'result': 'exist'})
+
+    # 게시글 확인
+    post = models.POST.objects.select_related('place_info').filter(
+      Q(place_info__isnull=False) & Q(id=post_id)
+    ).first()
+    if not post: # 게시글이 존재하지 않는 경우
+      return JsonResponse({'result': 'post_not_exist'})
+
+    # 쿠폰 생성
+    coupon = models.COUPON(
+      code=code,
+      name=name,
+      content=content,
+      image=image,
+      required_mileage=required_mileage,
+      expire_at=expire_at,
+      post=post,
+      create_account=request.user,
+    )
+    coupon.save()
+
+    return JsonResponse({'result': 'success'})
+
+  # 쿠폰 검색
+  if request.method == 'GET':
+
+    # 쿠폰 코드로 쿠폰 조회
+    coupon_code = request.GET.get('code', '')
+    cp = models.COUPON.objects.filter(
+      code=coupon_code,
+      create_account=request.user
+    ).first()
+
+    if cp is None: # 쿠폰이 존재하지 않는 경우, not_exist 반환
+      return JsonResponse({
+        'result': 'not_exist',
+      })
+
+    # 쿠폰 정보 확인
+    coupon = {
+      'code': cp.code,
+      'name': cp.name,
+    }
+
+    return JsonResponse({
+      'result': 'success',
+      'coupon': coupon
+    })
+
+  # 쿠폰 수정
+  if request.method == 'POST' and request.GET.get('patch'):
+
+    # 쿠폰 정보 확인
+    code = request.POST.get('code', '')
+
+    coupon = models.COUPON.objects.filter(
+      code=code
+    ).first()
+    if not coupon: # 쿠폰이 존재하지 않는 경우
+      return JsonResponse({'result': 'not_exist'})
+
+    name = request.POST.get('name', coupon.name)
+    content = request.POST.get('content', coupon.content)
+    image = request.FILES.get('image', coupon.image)
+    required_mileage = request.POST.get('required_mileage', coupon.required_mileage)
+    expire_at = request.POST.get('expire_at', coupon.expire_at)
+    status = request.POST.get('status', coupon.status)
+    own_account_ids = request.POST.get('own_account_ids')
+    used_account_ids = request.POST.get('used_account_ids')
+
+    # 쿠폰 정보 수정
+    coupon.name = name
+    coupon.content = content
+    if image:
+      coupon.image = image
+    coupon.required_mileage = required_mileage
+    coupon.expire_at = expire_at
+    coupon.status = status
+    coupon.save()
+
+    # 쿠폰 소유자 수정
+    if own_account_ids:
+      coupon.own_accounts.clear()
+      for own_account_id in own_account_ids.split(','):
+        account = models.ACCOUNT.objects.filter(username=own_account_id).first()
+        if account:
+          coupon.own_accounts.add(account)
+    if used_account_ids:
+    # 쿠폰 사용자 수정
+      coupon.used_accounts.clear()
+      for used_account_id in used_account_ids.split(','):
+        account = models.ACCOUNT.objects.filter(username=used_account_id).first()
+        if account:
+          coupon.used_accounts.add(account)
+      coupon.save()
+
+    return JsonResponse({'result': 'success'})
+
+
+# 아이디 중복 확인 API
+def check_id(request):
+  id = request.GET.get('id', '')
+  User = get_user_model()
+
+  # 아이디가 이미 존재하는 경우
+  if User.objects.filter(username=id).exists():
+    return JsonResponse({'result': 'exist'}) # exist 반환
+  return JsonResponse({'result': 'not_exist'}) # not_exist 반환
+
+# 닉네임 중복 확인 API(닉네임 == 파트너사 이름)
+def check_nickname(request):
+  nickname = request.GET.get('nickname', '')
+  User = get_user_model()
+
+  # 닉네임이 이미 존재하는 경우
+  if User.objects.filter(first_name=nickname).exists():
+    return JsonResponse({'result': 'exist'}) # exist 반환
+  return JsonResponse({'result': 'not_exist'}) # not_exist 반환
 
 # 쿠폰 받기 api
 def receive_coupon(request):

@@ -48,21 +48,21 @@
               쿠폰 이름
             </th>
             <th>
-              발급자
+              제공
             </th>
             <th>
               관련 여행지
             </th>
             <th></th>
           </tr>
-          {% if own_coupons|length == 0 %}
+          {% if coupons|length == 0 %}
           <tr>
             <td colspan="4">
               보유중인 쿠폰이 없습니다.
             </td>
           </tr>
           {% else %}
-          {% for coupon in own_coupons %}
+          {% for coupon in coupons %}
           <tr>
             <td>
               <a href="#" class="text-dark">
@@ -70,7 +70,7 @@
               </a>
             </td>
             <td>
-              {{ coupon.create_account.nickname }}
+              {{ coupon.create_account.partner_name }}
             </td>
             <td>
               <a href="/post/post_view?id={{ coupon.post.id }}" class="text-dark">
@@ -78,7 +78,7 @@
               </a>
             </td>
             <td>
-              <a href="javascript: new bootstrap.Modal(document.getElementById('couponModal{{coupon.id}}')).show();" class="text-primary">
+              <a href="javascript: new bootstrap.Modal(document.getElementById('couponModal{{coupon.code}}')).show();" class="text-primary">
                 <i class="fi fi-rr-search"></i> 상세보기
               </a>
             </td>
@@ -107,7 +107,7 @@
               쿠폰 이름
             </th>
             <th>
-              발급자
+              제공
             </th>
             <th>
               관련 여행지
@@ -117,14 +117,14 @@
             </th>
             <th></th>
           </tr>
-          {% if coupon_histories|length == 0 %}
+          {% if coupons|length == 0 %}
           <tr>
             <td colspan="5">
               쿠폰 사용 내역이 없습니다.
             </td>
           </tr>
           {% else %}
-          {% for coupon in coupon_histories %}
+          {% for coupon in coupons %}
           <tr>
             <td>
               <a href="#" class="text-dark">
@@ -132,7 +132,7 @@
               </a>
             </td>
             <td>
-              {{ coupon.create_account.nickname }}
+              {{ coupon.create_account.partner_name }}
             </td>
             <td>
               <a href="/post/post_view?id={{ coupon.post.id }}" class="text-dark">
@@ -141,10 +141,10 @@
             </td>
             <td>
               <i class="fi fi-rr-check text-success"></i>
-              {{ coupon.used_dt }}
+              {{ coupon.expire_at }}
             </td>
             <td>
-              <a href="javascript: new bootstrap.Modal(document.getElementById('couponHistoryModal{{coupon.id}}')).show();" class="text-primary">
+              <a href="javascript: new bootstrap.Modal(document.getElementById('couponHistoryModal{{coupon.code}}')).show();" class="text-primary">
                 <i class="fi fi-rr-search"></i> 상세보기
               </a>
             </td>
@@ -164,8 +164,8 @@
 <aside class="d-none d-lg-block" style="width: 320px;"></aside>
 
 <!-- Modals -->
-{% for coupon in own_coupons %}
-<div class="modal fade" id="couponModal{{coupon.id}}" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+{% for coupon in coupons %}
+<div class="modal fade" id="couponModal{{coupon.code}}" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
@@ -176,9 +176,9 @@
       </div>
       <div class="modal-body">
         <div class="row">
-          {% if coupon.images.0 != '' %}
+          {% if coupon.image != None %}
           <div class="col-6">
-            <img src="{{coupon.images.0}}" class="w-100">
+            <img src="{{coupon.image}}" class="w-100">
           </div>
           {% endif %}
           <div class="{% if coupon.images.0 == '' %}col-12{% else %}col-6{% endif %}">
@@ -202,12 +202,12 @@
                 </a>
               </small>
             </p>
-            {% if coupon.required_point != 0 %}
+            {% if coupon.required_mileage != 0 %}
             <p class="text-black-50">
               <i class="fi fi-rr-star"></i> 
               <small>
-                필요 포인트: <span class="numberComma">{{coupon.required_point}}</span> 포인트<br>
-                쿠폰을 사용하려면 <span class="numberComma">{{coupon.required_point}}</span> 만큼의 쿠폰 포인트가 필요합니다.
+                필요 포인트: <span class="numberComma">{{coupon.required_mileage}}</span> 포인트<br>
+                쿠폰을 사용하려면 <span class="numberComma">{{coupon.required_mileage}}</span> 만큼의 쿠폰 포인트가 필요합니다.
               </small>
             </p>
             {% else %}
@@ -216,7 +216,7 @@
             </p>
             {% endif %}
             <p class="text-black-50">
-              <i class="fi fi-rr-calendar"></i> <small>생성일: {{coupon.created_dt}}</small>
+              <i class="fi fi-rr-calendar"></i> <small>만료: {{coupon.expire_at}}</small>
             </p>
           </div>
         </div>

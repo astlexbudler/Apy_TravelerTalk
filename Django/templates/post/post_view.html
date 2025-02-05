@@ -24,7 +24,7 @@
             <h5>
               {{post.title}}
               {% if account.id == post.author.id %}
-              <a href="#"
+              <a href="/post/rewrite_post?post_id={{ post.id }}"
                 class="text-black-50 small">
                 <i class="fi fi-rr-edit"></i>
               </a>
@@ -40,23 +40,23 @@
               <!-- 작성자가 파트너일 경우, 파트너 명 표시 -->
               {% if post.author.partner_name != '' %}
               <i class="fi fi-rr-heart"></i> {{ post.author.partner_name }}
-    
+
               <!-- 작성자가 파트너가 아닐 경우, 닉네임 표시 -->
               {% else %}
               <i class="fi fi-rr-user"></i> {{ post.author.nickname }} 
-    
+
               <!-- 사용자일 경우 레벨 뱃지 표시 -->
               {% if account.account_type == 'user' or account.account_type == 'dame' %}
-    
+
               <!-- 레벨 뱃지 -->
               {% with level=profile.level %}
               {% include 'parts/level_badge.html' %}
               {% endwith %}
-    
+
               {% endif %}
-    
+
               {% endif %}
-    
+
             </span>
           </div>
           {% endif %}
@@ -68,14 +68,17 @@
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- 대표 이미지가 있는 경우 -->
-  {% if post.image and post.image != '/media/default.png' %}
-  <div class="my-4">
-    <img src="{{ post.image }}" class="img-fluid w-100" alt="대표 이미지">
+    {% if post.review_post %}
+    <div class="text-end">
+      <a href="/post/travel_view?post_id={{ post.review_post.id }}"
+      class="btn btn-sm btn-primary mt-2 p-1 px-2">
+      <i class="fi fi-rr-marker"></i>
+      여행지 보기
+      </a>
+    </div>
+    {% endif %}
   </div>
-  {% endif %}
 
   <!-- 게시글 내용 -->
   <div class="my-4">
@@ -86,6 +89,30 @@
 
   <!-- 댓글 작성 -->
   <div class="mt-5 mb-3 pb-3 border-bottom">
+    {% if board.board_type == 'qna' and account.account_type == 'supervisor' or account.account_type == 'subsupervisor' and 'post' in account.subsupervisor_permissions %}
+    <div class="d-flex w-100">
+      <div class="d-flex w-100">
+        <p class="text-dark">
+          답변
+        </p>
+      </div>
+      <div class="d-flex w-100 flex-row-reverse">
+        <p class="m-0 text-end text-black-50" style="font-size: 14px;">
+          <span class="me-1" style="white-space: nowrap;">
+            <i class="fi fi-rr-eye"></i> {{ post.view_count }}
+          </span>
+          <span class="me-1" style="white-space: nowrap;">
+            <i class="fi fi-rr-comment-alt-dots"></i> {{ post.comments|length }}
+          </span>
+          <span class="me-1" style="white-space: nowrap;">
+            <i class="fi fi-rr-social-network"></i> {{ post.like_count }}
+          </span>
+        </p>
+      </div>
+    </div>
+    <textarea id="commentInput" class="form-control" rows="3">
+    </textarea>
+    {% elif board.board_type != 'qna' %}
     <div class="d-flex w-100">
       <div class="d-flex w-100">
         <p class="text-dark">
@@ -106,14 +133,14 @@
         </p>
       </div>
     </div>
-    <textarea id="commentInput" class="form-control" rows="3"
-      placeholder="건전한 인터넷 문화 조성을 위해 댓글 작성 시 주의해주세요.">
+    <textarea id="commentInput" class="form-control" rows="3">
     </textarea>
+    {% endif %}
     {% if commentable %}
     <button class="btn mt-4 btn-primary" onclick="writeComment('{{ post.id }}', document.getElementById('commentInput').value);">
       댓글 작성
     </button>
-    {% else %}
+    {% elif board.board_type != 'qna' %}
     <button class="btn btn-primary mt-4" disabled>댓글 작성</button>
     {% endif %}
 
@@ -123,7 +150,11 @@
   <ul class="list-unstyled mt-5">
     {% if comments|length < 1 %} <li>
       <p>
+        {% if board.board_type == 'qna' %}
+        아직 질문에 대한 답변이 없습니다.
+        {% else %}
         댓글이 없습니다.
+        {% endif %}
       </p>
       </li>
       {% else %}

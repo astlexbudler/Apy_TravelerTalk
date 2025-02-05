@@ -4,31 +4,30 @@
   <div class="d-block d-lg-none mb-5">
     <div>
       <a class="me-4 text-black-50" style="white-space: nowrap;"
-        href="{% if not user.is_authenticated %}javascript: needLogin();{% else %}/post/attendance{% endif %}">
+        href="{% if not user.is_authenticated %}javascript: needLogin();{% else %}{{main_url}}/post/attendance{% endif %}">
         <i class="fi fi-rr-calendar-check"></i> 출석체크
       </a>
     </div>
     <div>
       <a class="text-black-50 me-3" style="white-space: nowrap;"
-        href="{% if not user.is_authenticated %}javascript: needLogin();{% else %}/bookmark{% endif %}">
+        href="{% if not user.is_authenticated %}javascript: needLogin();{% else %}{{main_url}}/bookmark{% endif %}">
         <i class="fi fi-rr-bookmark"></i> 즐겨찾기
       </a>
     </div>
     <div>
       <a class="text-black-50" style="white-space: nowrap;"
-        href="{% if not user.is_authenticated %}javascript: needLogin();{% else %}/coupon{% endif %}">
+        href="{% if not user.is_authenticated %}javascript: needLogin();{% else %}{{main_url}}/coupon{% endif %}">
         <i class="fi fi-rr-ticket"></i> 쿠폰함
       </a>
     </div>
     <div>
-      <a class="text-black-50" href="/message"
-        style="white-space: nowrap;">
+      <a class="text-black-50" href="{{main_url}}/message" style="white-space: nowrap;">
         <i class="fi fi-rr-envelope"></i> 쪽지
       </a>
     </div>
     <div>
-      <a class="text-black-50" href="/contact" style="white-space: nowrap;">
-        <i class="fi fi-rr-envelope"></i> 제휴문의
+      <a class="text-black-50" href="{{main_url}}/contact" style="white-space: nowrap;">
+        연락처
       </a>
     </div>
   </div>
@@ -54,12 +53,12 @@
         </div>
         <div class="mt-4">
           <a href="javascript: tryLogin();" class="btn mt-2 btn-primary">로그인</a>
-          <a href="/signup" class="btn mt-2 text-white" style="background-color: rgb(184, 184, 184);">회원가입</a>
+          <a href="{{main_url}}/signup" class="btn mt-2 text-white" style="background-color: rgb(184, 184, 184);">회원가입</a>
         </div>
       </div>
     </div>
     <div class="card-footer">
-      <a href="/find_account" class="text-black-50" style="text-decoration: none; font-size: 12px;">계정 복구 및 비밀번호 초기화</a>
+      <a href="{{main_url}}/find_account" class="text-black-50" style="text-decoration: none; font-size: 12px;">계정 복구 및 비밀번호 초기화</a>
     </div>
 
     {% else %}
@@ -67,54 +66,66 @@
       <div class="card-body">
 
         <!-- 계정 타입 -->
-        <a href="/profile">
-          {% if account.account_type == 'user' %}
-          <span class="badge user-level-badge" style="color: {{account.user_level.text_color}}; background-color: {{account.user_level.background_color}};">{{ account.user_level.name }}</span>
+        <a href="{{main_url}}/profile">
+          {% if account.status == 'pending' %}
+          {% if account.account_type == 'dame' %}
+          <span class="text-black-50 me-2" style="font-size: 14px;">여성 회원(가입 대기중)</span>
           {% elif account.account_type == 'partner' %}
-          {% if account.status == 'pending' %}
           <span class="text-black-50" style="font-size: 14px;">파트너(가입 대기중)</span>
-          {% else %}
+          {% endif %}
+          {% elif account.status == 'active' %}
+          {% if account.account_type == 'user' %}
+          <span class="text-black-50 me-2" style="font-size: 14px;">일반 회원</span>
+          {% elif account.account_type == 'partner' %}
           <span class="text-black-50" style="font-size: 14px;">파트너</span>
-          {% endif %}
           {% elif account.account_type == 'dame' %}
-          {% if account.status == 'pending' %}
-          <span class="text-black-50" style="font-size: 14px;">여성 회원(가입 대기중)</span>
-          {% else %}
-          <span class="text-black-50" style="font-size: 14px;">여성 회원 </span>
-          {% endif %}
-          <span class="badge text-white user-level-badge">{{ account.accumulated_point }}</span>
+          <span class="text-black-50 me-2" style="font-size: 14px;">여성 회원</span>
+          {% elif account.account_type == 'subsupervisor' %}
+          <span class="text-black-50" style="font-size: 14px;">부관리자</span>
           {% elif account.account_type == 'supervisor' %}
-          <span class="text-black-50" style="font-size: 14px;">관리자 </span>
+          <span class="text-black-50" style="font-size: 14px;">관리자</span>
+          {% elif account.account_type == 'admin' %}
+          <span class="text-black-50" style="font-size: 14px;">데이터베이스 관리자</span>
           {% endif %}
+          {% endif %}
+
+          {% if account.account_type in 'user,dame' %}
+
+          <!-- 레벨 뱃지 -->
+          {% with level=account.level %}
+          {% include 'parts/level_badge.html' %}
+          {% endwith %}
+
+          {% endif %}
+
           <p class="text-black">
             {{ account.nickname }}
           </p>
         </a>
 
-        {% if account.account_type == 'user' or account.account_type == 'dame' or account.account_type == 'partner' %}
-
+        {% if account.account_type in 'user,dame,partner' %}
         <!-- 포인트, 쿠폰, 쪽지 -->
         <div class="border rounded p-2 pastel-white-background">
           <div class="my-2">
             <!-- 사용자일 경우 -->
-            {% if account.account_type == 'user' or account.account_type == 'dame' %}
+            {% if account.account_type in 'user,dame' %}
             <!-- 포인트 -->
             <div>
-              <a class="text-black-50" href="/activity">
+              <a class="text-black-50" href="{{main_url}}/activity">
                 보유 포인트:  <i class="fi fi-ss-coins text-secondary"></i> 
-                <span class="numberComma">{{ account.coupon_point }}</span>
+                <span class="numberComma">{{ account.mileage }}</span>
               </a>
             </div>
             <!-- 쿠폰 수 -->
             <div>
-              <a class="text-black-50" href="/coupon">
+              <a class="text-black-50" href="{{main_url}}/coupon">
                 내 쿠폰: <i class="fi fi-rr-ticket"></i> 
                 {{ coupons|length }}
               </a>
             </div>
             <!-- 읽지 않은 쪽지 갯수 -->
             <div class="mb-3">
-              <a class="text-black-50" href="/messenge">
+              <a class="text-black-50" href="{{main_url}}/messenge">
                 읽지 않은 쪽지: <i class="fi fi-rr-envelope"></i> 
                 <!-- 읽지 않은 쪽지가 4개 이상이면 4+로 표시 -->
                 {% if unread_messages|length > 4 %}
@@ -129,15 +140,40 @@
             {% elif account.account_type == 'partner' %}
             <!-- 읽지 않은 쪽지 갯수 -->
             <div class="mb-3">
-              <a class="text-black-50" href="/messenge">
+              <a class="text-black-50" href="{{main_url}}/messenge">
                 읽지 않은 쪽지: <i class="fi fi-rr-envelope"></i> 
-                {{ user_unread_messages|length }}
+                {% if unread_messages|length > 4 %}
+                4+
+                {% else %}
+                {{ unread_messages|length }}
+                {% endif %}
               </a>
             </div>
             {% endif %}
 
           </div>
         </div>
+        {% elif account.account_type == 'subsupervisor' %}
+        {% for permissions in account.subsupervisor_permissions %}
+        <p class="text-black">
+          내 권한
+        </p>
+        {% if permissions == 'post' %}
+        <span class="text-black-50" style="font-size: 12px;">게시글 관리</span>
+        {% elif permissions == 'comment' %}
+        <span class="text-black-50" style="font-size: 12px;">댓글 관리</span>
+        {% elif permissions == 'account' %}
+        <span class="text-black-50" style="font-size: 12px;">계정 관리</span>
+        {% elif permissions == 'coupon' %}
+        <span class="text-black-50" style="font-size: 12px;">쿠폰 관리</span>
+        {% elif permissions == 'message' %}
+        <span class="text-black-50" style="font-size: 12px;">쪽지 관리</span>
+        {% elif permissions == 'setting' %}
+        <span class="text-black-50" style="font-size: 12px;">설정 관리</span>
+        {% elif permissions == 'banner' %}
+        <span class="text-black-50" style="font-size: 12px;">배너 관리</span>
+        {% endif %}
+        {% endfor %}
         {% endif %}
 
         <!-- 로그아웃 -->
@@ -146,15 +182,15 @@
 
           <!-- 계정 타입에 따라 설정 페이지로 이동 버튼 표시 -->
           {% if account.account_type == 'partner' %}
-          <a class="btn btn-success" href="/partner">
+          <a class="btn btn-success" href="{{partner_url}}">
             <i class="fi fi-rr-settings"></i>
           </a>
-          {% elif account.account_type == 'supervisor' or account.account_type == 'sub_supervisor' %}
-          <a class="btn btn-success" href="/supervisor">
+          {% elif account.account_type in 'supervisor,subsupervisor' %}
+          <a class="btn btn-success" href="{{supervisor_url}}">
             <i class="fi fi-rr-settings"></i>
           </a>
           {% elif account.account_type == 'admin' %}
-          <a class="btn btn-success" href="/admin">
+          <a class="btn btn-success" href="{{main_url}}/admin">
             <i class="fi fi-rr-settings"></i>
           </a>
           {% endif %}
@@ -166,42 +202,62 @@
   </div>
 
   <!-- categories 파라미터가 있을 경우, 카테고리 검색 영역 표시. 여행지 게시판의 경우, 카테고리 검색 영역 표시 -->
-  {% if request.GET.categories != none %}
+  {% if categories %}
 
     <!-- 카테고리 검색 영역 -->
-    <div class="card mt-3">
-      <div class="card-body text-center pastel-pink-background">
-          <h5 class="card-title text-black-50">카테고리</h5>
+    <div class="card mt-3" style="border-radius: 0px;">
+      <div class="card-header" style="border-radius: 0px; background-color: rgb(246, 246, 246);">
+        <h6 class="card-title text-black-50">서비스 카테고리</h6>
       </div>
-      <div class="card-footer pastel-beige-background" style="min-height: 200px;"></div>
-        <div class="p-1 py-2">
+      <div class="card-body">
 
-          <!-- 카테고리 선택 박스 -->
-          {% for category in categories %}
-          <div class="py-3 mb-2 border-bottom">
-            <a class="nav-link" href="/post?categories={{ category.id }}">
-              {{ category.name }}
+        <!-- 카테고리 선택 박스 -->
+        {% for category in categories %}
+        <div class="py-3 mb-2 border-bottom">
+          {% if category.id in request.GET.category %}
+          <a class="nav-link" href="#" style="color: rgb(184, 184, 184);">
+            {{ category.name }}
+          </a>
+          {% else %}
+          <a class="nav-link" href="{{main_url}}/post/travel?board_ids={{request.GET.board_ids}}&category={{ category.id }}">
+            {{ category.name }}
+          </a>
+          {% endif %}
+          {% if category.children|length > 0 %}
+          <div class="ps-2 border-top {% if category.id not in request.GET.categories %}d-none{% endif %}">
+            {% for child in category.children %}
+            {% if child.id in request.GET.category %}
+            <a class="nav-link" href="#" style="color: rgb(184, 184, 184);">
+              {{ child.name }}
             </a>
-            {% if category.children|length > 0 %}
-            <div class="ps-2 border-top {% if category.id not in request.GET.categories %}d-none{% endif %}">
-              {% for child in category.children %}
-              <a class="nav-link" href="/post?categories={{ child.id }}">
-                {{ child.name }}
+            {% else %}
+            <a class="nav-link" href="{{main_url}}/post/travel?board_ids={{request.GET.board_ids}}&category={{ child.id }}">
+              {{ child.name }}
+            </a>
+            {% endif %}
+            {% if child.children|length > 0 %}
+            <div class="ps-4 border-top {% if child.id not in request.GET.categories %}d-none{% endif %}">
+              {% for child2 in child.children %}
+              {% if child2.id in request.GET.category %}
+              <a class="nav-link" href="#" style="color: rgb(184, 184, 184);">
+                {{ child2.name }}
               </a>
-              {% if child.children|length > 0 %}
-              <div class="ps-4 border-top {% if child.id not in request.GET.categories %}d-none{% endif %}">
-                {% for child2 in child.children %}
-                <a class="nav-link" href="/post?categories={{ child2.id }}">
-                  {{ child2.name }}
+              {% else %}
+              <a class="nav-link" href="{{main_url}}/post/travel?board_ids={{request.GET.board_ids}}&category={{ child2.id }}">
+                {{ child2.name }}
+              </a>
+              {% endif %}
+              {% if child2.children|length > 0 %}
+              <div class="ps-6 border-top {% if child2.id not in request.GET.categories %}d-none{% endif %}">
+                {% for child3 in child2.children %}
+                {% if child3.id in request.GET.category %}
+                <a class="nav-link" href="#" style="color: rgb(184, 184, 184);">
+                  {{ child3.name }}
                 </a>
-                {% if child2.children|length > 0 %}
-                <div class="ps-6 border-top {% if child2.id not in request.GET.categories %}d-none{% endif %}">
-                  {% for child3 in child2.children %}
-                  <a class="nav-link" href="/post?categories={{ child3.id }}">
-                    {{ child3.name }}
-                  </a>
-                  {% endfor %}
-                </div>
+                {% else %}
+                <a class="nav-link" href="{{main_url}}/post/travel?board_ids={{request.GET.board_ids}}&category={{ child3.id }}">
+                  {{ child3.name }}
+                </a>
                 {% endif %}
                 {% endfor %}
               </div>
@@ -209,23 +265,25 @@
               {% endfor %}
             </div>
             {% endif %}
+            {% endfor %}
           </div>
-          {% endfor %}
-
+          {% endif %}
         </div>
+        {% endfor %}
+
       </div>
     </div>
 
   {% else %}
 
-  {% if account.account_type != 'admin' and account.account_type != 'supervisor' and account.account_type != 'sub_supervisor' %}
+  {% if account.account_type != 'admin' and account.account_type != 'supervisor' and account.account_type != 'subsupervisor' %}
 
     <!-- 즐겨찾기 -->
     {% if user.is_authenticated %}
     <div class="card mt-3" style="border-radius: 0px;">
       <div class="card-body text-center pastel-pink-background">
         <h5 class="card-title">
-          <a href="/bookmark" class="text-black-50">즐겨찾기</a>
+          <a href="{{main_url}}/bookmark" class="text-black-50">즐겨찾기</a>
         </h5>
       </div>
       <div class="card-footer" style="min-height: 200px;">
@@ -251,9 +309,9 @@
     {% if account.account_type == 'user' or account.account_type == 'dame' %}
     <div class="card mt-3" style="border-radius: 0px;">
       <div class="card-body text-center pastel-pink-background">
-        <a href="/coupon">
-          <h5 class="card-title">
-            <a href="/coupon" class="text-black-50">내 쿠폰들</a>
+        <a href="{{main_url}}/coupon">
+          <h5 class="card-title text-black-50">
+            내 쿠폰들
           </h5>
         </a>
       </div>
@@ -273,7 +331,7 @@
           <!-- 사용 가능한 쿠폰 목록 표시. 쿠폰 이름, 만료일, 관련 게시글 제목 표시 -->
           {% for coupon in coupons %}
           <div class="mb-4">
-            <a href="/coupon">
+            <a href="{{main_url}}/coupon">
               <span class="text-black-50" style="font-size: 12px;">
                 <i class="fi fi-rr-calendar"></i> {{ coupon.expired_dt }}
               </span>
@@ -296,7 +354,7 @@
     <div class="card mt-3" style="border-radius: 0px;">
       <div class="card-body text-center pastel-pink-background">
         <h5 class="card-title">
-          <a href="/activity" class="text-black-50">활동 내역</a>
+          <a href="{{main_url}}/activity" class="text-black-50">활동 내역</a>
         </h5>
       </div>
       <div class="card-footer" style="min-height: 200px;">
@@ -310,7 +368,7 @@
           <!-- 활동 내역 표시. 활동 메세지, 활동 일시 표시 -->
           {% for activity in activities %}
           <div class="mb-4">
-            <a href="/activity">
+            <a href="{{main_url}}/activity">
               <span class="text-black-50" style="font-size: 12px;">
                 <i class="fi fi-rr-calendar"></i> {{ activity.created_at }}
               </span>

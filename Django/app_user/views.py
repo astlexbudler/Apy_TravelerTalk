@@ -4,6 +4,7 @@ from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.contrib.auth import authenticate, logout, get_user_model
 from django.db.models import Q
+from django.conf import settings
 
 from app_core import models
 from app_core import daos

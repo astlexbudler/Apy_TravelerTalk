@@ -76,10 +76,10 @@
         <tr style="cursor: pointer;" 
           onclick="
             new bootstrap.Modal(document.getElementById('messageModal{{message.id}}')).show();
-            {% if message.read_dt == '' %}setReadDatetime('{{message.id}}');{% endif %}
+            {% if not message.is_read %}setReadDatetime('{{message.id}}');{% endif %}
           ">
           <td>
-            {% if message.read_dt == '' %}
+            {% if not message.is_read %}
             <i class="fi fi-rr-eye"></i> 읽지 않음
             {% else %}
             <i class="fi fi-rr-eye"></i> 읽음
@@ -219,16 +219,6 @@
             {% if message.include_coupon != None %}
             <p class="text-black-50">
               <i class="fi fi-rr-ticket"></i> {{message.include_coupon.name}} <small class="text-black-50">{{message.include_coupon.post.title}}</small>
-              <br>
-              {% if account.id != message.include_coupon.create_account_id %}
-              <a href="javascript: receiveCoupon('{{message.include_coupon.id}}');" class="small text-primary">쿠폰 받기</a>
-              {% endif %}
-              {% if message.include_coupon.required_point != 0 %}
-              <p>
-                필요 포인트: <span class="numberComma">{{message.include_coupon.required_point}}</span> 포인트<br>
-                쿠폰을 사용하려면 <span class="numberComma">{{message.include_coupon.required_point}}</span> 만큼의 쿠폰 포인트가 필요합니다.
-              </p>
-              {% endif %}
             </p>
             {% endif %}
           </div>
@@ -236,9 +226,8 @@
 
       </div>
       <div class="modal-footer">
-        {% if message.include_coupon != None and request.GET.tab != 'outbox' %}
-        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" 
-          onclick="openModifyCouponModal('{{coupon.id}}', '{{coupon.name}}', '{{coupon.code}}', `{{coupon.description}}`, '{{coupon.required_point}}', '{{coupon.images.0}}');">
+        {% if account.id != message.include_coupon.create_account_id %}
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="receiveCoupon('{{message.id}}');">
           쿠폰 받기
         </button>
         {% endif %}
@@ -319,7 +308,9 @@
 
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-primary" onclick="sendMessage();">보내기</button>
+        <button type="button" class="btn btn-primary" onclick="sendMessage();">
+          보내기
+        </button>
       </div>
     </div>
   </div>
@@ -379,7 +370,7 @@
     }
 
     // 사용자 검색
-    var users = await fetch(`/api/search_user?id_or_nickname=${receiver}`)
+    var users = await fetch(`/api/account?id_or_nickname=${receiver}`)
     .then(res => res.json())
     .then(data => {
       console.log(data);
@@ -409,7 +400,7 @@
     }
 
     // 쿠폰 검색
-    var data = await fetch(`/api/search_coupon?code=${couponCode}`)
+    var data = await fetch(`/api/coupon?code=${couponCode}`)
     .then(res => res.json())
     .then(data => {
       console.log(data);
@@ -422,13 +413,6 @@
     var coupon = data.coupon;
     if (!exist) {
       couponConfirmMessage.innerHTML = '존재하지 않는 쿠폰 코드입니다.';
-      couponConfirmMessage.classList.add('text-danger');
-      couponConfirmMessage.classList.remove('text-primary');
-      couponValid = false;
-      return;
-    }
-    if (coupon.own_account.id != coupon.create_account.id) {
-      couponConfirmMessage.innerHTML = '이미 다른 사용자가 소유한 쿠폰입니다.';
       couponConfirmMessage.classList.add('text-danger');
       couponConfirmMessage.classList.remove('text-primary');
       couponValid = false;
@@ -502,7 +486,7 @@
     } else {
       formData.append('coupon_code', '');
     }
-    var result = await fetch('/api/send_message', {
+    var result = await fetch('/api/message', {
       method: 'POST',
       headers: {
         'X-CSRFToken': csrftoken
@@ -535,13 +519,13 @@
 
   // 쪽지 읽음 처리
   setReadDatetime = (messageId) => {
-    fetch(`/api/read_message?message_id=${messageId}`);
+    fetch(`/api/message?message_id=${messageId}`);
   }
 
   // 쿠폰 받기
-  receiveCoupon = async (couponId) => {
+  receiveCoupon = async (messageId) => {
 
-    await fetch(`/api/receive_coupon?coupon_id=${couponId}`)
+    var result = await fetch(`/api/receive_coupon?message_id=${messageId}`)
     .then(response => response.json())
     .then(data => {
       console.log(data);

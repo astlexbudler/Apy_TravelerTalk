@@ -10,7 +10,7 @@
           <!-- search(mobile) -->
           <div class="col-auto col-lg-4 d-block d-lg-none">
             <div style="display: inline-block;">
-              <a href="/">
+              <a href="{{main_url}}"> <!-- 메인 페이지로 이동 -->
                 <img src="{{ server.logo }}" alt="" style="width: 80px;">
               </a>
             </div>
@@ -18,7 +18,7 @@
 
           <!-- 메뉴 - 좌 -->
           <div class="col-auto col-lg-4 d-none d-lg-block">
-            <a class="me-4 text-black-50 small" style="white-space: nowrap;" href="/">
+            <a class="me-4 text-black-50 small" style="white-space: nowrap;" href="{{main_url}}"> <!-- 메인 페이지로 이동 -->
               <i class="fi fi-rr-home"></i> 메인 패이지로
             </a>
           </div>
@@ -95,7 +95,7 @@
         <!-- pc -->
         <div class="d-none d-lg-block">
           <div style="display: inline-block;">
-            <a href="/">
+            <a href="{{main_url}}"> <!-- 메인 페이지로 이동 -->
               <img src="{{ server.logo }}" alt="" style="width: 80px;" class="me-2">
             </a>
           </div>
@@ -124,15 +124,15 @@
 
                     <!-- 관리자 메인 -->
                     <div class="nav-item" style="white-space: nowrap;">
-                      <a class="nav-link text-dark" href="/supervisor">
+                      <a class="nav-link text-dark" href="{{supervisor_url}}">
                         <i class="fi fi-rr-pulse"></i> 관리자
                       </a>
                     </div>
 
                     <!-- 사용자 관리 -->
-                    {% if account.account_type == 'supervisor' or account.account_type == 'sub_supervisor' and 'user' in account.supervisor_permissions %}
+                    {% if account.account_type == 'supervisor' or account.account_type == 'subsupervisor' and 'user' in account.subsupervisor_permissions %}
                     <div class="nav-item" style="white-space: nowrap;">
-                      <a class="nav-link text-dark" href="/supervisor/account">
+                      <a class="nav-link text-dark" href="{{supervisor_url}}/account">
                         <i class="fi fi-rr-user"></i> 사용자 관리
                       </a>
                     </div>
@@ -145,9 +145,9 @@
                     {% endif %}
 
                     <!-- 게시글 관리 -->
-                    {% if account.account_type == 'supervisor' or account.account_type == 'sub_supervisor' and 'post' in account.supervisor_permissions %}
+                    {% if account.account_type == 'supervisor' or account.account_type == 'subsupervisor' and 'post' in account.subsupervisor_permissions %}
                     <div class="nav-item" style="white-space: nowrap;">
-                      <a class="nav-link text-dark" href="/supervisor/post">
+                      <a class="nav-link text-dark" href="{{supervisor_url}}/post">
                         <i class="fi fi-rr-edit"></i> 게시글 관리
                       </a>
                     </div>
@@ -160,9 +160,9 @@
                     {% endif %}
 
                     <!-- 쿠폰 관리 -->
-                    {% if account.account_type == 'supervisor' or account.account_type == 'sub_supervisor' and 'coupon' in account.supervisor_permissions %}
+                    {% if account.account_type == 'supervisor' or account.account_type == 'subsupervisor' and 'coupon' in account.subsupervisor_permissions %}
                     <div class="nav-item" style="white-space: nowrap;">
-                      <a class="nav-link text-dark" href="/supervisor/coupon">
+                      <a class="nav-link text-dark" href="{{supervisor_url}}/coupon">
                         <i class="fi fi-rr-ticket"></i> 쿠폰 관리
                       </a>
                     </div>
@@ -175,9 +175,9 @@
                     {% endif %}
 
                     <!-- 메시지 관리 -->
-                    {% if account.account_type == 'supervisor' or account.account_type == 'sub_supervisor' and 'message' in account.supervisor_permissions %}
+                    {% if account.account_type == 'supervisor' or account.account_type == 'subsupervisor' and 'message' in account.subsupervisor_permissions %}
                     <div class="nav-item" style="white-space: nowrap;">
-                      <a class="nav-link text-dark" href="/supervisor/message">
+                      <a class="nav-link text-dark" href="{{supervisor_url}}/message">
                         <i class="fi fi-rr-envelope"></i> 문의 관리
                       </a>
                     </div>
@@ -190,9 +190,9 @@
                     {% endif %}
 
                     <!-- 배너 관리 -->
-                    {% if account.account_type == 'supervisor' or account.account_type == 'sub_supervisor' and 'banner' in account.supervisor_permissions %}
+                    {% if account.account_type == 'supervisor' or account.account_type == 'subsupervisor' and 'banner' in account.subsupervisor_permissions %}
                     <div class="nav-item" style="white-space: nowrap;">
-                      <a class="nav-link text-dark" href="/supervisor/banner">
+                      <a class="nav-link text-dark" href="{{supervisor_url}}/banner">
                         <i class="fi fi-rr-copy-image"></i> 배너 관리
                       </a>
                     </div>
@@ -205,9 +205,9 @@
                     {% endif %}
 
                     <!-- 레벨 관리 -->
-                    {% if account.account_type == 'supervisor' or account.account_type == 'sub_supervisor' and 'level' in account.supervisor_permissions %}
+                    {% if account.account_type == 'supervisor' or account.account_type == 'subsupervisor' and 'level' in account.subsupervisor_permissions %}
                     <div class="nav-item" style="white-space: nowrap;">
-                      <a class="nav-link text-dark" href="/supervisor/level">
+                      <a class="nav-link text-dark" href="{{supervisor_url}}/level">
                         <i class="fi fi-rr-star"></i> 레벨 관리
                       </a>
                     </div>
@@ -220,9 +220,9 @@
                     {% endif %}
 
                     <!-- 설정 -->
-                    {% if account.account_type == 'supervisor' or account.account_type == 'sub_supervisor' and 'settings' in account.supervisor_permissions %}
+                    {% if account.account_type == 'supervisor' or account.account_type == 'subsupervisor' and 'settings' in account.subsupervisor_permissions %}
                     <div class="nav-item" style="white-space: nowrap;">
-                      <a class="nav-link text-dark" href="/supervisor/setting">
+                      <a class="nav-link text-dark" href="{{supervisor_url}}/setting">
                         <i class="fi fi-rr-settings"></i> 시스템 설정
                       </a>
                     </div>
@@ -258,7 +258,7 @@
   </div>
   <div class="offcanvas-body">
     <div class="py-4">
-      {% include 'parts/left_aside_supervisor.html' %}
+      {% include 'parts/left_aside_main.html' %}
     </div>
   </div>
 </div>

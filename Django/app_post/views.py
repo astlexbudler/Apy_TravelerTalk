@@ -48,9 +48,9 @@ def index(request):
   elif board.board_type == 'greeting': # 가입인사 게시판인 경우
     return redirect('/post/greeting')
   elif board.board_type == 'review':
-    return redirect('/post/review?board_ids=' + request.GET.get('board_ids'))
+    return redirect('/post/review?board_ids=' + request.GET.get('board_ids') + '&page=' + str(page) + '&search=' + search)
   elif board.board_type == 'travel':
-    return redirect('/post/travel?board_ids=' + request.GET.get('board_ids'))
+    return redirect('/post/travel?board_ids=' + request.GET.get('board_ids') + '&page=' + str(page) + '&search=' + search)
 
   # 게시글 가져오기
   posts, last_page = daos.get_board_posts(board_ids, page, search)
@@ -72,17 +72,23 @@ def write_post(request):
 
   # 데이터 가져오기
   board_ids = request.GET.get('board_ids')
+  review_post_id = request.GET.get('review_post_id')
 
   # board_ids가 없는 경우, 메인 페이지로 이동
-  if not board_ids:
+  if not board_ids and not review_post_id:
     return redirect('/?redirect_message=not_found_board')
-  board_ids = board_ids.split(',') # 게시판 아이디를 리스트로 변환
+  board_ids = str(board_ids).split(',') # 게시판 아이디를 리스트로 변환
 
   # 게시판 접근 권한 확인
-  selected_boards = daos.get_selected_board_info(board_ids) # 선택된 게시판 정보
-  for board in selected_boards:
-    if contexts['account']['account_type'] not in board['write']: # write 권한 확인
+  if review_post_id: # 후기 게시글 작성인 경우
+    if contexts['account']['account_type'] not in ['user', 'dame']: # 사용자, 파트너 계정만 가능
       return redirect('/?redirect_message=not_allowed_board')
+    board_ids = [str(models.BOARD.objects.filter(board_type='review').first().id)]
+  else:
+    selected_boards = daos.get_selected_board_info(board_ids) # 선택된 게시판 정보
+    for board in selected_boards:
+      if contexts['account']['account_type'] not in board['write']: # write 권한 확인
+        return redirect('/?redirect_message=not_allowed_board')
 
   # 게시판이 사전 정의된 게시판인지 확인
   board = models.BOARD.objects.filter(id=board_ids[-1]).first() # 게시판 정보 가져오기(마지막 게시판 정보)
@@ -93,13 +99,13 @@ def write_post(request):
   elif board.board_type == 'greeting': # 가입인사 게시판인 경우
     return redirect('/post/greeting')
 
-
   # 게시글 작성 처리 요청
   if request.method == 'POST':
     title = request.POST.get('title')
     content = request.POST.get('content')
+    review_post_id = request.POST.get('review_post_id') # 후기 게시글 작성시, 대상 게시글 아이디
     image = request.FILES.get('image') if request.FILES.get('image') else None
-    review_post_id = request.POST.get('review_post_id') # 리뷰 게시글 작성시, 대상 게시글 아이디
+    review_post_id = request.POST.get('review_post_id') # 후기 게시글 작성시, 대상 게시글 아이디
     board_ids = request.GET.get('board_ids') # 게시판 아이디
     if not title or not content: # 제목 또는 내용이 없는 경우
       return JsonResponse({'result': 'error'})
@@ -127,7 +133,7 @@ def write_post(request):
     if review_post_id:
       models.ACTIVITY.objects.create(
         account=request.user,
-        message = f'[리뷰] {title} 리뷰를 작성하였습니다.',
+        message = f'[후기] {title} 후기를 작성하였습니다.',
       )
       point = int(models.SERVER_SETTING.objects.get(name='review_point').value)
     else:
@@ -137,16 +143,26 @@ def write_post(request):
       )
       point = int(models.SERVER_SETTING.objects.get(name='post_point').value)
     if contexts['account']['account_type'] in ['user', 'dame']:
-      request.user.level_point += point
-      request.user.coupon_point += point
+      request.user.exp += point
+      request.user.mileage += point
       request.user.save()
 
     return JsonResponse({'result': 'success', 'post_id': post.id})
+
+  # 후기 게시글인 경우
+  if review_post_id:
+    review_post_info = models.POST.objects.filter(id=review_post_id).first()
+    review_post = {
+      'id': review_post_info.id,
+      'title': review_post_info.title,
+    }
 
   return render(request, 'post/write_post.html', {
     **contexts,
     'boards': boards, # 게시판 정보
     'board': board, # 게시판 정보
+    'review_post': review_post, # 후기 게시글 정보
+    'board_ids': ','.join([str(b) for b in board_ids]), # 게시판 아이디
   })
 
 # 게시글 수정 페이지
@@ -156,7 +172,7 @@ def rewrite_post(request):
   boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보
 
   # 데이터 가져오기
-  post_id = request.GET.get('post')
+  post_id = request.GET.get('post_id')
 
   # post 확인
   post = daos.get_post_info(post_id)
@@ -164,19 +180,25 @@ def rewrite_post(request):
     return redirect('/?redirect_message=not_found_post')
 
   # 게시물 수정 권한 확인(작성자 또는 관리자 또는 게시글 권한이 있는 부관리자가 가능)
-  if (contexts['account']['id'] != post['author']['id']) or ('supervisor' not in contexts['account']['groups']) or not (('post' in contexts['account']['subsupervisor_permissions']) and 'subsupervisor' in contexts['account']['groups']):
-    return redirect('/?redirect_message=not_allowed')
+  if post['author']['id'] != contexts['account']['id']:
+    if contexts['account']['account_type'] == 'supervisor' or (contexts['account']['account_type'] == 'subsupervisor' and 'post' in contexts['account']['subsupervisor_permissions']):
+      pass
+    else:
+      return redirect('/?redirect_message=not_allowed')
+
+  # 게시판 확인
+  last_board_name = post['boards'][-1]
+  board = models.BOARD.objects.filter(name=last_board_name).first()
 
   # 게시글 수정 요청
   if request.method == 'POST':
     title = request.POST.get('title')
     content = request.POST.get('content')
     image = request.FILES.get('image') if request.FILES.get('image') else None
-    review_post_id = request.POST.get('review_post_id') # 리뷰 게시글 작성시, 대상 게시글 아이디
-    board_ids = request.GET.get('board_ids') # 게시판 아이디
+    review_post_id = request.POST.get('review_post_id') # 후기 게시글 작성시, 대상 게시글 아이디
+    board_ids = request.POST.get('board_ids').split(',') # 게시판 아이디
     if not title or not content: # 제목 또는 내용이 없는 경우
       return JsonResponse({'result': 'error'})
-    board_ids = [int(b) for b in board_ids.split(',')]
     boards = models.BOARD.objects.filter(id__in=board_ids)
     if not boards:
       return JsonResponse({'result': 'error'})
@@ -199,7 +221,7 @@ def rewrite_post(request):
     if review_post_id:
       models.ACTIVITY.objects.create(
         account=request.user,
-        message = f'[리뷰] {title} 리뷰를 수정하였습니다.',
+        message = f'[후기] {title} 후기를 수정하였습니다.',
       )
     else:
       models.ACTIVITY.objects.create(
@@ -212,6 +234,7 @@ def rewrite_post(request):
   return render(request, 'post/rewrite_post.html', {
     **contexts, # 기본 컨텍스트 정보
     'boards': boards, # 게시판 정보
+    'board': board, # 게시판 정보
     'post': post, # 게시글 정보
   })
 
@@ -403,17 +426,17 @@ def greeting(request):
     'is_greeted': is_greeted, # 가입인사를 했는지 여부
   })
 
-# 리뷰 게시판
-# 리뷰 게시판에는, 주간, 월간, 데일리 베스트 리뷰 게시글 정보가 표시됨, 각 베스트 게시글은 10개씩 표시
-# 리뷰 게시글은 이미지가 1개 이상 포함됨.
-# 리뷰 게시글은 target_post가 존재.
-# 리뷰 게시글의 순위를 나타내는 weight는 스케줄러에서 관리함.
+# 후기 게시판
+# 후기 게시판에는, 주간, 월간, 데일리 베스트 후기 게시글 정보가 표시됨, 각 베스트 게시글은 10개씩 표시
+# 후기 게시글은 이미지가 1개 이상 포함됨.
+# 후기 게시글은 target_post가 존재.
+# 후기 게시글의 순위를 나타내는 weight는 스케줄러에서 관리함.
 def review(request):
   # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
   boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보
 
-  # 리뷰 게시판
+  # 후기 게시판
   b = models.BOARD.objects.filter(board_type='review').first()
   board = {
     'id': b.id,
@@ -429,7 +452,7 @@ def review(request):
 
   if page == 1 and search == '':
     # best reviews
-    # 오늘의 베스트 리뷰(추천, 조회, 업로드 순)
+    # 오늘의 베스트 후기(추천, 조회, 업로드 순)
     today = datetime.datetime.now().strftime('%Y-%m-%d')
     today_best_reviews = []
     tbrs = models.POST.objects.select_related('author', 'review_post').filter(
@@ -440,7 +463,6 @@ def review(request):
       today_best_reviews.append({
         'id': tbr.id,
         'title': tbr.title,
-        'image_paths': str(tbr.image_paths).split(','), # 이미지 경로
         'author': {
           'nickname': tbr.author.first_name,
         },
@@ -451,7 +473,7 @@ def review(request):
         'view_count': tbr.view_count,
         'created_at': tbr.created_at,
       })
-    # 주간 베스트 리뷰(weight 기준)
+    # 주간 베스트 후기(weight 기준)
     weekly_best_reviews = []
     wbrs = models.POST.objects.select_related('author', 'review_post').filter(
       boards__id__in=str(b.id),
@@ -461,7 +483,6 @@ def review(request):
       weekly_best_reviews.append({
         'id': wbr.id,
         'title': wbr.title,
-        'image_paths': str(wbr.image_paths).split(','), # 이미지 경로
         'author': {
           'nickname': wbr.author.first_name,
         },
@@ -472,7 +493,7 @@ def review(request):
         'view_count': wbr.view_count,
         'created_at': wbr.created_at,
       })
-    # 월간 베스트 리뷰(weight 기준)
+    # 월간 베스트 후기(weight 기준)
     now = datetime.datetime.now()
     monthly_best_reviews = []
     mbrs = models.POST.objects.select_related('author', 'review_post').filter(
@@ -484,7 +505,6 @@ def review(request):
       monthly_best_reviews.append({
         'id': mbr.id,
         'title': mbr.title,
-        'image_paths': str(mbr.image_paths).split(','), # 이미지 경로
         'author': {
           'nickname': mbr.author.first_name,
         },
@@ -499,15 +519,15 @@ def review(request):
   return render(request, 'post/review.html', {
     **contexts,
     'boards': boards, # 게시판 정보
-    'board': board, # 리뷰 게시판
-    'posts': posts, # 리뷰 게시글
+    'board': board, # 후기 게시판
+    'posts': posts, # 후기 게시글
     'last_page': last_page, # 마지막 페이지, page 처리에 사용
-    'today_reviews': today_best_reviews, # 오늘의 베스트 리뷰
-    'weekly_reviews': weekly_best_reviews, # 주간 베스트 리뷰
-    'monthly_reviews': monthly_best_reviews, # 월간 베스트 리뷰
+    'today_reviews': today_best_reviews, # 오늘의 베스트 후기
+    'weekly_reviews': weekly_best_reviews, # 주간 베스트 후기
+    'monthly_reviews': monthly_best_reviews, # 월간 베스트 후기
   })
 
-# 리뷰 게시글 상세
+# 후기 게시글 상세
 def review_view(request):
   # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
@@ -556,7 +576,7 @@ def travel(request):
   board_ids = request.GET.get('board_ids')
   page = int(request.GET.get('page', '1'))
   search = request.GET.get('search', '')
-  categories = request.GET.get('categories', '')
+  category = request.GET.get('category', '')
 
   # 게시글 가져오기
   posts = []
@@ -565,9 +585,9 @@ def travel(request):
   ).filter(
     title__contains=search, # 검색어가 제목에 포함된 경우
   )
-  if categories:
+  if category:
     ps.filter(
-      place_info__categories__name__in=categories.split(','), # 카테고리가 선택된 경우
+      place_info__categories__name=category
     )
   ps.order_by('search_weight')
   last_page = (ps.count() // 20) + 1
@@ -576,7 +596,7 @@ def travel(request):
     posts.append({
       'id': p.id,
       'title': p.title,
-      'image': '/media/' + str(p.image) if p.image else '/media/default.png',
+      'image': str(p.image) if p.image else '/media/default.png',
       'author': {
         'nickname': p.author.first_name,
       },
