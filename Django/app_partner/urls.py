@@ -1,4 +1,7 @@
 from django.urls import path
+from django.urls import re_path
+from django.views.static import serve
+from django.conf import settings
 
 from . import views as v
 
@@ -26,5 +29,8 @@ urlpatterns = [
   # 내가 발급한 쿠폰의 사용 내역 확인 가능
   # 쿠폰 코드 검색 및 사용 처리 가능
   path('partner/coupon', v.coupon, name='coupon'),
+
+  re_path('^static/(?P<path>.*)$', serve,{'document_root': settings.STATIC_ROOT}),
+  re_path('^media/(?P<path>.*)$', serve,{'document_root': settings.MEDIA_ROOT}),
 
 ]

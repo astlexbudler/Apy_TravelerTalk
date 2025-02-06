@@ -1,4 +1,7 @@
 from django.urls import path
+from django.urls import re_path
+from django.views.static import serve
+from django.conf import settings
 
 from . import views as v
 
@@ -60,5 +63,8 @@ urlpatterns = [
   # 시스템 설정 정보를 수정할 수 있는 기능 제공
   # 시스템 설정 정보 및 이용약관 본문 수정 가능.
   path('supervisor/setting', v.setting, name='setting'),
+
+  re_path('^static/(?P<path>.*)$', serve,{'document_root': settings.STATIC_ROOT}),
+  re_path('^media/(?P<path>.*)$', serve,{'document_root': settings.MEDIA_ROOT}),
 
 ]

@@ -21,13 +21,13 @@
   <!-- 선택지 버튼 그룹 -->
   <div class="btn-group w-100 d-flex mb-4">
     <div class="w-100 d-flex justify-content-center rounded-2">
-      <a class="w-100 btn" href="{{supervisor_url}}/coupon?tab=coupon" id="couponTab">
+      <a class="w-100 btn" href="/supervisor_url/coupon?tab=coupon" id="couponTab">
         보유 쿠폰
       </a>
     </div>
     <span class="divider"></span>
     <div class="w-100 d-flex justify-content-center rounded-2">
-      <a class="w-100 btn" href="{{supervisor_url}}/coupon?tab=history" id="historyTab">
+      <a class="w-100 btn" href="/supervisor_url/coupon?tab=history" id="historyTab">
         쿠폰 사용 내역
       </a>
     </div>
@@ -65,7 +65,7 @@
       <p>
         <i class="fi fi-rr-search"></i> 검색
       </p>
-      <form id="couponSearchForm" method="get" action="{{supervisor_url}}/coupon">
+      <form id="couponSearchForm" method="get" action="/supervisor_url/coupon">
         <input type="hidden" name="tab" value="coupon">
         <div class="row">
           <div class="form-group mt-4 col-12">
@@ -253,7 +253,7 @@
       <p>
         <i class="fi fi-rr-search"></i> 검색
       </p>
-      <form id="historySearchForm" method="get" action="{{supervisor_url}}/coupon">
+      <form id="historySearchForm" method="get" action="/supervisor/coupon">
         <input type="hidden" name="tab" value="history">
         <div class="row">
           <div class="form-group mt-4 col-12">
@@ -614,7 +614,7 @@
     // Tab
     tab = '{{request.GET.tab}}';
     if(tab == '') {
-      location.href='{{supervisor_url}}/coupon?tab=coupon';
+      location.href='/supervisor/coupon?tab=coupon';
     }
 
     var couponTab = document.getElementById('couponTab');
@@ -642,7 +642,7 @@
     var searchCouponName = '{{request.GET.couponName}}';
     var searchCouponStatus = '{{request.GET.couponStatus}}';
     console.log('{{request.GET.page}} | {{last_page}}');
-    makePaegeButton('{{request.GET.page}}', '{{last_page}}', `{{supervisor_url}}/coupon?tab=${tab}&couponName=${searchCouponName}&couponStatus=${searchCouponStatus}`);
+    makePaegeButton('{{request.GET.page}}', '{{last_page}}', `/supervisor/coupon?tab=${tab}&couponName=${searchCouponName}&couponStatus=${searchCouponStatus}`);
   }
 
 </script>

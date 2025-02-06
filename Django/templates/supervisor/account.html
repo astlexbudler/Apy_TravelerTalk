@@ -500,7 +500,7 @@
     }
 
     // 하위 관리자 추가
-    await fetch('{{supervisor_url}}/account?create_subsupervisor=y', {
+    await fetch('/supervisor/account?create_subsupervisor=y', {
       method: 'POST',
       body: formData,
       headers: {

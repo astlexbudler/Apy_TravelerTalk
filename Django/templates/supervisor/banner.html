@@ -21,13 +21,13 @@
   <!-- 선택지 버튼 그룹 -->
   <div class="btn-group w-100 d-flex">
     <div class="w-100 d-flex justify-content-center rounded-2">
-      <a class="w-100 btn" href="{{supervisor_url}}/banner?tab=top" id="topTab">
+      <a class="w-100 btn" href="/supervisor/banner?tab=top" id="topTab">
         상단 배너
       </a>
     </div>
     <span class="divider"></span>
     <div class="w-100 d-flex justify-content-center rounded-2">
-      <a class="w-100 btn" href="{{supervisor_url}}/banner?tab=side" id="sideTab">
+      <a class="w-100 btn" href="/supervisor/banner?tab=side" id="sideTab">
         측/하단 배너
       </a>
     </div>
@@ -121,7 +121,7 @@
     // Tab
     tab = '{{request.GET.tab}}';
     if(tab == '') {
-      location.href='{{supervisor_url}}/banner?tab=top';
+      location.href='/supervisor/banner?tab=top';
     }
 
     var topTab = document.getElementById('topTab');

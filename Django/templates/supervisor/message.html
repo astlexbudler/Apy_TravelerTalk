@@ -21,13 +21,13 @@
   <!-- 선택지 버튼 그룹 -->
   <div class="btn-group w-100 d-flex">
     <div class="w-100 d-flex justify-content-center rounded-2">
-      <a class="w-100 btn" href="{{supervisor_url}}/message?tab=inbox" id="inboxTab">
+      <a class="w-100 btn" href="/supervisor/message?tab=inbox" id="inboxTab">
         받은 쪽지함
       </a>
     </div>
     <span class="divider"></span>
     <div class="w-100 d-flex justify-content-center rounded-2">
-      <a class="w-100 btn" href="{{supervisor_url}}/message?tab=outbox" id="outboxTab">
+      <a class="w-100 btn" href="/supervisor/message?tab=outbox" id="outboxTab">
         보낸 쪽지함
       </a>
     </div>
@@ -69,7 +69,7 @@
       <p>
         <i class="fi fi-rr-search"></i> 검색
       </p>
-      <form id="inboxSearchForm" method="get" action="{{supervisor_url}}/message">
+      <form id="inboxSearchForm" method="get" action="/supervisor/message">
         <input type="hidden" name="tab" value="inbox">
         <div class="row">
           <div class="form-group mt-4 col-12">
@@ -204,7 +204,7 @@
         <i class="fi fi-rr-search"></i> 검색
       </p>
 
-      <form id="outboxSearchForm" method="get" action="{{supervisor_url}}/message">
+      <form id="outboxSearchForm" method="get" action="/supervisor/message">
         <input type="hidden" name="tab" value="outbox">
         <div class="row">
           <div class="form-group mt-4 col-12">
@@ -448,7 +448,7 @@
     // Tab
     tab = '{{request.GET.tab}}';
     if(tab == '') {
-      location.href='{{supervisor_url}}/message?tab=inbox';
+      location.href='/supervisor/message?tab=inbox';
     }
 
     var inboxTab = document.getElementById('inboxTab');
@@ -477,7 +477,7 @@
     var tab = '{{request.GET.tab}}';
     var searchMessageTitle = '{{request.GET.messageTitle}}';
     var searchMessageReceiverId = '{{request.GET.messageReceiverId}}';
-    makePaegeButton('{{request.GET.page}}', '{{last_page}}', `{{supervisor_url}}/message?tab=${tab}&messageTitle=${searchMessageTitle}&messageReceiverId=${searchMessageReceiverId}`);
+    makePaegeButton('{{request.GET.page}}', '{{last_page}}', `/supervisor/message?tab=${tab}&messageTitle=${searchMessageTitle}&messageReceiverId=${searchMessageReceiverId}`);
 
     // to
     var to = '{{request.GET.to}}';
