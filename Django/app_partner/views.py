@@ -15,7 +15,7 @@ def index(request):
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
 
   if contexts['account']['account_type'] != 'partner': # 파트너 계정이 아닌 경우
-    return redirect('/?redirect_message=partner_status_error') # 홈으로 리다이렉트
+    return redirect(settings.MAIN_URL + '/?redirect_message=partner_status_error') # 홈으로 리다이렉트
 
   # 사용자 프로필 정보
   profile = daos.get_user_profile_by_id(contexts['account']['id'])
@@ -37,7 +37,7 @@ def index(request):
 
 # 새 광고 게시글 작성 페이지*사용하지 않음
 def write_post(request):
-  return redirect(settings.PARTNER_URL + '/rewrite_post') # 임시로 광고 게시글 수정 페이지로 이동
+  return redirect('/rewrite_post') # 임시로 광고 게시글 수정 페이지로 이동
 
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
 
@@ -50,7 +50,7 @@ def write_post(request):
     place_info__isnull=False, # 여행지 정보가 있는 경우
   ).first()
   if p: # 여행지 게시글이 있는 경우
-    return redirect(settings.PARTNER_URL + '/rewrite_post?redirect_message=travel_post_exist')
+    return redirect('/rewrite_post?redirect_message=travel_post_exist')
 
   # 광고 게시글 작성
   '''
@@ -115,7 +115,7 @@ def rewrite_post(request):
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
 
   if contexts['account']['account_type'] != 'partner': # 파트너 계정이 아닌 경우
-    return redirect('/?redirect_message=partner_status_error') # 홈으로 리다이렉트
+    return redirect(settings.MAIN_URL + '/?redirect_message=partner_status_error') # 홈으로 리다이렉트
 
   # 광고 게시글 정보
   p = models.POST.objects.filter(
@@ -123,7 +123,7 @@ def rewrite_post(request):
     place_info__isnull=False, # 여행지 정보가 있는 경우
   ).first()
   if not p: # 여행지 게시글이 없는 경우, 광고 게시글 작성 페이지로 이동
-    return redirect(settings.PARTNER_URL +  '/write_post?redirect_message=need_travel_post')
+    return redirect('/?redirect_message=travel_post_not_exist') # 홈으로 리다이렉트
   post = daos.get_post_info(p.id)
 
   # 광고 게시글 작성지 확인
@@ -218,9 +218,9 @@ def coupon(request):
       account_type = 'supervisor'
   contexts['account']['account_type'] = account_type
   if not request.user.is_authenticated: # 로그인 되지 않은 경우
-    return redirect('/?redirect_message=need_login') # 로그인 필요 메세지 표시
+    return redirect(settings.MAIN_URL + '/?redirect_message=need_login') # 로그인 필요 메세지 표시
   if account_type != 'partner': # 파트너 계정이 아닌 경우
-    return redirect('/?redirect_message=partner_status_error') # 홈으로 리다이렉트
+    return redirect(settings.MAIN_URL + '/?redirect_message=partner_status_error') # 홈으로 리다이렉트
 
   # 여행지 게시글
   p = models.POST.objects.filter(
@@ -228,7 +228,7 @@ def coupon(request):
     place_info__isnull=False, # 여행지 정보가 있는 경우
   ).first()
   if not p: # 여행지 게시글이 없는 경우, 광고 게시글 작성 페이지로 이동
-    return redirect(settings.PARTNER_URL + '/write_post?redirect_message=need_travel_post')
+    return redirect('/?redirect_message=travel_post_not_exist') # 홈으로 리다이렉트
   post = daos.get_post_info(p.id)
 
   # 데이터 가져오기

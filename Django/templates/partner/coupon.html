@@ -567,7 +567,7 @@
 
       if (nowCreate) {
         var formData = new FormData(document.getElementById('newCouponForm'));
-        var result = await fetch('{{main_url}}/api/coupon?create=y', {
+        var result = await fetch('/api/coupon?create=y', {
           method: 'POST',
           headers: {
             'X-CSRFToken': csrftoken
@@ -589,7 +589,7 @@
         }
       } else {
         var formData = new FormData(document.getElementById('newCouponForm'));
-        var result = await fetch('{{main_url}}/api/coupon?patch=y', {
+        var result = await fetch('/api/coupon?patch=y', {
           method: 'POST',
           headers: {
             'X-CSRFToken': csrftoken

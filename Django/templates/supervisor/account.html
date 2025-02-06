@@ -424,7 +424,7 @@
     }
 
     // 중복검사
-    var exist = await fetch(`{{main_url}}/api/check_id?id=${subsupervisorId}`)
+    var exist = await fetch(`/api/check_id?id=${subsupervisorId}`)
       .then(res => res.json())
       .then(data => {
         console.log(data);

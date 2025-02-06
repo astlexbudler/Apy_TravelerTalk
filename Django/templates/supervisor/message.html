@@ -501,7 +501,7 @@
     }
 
     // 사용자 검색
-    var users = await fetch(`{{main_url}}/api/account?id_or_nickname=${receiver}`)
+    var users = await fetch(`/api/account?id_or_nickname=${receiver}`)
     .then(res => res.json())
     .then(data => {
       console.log(data);
@@ -531,7 +531,7 @@
     }
 
     // 쿠폰 검색
-    var data = await fetch(`{{main_url}}/api/coupon?code=${couponCode}`)
+    var data = await fetch(`/api/coupon?code=${couponCode}`)
     .then(res => res.json())
     .then(data => {
       console.log(data);
@@ -617,7 +617,7 @@
     } else {
       formData.append('coupon_code', '');
     }
-    var result = await fetch('{{main_url}}/api/message', {
+    var result = await fetch('/api/message', {
       method: 'POST',
       headers: {
         'X-CSRFToken': csrftoken
@@ -650,7 +650,7 @@
 
   // 쪽지 읽음 처리
   setReadDatetime = (messageId) => {
-    fetch(`{{main_url}}/api/message?message_id=${messageId}`);
+    fetch(`/api/message?message_id=${messageId}`);
   }
 
   }

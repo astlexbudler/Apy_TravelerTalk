@@ -10,7 +10,7 @@
           <!-- search(mobile) -->
           <div class="col-auto col-lg-4 d-block d-lg-none m-2 mt-0">
             <div style="display: inline-block;">
-              <a href="{{main_url}}">
+              <a href="">
                 <img src="{{ server.logo }}" alt="" style="width: 80px;">
               </a>
             </div>
@@ -19,15 +19,15 @@
           <!-- 메뉴 - 좌 -->
           <div class="col-auto col-lg-4 d-none d-lg-block">
             <a class="me-4 text-black-50 small" style="white-space: nowrap;"
-              href="{% if not user.is_authenticated %}javascript: needLogin();{% else %}{{main_url}}/post/attendance{% endif %}">
+              href="{% if not user.is_authenticated %}javascript: needLogin();{% else %}/post/attendance{% endif %}">
               <i class="fi fi-rr-calendar-check"></i> 출석체크
             </a>
             <a class="text-black-50 small me-3" style="white-space: nowrap;"
-              href="{% if not user.is_authenticated %}javascript: needLogin();{% else %}{{main_url}}/bookmark{% endif %}">
+              href="{% if not user.is_authenticated %}javascript: needLogin();{% else %}/bookmark{% endif %}">
               <i class="fi fi-rr-bookmark"></i> 즐겨찾기
             </a>
             <a class="text-black-50 small" style="white-space: nowrap;"
-              href="{% if not user.is_authenticated %}javascript: needLogin();{% else %}{{main_url}}/coupon{% endif %}">
+              href="{% if not user.is_authenticated %}javascript: needLogin();{% else %}/coupon{% endif %}">
               <i class="fi fi-rr-ticket"></i> 쿠폰함
             </a>
           </div>
@@ -39,7 +39,7 @@
               <!-- 사용자 -->
               <div class="h-col h-user dropdown d-none d-lg-block me-3">
                 <a class="text-black-50 small" style="white-space: nowrap;"
-                  href="{% if not user.is_authenticated %}javascript: needLogin();{% else %}{{main_url}}/profile{% endif %}">
+                  href="{% if not user.is_authenticated %}javascript: needLogin();{% else %}/profile{% endif %}">
                   <i class="fi fi-rr-user"></i> 프로필
                 </a>
               </div>
@@ -47,7 +47,7 @@
               <!-- 쪽지 메뉴 -->
               {% if not user.is_authenticated %}
               <div class="h-col h-switch dropdown d-none d-lg-block me-3">
-                <a class="text-black-50 small" href="{{main_url}}/message" style="white-space: nowrap;">
+                <a class="text-black-50 small" href="/message" style="white-space: nowrap;">
                   <i class="fi fi-rr-envelope"></i> 1:1 문의
                 </a>
               </div>
@@ -81,7 +81,7 @@
                   </li>
                   <li class="text-end p-2 border-top">
                     <div style="display: flex; justify-content: space-between; white-space: nowrap;">
-                      <a class="text-black-50"href="{{main_url}}/message">
+                      <a class="text-black-50"href="/message">
                         <i class="fi fi-rr-envelope"></i> 쪽지함
                       </a>
                     </div>
@@ -92,7 +92,7 @@
 
               <!-- 제휴문의 -->
               <div class="h-col h-switch dropdown d-none d-lg-block me-3">
-                <a class="text-black-50 small" href="{{main_url}}/contact" style="white-space: nowrap;">
+                <a class="text-black-50 small" href="/contact" style="white-space: nowrap;">
                   연락처
                 </a>
               </div>
@@ -167,7 +167,7 @@
         <!-- pc -->
         <div class="d-none d-lg-block">
           <div style="display: inline-block;">
-            <a href="{{main_url}}">
+            <a href="">
               <img src="{{ server.logo }}" alt="" style="width: 80px;" class="me-2">
             </a>
           </div>
@@ -208,7 +208,7 @@
                         {{ board.name }}
                       </a>
                       {% else %}
-                      <a class="nav-link text-dark" href="{{main_url}}/post?board_ids={{board.id}}">
+                      <a class="nav-link text-dark" href="/post?board_ids={{board.id}}">
                         {{ board.name }}
                       </a>
                       {% endif %}
@@ -242,7 +242,7 @@
               </div>
               {% else %}
               <div class="p-2 text-center" style="white-space: nowrap; display: inline;">
-                <a href="{{main_url}}/post?board_ids={{board.id}},{{ sub1_board.id }}" class="text-decoration-none text-black-50 small">
+                <a href="/post?board_ids={{board.id}},{{ sub1_board.id }}" class="text-decoration-none text-black-50 small">
                   {{ sub1_board.name }}
                 </a>
               </div>
@@ -268,7 +268,7 @@
                 </div>
                 {% else %}
                 <div class="p-2 text-center" style="white-space: nowrap; display: inline;">
-                  <a href="{{main_url}}/post?board_ids={{board.id}},{{ sub1_board.id }},{{ sub2_board.id }}" class="text-decoration-none text-black-50 small">
+                  <a href="/post?board_ids={{board.id}},{{ sub1_board.id }},{{ sub2_board.id }}" class="text-decoration-none text-black-50 small">
                     {{ sub2_board.name }}
                   </a>
                 </div>
@@ -296,7 +296,7 @@
                   </div>
                   {% else %}
                   <div class="p-2 text-center" style="white-space: nowrap; display: inline;">
-                    <a href="{{main_url}}/post?board_ids={{board.id}},{{ sub1_board.id }},{{ sub2_board.id }},{{ sub3_board.id }}" class="text-decoration-none text-black-50 small">
+                    <a href="/post?board_ids={{board.id}},{{ sub1_board.id }},{{ sub2_board.id }},{{ sub3_board.id }}" class="text-decoration-none text-black-50 small">
                       {{ sub3_board.name }}
                     </a>
                   </div>

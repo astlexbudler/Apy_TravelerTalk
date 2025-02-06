@@ -182,11 +182,11 @@
 
           <!-- 계정 타입에 따라 설정 페이지로 이동 버튼 표시 -->
           {% if account.account_type == 'partner' %}
-          <a class="btn btn-success" href="{{partner_url}}">
+          <a class="btn btn-success" href="{{partner_url}}/partner">
             <i class="fi fi-rr-settings"></i>
           </a>
           {% elif account.account_type in 'supervisor,subsupervisor' %}
-          <a class="btn btn-success" href="{{supervisor_url}}">
+          <a class="btn btn-success" href="{{supervisor_url}}/supervisor">
             <i class="fi fi-rr-settings"></i>
           </a>
           {% elif account.account_type == 'admin' %}

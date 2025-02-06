@@ -3,6 +3,7 @@ import string
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, logout, get_user_model
+from django.conf import settings
 
 from app_core import models
 from app_core import daos
@@ -12,6 +13,10 @@ def index(request):
   # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
   boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보
+
+  # 관리자의 경우, 관리자 페이지로 리다이렉트
+  if contexts['account']['account_type'] in ['supervisor', 'subsupervisor']:
+    return redirect(settings.SUPERVISOR_URL + '/message')
 
   # 데이터 가져오기
   tab = request.GET.get('tab', 'inbox') # inbox 또는 outbox

@@ -7,6 +7,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, logout, get_user_model
 from django.db.models import Q
 from django.contrib.auth.models import Group
+from django.conf import settings
 
 from app_core import models
 from app_core import daos
@@ -18,9 +19,9 @@ def index(request):
 
   # 관리자 여부 확인, 관리자가 아닌 경우, 리다이렉트 후 권한 없은 메세지 표시
   if contexts['account']['account_type'] == 'guest':
-    return redirect('/?redirect_message=need_login')
+    return redirect(settings.MAIN_URL + '/?redirect_message=need_login')
   elif contexts['account']['account_type'] not in ['supervisor', 'subsupervisor']:
-    return redirect('/?redirect_message=permission_denied')
+    return redirect(settings.MAIN_URL + '/?redirect_message=permission_denied')
 
   # 파트너 가입 및 파트너 가입 대기중인 사용자 수
   all_partner = models.ACCOUNT.objects.prefetch_related('groups').filter(
@@ -464,9 +465,9 @@ def account(request):
 
   # 관리자 여부 확인, 관리자가 아닌 경우, 리다이렉트 후 권한 없은 메세지 표시
   if contexts['account']['account_type'] == 'guest':
-    return redirect('/?redirect_message=need_login')
+    return redirect(settings.MAIN_URL + '/?redirect_message=need_login')
   elif not (contexts['account']['account_type'] == 'supervisor' or (contexts['account']['account_type'] == 'subsupervisor' and 'account' in contexts and contexts['account']['subsupervisor_permissions'])):
-    return redirect('/?redirect_message=permission_denied')
+    return redirect(settings.MAIN_URL + '/?redirect_message=permission_denied')
 
   # 사용자 계정 생성
   if request.method == 'POST' and request.GET.get('create_user'):
@@ -706,9 +707,9 @@ def post(request):
 
   # 관리자 여부 확인, 관리자가 아닌 경우, 리다이렉트 후 권한 없은 메세지 표시
   if contexts['account']['account_type'] == 'guest':
-    return redirect('/?redirect_message=need_login')
+    return redirect(settings.MAIN_URL + '/?redirect_message=need_login')
   elif not (contexts['account']['account_type'] == 'supervisor' or (contexts['account']['account_type'] == 'subsupervisor' and 'post' in contexts and contexts['account']['subsupervisor_permissions'])):
-    return redirect('/?redirect_message=permission_denied')
+    return redirect(settings.MAIN_URL + '/?redirect_message=permission_denied')
 
   # 여행지 정보 수정 요청 처리
   if request.method == 'POST' and request.GET.get('modify_travel_info'):
@@ -1031,9 +1032,9 @@ def coupon(request):
 
   # 관리자 여부 확인, 관리자가 아닌 경우, 리다이렉트 후 권한 없은 메세지 표시
   if contexts['account']['account_type'] == 'guest':
-    return redirect('/?redirect_message=need_login')
+    return redirect(settings.MAIN_URL + '/?redirect_message=need_login')
   elif not (contexts['account']['account_type'] == 'supervisor' or (contexts['account']['account_type'] == 'subsupervisor' and 'coupon' in contexts and contexts['account']['subsupervisor_permissions'])):
-    return redirect('/?redirect_message=permission_denied')
+    return redirect(settings.MAIN_URL + '/?redirect_message=permission_denied')
 
   # data
   tab_type = request.GET.get('tab', 'coupon') # coupon, history
@@ -1113,9 +1114,9 @@ def message(request):
 
   # 관리자 여부 확인, 관리자가 아닌 경우, 리다이렉트 후 권한 없은 메세지 표시
   if contexts['account']['account_type'] == 'guest':
-    return redirect('/?redirect_message=need_login')
+    return redirect(settings.MAIN_URL + '/?redirect_message=need_login')
   elif not (contexts['account']['account_type'] == 'supervisor' or (contexts['account']['account_type'] == 'subsupervisor' and 'message' in contexts and contexts['account']['subsupervisor_permissions'])):
-    return redirect('/?redirect_message=permission_denied')
+    return redirect(settings.MAIN_URL + '/?redirect_message=permission_denied')
 
   # data
   tab = request.GET.get('tab', 'inbox') # inbox, outbox
@@ -1251,9 +1252,9 @@ def banner(request):
 
   # 관리자 여부 확인, 관리자가 아닌 경우, 리다이렉트 후 권한 없은 메세지 표시
   if contexts['account']['account_type'] == 'guest':
-    return redirect('/?redirect_message=need_login')
+    return redirect(settings.MAIN_URL + '/?redirect_message=need_login')
   elif not (contexts['account']['account_type'] == 'supervisor' or (contexts['account']['account_type'] == 'subsupervisor' and 'post' in contexts and contexts['account']['subsupervisor_permissions'])):
-    return redirect('/?redirect_message=permission_denied')
+    return redirect(settings.MAIN_URL + '/?redirect_message=permission_denied')
 
   # 배너 생성 및 수정 요청 처리
   # 아이디가 있으면 수정, 없으면 생성
@@ -1316,9 +1317,9 @@ def level(request):
 
   # 관리자 여부 확인, 관리자가 아닌 경우, 리다이렉트 후 권한 없은 메세지 표시
   if contexts['account']['account_type'] == 'guest':
-    return redirect('/?redirect_message=need_login')
+    return redirect(settings.MAIN_URL + '/?redirect_message=need_login')
   elif not (contexts['account']['account_type'] == 'supervisor' or (contexts['account']['account_type'] == 'subsupervisor' and 'level' in contexts and contexts['account']['subsupervisor_permissions'])):
-    return redirect('/?redirect_message=permission_denied')
+    return redirect(settings.MAIN_URL + '/?redirect_message=permission_denied')
 
   # 레벨 생성 및 수정 요청 처리
   if request.method == 'POST':
@@ -1360,9 +1361,9 @@ def setting(request):
 
   # 관리자 여부 확인, 관리자가 아닌 경우, 리다이렉트 후 권한 없은 메세지 표시
   if contexts['account']['account_type'] == 'guest':
-    return redirect('/?redirect_message=need_login')
+    return redirect(settings.MAIN_URL + '/?redirect_message=need_login')
   elif not (contexts['account']['account_type'] == 'supervisor' or (contexts['account']['account_type'] == 'subsupervisor' and 'setting' in contexts and contexts['account']['subsupervisor_permissions'])):
-    return redirect('/?redirect_message=permission_denied')
+    return redirect(settings.MAIN_URL + '/?redirect_message=permission_denied')
 
   # 설정 정보 변경 요청 처리
   if request.method == 'POST':

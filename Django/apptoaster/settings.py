@@ -73,13 +73,13 @@ SITE_ID = 2
 SITE_DOMAIN = 'kibang01.com'
 CSRF_TRUSTED_ORIGINS=[
     'http://127.0.0.1:8000', 
-    'http://kibang01.com', 'http://partner.kibang01.com', 'http://supervisor.kibang01.com',
-    'http://kibang02.com', 'http://partner.kibang02.com', 'http://supervisor.kibang02.com',
+    'http://kibang01.com', 'http://partner.kibang01.com', 'http://spv.kibang01.com',
+    'http://kibang02.com', 'http://partner.kibang02.com', 'http://spv.kibang02.com',
 ]
 
 MAIN_URL = os.getenv('MAIN_URL', 'http://kibang01.com')
 PARTNER_URL = os.getenv('MAIN_URL', 'http://partner.kibang01.com')
-SUPERVISOR_URL = os.getenv('MAIN_URL', 'http://supervisor.kibang01.com')
+SUPERVISOR_URL = os.getenv('MAIN_URL', 'http://spv.kibang01.com')
 
 ROOT_URLCONF = 'apptoaster.urls'
 
