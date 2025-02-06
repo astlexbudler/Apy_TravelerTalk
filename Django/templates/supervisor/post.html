@@ -905,7 +905,7 @@
     formData.append('comment_groups', commentGroups);
 
     // 생성 요청
-    await fetch('{{supervisor}}/post', {
+    await fetch('/supervisor/post', {
       method: 'POST',
       body: formData,
       headers: {

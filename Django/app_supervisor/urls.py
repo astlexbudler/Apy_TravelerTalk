@@ -2,6 +2,7 @@ from django.urls import path
 from django.urls import re_path
 from django.views.static import serve
 from django.conf import settings
+from django.urls import include
 
 from . import views as v
 
@@ -64,6 +65,7 @@ urlpatterns = [
   # 시스템 설정 정보 및 이용약관 본문 수정 가능.
   path('supervisor/setting', v.setting, name='setting'),
 
+  path('api/', include('app_api.urls')),
   re_path('^static/(?P<path>.*)$', serve,{'document_root': settings.STATIC_ROOT}),
   re_path('^media/(?P<path>.*)$', serve,{'document_root': settings.MEDIA_ROOT}),
 

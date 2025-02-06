@@ -2,6 +2,7 @@ from django.urls import path
 from django.urls import re_path
 from django.views.static import serve
 from django.conf import settings
+from django.urls import include
 
 from . import views as v
 
@@ -30,6 +31,7 @@ urlpatterns = [
   # 쿠폰 코드 검색 및 사용 처리 가능
   path('partner/coupon', v.coupon, name='coupon'),
 
+  path('api/', include('app_api.urls')),
   re_path('^static/(?P<path>.*)$', serve,{'document_root': settings.STATIC_ROOT}),
   re_path('^media/(?P<path>.*)$', serve,{'document_root': settings.MEDIA_ROOT}),
 

@@ -531,7 +531,7 @@
   document.querySelector('#newCouponCode').addEventListener('input', async () => {
     var code = document.getElementById('newCouponCode').value;
     if (code.length > 15) {
-      await fetch('{{main_url}}/api/search_coupon?code=' + code)
+      await fetch('/api/search_coupon?code=' + code)
       .then(response => response.json())
       .then(data => {
         var exist = data.result;

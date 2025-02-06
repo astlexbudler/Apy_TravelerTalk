@@ -165,7 +165,7 @@ logout = async () => {
 
   // 로그아웃 메세지 출럭
   await showAlert('로그아웃 완료', '로그아웃되었습니다. 메인 페이지로 이동합니다.', 'success');
-  location.href = 'http://kibang01.com'; // 메인 페이지로 이동.
+  location.href = '/'; // 메인 페이지로 이동.
   return;
 }
 
@@ -173,7 +173,7 @@ logout = async () => {
 searchPost = async () => {
   // 현재 게시판 정보 확인
   var pcSearchKeyword = document.getElementById('pcSearchKeyword').value; // 검색어 가져오기 2 (모바일 검색바)
-  location.href = `http://kibang01.com/?search=${mobileSearchKeyword + pcSearchKeyword}`;
+  location.href = `/?search=${mobileSearchKeyword + pcSearchKeyword}`;
 }
 
 // 게시판 내 검색바 검색 버튼 클릭 시
@@ -181,7 +181,7 @@ searchBoard = async (board_ids) => {
   console.log(board_ids);
   // 현재 게시판 정보 확인
   var searchInputValue = document.getElementById('searchInput').value; // 검색어 가져오기 1
-  location.href = `http://kibang01.com/post?search=${searchInputValue}&board_ids=${board_ids}`;
+  location.href = `/post?search=${searchInputValue}&board_ids=${board_ids}`;
 }
 
 // 댓글 삭제 함수
