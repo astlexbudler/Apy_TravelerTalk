@@ -10,6 +10,16 @@ from django.conf import settings
 from app_core import models
 from app_core import daos
 
+# 관리자 로그인
+def login(request):
+  contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
+
+  # 이미 로그인한 경우, 메인 페이지로 리다이렉트
+  if contexts['account']['account_type'] != 'patner':
+    return redirect(settings.MAIN_URL)
+
+  return render(request, 'login.html')
+
 # 파트너 관리자 메인 페이지
 def index(request):
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기

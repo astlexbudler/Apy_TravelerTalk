@@ -5,6 +5,9 @@ from . import views as v
 urlpatterns = [
 
   # views as v
+  # 관리자 로그인
+  path('', v.login, name='login'),
+
   # 파트너 관리 페이지
   # 광고 게시글 작성 쿠폰 관리 메뉴 제공
   # 광고 게시글 요약 및 사용자 프로필 확인 가능

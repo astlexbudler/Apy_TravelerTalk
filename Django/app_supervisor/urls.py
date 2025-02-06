@@ -5,6 +5,9 @@ from . import views as v
 urlpatterns = [
 
   # views as v
+  # 관리자 로그인
+  path('', v.login, name='login'),
+
   # 관리자 메인 페이지
   # 계정 관리, 게시글 관리, 쿠폰 관리, 메세지 관리, 배너 관리, 설정 메뉴 제공
   path('supervisor/', v.index, name='index'),

@@ -38,8 +38,8 @@ class ApplifySitemapClass(Sitemap):
 
 host_patterns = patterns(
     '',
-    host(r'partner', 'apptoaster.urls', name='partner'),
-    host(r'spv', 'apptoaster.urls', name='spv'),
+    host(r'partner', 'app_partner.urls', name='app_partner'),
+    host(r'spv', 'app_supervisor.urls', name='app_supervisor'),
     host(r'', 'apptoaster.urls', name='main'),
 )
 
@@ -58,7 +58,7 @@ urlpatterns = [
   # /partner/write_post 광고 게시글 작성 페이지
   # /partner/rewrite_post 광고 게시글 수정 페이지
   # /partner/coupon 쿠폰 관리 페이지
-  path('partner/', include('app_partner.urls')), # subdomain 처리
+  #path('partner/', include('app_partner.urls')), # subdomain 처리
   # /supervisor 관리자 메인 페이지
   # /supervisor/account 계정 관리 페이지
   # /supervisor/post 게시글 관리 페이지
@@ -70,7 +70,7 @@ urlpatterns = [
   # /supervisor/banner 배너 관리 페이지
   # /supervisor/level 레벨 관리 페이지
   # /supervisor/setting 설정 페이지
-  path('supervisor/', include('app_supervisor.urls')), # subdomain 처리
+  #path('supervisor/', include('app_supervisor.urls')), # subdomain 처리
   # /post 표준 게시판 페이지
   # /post/write_post 표준 게시글 작성 페이지
   # /post/rewrite_post 표준 게시글 수정 페이지
