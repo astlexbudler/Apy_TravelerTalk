@@ -15,7 +15,7 @@ urlpatterns = [
 
   # 새 광고 게시글 작성 페이지
   # 이미 광고 게시글이 있는 경우, 수정 페이지로 이동
-  path('partner/write_post', v.write_post, name='write_post'),
+  #path('partner/write_post', v.write_post, name='write_post'),
 
   # 광고 게시글 수정 페이지
   # 광고 게시글 수정 폼 제공

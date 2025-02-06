@@ -17,8 +17,8 @@ def login(request):
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
 
   # 이미 로그인한 경우, 메인 페이지로 리다이렉트
-  if contexts['account']['account_type'] != 'supervisor' or contexts['account']['account_type'] != 'subsupervisor':
-    return redirect(settings.MAIN_URL)
+  if contexts['account']['account_type'] in  ['supervisor', 'subsupervisor']:
+    return redirect('/supervisor') # 관리자 메인 페이지로 리다이렉트
 
   return render(request, 'login.html')
 
@@ -28,10 +28,8 @@ def index(request):
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
 
   # 관리자 여부 확인, 관리자가 아닌 경우, 리다이렉트 후 권한 없은 메세지 표시
-  if contexts['account']['account_type'] == 'guest':
-    return redirect(settings.MAIN_URL + '/?redirect_message=need_login')
-  elif contexts['account']['account_type'] not in ['supervisor', 'subsupervisor']:
-    return redirect(settings.MAIN_URL + '/?redirect_message=permission_denied')
+  if contexts['account']['account_type'] not in ['supervisor', 'subsupervisor']:
+    return redirect('/') # 로그인 페이지로 리다이렉트
 
   # 파트너 가입 및 파트너 가입 대기중인 사용자 수
   all_partner = models.ACCOUNT.objects.prefetch_related('groups').filter(
@@ -474,10 +472,10 @@ def account(request):
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
 
   # 관리자 여부 확인, 관리자가 아닌 경우, 리다이렉트 후 권한 없은 메세지 표시
-  if contexts['account']['account_type'] == 'guest':
-    return redirect(settings.MAIN_URL + '/?redirect_message=need_login')
-  elif not (contexts['account']['account_type'] == 'supervisor' or (contexts['account']['account_type'] == 'subsupervisor' and 'account' in contexts and contexts['account']['subsupervisor_permissions'])):
-    return redirect(settings.MAIN_URL + '/?redirect_message=permission_denied')
+  if contexts['account']['account_type'] not in ['supervisor', 'subsupervisor']:
+    return redirect('/') # 로그인 페이지로 리다이렉트
+  if contexts['account']['account_type'] == 'subsupervisor' and 'account' not in contexts['account']['subsupervisor_permissions']:
+    return redirect('/supervisor')  # 권한이 없는 경우, 메인 페이지로 리다이렉트
 
   # 사용자 계정 생성
   if request.method == 'POST' and request.GET.get('create_user'):
@@ -716,10 +714,10 @@ def post(request):
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
 
   # 관리자 여부 확인, 관리자가 아닌 경우, 리다이렉트 후 권한 없은 메세지 표시
-  if contexts['account']['account_type'] == 'guest':
-    return redirect(settings.MAIN_URL + '/?redirect_message=need_login')
-  elif not (contexts['account']['account_type'] == 'supervisor' or (contexts['account']['account_type'] == 'subsupervisor' and 'post' in contexts and contexts['account']['subsupervisor_permissions'])):
-    return redirect(settings.MAIN_URL + '/?redirect_message=permission_denied')
+  if contexts['account']['account_type'] not in ['supervisor', 'subsupervisor']:
+    return redirect('/') # 로그인 페이지로 리다이렉트
+  if contexts['account']['account_type'] == 'subsupervisor' and 'post' not in contexts['account']['subsupervisor_permissions']:
+    return redirect('/supervisor')  # 권한이 없는 경우, 메인 페이지로 리다이렉트
 
   # 여행지 정보 수정 요청 처리
   if request.method == 'POST' and request.GET.get('modify_travel_info'):
@@ -1041,10 +1039,10 @@ def coupon(request):
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
 
   # 관리자 여부 확인, 관리자가 아닌 경우, 리다이렉트 후 권한 없은 메세지 표시
-  if contexts['account']['account_type'] == 'guest':
-    return redirect(settings.MAIN_URL + '/?redirect_message=need_login')
-  elif not (contexts['account']['account_type'] == 'supervisor' or (contexts['account']['account_type'] == 'subsupervisor' and 'coupon' in contexts and contexts['account']['subsupervisor_permissions'])):
-    return redirect(settings.MAIN_URL + '/?redirect_message=permission_denied')
+  if contexts['account']['account_type'] not in ['supervisor', 'subsupervisor']:
+    return redirect('/') # 로그인 페이지로 리다이렉트
+  if contexts['account']['account_type'] == 'subsupervisor' and 'coupon' not in contexts['account']['subsupervisor_permissions']:
+    return redirect('/supervisor')  # 권한이 없는 경우, 메인 페이지로 리다이렉트
 
   # data
   tab_type = request.GET.get('tab', 'coupon') # coupon, history
@@ -1123,10 +1121,10 @@ def message(request):
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
 
   # 관리자 여부 확인, 관리자가 아닌 경우, 리다이렉트 후 권한 없은 메세지 표시
-  if contexts['account']['account_type'] == 'guest':
-    return redirect(settings.MAIN_URL + '/?redirect_message=need_login')
-  elif not (contexts['account']['account_type'] == 'supervisor' or (contexts['account']['account_type'] == 'subsupervisor' and 'message' in contexts and contexts['account']['subsupervisor_permissions'])):
-    return redirect(settings.MAIN_URL + '/?redirect_message=permission_denied')
+  if contexts['account']['account_type'] not in ['supervisor', 'subsupervisor']:
+    return redirect('/') # 로그인 페이지로 리다이렉트
+  if contexts['account']['account_type'] == 'subsupervisor' and 'message' not in contexts['account']['subsupervisor_permissions']:
+    return redirect('/supervisor')  # 권한이 없는 경우, 메인 페이지로 리다이렉트
 
   # data
   tab = request.GET.get('tab', 'inbox') # inbox, outbox
@@ -1261,10 +1259,10 @@ def banner(request):
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
 
   # 관리자 여부 확인, 관리자가 아닌 경우, 리다이렉트 후 권한 없은 메세지 표시
-  if contexts['account']['account_type'] == 'guest':
-    return redirect(settings.MAIN_URL + '/?redirect_message=need_login')
-  elif not (contexts['account']['account_type'] == 'supervisor' or (contexts['account']['account_type'] == 'subsupervisor' and 'post' in contexts and contexts['account']['subsupervisor_permissions'])):
-    return redirect(settings.MAIN_URL + '/?redirect_message=permission_denied')
+  if contexts['account']['account_type'] not in ['supervisor', 'subsupervisor']:
+    return redirect('/') # 로그인 페이지로 리다이렉트
+  if contexts['account']['account_type'] == 'subsupervisor' and 'banner' not in contexts['account']['subsupervisor_permissions']:
+    return redirect('/supervisor')  # 권한이 없는 경우, 메인 페이지로 리다이렉트
 
   # 배너 생성 및 수정 요청 처리
   # 아이디가 있으면 수정, 없으면 생성
@@ -1326,10 +1324,10 @@ def level(request):
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
 
   # 관리자 여부 확인, 관리자가 아닌 경우, 리다이렉트 후 권한 없은 메세지 표시
-  if contexts['account']['account_type'] == 'guest':
-    return redirect(settings.MAIN_URL + '/?redirect_message=need_login')
-  elif not (contexts['account']['account_type'] == 'supervisor' or (contexts['account']['account_type'] == 'subsupervisor' and 'level' in contexts and contexts['account']['subsupervisor_permissions'])):
-    return redirect(settings.MAIN_URL + '/?redirect_message=permission_denied')
+  if contexts['account']['account_type'] not in ['supervisor', 'subsupervisor']:
+    return redirect('/') # 로그인 페이지로 리다이렉트
+  if contexts['account']['account_type'] == 'subsupervisor' and 'level' not in contexts['account']['subsupervisor_permissions']:
+    return redirect('/supervisor')  # 권한이 없는 경우, 메인 페이지로 리다이렉트
 
   # 레벨 생성 및 수정 요청 처리
   if request.method == 'POST':
@@ -1370,10 +1368,10 @@ def setting(request):
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
 
   # 관리자 여부 확인, 관리자가 아닌 경우, 리다이렉트 후 권한 없은 메세지 표시
-  if contexts['account']['account_type'] == 'guest':
-    return redirect(settings.MAIN_URL + '/?redirect_message=need_login')
-  elif not (contexts['account']['account_type'] == 'supervisor' or (contexts['account']['account_type'] == 'subsupervisor' and 'setting' in contexts and contexts['account']['subsupervisor_permissions'])):
-    return redirect(settings.MAIN_URL + '/?redirect_message=permission_denied')
+  if contexts['account']['account_type'] not in ['supervisor', 'subsupervisor']:
+    return redirect('/') # 로그인 페이지로 리다이렉트
+  if contexts['account']['account_type'] == 'subsupervisor' and 'setting' not in contexts['account']['subsupervisor_permissions']:
+    return redirect('/supervisor')  # 권한이 없는 경우, 메인 페이지로 리다이렉트
 
   # 설정 정보 변경 요청 처리
   if request.method == 'POST':
