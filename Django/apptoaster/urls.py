@@ -36,12 +36,12 @@ class ApplifySitemapClass(Sitemap):
   def priority(self, obj):
     return 0
 
-#host_patterns = patterns(
-#    '',
-#    host(r'partner', 'partner.urls', name='partner'),
-#    host(r'supervisor', 'supervisor.urls', name='supervisor'),
-#    host(r'', 'apptoaster.urls', name='main'),
-#)
+host_patterns = patterns(
+    '',
+    host(r'partner', 'apptoaster.urls', name='partner'),
+    host(r'spv', 'apptoaster.urls', name='spv'),
+    host(r'', 'apptoaster.urls', name='main'),
+)
 
 urlpatterns = [
   path('admin/', admin.site.urls),
