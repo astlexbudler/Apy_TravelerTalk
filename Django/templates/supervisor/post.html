@@ -172,7 +172,7 @@
       <p>
         <i class="fi fi-rr-search"></i> 검색
       </p>
-      <form id="postSearchForm" method="get" action="/supervisor/post">
+      <form id="postSearchForm" method="get" action="{{supervisor_url}}/supervisor/post">
         <div class="row">
           <div class="form-group mt-4 col-12">
             <label>제목</label>
@@ -827,7 +827,7 @@
     var searchPostTItle = '{{request.GET.postTitle}}';
     var searchPostBoard = '{{request.GET.postBoard}}';
     console.log('{{request.GET.page}} | {{last_page}}');
-    makePaegeButton('{{request.GET.page}}', '{{last_page}}', `/supervisor/post?post_title=${searchPostTItle}&board_id=${searchPostBoard}`);
+    makePaegeButton('{{request.GET.page}}', '{{last_page}}', `{{supervisor_url}}/supervisor/post?post_title=${searchPostTItle}&board_id=${searchPostBoard}`);
 
     // 게시판 추가 모달
     if ('{{request.GET.is_place_search}}' == 'y') {
@@ -905,7 +905,7 @@
     formData.append('comment_groups', commentGroups);
 
     // 생성 요청
-    await fetch('/supervisor/post', {
+    await fetch('{{supervisor_url}}/supervisor/post', {
       method: 'POST',
       body: formData,
       headers: {
@@ -993,7 +993,7 @@
     formData.append('comment_groups', commentGroups);
 
     // 생성 요청
-    await fetch('/supervisor/post', {
+    await fetch('{{supervisor_url}}/supervisor/post', {
       method: 'POST',
       body: formData,
       headers: {
@@ -1080,7 +1080,7 @@
     formData.append('comment_groups', commentGroups);
 
     // 수정 요청
-    await fetch('/supervisor/post', {
+    await fetch('{{supervisor_url}}/supervisor/post', {
       method: 'POST',
       body: formData,
       headers: {
@@ -1141,7 +1141,7 @@
     formData.append('place_info_note', adNote);
 
     // 수정 요청
-    await fetch('/supervisor/post?modify_travel_info=true', {
+    await fetch('{{supervisor_url}}/supervisor/post?modify_travel_info=true', {
       method: 'POST',
       body: formData,
       headers: {

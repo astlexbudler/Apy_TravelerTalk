@@ -1,0 +1,106 @@
+<div class="modal fade" id="messageModal{{message.id}}" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          쪽지
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+        <div class="row">
+          {% if message.image %}
+          <div class="col-6">
+            <img src="/media/{{message.image}}" class="w-100">
+          </div>
+          {% endif %}
+          <div class="{% if 'media' in message.image %}col-12{% else %}col-6{% endif %}">
+            <p class="text-dark m-0">
+              {{message.title}}
+            </p>
+            {% if request.GET.tab == 'outbox' %}
+            <p class="text-black-50 mb-1 small">
+              To. <small>{{message.to.nickname}}</small>
+            </p>
+            {% else %}
+            <p class="text-black-50 mb-1 small">
+              From. <small>{{message.sender.nickname}}</small>
+            </p>
+            {% endif %}
+            <p class="text-black-50 mb-1 small">
+              <i class="fi fi-rr-calendar"></i> <small>{{message.created_at}}</small>
+            </p>
+            <p class="mt-3">
+              {{message.content}}
+            </p>
+            {% if message.include_coupon != None %}
+            <p class="text-black m-0 pt-3">
+              첨부쿠폰
+            </p>
+            <p class="text-black-50">
+              <i class="fi fi-rr-ticket"></i> {{message.include_coupon.name}} <small class="text-black-50">{{message.include_coupon.post.title}}</small>
+            </p>
+            {% endif %}
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <!-- 메세지에 쿠폰이 있고, 받은 메세지일 경우, 버튼 표시 -->
+        {% if message.include_coupon and message.sender %}
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="receiveCoupon('{{message.id}}');">
+          쿠폰 받기
+        </button>
+        {% endif %}
+        {% if request.GET.tab != 'outbox' %}
+        <button type="button" class="btn btn-success" data-bs-dismiss="modal" onclick="replyMessage('{{message.sender.id}}', '{{message.title}}');">
+          답장
+        </button>
+        {% endif %}
+        <button type="button" class="btn text-white" style="background-color: gray;" data-bs-dismiss="modal">닫기</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  // 쪽지 확인 스크립트
+
+  // 쪽지 답장
+  replyMessage = (receiverId, messageTitle) => {
+    document.getElementById('messageReceiver').value = receiverId;
+    document.getElementById('receiverId').value = receiverId;
+    document.getElementById('messageTitle').value = '답장: ' + document.getElementById('messageTitle').value;
+    document.getElementById('messageContent').value = `[${messageTitle}]\n답장: `;
+    new bootstrap.Modal(document.getElementById('newMessageModal')).show();
+  }
+
+  // 쪽지 읽음 처리
+  setReadDatetime = (messageId) => {
+    fetch(`/api/message?message_id=${messageId}`);
+  }
+
+  // 쿠폰 받기
+  receiveCoupon = async (messageId) => {
+
+    var result = await fetch(`/api/receive_coupon?message_id=${messageId}`)
+    .then(response => response.json())
+    .then(data => {
+      console.log(data);
+      return data.result;
+    });
+
+    // 쿠폰 받기 결과에 따른 알림창
+    // 쿠폰 받기 성공: success => 페이지 새로고침
+    // 쿠폰 받기 실패: error => 에러 메세지 표시
+    if (result == 'success') {
+      await showAlert('쿠폰 받기', '쿠폰을 성공적으로 받았습니다. 내 쿠폰함에서 확인할 수 있습니다.', 'success');
+      location.reload();
+      return
+    } else {
+      await showAlert('쿠폰 받기', '쿠폰을 받지 못했습니다. 다시 시도해주세요.', 'error');
+    }
+  }
+
+
+</script>

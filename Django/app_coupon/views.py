@@ -19,9 +19,9 @@ def index(request):
 
   # 파트너 또는 관리자의 경우, 리다이렉트
   if contexts['account']['account_type'] in ['partner']: # 파트너인 경우
-    return redirect(settings.PERTNER_URL + '/coupon') # 파트너 쿠폰 페이지로 리다이렉트
+    return redirect(settings.PARTNER_URL + '/partner/coupon') # 파트너 쿠폰 페이지로 리다이렉트
   elif contexts['account']['account_type'] in ['supervisor', 'subsupervisor']: # 관리자인 경우
-    return redirect(settings.SUPERVISOR_URL + '/coupon') # 관리자 쿠폰 페이지로 리다이렉트
+    return redirect(settings.SUPERVISOR_URL + '/supervisor/coupon') # 관리자 쿠폰 페이지로 리다이렉트
 
   # 데이터 가져오기
   tab = request.GET.get('tab', 'coupon') # coupon 또는 history

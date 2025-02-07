@@ -340,11 +340,10 @@ def message(request):
     message = models.MESSAGE.objects.create(
       to_account=to_id,
       sender_account=sender_id,
+      image = image,
       title = title,
       content = content,
     )
-    if image: # 이미지가 있는 경우, 이미지 저장
-      message.images = image
     if coupon_code: # 쿠폰 코드가 있는 경우, 쿠폰 저장
       coupon = models.COUPON.objects.filter(code=coupon_code).first()
       if coupon:

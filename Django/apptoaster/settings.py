@@ -80,6 +80,9 @@ CSRF_TRUSTED_ORIGINS=[
 MAIN_URL = os.getenv('MAIN_URL', 'http://kibang01.com')
 PARTNER_URL = os.getenv('MAIN_URL', 'http://partner.kibang01.com')
 SUPERVISOR_URL = os.getenv('MAIN_URL', 'http://spv.kibang01.com')
+#MAIN_URL = os.getenv('MAIN_URL', 'http://127.0.0.1:8000')
+#PARTNER_URL = os.getenv('MAIN_URL', 'http://127.0.0.1:8000/partner')
+#SUPERVISOR_URL = os.getenv('MAIN_URL', 'http://127.0.0.1:8000/supervisor')
 
 ROOT_URLCONF = 'apptoaster.urls'
 

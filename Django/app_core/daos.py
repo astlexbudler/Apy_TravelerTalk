@@ -491,6 +491,7 @@ def get_all_coupon_histories(user_id, page):
 # 사용자가 받은 메세지 가져오기
 def get_user_inbox_messages(user_id, page):
   msgs = models.MESSAGE.objects.select_related('include_coupon').filter(to_account=user_id)
+  msgs = msgs.order_by('-created_at')
   last_page = len(msgs) // 20 + 1
   messages = [{
     'id': m.id,
@@ -498,7 +499,7 @@ def get_user_inbox_messages(user_id, page):
     'content': m.content,
     'is_read': m.is_read,
     'created_at': m.created_at,
-    'image': m.image,
+    'image': str(m.image),
     'include_coupon': {
       'code': m.include_coupon.code,
       'name': m.include_coupon.name,
@@ -522,6 +523,7 @@ def get_user_inbox_messages(user_id, page):
 # 사용자가 보낸 메세지 가져오기
 def get_user_outbox_messages(user_id, page):
   msgs = models.MESSAGE.objects.select_related('include_coupon').filter(sender_account=user_id)
+  msgs = msgs.order_by('-created_at')
   last_page = len(msgs) // 20 + 1
   messages = [{
     'id': m.id,
@@ -529,6 +531,7 @@ def get_user_outbox_messages(user_id, page):
     'content': m.content,
     'is_read': m.is_read,
     'created_at': m.created_at,
+    'image': str(m.image),
     'include_coupon': {
       'code': m.include_coupon.code,
       'name': m.include_coupon.name,
@@ -636,8 +639,11 @@ def get_post_info(post_id):
   ).prefetch_related('place_info__categories', 'review_post__place_info',).get(id=post_id)
   return {
     'id': post.id,
-    'boards': [b.name for b in post.boards.all()],
-    'board_ids': [b.id for b in post.boards.all()],
+    'boards': [{
+      'id': b.id,
+      'name': b.name,
+      'comment': [g.name for g in b.comment_groups.all()],
+    } for b in post.boards.all()],
     'title': post.title,
     'image': str(post.image) if post.image else '/media/default.png',
     'content': post.content,

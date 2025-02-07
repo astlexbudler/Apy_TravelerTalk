@@ -1,0 +1,103 @@
+<div class="modal fade" id="couponModal{{coupon.id}}" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          {{coupon.name}}
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+        <!-- 쿠폰 정보 -->
+        <div class="row">
+
+          <!-- 쿠폰 이미지 -->
+          {% if coupon.image != None %}
+          <div class="col-6">
+            <img src="{{coupon.image}}" class="w-100">
+          </div>
+          {% endif %}
+          <div class="{% if coupon.images.0 == '' %}col-12{% else %}col-6{% endif %}">
+            <p>
+              {{coupon.name}}
+            </p>
+            <p class="text-black-50">
+              <small>
+                {{coupon.description}}
+              </small>
+            </p>
+            <p class="text-black-50">
+              <i class="fi fi-rr-marker"></i> <a href="/post/travel_view?post={{coupon.post.id}}" target="_blank" class="text-black-50" style="text-decoration: underline;">{{coupon.post.title}}</a>
+            </p>
+            <p class="text-black-50">
+              <i class="fi fi-rr-key"></i> 
+              <small>
+                {{coupon.code}} 
+                <a href="javascript: navigator.clipboard.writeText('{{coupon.code}}');" class="text-black-50">
+                  <i class="fi fi-rr-clipboard"></i>
+                </a>
+              </small>
+            </p>
+            {% if coupon.required_mileage != 0 %}
+            <p class="text-black-50">
+              <i class="fi fi-rr-star"></i> 
+              <small>
+                필요 포인트: <span class="numberComma">{{coupon.required_mileage}}</span> 포인트<br>
+                쿠폰을 사용하려면 <span class="numberComma">{{coupon.required_mileage}}</span> 만큼의 쿠폰 포인트가 필요합니다.
+              </small>
+            </p>
+            {% endif %}
+            <p class="text-black-50">
+              <i class="fi fi-rr-calendar"></i> <small>만료: {{coupon.expire_at}}</small>
+            </p>
+          </div>
+        </div>
+
+        <!-- 사용자 표시(쿠폰 생성자만 확인 가능) -->
+        {% if account.id == coupon.create_account.id %}
+        <div class="row mt-3">
+          <div class="col-12">
+            <p class="text-black">
+              쿠폰 소유자
+            </p>
+            <div class="my-2">
+              {% if coupon.accounts|length == 0 %}
+              <p class="text-black-50">
+                쿠폰을 보유한 사용자가 없습니다.
+              </p>
+              {% endif %}
+              {% for account in coupon.accounts %}
+              <div>
+                <span class="text-dark me-2">
+                  {{account.nickname}}
+                </span>
+                <span>
+                  {% if coupon.status == 'used' %}
+                  <i class="fi fi-rr-check text-success"></i> 사용됨
+                  {% elif coupon.status == 'active' %}
+                  <i class="fi fi-rr-check text-success"></i> 사용 가능
+                  {% endif %}
+                </span>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+      </div>
+      <div class="modal-footer">
+        <!-- 쿠폰 수정 버튼(쿠폰 생성자만 확인 가능) -->
+        {% if account.id == coupon.create_account.id %}
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="new bootstrap.Modal(document.getElementById('rewriteCouponModal{{coupon.id}}')).show();">
+          수정
+        </button>
+        {% endif %}
+        <button type="button" class="btn text-white" style="background-color: gray;" data-bs-dismiss="modal">
+          닫기
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,165 @@
+<div class="modal fade" id="writeCouponModal{{coupon.id}}" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          새 쿠폰 등록하기
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+        <form id="couponWriteForm">
+          {% csrf_token %}
+
+          <!-- 여행지 게시글 아이디(관리자만 필요) -->
+          {% if account.account_type == 'supervisor' or account.account_type == 'subsupervisor' and 'coupon' in subsupervisor_permissions %}
+          <div class="form-group mb-2">
+            <label>여행지 게시글 아이디</label>
+            <input class="form-control" placeholder="여행지 게시글 아이디를 입력해주세요." id="newCouponPostId" name="post_id">
+            <small>
+              쿠폰을 발급할 여행지 게시글의 아이디를 입력해주세요.
+            </small>
+          </div>
+          {% else %}
+          <input type="hidden" id="newCouponPostId" name="post_id" value="{{post.id}}">
+          {% endif %}
+
+          <!-- code -->
+          <div class="form-group mt-2 mb-2">
+            <label>쿠폰 코드</label>
+            <a href="javascript: codeRoll();">
+              <i class="fi fi-rr-refresh"></i>
+            </a>
+            <small id="codeConfirmText"></small>
+            <input class="form-control" placeholder="쿠폰 코드를 입력해주세요." id="newCouponCode" name="code">
+          </div>
+
+          <!-- name -->
+          <div class="form-group mb-2">
+            <label>쿠폰 이름</label>
+            <input class="form-control" placeholder="쿠폰 이름을 입력해주세요." id="newCouponName" name="name" required>
+          </div>
+
+          <!-- content -->
+          <div class="form-group mb-2">
+            <label>쿠폰 설명</label>
+            <textarea class="form-control" rows="5" placeholder="쿠폰 설명을 입력해주세요." id="newCouponContent" name="content" required></textarea>
+          </div>
+
+          <!-- required_mileage -->
+          <div class="form-group mb-2">
+            <label>필요 포인트</label>
+            <input class="form-control" placeholder="필요 포인트를 입력해주세요." id="newCouponRequirePoint" name="required_mileage">
+            <small>
+              쿠폰을 사용하기 위해 사용자가 보유해야 하는 포인트의 양입니다.
+            </small>
+          </div>
+
+          <!-- expire_at -->
+          <div class="form-group mb-2">
+            <label>만료일(선택)</label>
+            <input type="date" class="form-control" id="newCouponExpireAt" name="expire_at">
+            <small>
+              쿠폰의 만료일을 설정합니다. 만료일이 지나면, 해당 쿠폰은 사용할 수 없게 됩니다.
+            </small>
+          </div>
+
+        </form>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="createCoupon();" id="createCouponButton">생성하기</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  // 새 쿠폰 번호 생성
+  // 16자리의 랜덤 숫자를 생성하여 새 쿠폰 생성 모달의 쿠폰 코드 입력창에 채워넣음
+  codeRoll = async () => {
+    var randomNumber16 = '';
+    for (var i = 0; i < 16; i++) {
+      if (i % 4 == 0 && i != 0) {
+        randomNumber16 += '-';
+      }
+      randomNumber16 += Math.floor(Math.random() * 10);
+    }
+    document.getElementById('newCouponCode').value = randomNumber16;
+    document.getElementById('codeConfirmText').innerHTML = '사용 가능한 코드입니다.';
+    document.getElementById('codeConfirmText').classList.remove('text-danger');
+    document.getElementById('codeConfirmText').classList.add('text-success');
+    codeOk = true;
+  }
+
+  var codeOk = false;
+  document.querySelector('#newCouponCode').addEventListener('input', async () => {
+    var code = document.getElementById('newCouponCode').value;
+    if (code.length > 15) {
+      await fetch('/api/search_coupon?code=' + code)
+      .then(response => response.json())
+      .then(data => {
+        var exist = data.result;
+        if (exist == 'not_exist') {
+          document.getElementById('codeConfirmText').innerHTML = '사용 가능한 코드입니다.';
+          document.getElementById('codeConfirmText').classList.remove('text-danger');
+          document.getElementById('codeConfirmText').classList.add('text-success');
+          codeOk = true;
+        } else {
+          document.getElementById('codeConfirmText').innerHTML = '이미 사용중인 코드입니다.';
+          document.getElementById('codeConfirmText').classList.remove('text-success');
+          document.getElementById('codeConfirmText').classList.add('text-danger');
+          codeOk = false;
+        }
+      });
+    } else {
+      document.getElementById('codeConfirmText').innerHTML = '16자리 이상 입력해주세요.';
+      document.getElementById('codeConfirmText').classList.remove('text-success');
+      document.getElementById('codeConfirmText').classList.remove('text-danger');
+      codeOk = false;
+    }
+  });
+
+  createCoupon = async () => {
+    var code = document.getElementById('newCouponCode').value;
+    var name = document.getElementById('newCouponName').value;
+    var content = document.getElementById('newCouponContent').value;
+    var required_mileage = document.getElementById('newCouponRequirePoint').value;
+    var expire_at = document.getElementById('newCouponExpireAt').value;
+
+    // 쿠폰 코드 확인
+    if (!codeOk) {
+      await showAlert('쿠폰 생성', '쿠폰 코드를 확인해주세요.', 'error');
+      return;
+    }
+    if (name == '' | content == '' | expire_at == '' | required_mileage == '') {
+      await showAlert('쿠폰 생성', '쿠폰 이름, 설명, 만료일, 필요 포인트는 필수 입력 사항입니다.', 'error');
+      return;
+    }
+
+    // 쿠폰 생성 요청
+    var formData = new FormData(document.getElementById('couponWriteForm'));
+    var result = await fetch('/api/coupon?create=y', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrftoken
+      },
+      body: formData,
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log(data);
+      return data.result;
+    });
+
+    // 결과에 따른 처리
+    if (result == 'success') {
+      await showAlert('쿠폰 생성', '쿠폰이 생성되었습니다.', 'success');
+      location.reload();
+    } else {
+      await showAlert('쿠폰 생성 실패', '쿠폰 생성에 실패했습니다.', 'error');
+    }
+
+  }
+
+</script>

@@ -102,7 +102,7 @@
       placeholder="건전한 인터넷 문화 조성을 위해 댓글 작성 시 주의해주세요.">
     </textarea>
     {% if commentable %}
-    <button class="btn mt-4 pastel-pink-background text-dark fw-semibold" onclick="writeComment('{{ post.id }}', document.getElementById('commentInput').value);">
+    <button class="btn mt-4 btn-primary" onclick="writeComment('{{ post.id }}', document.getElementById('commentInput').value);">
       댓글 작성
     </button>
     {% else %}

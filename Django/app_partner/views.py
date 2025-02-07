@@ -175,11 +175,12 @@ def rewrite_post(request):
     po.place_info.save()
 
     # 게시판 정보 수정
+    print(board_ids)
     if board_ids != ['']:
-      po.board.clear()
+      po.boards.clear()
       for board_id in board_ids:
-        board = models.BOARD.objects.get(id=board_id)
-        po.board.add(board)
+        board = models.BOARD.objects.get(id=int(board_id))
+        po.boards.add(board)
 
     # 서비스 정보 수정
     if service_ids != ['']:
@@ -239,14 +240,14 @@ def coupon(request):
 
   # 쿠폰 목록 가져오기
   if tab == 'coupon': # 쿠폰 목록
-    cps = models.COUPON.objects.select_related('post').prefetch_related('own_accounts').filter(
+    cps = models.COUPON.objects.select_related('post', 'create_account').prefetch_related('own_accounts').filter(
       create_account=request.user,
       name__contains=search_coupon_name,
       code__contains=search_coupon_code,
       status='active',
     ).order_by('-expire_at')
   elif tab == 'history': # 쿠폰 사용 내역
-    cps = models.COUPON.objects.select_related('post').prefetch_related('own_accounts').exclude(
+    cps = models.COUPON.objects.select_related('post', 'create_account').prefetch_related('own_accounts').exclude(
       status='active',
     ).filter(
       create_account=request.user,
@@ -273,7 +274,7 @@ def coupon(request):
       'image': str(cp.image) if cp.image else None,
       'content': cp.content,
       'required_mileage': cp.required_mileage,
-      'expire_at': cp.expire_at,
+      'expire_at': datetime.strftime(cp.expire_at, '%Y-%m-%d'),
       'created_at': cp.created_at,
       'status': cp.status,
       'note': cp.note,
@@ -281,7 +282,11 @@ def coupon(request):
       'post': {
         'id': cp.post.id,
         'title': cp.post.title,
-      }
+      },
+      'create_account': {
+        'id': cp.create_account.username,
+        'nickname': cp.create_account.first_name,
+      },
     })
 
   return render(request, 'partner/coupon.html', {

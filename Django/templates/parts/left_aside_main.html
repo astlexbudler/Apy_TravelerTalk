@@ -219,7 +219,7 @@
             {{ category.name }}
           </a>
           {% else %}
-          <a class="nav-link" href="{{main_url}}/post/travel?board_ids={{request.GET.board_ids}}&category={{ category.id }}">
+          <a class="nav-link" href="javascript:location.href=location.origin + location.pathname + '?board_ids={{request.GET.board_ids}}&category={{ category.id }}'">
             {{ category.name }}
           </a>
           {% endif %}
@@ -231,7 +231,7 @@
               {{ child.name }}
             </a>
             {% else %}
-            <a class="nav-link" href="{{main_url}}/post/travel?board_ids={{request.GET.board_ids}}&category={{ child.id }}">
+            <a class="nav-link" href="javascript:location.href=location.origin + location.pathname + '?board_ids={{request.GET.board_ids}}&category={{ child.id }}'">
               {{ child.name }}
             </a>
             {% endif %}
@@ -243,7 +243,7 @@
                 {{ child2.name }}
               </a>
               {% else %}
-              <a class="nav-link" href="{{main_url}}/post/travel?board_ids={{request.GET.board_ids}}&category={{ child2.id }}">
+              <a class="nav-link" href="javascript:location.href=location.origin + location.pathname + '?board_ids={{request.GET.board_ids}}&category={{ child2.id }}'">
                 {{ child2.name }}
               </a>
               {% endif %}
@@ -255,7 +255,7 @@
                   {{ child3.name }}
                 </a>
                 {% else %}
-                <a class="nav-link" href="{{main_url}}/post/travel?board_ids={{request.GET.board_ids}}&category={{ child3.id }}">
+                <a class="nav-link" href="javascript:location.href=location.origin + location.pathname + '?board_ids={{request.GET.board_ids}}&category={{ child3.id }}'">
                   {{ child3.name }}
                 </a>
                 {% endif %}

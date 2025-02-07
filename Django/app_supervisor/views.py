@@ -19,7 +19,6 @@ def login(request):
   # 이미 로그인한 경우, 메인 페이지로 리다이렉트
   if contexts['account']['account_type'] in  ['supervisor', 'subsupervisor']:
     return redirect('/supervisor') # 관리자 메인 페이지로 리다이렉트
-
   return render(request, 'login.html')
 
 # 관리자 메인 페이지
@@ -939,6 +938,7 @@ def post(request):
     boards.append(board_dict[child])
 
   # 게시글 검색
+  print(all_post)
   if is_place_search == 'y':
     sps = all_post.filter(
       Q(place_info__isnull=False), # 여행지 정보가 있는 게시글만 검색
@@ -956,6 +956,7 @@ def post(request):
       Q(boards__id__contains=search_board_id),
       Q(author__username__contains=search_author_id),
     )
+  print(sps)
 
   # export
   if request.GET.get('export'):

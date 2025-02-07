@@ -21,19 +21,19 @@
   <!-- 선택지 버튼 그룹 -->
   <div class="btn-group w-100 d-flex">
     <div class="w-100 d-flex justify-content-center rounded-2">
-      <a class="btn w-100" href="/account?tab=user" id="userTab">
+      <a class="btn w-100" href="{{supervisor_url}}/supervisor/account?tab=user" id="userTab">
         사용자 계정
       </a>
     </div>
     <span class="divider"></span>
     <div class="w-100 d-flex justify-content-center rounded-2">
-      <a class="btn w-100" href="/account?tab=partner" id="partnerTab">
+      <a class="btn w-100" href="{{supervisor_url}}/supervisor/account?tab=partner" id="partnerTab">
         파트너 계정
       </a>
     </div>
     <span class="divider"></span>
     <div class="w-100 d-flex justify-content-center rounded-2">
-      <a class="btn w-100" href="/account?tab=supervisor" id="supervisorTab">
+      <a class="btn w-100" href="{{supervisor_url}}/supervisor/account?tab=supervisor" id="supervisorTab">
         관리자 계정
       </a>
     </div>
@@ -357,7 +357,7 @@
     // Tab
     tab = '{{request.GET.tab}}';
     if(tab == '') {
-      location.href='/account?tab=user';
+      location.href='{{supervisor_url}}/supervisor/account?tab=user';
     }
 
     var userTab = document.getElementById('userTab');
@@ -407,7 +407,7 @@
     var searchAccountNickname = '{{request.GET.accountNickname}}';
     var searchAccountStatus = '{{request.GET.accountStatus}}';
     console.log('{{request.GET.page}} | {{last_page}}');
-    makePaegeButton('{{request.GET.page}}', '{{last_page}}', `/account?tab=${tab}&accountId=${searchAccountId}&accountNickname=${searchAccountNickname}&accountStatus=${searchAccountStatus}`);
+    makePageButton('{{request.GET.page}}', '{{last_page}}', `{{supervisor_url}}/supervisor/account?tab=${tab}&accountId=${searchAccountId}&accountNickname=${searchAccountNickname}&accountStatus=${searchAccountStatus}`);
   }
 
   var subsupervisorIdOk = false;
@@ -500,7 +500,7 @@
     }
 
     // 하위 관리자 추가
-    await fetch('/supervisor/account?create_subsupervisor=y', {
+    await fetch('{{supervisor_url}}/supervisor/account?create_subsupervisor=y', {
       method: 'POST',
       body: formData,
       headers: {

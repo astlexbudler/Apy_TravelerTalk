@@ -23,30 +23,18 @@
       썸네일 등록
     </p>
     <div id="imagePreview" class="mb-2 row">
-      {% for image in travel_post.images %}
-      {% if image != '' %}
-      <div class="mb-2 me-2 shadow-sm text-end p-2" style="min-width: 150px; width: 12vw; background: url('{{ image }}') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw;">
-        {% if forloop.counter == 1 %}<span class="text-white">대표 이미지</span>{% endif %}
-        <a href="javascript: removeImage('{{ image }}')"
-          class="text-danger">
-          <i class="fi fi-rr-trash"></i>
-        </a>
-      </div>
-      {% endif %}
-      {% endfor %}
     </div>
     <a href="javascript: document.getElementById('imageInput').click();" class="btn btn-success">
       이미지 추가
     </a>
-    <input type="file" class="d-none" id="imageInput" multiple>
-    <input id="imagePaths" value="{% for image in travel_post.images %}{{ image }},{% endfor %}" class="d-none">
+    <input type="file" class="d-none" id="imageInput">
   </div>
 
   <!-- 제목 -->
   <div class="form-group mt-2 mb-3">
     <label>제목</label>
     <input type="text" id="postTitle" class="form-control" placeholder="제목을 입력해주세요"
-    value="{% if request.GET.revie_post_id != '' %}{{review_post.title}} 후기: {% endif %}">
+    value="{% if request.GET.review_post_id %}{{review_post.title}} 후기: {% endif %}">
   </div>
 
   <div class="form-group mt-2 mb-3">
@@ -83,27 +71,21 @@
   });
 
   // 대표 이미지 추가
-  try {
-    document.getElementById('imageInput').addEventListener('change', async (e) => {
-      const files = e.target.files;
-      const imagePaths = document.getElementById('imagePaths');
-      const imagePreview = document.getElementById('imagePreview');
+  document.getElementById('imageInput').addEventListener('change', async (e) => {
+    const files = e.target.files;
 
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const imagePath = e.target.result;
-          imagePreview.innerHTML += `
-          <div class="mb-2 me-2 shadow-sm text-end p-2" style="min-width: 150px; width: 12vw; background: url('${imagePath}') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw;"></div>
-          `;
-        }
-        reader.readAsDataURL(file);
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const imagePath = e.target.result;
+        document.getElementById('imagePreview').innerHTML = `
+        <div class="mb-2 me-2 shadow-sm text-end p-2" style="min-width: 150px; width: 12vw; background: url('${imagePath}') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw;"></div>
+        `;
       }
-    });
-  } catch (e) {
-    console.error(e);
-  }
+      reader.readAsDataURL(file);
+    }
+  });
 
   writePost = async () => {
     const title = document.querySelector('#postTitle').value;

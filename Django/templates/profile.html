@@ -97,13 +97,9 @@
       </p>
 
       <!-- 사용자 상태 -->
-      {% if profile.status == 'pending_dame' %}
+      {% if profile.status == 'pending' %}
       <p class="text-black-50">
-        여성회원 가입 대기중..
-      </p>
-      {% elif profile.status == 'pending_partner' %}
-      <p class="text-black-50">
-        파트너 가입 대기중..
+        가입 대기중..
       </p>
       {% elif profile.status == 'active' %}
       <p class="text-black-50">
@@ -215,7 +211,7 @@
         </p>
         <a class="text-black-50"
           href="javascript: new bootstrap.Modal(document.getElementById('rewritePartnerPhoneModal')).show();">
-          {{ profile.partner_tel }} <i class="fi fi-rr-pen-clip"></i>
+          {{ profile.tel }} <i class="fi fi-rr-pen-clip"></i>
         </a>
       </div>
       <div class="mb-5">
@@ -380,6 +376,29 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-primary" onclick="changeStatus();" data-bs-dismiss="modal">변경하기</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- 계정 메모 변경 모달 -->
+<div class="modal fade" id="changeNoteModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">계정 메모 변경</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+        <!-- note -->
+        <div class="form-group">
+          <label>변경할 메모</label>
+          <textarea class="form-control" id="note" rows="5">{{ profile.note }}</textarea>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="changeNote();" data-bs-dismiss="modal">변경하기</button>
       </div>
     </div>
   </div>
@@ -648,6 +667,36 @@
       return
     }
     await showAlert('상태 변경 실패', '상태 변경 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error');
+  }
+
+  // 계정 메모 변경
+  changeNote = async () => {
+    var note = document.getElementById('note').value;
+
+    // 계정 메모 변경 요청
+    var formData = new FormData();
+    formData.append('note', note);
+    formData.append('edit_account_id', '{{ profile.id }}');
+    var result = await fetch('/api/account?update=y', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRFToken': csrftoken
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log(data);
+      return data.success;
+    });
+
+    // 계정 메모 변경 결과에 따른 처리
+    if (result == 'y') {
+      await showAlert('계정 메모 변경 완료', '계정 메모가 성공적으로 변경되었습니다.', 'success');
+      location.reload();
+      return
+    }
+    await showAlert('계정 메모 변경 실패', '계정 메모 변경 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error');
   }
 
   // 회원 탈퇴

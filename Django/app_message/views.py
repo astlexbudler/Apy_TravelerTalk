@@ -27,7 +27,7 @@ def index(request):
     messages, last_page = daos.get_user_inbox_messages(contexts['account']['id'], page)
   elif tab == 'outbox': # 보낸 메세지함
     messages, last_page = daos.get_user_outbox_messages(contexts['account']['id'], page)
-
+  print(messages)
   return render(request, 'message/index.html', {
     **contexts,
     'boards': boards, # 게시판 정보

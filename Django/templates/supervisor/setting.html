@@ -29,7 +29,7 @@
       </small>
     </div>
 
-    <form method="POST" action="/supervisor/setting" class="mb-5">
+    <form method="POST" action="{{supervisor_url}}/supervisor/setting" class="mb-5">
       {% csrf_token %}
 
       <!-- service_name -->

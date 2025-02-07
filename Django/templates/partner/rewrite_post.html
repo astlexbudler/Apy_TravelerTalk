@@ -26,9 +26,9 @@
     <div class="form-group">
       <label>게시 상태 선택</label>
       <select class="form-select" id="place_status">
-        <option value="writing">작성중</option>
-        <option value="normal">게시</option>
-        <option value="pending">광고 요청</option>
+        <option value="writing" {% if post.place_info.status == 'writing' %}selected{% endif %}>숨김</option>
+        <option value="normal" {% if post.place_info.status == 'normal' %}selected{% endif %}>게시</option>
+        <option value="pending" {% if post.place_info.status == 'pending' %}selected{% endif %}>광고 요청</option>
       </select>
     </div>
 
@@ -42,12 +42,12 @@
           document.querySelectorAll('.subBoard').forEach(e => e.classList.add('d-none'));
           document.getElementById('board' + this.value).classList.toggle('d-none');">
           <option>-선택해주세요-</option>
-          {% for travel_board in travel_boards %}
+          {% for travel_board in boards %}
           <option value="{{travel_board.id}}">{{travel_board.name}}</option>
           {% endfor %}
         </select>
 
-        {% for travel_board in travel_boards %}
+        {% for travel_board in boards %}
         {% if travel_board.children|length > 0 %}
         <!-- Level 2 -->
         <select class="subBoard form-select d-none mb-1" id="board{{travel_board.id}}" onchange="
@@ -202,7 +202,7 @@
       </p>
       <div id="imagePreview" class="mb-2 row">
         {% if post.image and post.image != '/media/default.png' %}
-        <div class="mb-2 me-2 shadow-sm text-end p-2" style="min-width: 150px; width: 12vw; background: url('{{post.image}}') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw;"></div>
+        <div class="mb-2 me-2 shadow-sm text-end p-2" style="min-width: 150px; width: 12vw; background: url('/media/{{post.image}}') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw;"></div>
         {% endif %}
       </div>
       <a href="javascript: document.getElementById('imageInput').click();" class="btn btn-success">
@@ -311,7 +311,7 @@
       formData.append('image', document.getElementById('imageInput').files[0]);
     }
 
-    await fetch('{{partner_url}}/rewrite_post', {
+    await fetch('{{partner_url}}/partner/rewrite_post', {
       method: 'POST',
       headers: {
         'X-CSRFToken': csrftoken
@@ -322,7 +322,7 @@
     .then(async (data) => {
       if (data.result == 'success') {
         await showAlert('게시글 수정 완료', '게시글이 성공적으로 수정되었습니다.', 'success');
-        window.location.href = '{{partner_url}}';
+        window.location.href = '{{partner_url}}/partner';
       } else {
         showAlert('게시글 수정 실패', '게시글 수정에 실패했습니다. 잠시 후 다시 시도해주세요.', 'error');
       }
@@ -349,7 +349,7 @@
     formData.append('content', content);
     formData.append('board_ids', board);
     formData.append('images', imagePaths);
-    var result = await fetch('{{partner_url}}/rewrite_post', {
+    var result = await fetch('{{partner_url}}/partner/rewrite_post', {
       method: 'POST',
       body: formData,
       headers: {

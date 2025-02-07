@@ -156,6 +156,8 @@ def write_post(request):
       'id': review_post_info.id,
       'title': review_post_info.title,
     }
+  else:
+    review_post = None
 
   return render(request, 'post/write_post.html', {
     **contexts,
@@ -195,11 +197,8 @@ def rewrite_post(request):
     title = request.POST.get('title')
     content = request.POST.get('content')
     image = request.FILES.get('image') if request.FILES.get('image') else None
-    review_post_id = request.POST.get('review_post_id') # 후기 게시글 작성시, 대상 게시글 아이디
-    board_ids = request.POST.get('board_ids').split(',') # 게시판 아이디
     if not title or not content: # 제목 또는 내용이 없는 경우
       return JsonResponse({'result': 'error'})
-    boards = models.BOARD.objects.filter(id__in=board_ids)
     if not boards:
       return JsonResponse({'result': 'error'})
 
@@ -209,25 +208,13 @@ def rewrite_post(request):
     post.content = content
     if image:
       post.image = image
-    post.boards.clear()
-    post.boards.add(*boards)
-    if review_post_id:
-      review_post = models.POST.objects.filter(id=review_post_id).first()
-      if review_post:
-        post.review_post = review_post
     post.save()
 
     # 사용자 활동 기록 추가
-    if review_post_id:
-      models.ACTIVITY.objects.create(
-        account=request.user,
-        message = f'[후기] {title} 후기를 수정하였습니다.',
-      )
-    else:
-      models.ACTIVITY.objects.create(
-        account=request.user,
-        message = f'[게시글] {title} 게시글을 수정하였습니다.',
-      )
+    models.ACTIVITY.objects.create(
+      account=request.user,
+      message = f'[게시글] {title} 게시글을 수정하였습니다.',
+    )
 
     return JsonResponse({'result': 'success', 'post_id': post.id})
 
@@ -281,19 +268,13 @@ def post_view(request):
   # post 확인
   post = daos.get_post_info(post_id)
 
-  board_ids = [
-    board.id for board in models.BOARD.objects.filter(name__in=post['boards'])
-  ]
-  selected_boards = daos.get_selected_board_info(board_ids) # 선택된 게시판 정보
+  # 댓글 권한 확인
   commentable = False
-  for board in selected_boards:
-    if contexts['account']['account_type'] not in board['enter']: # enter 권한 확인
-      return redirect('/?redirect_message=not_allowed_board') # 권한이 없는 경우, 메인 페이지로 이동
-    if contexts['account']['account_type'] in board['comment']: # 댓글 작성 가능한 경우
-      commentable = True
+  if contexts['account']['account_type'] in post['boards'][-1]['comment']:
+    commentable = True
 
   # 마지막 게시판 가져오기
-  board = selected_boards[-1]
+  board = post['boards'][-1]
 
   # 댓글 가져오기
   comments = daos.get_all_post_comments(post_id)
@@ -657,10 +638,17 @@ def travel_view(request):
   else:
     bookmarkable = True
 
+  # 댓글 작성 가능 여부
+  commentable = False
+  print(post['boards'][-1]['comment'])
+  if contexts['account']['account_type'] in post['boards'][-1]['comment']:
+    commentable = True
+
   return render(request, 'post/travel_view.html', {
     **contexts,
     'boards': boards, # 게시판 정보
     'post': post, # 게시글 정보
     'bookmarkable': bookmarkable, # 북마크 가능 여부
     'comments': comments, # 댓글 정보
+    'commentable': commentable, # 댓글 작성 가능 여부
   })

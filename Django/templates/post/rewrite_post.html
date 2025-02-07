@@ -14,49 +14,26 @@
     </h5>
     <p class="small">
       {% for board in post.boards %}
-      {{ board }} {% if forloop.counter < post.boards|length %} &gt; {% endif %}
+      {{ board.name }} {% if forloop.counter < post.boards|length %} &gt; {% endif %}
       {% endfor %}
     </p>
   </div>
 
   <!-- 대표 이미지 -->
-  {% if board.board_type in 'event, review' %}
   <div class="my-4">
-    <label>대표 이미지</label>
+    <p>
+      썸네일 등록
+    </p>
     <div id="imagePreview" class="mb-2 row">
-      {% for image in travel_post.images %}
-      {% if image != '' %}
-      <div class="mb-2 me-2 shadow-sm text-end p-2" style="min-width: 150px; width: 12vw; background: url('{{ image }}') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw;">
-        {% if forloop.counter == 1 %}<span class="text-white">대표 이미지</span>{% endif %}
-        <a href="javascript: removeImage('{{ image }}')"
-          class="text-danger">
-          <i class="fi fi-rr-trash"></i>
-        </a>
-      </div>
+      {% if post.image != '/media/default.png' %}
+      <div class="mb-2 me-2 shadow-sm text-end p-2" style="min-width: 150px; width: 12vw; background: url('{{post.image}}') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw;"></div>
       {% endif %}
-      {% endfor %}
     </div>
     <a href="javascript: document.getElementById('imageInput').click();" class="btn btn-success">
       이미지 추가
     </a>
     <input type="file" class="d-none" id="imageInput" multiple>
-    <input id="imagePaths" value="{% for image in travel_post.images %}{{ image }},{% endfor %}" class="d-none">
   </div>
-  {% endif %}
-
-  <!-- 게시판 이동 -->
-  {% if board.board_type == 'travel' %}
-  <div class="my-4">
-    <label>게시판 이동</label>
-    <select id="board_ids" class="form-select">
-      <option value="travel">여행지</option>
-      <option value="event">이벤트</option>
-      <option value="review">리뷰</option>
-    </select>
-  </div>
-  {% else %}
-  <input id="board_ids" value="{% for board_id in post.board_ids %}{{ board_id }}{% if not forloop.last %},{% endif %}{% endfor %}" class="d-none">
-  {% endif %}
 
   <!-- 제목 -->
   <div class="form-group mt-2 mb-3">
@@ -100,27 +77,21 @@
   });
 
   // 대표 이미지 추가
-  try {
-    document.getElementById('imageInput').addEventListener('change', async (e) => {
-      const files = e.target.files;
-      const imagePaths = document.getElementById('imagePaths');
-      const imagePreview = document.getElementById('imagePreview');
+  document.getElementById('imageInput').addEventListener('change', async (e) => {
+    const files = e.target.files;
 
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const imagePath = e.target.result;
-          imagePreview.innerHTML += `
-          <div class="mb-2 me-2 shadow-sm text-end p-2" style="min-width: 150px; width: 12vw; background: url('${imagePath}') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw;"></div>
-          `;
-        }
-        reader.readAsDataURL(file);
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const imagePath = e.target.result;
+        document.getElementById('imagePreview').innerHTML = `
+        <div class="mb-2 me-2 shadow-sm text-end p-2" style="min-width: 150px; width: 12vw; background: url('${imagePath}') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw;"></div>
+        `;
       }
-    });
-  } catch (e) {
-    console.error(e);
-  }
+      reader.readAsDataURL(file);
+    }
+  });
 
   writePost = async () => {
     const title = document.querySelector('#postTitle').value;
@@ -138,7 +109,6 @@
     var formData = new FormData();
     formData.append('title', title);
     formData.append('content', content);
-    formData.append('board_ids', document.getElementById('board_ids').value);
     if (document.getElementById('imageInput')) {
       formData.append('image', document.getElementById('imageInput').files[0]); // 대표 이미지
     }
