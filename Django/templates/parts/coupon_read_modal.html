@@ -1,4 +1,4 @@
-<div class="modal fade" id="couponModal{{coupon.id}}" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+<div class="modal fade" id="couponModal{{coupon.code}}" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
@@ -43,8 +43,8 @@
             <p class="text-black-50">
               <i class="fi fi-rr-star"></i> 
               <small>
-                필요 포인트: <span class="numberComma">{{coupon.required_mileage}}</span> 포인트<br>
-                쿠폰을 사용하려면 <span class="numberComma">{{coupon.required_mileage}}</span> 만큼의 쿠폰 포인트가 필요합니다.
+                필요 포인트: <span class="numberComma">{{coupon.required_mileage}}</span> 마일리지<br>
+                쿠폰을 사용하려면 <span class="numberComma">{{coupon.required_mileage}}</span> 만큼의 쿠폰 마일리지가 필요합니다.
               </small>
             </p>
             {% endif %}
@@ -62,23 +62,49 @@
               쿠폰 소유자
             </p>
             <div class="my-2">
-              {% if coupon.accounts|length == 0 %}
+              {% if coupon.accounts.own|length == 0 %}
               <p class="text-black-50">
                 쿠폰을 보유한 사용자가 없습니다.
               </p>
               {% endif %}
-              {% for account in coupon.accounts %}
+              {% for account in coupon.accounts.own %}
               <div>
-                <span class="text-dark me-2">
-                  {{account.nickname}}
-                </span>
+                <a class="text-dark me-2" href="{{main_url}}/profile?profile_id={{account.id}}" target="_blank">
+                  {{account.id}} <span class="text-black-50">({{account.nickname}})</span>
+                </a>
+                {% if coupon.status == 'active' %}
                 <span>
-                  {% if coupon.status == 'used' %}
-                  <i class="fi fi-rr-check text-success"></i> 사용됨
-                  {% elif coupon.status == 'active' %}
-                  <i class="fi fi-rr-check text-success"></i> 사용 가능
-                  {% endif %}
+                  <a href="javascript: useCoupon('{{coupon.code}}', '{{account.id}}');" class="text-success">
+                    <i class="fi fi-rr-check"></i> 사용 처리
+                  </a>
+                  <a href="javascript: deleteCoupon('{{coupon.code}}', '{{account.id}}');" class="text-danger ms-2">
+                    <i class="fi fi-rr-trash"></i> 회수
+                  </a>
                 </span>
+                {% endif %}
+              </div>
+              {% endfor %}
+            </div>
+            <div class="my-2 pt-3">
+              <p class="text-black">
+                쿠폰 사용자
+              </p>
+              {% if coupon.accounts.use|length == 0 %}
+              <p class="text-black-50">
+                쿠폰을 사용한 사용자가 없습니다.
+              </p>
+              {% endif %}
+              {% for account in coupon.accounts.use %}
+              <div>
+                <a class="text-dark me-2" href="{{main_url}}/profile?profile_id={{account.id}}" target="_blank">
+                  {{account.id}} <span class="text-black-50">({{account.nickname}})</span>
+                </a>
+                {% if coupon.status == 'active' %}
+                <span>
+                  <a href="javascript: cancelUseCoupon('{{coupon.code}}', '{{account.id}}');" class="text-danger">
+                    <i class="fi fi-rr-rotate-right"></i> 사용 취소
+                </span>
+                {% endif %}
               </div>
               {% endfor %}
             </div>
@@ -89,9 +115,12 @@
       </div>
       <div class="modal-footer">
         <!-- 쿠폰 수정 버튼(쿠폰 생성자만 확인 가능) -->
-        {% if account.id == coupon.create_account.id %}
-        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="new bootstrap.Modal(document.getElementById('rewriteCouponModal{{coupon.id}}')).show();">
+        {% if account.id == coupon.create_account.id and coupon.status == 'active' %}
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="new bootstrap.Modal(document.getElementById('rewriteCouponModal{{coupon.code}}')).show();">
           수정
+        </button>
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal" onclick="changeCouponStatusExpire('{{coupon.code}}');">
+          삭제
         </button>
         {% endif %}
         <button type="button" class="btn text-white" style="background-color: gray;" data-bs-dismiss="modal">

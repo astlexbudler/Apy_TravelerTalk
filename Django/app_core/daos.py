@@ -308,6 +308,7 @@ def get_category_tree():
     category.name: {
       'id': category.id,
       'name': category.name,
+      'display_weight': category.display_weight,
       'children': [],
     } for category in categories if not category.parent_category
   }
@@ -317,6 +318,7 @@ def get_category_tree():
         category_dict[category.parent_category.name]['children'].append({
           'id': category.id,
           'name': category.name,
+          'display_weight': category.display_weight,
           'children': [],
         })
       else:
@@ -329,6 +331,7 @@ def get_category_tree():
               child['children'].append({
                 'id': category.id,
                 'name': category.name,
+                'display_weight': category.display_weight,
                 'children': [],
               })
               loop = False
@@ -340,6 +343,7 @@ def get_category_tree():
                   grandchild['children'].append({
                     'id': category.id,
                     'name': category.name,
+                    'display_weight': category.display_weight,
                     'children': [],
                   })
                   loop = False

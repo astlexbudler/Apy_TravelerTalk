@@ -145,14 +145,14 @@ class COUPON(models.Model):
   post = models.ForeignKey('POST', on_delete=models.CASCADE, null=True, help_text='게시글', related_name='coupon_post')
   create_account = models.ForeignKey('ACCOUNT', on_delete=models.CASCADE, help_text='생성자', related_name='coupon_create_account')
   own_accounts = models.ManyToManyField('ACCOUNT', help_text='소유 계정', related_name='coupon_own_accounts')
-  used_account = models.ManyToManyField('ACCOUNT', help_text='사용 계정', related_name='coupon_used_account')
+  used_account = models.ManyToManyField('ACCOUNT', help_text='사용 계정', related_name='coupon_used_account') # accounts에 s(복수형) 이름 잘못 적음. 수정 필요
   name = models.CharField(max_length=100, help_text='쿠폰 이름')
   image = models.FileField(upload_to=upload_to, null=True, help_text='이미지')
   content = models.TextField(help_text='내용')
   required_mileage = models.IntegerField(help_text='필요 마일리지', default=0)
   expire_at = models.DateTimeField(help_text='만료 일시')
   created_at = models.DateTimeField(auto_now_add=True, help_text='생성 일시')
-  status = models.CharField(max_length=20, default='active', help_text='상태(active, used, expired, deleted)')
+  status = models.CharField(max_length=20, default='active', help_text='상태(active, expired, deleted)')
   note = models.TextField(help_text='관리자 메모')
 
 # MESSAGE: 메시지 테이블

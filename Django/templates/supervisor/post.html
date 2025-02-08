@@ -24,8 +24,12 @@
     <!-- 버튼 -->
     <div class="p-3 mb-5 text-end">
 
-      <a class="btn btn-success btn-sm me-2" href="javascript: new bootstrap.Modal(document.getElementById('addTopBoardModal')).show()">
+      <a class="btn btn-success btn-sm me-2" href="javascript: new bootstrap.Modal(document.getElementById('addnewBoardModal')).show()">
         <i class="fi fi-rr-plus"></i> 최상위 게시판 추가
+      </a>
+
+      <a class="btn btn-success btn-sm me-2" href="javascript: new bootstrap.Modal(document.getElementById('addCategoryModal')).show()">
+        <i class="fi fi-rr-plus"></i> 최상위 카테고리 추가
       </a>
 
     </div>
@@ -33,7 +37,7 @@
     <!-- 통계 -->
     <div class="rounded border p-3 mb-5 shadow">
       <p>
-        <i class="fi fi-rr-stats"></i> 통계
+        <i class="fi fi-rr-stats"></i> 게시판 편집
       </p>
       <table class="table table-bordered">
         <thead>
@@ -41,7 +45,7 @@
             <th>구분</th>
             <th>조회수</th>
             <th>게시글 수</th>
-            <th></th>
+            <th style="width: 100px;"></th>
           </tr>
         </thead>
         <tbody>
@@ -100,7 +104,7 @@
               <a href="javascript: new bootstrap.Modal(document.getElementById('{{ child.id }}Detail')).show()">
                 <i class="fi fi-rr-edit"></i>
               </a>
-              {% with to_modify_board=board %}
+              {% with to_modify_board=child %}
               {% include 'parts/update_board_modal.html' %}
               {% endwith %}
 
@@ -130,7 +134,7 @@
                 <a href="javascript: new bootstrap.Modal(document.getElementById('{{ grandchild.id }}Detail')).show()">
                   <i class="fi fi-rr-edit"></i>
                 </a>
-                {% with to_modify_board=board %}
+                {% with to_modify_board=grandchild %}
                 {% include 'parts/update_board_modal.html' %}
                 {% endwith %}
 
@@ -150,8 +154,117 @@
                   <a href="javascript: new bootstrap.Modal(document.getElementById('{{ grandgrandchild.id }}Detail')).show()">
                     <i class="fi fi-rr-edit"></i>
                   </a>
-                  {% with to_modify_board=board %}
+                  {% with to_modify_board=grandgrandchild %}
                   {% include 'parts/update_board_modal.html' %}
+                  {% endwith %}
+
+                </td>
+              </tr>
+              {% endfor %}
+              {% endif %}
+            {% endfor %}
+            {% endif %}
+          {% endfor %}
+          {% endif %}
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <p class="mt-4">
+        <i class="fi fi-rr-list"></i> 카테고리 편집
+      </p>
+      <table class="table table-bordered">
+        <tbody>
+          {% for category in categories %}
+          <tr>
+            <td>
+              <p>
+                {{ category.name }}<br>
+
+                <a href="javascript: document.getElementById('subCategoryParent').value = '{{ category.id }}'; new bootstrap.Modal(document.getElementById('addCategoryModal')).show()"
+                class="btn btn-success p-1 px-2 small">
+                  <i class="fi fi-rr-plus"></i> 하위 카테고리 추가
+                </a>
+
+              </p>
+            </td>
+            <td class="text-center" style="width: 100px;">
+
+              <!-- 게시판 수정 -->
+              <a href="javascript: new bootstrap.Modal(document.getElementById('{{ category.id }}CategoryEditModal')).show()">
+                <i class="fi fi-rr-edit"></i>
+              </a>
+              {% with to_modify_category=category %}
+              {% include 'parts/update_category_modal.html' %}
+              {% endwith %}
+
+            </td>
+          </tr>
+          {% if category.children|length > 0 %}
+          {% for child in category.children %}
+          <tr>
+            <td>
+              <p class="ms-2">
+                {{ child.name }}<br>
+
+                <a href="javascript: document.getElementById('subCategoryParent').value = '{{ category.id }}'; new bootstrap.Modal(document.getElementById('addCategoryModal')).show()"
+                class="btn btn-success p-1 px-2 small">
+                  <i class="fi fi-rr-plus"></i> 하위 카테고리 추가
+                </a>
+
+              </p>
+            </td>
+            <td class="text-center">
+
+              <!-- 게시판 수정 -->
+              <a href="javascript: new bootstrap.Modal(document.getElementById('{{ child.id }}Detail')).show()">
+                <i class="fi fi-rr-edit"></i>
+              </a>
+              {% with to_modify_category=category %}
+              {% include 'parts/update_category_modal.html' %}
+              {% endwith %}
+
+            </td>
+            {% if child.children|length > 0 %}
+            {% for grandchild in child.children %}
+            <tr>
+              <td>
+                <p class="ms-4">
+                  {{ grandchild.name }}<br>
+
+                  <a href="javascript: document.getElementById('subCategoryParent').value = '{{ category.id }}'; new bootstrap.Modal(document.getElementById('addCategoryModal')).show()"
+                  class="btn btn-success p-1 px-2 small">
+                    <i class="fi fi-rr-plus"></i> 하위 카테고리 추가
+                  </a>
+
+                </p>
+              </td>
+              <td class="text-center">
+
+                <!-- 게시판 수정 -->
+                <a href="javascript: new bootstrap.Modal(document.getElementById('{{ grandchild.id }}Detail')).show()">
+                  <i class="fi fi-rr-edit"></i>
+                </a>
+                {% with to_modify_category=category %}
+                {% include 'parts/update_category_modal.html' %}
+                {% endwith %}
+
+              </td>
+            </tr>
+              {% if grandchild.children|length > 0 %}
+              {% for grandgrandchild in grandchild.children %}
+              <tr>
+                <td>
+                  <span class="ms-6">{{ grandgrandchild.name }}</span>
+                </td>
+                <td class="text-center">
+
+                  <!-- 게시판 수정 -->
+                  <a href="javascript: new bootstrap.Modal(document.getElementById('{{ grandchild.id }}Detail')).show()">
+                    <i class="fi fi-rr-edit"></i>
+                  </a>
+                  {% with to_modify_category=grandgrandchild %}
+                  {% include 'parts/update_category_modal.html' %}
                   {% endwith %}
 
                 </td>
@@ -510,26 +623,28 @@
 <aside class="d-none d-lg-block" style="width: 320px;"></aside>
 
 <!-- Modal -->
-<!-- 최상위 게시판 추가 모달 -->
-<div class="modal fade" id="addTopBoardModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+<!-- 게시판 추가 모달 -->
+<div class="modal fade" id="addBoardModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">최상위 게시판 추가</h5>
+        <h5 class="modal-title">새 게시판 추가</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
 
+        <input type="hidden" id="subBoardParent">
+
         <!-- 게시판 이름 -->
         <div class="form-group mb-2">
           <label>새 이름</label>
-          <input class="form-control" placeholder="게시판 이름" id="topBoardName">
+          <input class="form-control" placeholder="게시판 이름" id="newBoardName">
         </div>
 
         <!-- 게시판 타입 -->
         <div class="form-group mb-2">
           <label>게시판 타입</label>
-          <select class="form-control" id="topBoardType">
+          <select class="form-control" id="newBoardType">
             <option value="board">게시판</option>
             <option value="travel">여행</option>
             <option value="tree">폴더</option>
@@ -539,113 +654,113 @@
         <!-- 레벨 제한 -->
         <div class="form-group mb-2">
           <label>레벨 제한</label>
-          <input type="number" class="form-control" id="topBoardLevel" value="1">
+          <input type="number" class="form-control" id="newBoardLevel" value="1">
         </div>
 
         <!-- 표시 그룹 -->
-        <div class="form-group top-board-groups">
+        <div class="form-group new-board-groups">
           <label>게시판 표시 그룹</label>
           <p>
             <span>
-              <input type="checkbox" class="form-check-input" id="topBoardDisplayUser">
-              <label class="form-check-label" for="topBoardDisplayUser">사용자</label>
+              <input type="checkbox" class="form-check-input" id="newBoardDisplayUser">
+              <label class="form-check-label" for="newBoardDisplayUser">사용자</label>
             </span>
             <span>
-              <input type="checkbox" class="form-check-input" id="topBoardDisplayDame">
-              <label class="form-check-label" for="topBoardDisplayDame">여성회원</label>
+              <input type="checkbox" class="form-check-input" id="newBoardDisplayDame">
+              <label class="form-check-label" for="newBoardDisplayDame">여성회원</label>
             </span>
             <span>
-              <input type="checkbox" class="form-check-input" id="topBoardDisplayPartner">
-              <label class="form-check-label" for="topBoardDisplayPartner">파트너</label>
+              <input type="checkbox" class="form-check-input" id="newBoardDisplayPartner">
+              <label class="form-check-label" for="newBoardDisplayPartner">파트너</label>
             </span>
             <span>
-              <input type="checkbox" class="form-check-input" id="topBoardDisplaySubsupervisor">
-              <label class="form-check-label" for="topBoardDisplaySubsupervisor">부관리자</label>
+              <input type="checkbox" class="form-check-input" id="newBoardDisplaySubsupervisor">
+              <label class="form-check-label" for="newBoardDisplaySubsupervisor">부관리자</label>
             </span>
             <span>
-              <input type="checkbox" class="form-check-input" id="topBoardDisplaySupervisor">
-              <label class="form-check-label" for="topBoardDisplaySupervisor">관리자</label>
+              <input type="checkbox" class="form-check-input" id="newBoardDisplaySupervisor">
+              <label class="form-check-label" for="newBoardDisplaySupervisor">관리자</label>
             </span>
           </p>
         </div>
 
         <!-- 입장 그룹 -->
-        <div class="form-group top-board-groups">
+        <div class="form-group new-board-groups">
           <label>게시판 입장 그룹</label>
           <p>
             <span>
-              <input type="checkbox" class="form-check-input" id="topBoardEnterUser">
-              <label class="form-check-label" for="topBoardEnterUser">사용자</label>
+              <input type="checkbox" class="form-check-input" id="newBoardEnterUser">
+              <label class="form-check-label" for="newBoardEnterUser">사용자</label>
             </span>
             <span>
-              <input type="checkbox" class="form-check-input" id="topBoardEnterDame">
-              <label class="form-check-label" for="topBoardEnterDame">여성회원</label>
+              <input type="checkbox" class="form-check-input" id="newBoardEnterDame">
+              <label class="form-check-label" for="newBoardEnterDame">여성회원</label>
             </span>
             <span>
-              <input type="checkbox" class="form-check-input" id="topBoardEnterPartner">
-              <label class="form-check-label" for="topBoardEnterPartner">파트너</label>
+              <input type="checkbox" class="form-check-input" id="newBoardEnterPartner">
+              <label class="form-check-label" for="newBoardEnterPartner">파트너</label>
             </span>
             <span>
-              <input type="checkbox" class="form-check-input" id="topBoardEnterSubsupervisor">
-              <label class="form-check-label" for="topBoardEnterSubsupervisor">부관리자</label>
+              <input type="checkbox" class="form-check-input" id="newBoardEnterSubsupervisor">
+              <label class="form-check-label" for="newBoardEnterSubsupervisor">부관리자</label>
             </span>
             <span>
-              <input type="checkbox" class="form-check-input" id="topBoardEnterSupervisor">
-              <label class="form-check-label" for="topBoardEnterSupervisor">관리자</label>
+              <input type="checkbox" class="form-check-input" id="newBoardEnterSupervisor">
+              <label class="form-check-label" for="newBoardEnterSupervisor">관리자</label>
             </span>
           </p>
         </div>
 
         <!-- 작성 그룹 -->
-        <div class="form-group top-board-groups">
+        <div class="form-group new-board-groups">
           <label>게시글 작성 그룹</label>
           <p>
             <span>
-              <input type="checkbox" class="form-check-input" id="topBoardWriteUser">
-              <label class="form-check-label" for="topBoardWriteUser">사용자</label>
+              <input type="checkbox" class="form-check-input" id="newBoardWriteUser">
+              <label class="form-check-label" for="newBoardWriteUser">사용자</label>
             </span>
             <span>
-              <input type="checkbox" class="form-check-input" id="topBoardWriteDame">
-              <label class="form-check-label" for="topBoardWriteDame">여성회원</label>
+              <input type="checkbox" class="form-check-input" id="newBoardWriteDame">
+              <label class="form-check-label" for="newBoardWriteDame">여성회원</label>
             </span>
             <span>
-              <input type="checkbox" class="form-check-input" id="topBoardWritePartner">
-              <label class="form-check-label" for="topBoardWritePartner">파트너</label>
+              <input type="checkbox" class="form-check-input" id="newBoardWritePartner">
+              <label class="form-check-label" for="newBoardWritePartner">파트너</label>
             </span>
             <span>
-              <input type="checkbox" class="form-check-input" id="topBoardWriteSubsupervisor">
-              <label class="form-check-label" for="topBoardWriteSubsupervisor">부관리자</label>
+              <input type="checkbox" class="form-check-input" id="newBoardWriteSubsupervisor">
+              <label class="form-check-label" for="newBoardWriteSubsupervisor">부관리자</label>
             </span>
             <span>
-              <input type="checkbox" class="form-check-input" id="topBoardWriteSupervisor">
-              <label class="form-check-label" for="topBoardWriteSupervisor">관리자</label>
+              <input type="checkbox" class="form-check-input" id="newBoardWriteSupervisor">
+              <label class="form-check-label" for="newBoardWriteSupervisor">관리자</label>
             </span>
           </p>
         </div>
 
         <!-- 댓글 그룹 -->
-        <div class="form-group top-board-groups">
+        <div class="form-group new-board-groups">
           <label>댓글 작성 그룹</label>
           <p>
             <span>
-              <input type="checkbox" class="form-check-input" id="topBoardCommentUser">
-              <label class="form-check-label" for="topBoardCommentUser">사용자</label>
+              <input type="checkbox" class="form-check-input" id="newBoardCommentUser">
+              <label class="form-check-label" for="newBoardCommentUser">사용자</label>
             </span>
             <spanp>
-              <input type="checkbox" class="form-check-input" id="topBoardCommentDame">
-              <label class="form-check-label" for="topBoardCommentDame">여성회원</label>
+              <input type="checkbox" class="form-check-input" id="newBoardCommentDame">
+              <label class="form-check-label" for="newBoardCommentDame">여성회원</label>
             </span>
             <span>
-              <input type="checkbox" class="form-check-input" id="topBoardCommentPartner">
-              <label class="form-check-label" for="topBoardCommentPartner">파트너</label>
+              <input type="checkbox" class="form-check-input" id="newBoardCommentPartner">
+              <label class="form-check-label" for="newBoardCommentPartner">파트너</label>
             </span>
             <span>
-              <input type="checkbox" class="form-check-input" id="topBoardCommentSubsupervisor">
-              <label class="form-check-label" for="topBoardCommentSubsupervisor">부관리자</label>
+              <input type="checkbox" class="form-check-input" id="newBoardCommentSubsupervisor">
+              <label class="form-check-label" for="newBoardCommentSubsupervisor">부관리자</label>
             </span>
             <span>
-              <input type="checkbox" class="form-check-input" id="topBoardCommentSupervisor">
-              <label class="form-check-label" for="topBoardCommentSupervisor">관리자</label>
+              <input type="checkbox" class="form-check-input" id="newBoardCommentSupervisor">
+              <label class="form-check-label" for="newBoardCommentSupervisor">관리자</label>
             </span>
           </p>
         </div>
@@ -653,166 +768,43 @@
         <!-- 표시 가중치 -->
         <div class="form-group">
           <label>표시 가중치</label>
-          <input type="number" class="form-control" id="topBoardWeight" value="0">
+          <input type="number" class="form-control" id="newBoardWeight" value="0">
         </div>
 
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-primary" onclick="addTopBoard();" data-bs-dismiss="modal">생성하기</button>
+        <button type="button" class="btn btn-primary" onclick="addNewBoard();" data-bs-dismiss="modal">생성하기</button>
       </div>
     </div>
   </div>
 </div>
-<div class="modal fade" id="addSubBoardModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+<!-- 카테고리 추가 모달 -->
+<div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">하위 게시판 추가</h5>
+        <h5 class="modal-title">새 카테고리 추가</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
 
-        <input type="hidden" id="subBoardParent" value="{{ board.id }}">
+        <input type="hidden" id="subCategoryParent">
 
         <!-- 게시판 이름 -->
         <div class="form-group mb-2">
           <label>새 이름</label>
-          <input class="form-control" placeholder="게시판 이름" id="subBoardName">
-        </div>
-
-        <!-- 게시판 타입 -->
-        <div class="form-group mb-2">
-          <label>게시판 타입</label>
-          <select class="form-control" id="subBoardType">
-            <option value="board">게시판</option>
-            <option value="travel">여행</option>
-            <option value="tree">폴더</option>
-          </select>
-        </div>
-
-        <!-- 레벨 제한 -->
-        <div class="form-group mb-2">
-          <label>레벨 제한</label>
-          <input type="number" class="form-control" id="subBoardLevel" value="1">
-        </div>
-
-        <!-- 표시 그룹 -->
-        <div class="form-group sub-board-groups">
-          <label>게시판 표시 그룹</label>
-          <p>
-            <span>
-              <input type="checkbox" class="form-check-input" id="subBoardDisplayUser">
-              <label class="form-check-label" for="subBoardDisplayUser">사용자</label>
-            </span>
-            <span>
-              <input type="checkbox" class="form-check-input" id="subBoardDisplayDame">
-              <label class="form-check-label" for="subBoardDisplayDame">여성회원</label>
-            </span>
-            <span>
-              <input type="checkbox" class="form-check-input" id="subBoardDisplayPartner">
-              <label class="form-check-label" for="subBoardDisplayPartner">파트너</label>
-            </span>
-            <span>
-              <input type="checkbox" class="form-check-input" id="subBoardDisplaySubsupervisor">
-              <label class="form-check-label" for="subBoardDisplaySubsupervisor">부관리자</label>
-            </span>
-            <span>
-              <input type="checkbox" class="form-check-input" id="subBoardDisplaySupervisor">
-              <label class="form-check-label" for="subBoardDisplaySupervisor">관리자</label>
-            </span>
-          </p>
-        </div>
-
-        <!-- 입장 그룹 -->
-        <div class="form-group sub-board-groups">
-          <label>게시판 입장 그룹</label>
-          <p>
-            <span>
-              <input type="checkbox" class="form-check-input" id="subBoardEnterUser">
-              <label class="form-check-label" for="subBoardEnterUser">사용자</label>
-            </span>
-            <span>
-              <input type="checkbox" class="form-check-input" id="subBoardEnterDame">
-              <label class="form-check-label" for="subBoardEnterDame">여성회원</label>
-            </span>
-            <spanp>
-              <input type="checkbox" class="form-check-input" id="subBoardEnterPartner">
-              <label class="form-check-label" for="subBoardEnterPartner">파트너</label>
-            </span>
-            <span>
-              <input type="checkbox" class="form-check-input" id="subBoardEnterSubsupervisor">
-              <label class="form-check-label" for="subBoardEnterSubsupervisor">부관리자</label>
-            </span>
-            <span>
-              <input type="checkbox" class="form-check-input" id="subBoardEnterSupervisor">
-              <label class="form-check-label" for="subBoardEnterSupervisor">관리자</label>
-            </span>
-          </p>
-        </div>
-
-        <!-- 작성 그룹 -->
-        <div class="form-group sub-board-groups">
-          <label>게시글 작성 그룹</label>
-          <p>
-            <span>
-              <input type="checkbox" class="form-check-input" id="subBoardWriteUser">
-              <label class="form-check-label" for="subBoardWriteUser">사용자</label>
-            </span>
-            <span>
-              <input type="checkbox" class="form-check-input" id="subBoardWriteDame">
-              <label class="form-check-label" for="subBoardWriteDame">여성회원</label>
-            </span>
-            <span>
-              <input type="checkbox" class="form-check-input" id="subBoardWritePartner">
-              <label class="form-check-label" for="subBoardWritePartner">파트너</label>
-            </span>
-            <span>
-              <input type="checkbox" class="form-check-input" id="subBoardWriteSubsupervisor">
-              <label class="form-check-label" for="subBoardWriteSubsupervisor">부관리자</label>
-            </span>
-            <span>
-              <input type="checkbox" class="form-check-input" id="subBoardWriteSupervisor">
-              <label class="form-check-label" for="subBoardWriteSupervisor">관리자</label>
-            </span>
-          </p>
-        </div>
-
-        <!-- 댓글 그룹 -->
-        <div class="form-group sub-board-groups">
-          <label>댓글 작성 그룹</label>
-          <p>
-            <span>
-              <input type="checkbox" class="form-check-input" id="subBoardCommentUser">
-              <label class="form-check-label" for="subBoardCommentUser">사용자</label>
-            </span>
-            <span>
-              <input type="checkbox" class="form-check-input" id="subBoardCommentDame">
-              <label class="form-check-label" for="subBoardCommentDame">여성회원</label>
-            </span>
-            <span>
-              <input type="checkbox" class="form-check-input" id="subBoardCommentPartner">
-              <label class="form-check-label" for="subBoardCommentPartner">파트너</label>
-            </span>
-            <span>
-              <input type="checkbox" class="form-check-input" id="subBoardCommentSubsupervisor">
-              <label class="form-check-label" for="subBoardCommentSubsupervisor">부관리자</label>
-            </span>
-            <span>
-              <input type="checkbox" class="form-check-input" id="subBoardCommentSupervisor">
-              <label class="form-check-label" for="subBoardCommentSupervisor">관리자</label>
-            </span>
-          </p>
+          <input class="form-control" placeholder="카테고리 이름" id="newCategoryName">
         </div>
 
         <!-- 표시 가중치 -->
         <div class="form-group">
           <label>표시 가중치</label>
-          <input type="number" class="form-control" id="subBoardWeight" value="0">
+          <input type="number" class="form-control" id="newCategoryWeight" value="0">
         </div>
 
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-primary" onclick="addsubBoard();" data-bs-dismiss="modal">생성하기</button>
+        <button type="button" class="btn btn-primary" onclick="addNewCategory();" data-bs-dismiss="modal">생성하기</button>
       </div>
     </div>
   </div>
@@ -836,164 +828,51 @@
   }
 
   // 최상위 게시판 추가
-  addTopBoard = async () => {
-    var topBoardName = document.getElementById('topBoardName').value;
-    var topBoardType = document.getElementById('topBoardType').value;
-    var topBoardLevel = document.getElementById('topBoardLevel').value;
-    var topBoardWeight = document.getElementById('topBoardWeight').value;
-    var topBoardDisplayUser = document.getElementById('topBoardDisplayUser').checked;
-    var topBoardDisplayDame = document.getElementById('topBoardDisplayDame').checked;
-    var topBoardDisplayPartner = document.getElementById('topBoardDisplayPartner').checked;
-    var topBoardDisplaySubsupervisor = document.getElementById('topBoardDisplaySubsupervisor').checked;
-    var topBoardDisplaySupervisor = document.getElementById('topBoardDisplaySupervisor').checked;
-    var topBoardEnterUser = document.getElementById('topBoardEnterUser').checked;
-    var topBoardEnterDame = document.getElementById('topBoardEnterDame').checked;
-    var topBoardEnterPartner = document.getElementById('topBoardEnterPartner').checked;
-    var topBoardEnterSubsupervisor = document.getElementById('topBoardEnterSubsupervisor').checked;
-    var topBoardEnterSupervisor = document.getElementById('topBoardEnterSupervisor').checked;
-    var topBoardWriteUser = document.getElementById('topBoardWriteUser').checked;
-    var topBoardWriteDame = document.getElementById('topBoardWriteDame').checked;
-    var topBoardWritePartner = document.getElementById('topBoardWritePartner').checked;
-    var topBoardWriteSubsupervisor = document.getElementById('topBoardWriteSubsupervisor').checked;
-    var topBoardWriteSupervisor = document.getElementById('topBoardWriteSupervisor').checked;
-    var topBoardCommentUser = document.getElementById('topBoardCommentUser').checked;
-    var topBoardCommentDame = document.getElementById('topBoardCommentDame').checked;
-    var topBoardCommentPartner = document.getElementById('topBoardCommentPartner').checked;
-    var topBoardCommentSubsupervisor = document.getElementById('topBoardCommentSubsupervisor').checked;
-    var topBoardCommentSupervisor = document.getElementById('topBoardCommentSupervisor').checked;
-
-    var displayGroups = [
-      topBoardDisplayUser ? 'user' : '',
-      topBoardDisplayDame ? 'dame' : '',
-      topBoardDisplayPartner ? 'partner' : '',
-      topBoardDisplaySubsupervisor ? 'subsupervisor' : '',
-      topBoardDisplaySupervisor ? 'supervisor' : '',
-    ];
-
-    var enterGroups = [
-      topBoardEnterUser ? 'user' : '',
-      topBoardEnterDame ? 'dame' : '',
-      topBoardEnterPartner ? 'partner' : '',
-      topBoardEnterSubsupervisor ? 'subsupervisor' : '',
-      topBoardEnterSupervisor ? 'supervisor' : '',
-    ];
-
-    var writeGroups = [
-      topBoardWriteUser ? 'user' : '',
-      topBoardWriteDame ? 'dame' : '',
-      topBoardWritePartner ? 'partner' : '',
-      topBoardWriteSubsupervisor ? 'subsupervisor' : '',
-      topBoardWriteSupervisor ? 'supervisor' : '',
-    ];
-
-    var commentGroups = [
-      topBoardCommentUser ? 'user' : '',
-      topBoardCommentDame ? 'dame' : '',
-      topBoardCommentPartner ? 'partner' : '',
-      topBoardCommentSubsupervisor ? 'subsupervisor' : '',
-      topBoardCommentSupervisor ? 'supervisor' : '',
-    ];
-
-    var formData = new FormData();
-    formData.append('board_name', topBoardName);
-    formData.append('board_type', topBoardType);
-    formData.append('level_cut', topBoardLevel);
-    formData.append('display_weight', topBoardWeight);
-    formData.append('display_groups', displayGroups);
-    formData.append('enter_groups', enterGroups);
-    formData.append('write_groups', writeGroups);
-    formData.append('comment_groups', commentGroups);
-
-    // 생성 요청
-    await fetch('{{supervisor_url}}/supervisor/post', {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'X-CSRFToken': csrftoken,
-      },
-    })
-    .then(response => response.json())
-    .then(async data => {
-      console.log(data);
-      if (data.result == 'success') {
-        await showAlert('생성 성공', '게시판이 생성되었습니다.', 'success');
-        location.reload();
-      } else {
-        await showAlert('생성 실패', '게시판 생성에 실패했습니다.', 'danger');
-      }
-    });
-  }
-
-  // 하위 게시판 추가
-  addsubBoard = async () => {
+  addNewBoard = async () => {
     var subBoardParent = document.getElementById('subBoardParent').value;
-    var subBoardName = document.getElementById('subBoardName').value;
-    var subBoardType = document.getElementById('subBoardType').value;
-    var subBoardLevel = document.getElementById('subBoardLevel').value;
-    var subBoardWeight = document.getElementById('subBoardWeight').value;
-    var subBoardDisplayUser = document.getElementById('subBoardDisplayUser').checked;
-    var subBoardDisplayDame = document.getElementById('subBoardDisplayDame').checked;
-    var subBoardDisplayPartner = document.getElementById('subBoardDisplayPartner').checked;
-    var subBoardDisplaySubsupervisor = document.getElementById('subBoardDisplaySubsupervisor').checked;
-    var subBoardDisplaySupervisor = document.getElementById('subBoardDisplaySupervisor').checked;
-    var subBoardEnterUser = document.getElementById('subBoardEnterUser').checked;
-    var subBoardEnterDame = document.getElementById('subBoardEnterDame').checked;
-    var subBoardEnterPartner = document.getElementById('subBoardEnterPartner').checked;
-    var subBoardEnterSubsupervisor = document.getElementById('subBoardEnterSubsupervisor').checked;
-    var subBoardEnterSupervisor = document.getElementById('subBoardEnterSupervisor').checked;
-    var subBoardWriteUser = document.getElementById('subBoardWriteUser').checked;
-    var subBoardWriteDame = document.getElementById('subBoardWriteDame').checked;
-    var subBoardWritePartner = document.getElementById('subBoardWritePartner').checked;
-    var subBoardWriteSubsupervisor = document.getElementById('subBoardWriteSubsupervisor').checked;
-    var subBoardWriteSupervisor = document.getElementById('subBoardWriteSupervisor').checked;
-    var subBoardCommentUser = document.getElementById('subBoardCommentUser').checked;
-    var subBoardCommentDame = document.getElementById('subBoardCommentDame').checked;
-    var subBoardCommentPartner = document.getElementById('subBoardCommentPartner').checked;
-    var subBoardCommentSubsupervisor = document.getElementById('subBoardCommentSubsupervisor').checked;
-    var subBoardCommentSupervisor = document.getElementById('subBoardCommentSupervisor').checked;
+    var newBoardName = document.getElementById('newBoardName').value;
+    var newBoardType = document.getElementById('newBoardType').value;
+    var newBoardLevel = document.getElementById('newBoardLevel').value;
+    var newBoardWeight = document.getElementById('newBoardWeight').value;
+    var newBoardDisplayUser = document.getElementById('newBoardDisplayUser').checked;
+    var newBoardDisplayDame = document.getElementById('newBoardDisplayDame').checked;
+    var newBoardDisplayPartner = document.getElementById('newBoardDisplayPartner').checked;
+    var newBoardDisplaySubsupervisor = document.getElementById('newBoardDisplaySubsupervisor').checked;
+    var newBoardDisplaySupervisor = document.getElementById('newBoardDisplaySupervisor').checked;
+    var newBoardEnterUser = document.getElementById('newBoardEnterUser').checked;
+    var newBoardEnterDame = document.getElementById('newBoardEnterDame').checked;
+    var newBoardEnterPartner = document.getElementById('newBoardEnterPartner').checked;
+    var newBoardEnterSubsupervisor = document.getElementById('newBoardEnterSubsupervisor').checked;
+    var newBoardEnterSupervisor = document.getElementById('newBoardEnterSupervisor').checked;
+    var newBoardWriteUser = document.getElementById('newBoardWriteUser').checked;
+    var newBoardWriteDame = document.getElementById('newBoardWriteDame').checked;
+    var newBoardWritePartner = document.getElementById('newBoardWritePartner').checked;
+    var newBoardWriteSubsupervisor = document.getElementById('newBoardWriteSubsupervisor').checked;
+    var newBoardWriteSupervisor = document.getElementById('newBoardWriteSupervisor').checked;
+    var newBoardCommentUser = document.getElementById('newBoardCommentUser').checked;
+    var newBoardCommentDame = document.getElementById('newBoardCommentDame').checked;
+    var newBoardCommentPartner = document.getElementById('newBoardCommentPartner').checked;
+    var newBoardCommentSubsupervisor = document.getElementById('newBoardCommentSubsupervisor').checked;
+    var newBoardCommentSupervisor = document.getElementById('newBoardCommentSupervisor').checked;
 
-    var displayGroups = [
-      subBoardDisplayUser ? 'user' : '',
-      subBoardDisplayDame ? 'dame' : '',
-      subBoardDisplayPartner ? 'partner' : '',
-      subBoardDisplaySubsupervisor ? 'subsupervisor' : '',
-      subBoardDisplaySupervisor ? 'supervisor' : '',
-    ];
-    var enterGroups = [
-      subBoardEnterUser ? 'user' : '',
-      subBoardEnterDame ? 'dame' : '',
-      subBoardEnterPartner ? 'partner' : '',
-      subBoardEnterSubsupervisor ? 'subsupervisor' : '',
-      subBoardEnterSupervisor ? 'supervisor' : '',
-    ];
-    var writeGroups = [
-      subBoardWriteUser ? 'user' : '',
-      subBoardWriteDame ? 'dame' : '',
-      subBoardWritePartner ? 'partner' : '',
-      subBoardWriteSubsupervisor ? 'subsupervisor' : '',
-      subBoardWriteSupervisor ? 'supervisor' : '',
-    ];
-    var commentGroups = [
-      subBoardCommentUser ? 'user' : '',
-      subBoardCommentDame ? 'dame' : '',
-      subBoardCommentPartner ? 'partner' : '',
-      subBoardCommentSubsupervisor ? 'subsupervisor' : '',
-      subBoardCommentSupervisor ? 'supervisor' : '',
-    ];
+    var displayGroups = `${newBoardDisplayUser ? 'user' : ''},${newBoardDisplayDame ? 'dame' : ''},${newBoardDisplayPartner ? 'partner' : ''},${newBoardDisplaySubsupervisor ? 'subsupervisor' : ''},${newBoardDisplaySupervisor ? 'supervisor' : ''}`;
+    var enterGroups = `${newBoardEnterUser ? 'user' : ''},${newBoardEnterDame ? 'dame' : ''},${newBoardEnterPartner ? 'partner' : ''},${newBoardEnterSubsupervisor ? 'subsupervisor' : ''},${newBoardEnterSupervisor ? 'supervisor' : ''}`;
+    var writeGroups = `${newBoardWriteUser ? 'user' : ''},${newBoardWriteDame ? 'dame' : ''},${newBoardWritePartner ? 'partner' : ''},${newBoardWriteSubsupervisor ? 'subsupervisor' : ''},${newBoardWriteSupervisor ? 'supervisor' : ''}`;
+    var commentGroups = `${newBoardCommentUser ? 'user' : ''},${newBoardCommentDame ? 'dame' : ''},${newBoardCommentPartner ? 'partner' : ''},${newBoardCommentSubsupervisor ? 'subsupervisor' : ''},${newBoardCommentSupervisor ? 'supervisor' : ''}`;
 
     var formData = new FormData();
     formData.append('parent_board_id', subBoardParent);
-    formData.append('board_name', subBoardName);
-    formData.append('board_type', subBoardType);
-    formData.append('level_cut', subBoardLevel);
-    formData.append('display_weight', subBoardWeight);
+    formData.append('board_name', newBoardName);
+    formData.append('board_type', newBoardType);
+    formData.append('level_cut', newBoardLevel);
+    formData.append('display_weight', newBoardWeight);
     formData.append('display_groups', displayGroups);
     formData.append('enter_groups', enterGroups);
     formData.append('write_groups', writeGroups);
     formData.append('comment_groups', commentGroups);
 
     // 생성 요청
-    await fetch('{{supervisor_url}}/supervisor/post', {
+    await fetch('{{supervisor_url}}/supervisor/post?board=y', {
       method: 'POST',
       body: formData,
       headers: {
@@ -1039,34 +918,10 @@
     var boardCommentSubsupervisor = document.getElementById(board_id + 'CommentSubsupervisor').checked;
     var boardCommentSupervisor = document.getElementById(board_id + 'CommentSupervisor').checked;
 
-    var displayGroups = [
-      boardDisplayUser ? 'user' : '',
-      boardDisplayDame ? 'dame' : '',
-      boardDisplayPartner ? 'partner' : '',
-      boardDisplaySubsupervisor ? 'subsupervisor' : '',
-      boardDisplaySupervisor ? 'supervisor' : '',
-    ];
-    var enterGroups = [
-      boardEnterUser ? 'user' : '',
-      boardEnterDame ? 'dame' : '',
-      boardEnterPartner ? 'partner' : '',
-      boardEnterSubsupervisor ? 'subsupervisor' : '',
-      boardEnterSupervisor ? 'supervisor' : '',
-    ];
-    var writeGroups = [
-      boardWriteUser ? 'user' : '',
-      boardWriteDame ? 'dame' : '',
-      boardWritePartner ? 'partner' : '',
-      boardWriteSubsupervisor ? 'subsupervisor' : '',
-      boardWriteSupervisor ? 'supervisor' : '',
-    ];
-    var commentGroups = [
-      boardCommentUser ? 'user' : '',
-      boardCommentDame ? 'dame' : '',
-      boardCommentPartner ? 'partner' : '',
-      boardCommentSubsupervisor ? 'subsupervisor' : '',
-      boardCommentSupervisor ? 'supervisor' : '',
-    ];
+    var displayGroups = `${boardDisplayUser ? 'user' : ''},${boardDisplayDame ? 'dame' : ''},${boardDisplayPartner ? 'partner' : ''},${boardDisplaySubsupervisor ? 'subsupervisor' : ''},${boardDisplaySupervisor ? 'supervisor' : ''}`;
+    var enterGroups = `${boardEnterUser ? 'user' : ''},${boardEnterDame ? 'dame' : ''},${boardEnterPartner ? 'partner' : ''},${boardEnterSubsupervisor ? 'subsupervisor' : ''},${boardEnterSupervisor ? 'supervisor' : ''}`;
+    var writeGroups = `${boardWriteUser ? 'user' : ''},${boardWriteDame ? 'dame' : ''},${boardWritePartner ? 'partner' : ''},${boardWriteSubsupervisor ? 'subsupervisor' : ''},${boardWriteSupervisor ? 'supervisor' : ''}`;
+    var commentGroups = `${boardCommentUser ? 'user' : ''},${boardCommentDame ? 'dame' : ''},${boardCommentPartner ? 'partner' : ''},${boardCommentSubsupervisor ? 'subsupervisor' : ''},${boardCommentSupervisor ? 'supervisor' : ''}`;
 
     var formData = new FormData();
     formData.append('board_id', board_id);
@@ -1080,7 +935,7 @@
     formData.append('comment_groups', commentGroups);
 
     // 수정 요청
-    await fetch('{{supervisor_url}}/supervisor/post', {
+    await fetch('{{supervisor_url}}/supervisor/post?board=y', {
       method: 'POST',
       body: formData,
       headers: {
@@ -1101,11 +956,9 @@
 
   // 게시판 삭제
   deleteBoard = async (board_id) => {
-    var formData = new FormData();
-    formData.append('board_id', board_id);
 
     // 삭제 요청
-    await fetch('/supervisor/post', {
+    await fetch('{{supervisor_url}}/supervisor/post?board=y&board_id=' + board_id, {
       method: 'DELETE',
       body: formData,
       headers: {
@@ -1120,6 +973,89 @@
         location.reload();
       } else {
         await showAlert('삭제 실패', '게시판 삭제에 실패했습니다.', 'danger');
+      }
+    });
+  }
+
+  // 카테고리 추가
+  addNewCategory = async () => {
+    var subCategoryParent = document.getElementById('subCategoryParent').value;
+    var newCategoryName = document.getElementById('newCategoryName').value;
+    var newCategoryWeight = document.getElementById('newCategoryWeight').value;
+    console.log(subCategoryParent, newCategoryName, newCategoryWeight);
+    var formData = new FormData();
+    formData.append('parent_category_id', subCategoryParent);
+    formData.append('category_name', newCategoryName);
+    formData.append('category_weight', newCategoryWeight);
+
+    // 생성 요청
+    await fetch('{{supervisor_url}}/supervisor/post?category=y', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRFToken': csrftoken,
+      },
+    })
+    .then(response => response.json())
+    .then(async data => {
+      console.log(data);
+      if (data.result == 'success') {
+        await showAlert('생성 성공', '카테고리가 생성되었습니다.', 'success');
+        location.reload();
+      } else {
+        await showAlert('생성 실패', '카테고리 생성에 실패했습니다.', 'danger');
+      }
+    });
+  }
+
+  // 카테고리 정보 수정
+  updateCategory = async (category_id) => {
+    var categoryName = document.getElementById(category_id + 'CategoryName').value;
+    var categoryWeight = document.getElementById(category_id + 'CategoryWeight').value;
+    console.log(category_id, categoryName, categoryWeight);
+    var formData = new FormData();
+    formData.append('category_id', category_id);
+    formData.append('category_name', categoryName);
+    formData.append('category_weight', categoryWeight);
+
+    // 수정 요청
+    await fetch('{{supervisor_url}}/supervisor/post?category=y', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRFToken': csrftoken,
+      },
+    })
+    .then(response => response.json())
+    .then(async data => {
+      console.log(data);
+      if (data.result == 'success') {
+        await showAlert('수정 성공', '카테고리가 수정되었습니다.', 'success');
+        location.reload();
+      } else {
+        await showAlert('수정 실패', '카테고리 수정에 실패했습니다.', 'danger');
+      }
+    });
+  }
+
+  // 카테고리 삭제
+  deleteCategory = async (category_id) => {
+    // 삭제 요청
+    await fetch('{{supervisor_url}}/supervisor/post?category=y&category_id=' + category_id, {
+      method: 'DELETE',
+      body: formData,
+      headers: {
+        'X-CSRFToken': csrftoken,
+      },
+    })
+    .then(response => response.json())
+    .then(async data => {
+      console.log(data);
+      if (data.result == 'success') {
+        await showAlert('삭제 성공', '카테고리가 삭제되었습니다.', 'success');
+        location.reload();
+      } else {
+        await showAlert('삭제 실패', '카테고리 삭제에 실패했습니다.', 'danger');
       }
     });
   }
@@ -1158,7 +1094,7 @@
         await showAlert('수정 실패', '광고 설정 수정에 실패했습니다.', 'danger');
       }
     });
-  } 
+  }
 
 </script>
 

@@ -138,8 +138,8 @@ class AppCoreConfig(AppConfig):
         admin.save()
 
         # CATEGORY: 카테고리 테이블
-        abroad = models.CATEGORY.objects.create(
-          name='국내'
+        tour = models.CATEGORY.objects.create(
+          name='투어'
         )
 
         # BOARD: 게시판 테이블

@@ -128,19 +128,31 @@
       <p class="text-dark m-0">
         닉네임
       </p>
+      {% if account.id == profile.id or account.account_type == 'supervisor' or account.account_type == 'subsupervisor' and 'user' in account.subsupervisor_permissions %}
       <a class="text-black-50"
         href="javascript: new bootstrap.Modal(document.getElementById('rewriteNickNameModal')).show();">
         {{ profile.nickname }} <i class="fi fi-rr-pen-clip"></i>
       </a>
+      {% else %}
+      <p class="text-black-50">
+        {{ profile.nickname }}
+      </p>
+      {% endif %}
     </div>
     <div class="mb-5">
       <p class="text-dark m-0">
         비밀번호
       </p>
+      {% if account.id == profile.id or account.account_type == 'supervisor' or account.account_type == 'subsupervisor' and 'user' in account.subsupervisor_permissions %}
       <a class="text-black-50"
         href="javascript: new bootstrap.Modal(document.getElementById('rewritePasswordModal')).show();">
         비밀번호 변경 <i class="fi fi-rr-pen-clip"></i>
       </a>
+      {% else %}
+      <p class="text-black-50">
+        ********
+      </p>
+      {% endif %}
     </div>
 
     <!--
@@ -236,7 +248,7 @@
         회원 삭제
       </a>
     </div>
-    {% else %}
+    {% elif account.id == profile.id %}
     <div class="mb-5">
       <a class="btn btn-danger"
         href="javascript: deleteAccount();">

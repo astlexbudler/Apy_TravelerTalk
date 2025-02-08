@@ -203,7 +203,6 @@ def account(request):
       id = request.POST.get('edit_account_id')
     else: # 그 외의 경우, 수정 대상을 로그인한 사용자로 설정
       id = request.user.username
-    print(id)
     # 수정 대상 확인
     user = models.ACCOUNT.objects.get(username=id)
 
@@ -521,6 +520,20 @@ def coupon(request):
     )
     coupon.save()
 
+    # 통계 데이터 생성
+    coupon_create = models.STATISTIC.objects.filter(
+      name='coupon_create',
+      date=datetime.datetime.now().strftime('%Y-%m-%d')
+    ).first()
+    if coupon_create:
+      coupon_create.value += 1
+      coupon_create.save()
+    else:
+      models.STATISTIC.objects.create(
+        name='coupon_create',
+        value=1
+      )
+
     return JsonResponse({'result': 'success'})
 
   # 쿠폰 검색
@@ -589,11 +602,11 @@ def coupon(request):
           coupon.own_accounts.add(account)
     if used_account_ids:
     # 쿠폰 사용자 수정
-      coupon.used_accounts.clear()
+      coupon.used_account.clear()
       for used_account_id in used_account_ids.split(','):
         account = models.ACCOUNT.objects.filter(username=used_account_id).first()
         if account:
-          coupon.used_accounts.add(account)
+          coupon.used_account.add(account)
       coupon.save()
 
     return JsonResponse({'result': 'success'})
@@ -618,6 +631,174 @@ def check_nickname(request):
   if User.objects.filter(first_name=nickname).exists():
     return JsonResponse({'result': 'exist'}) # exist 반환
   return JsonResponse({'result': 'not_exist'}) # not_exist 반환
+
+# 쿠폰 사용자 API
+# GET: 쿠폰 받기
+# POST-use: 쿠폰 사용
+# POST-cancel: 쿠폰 사용 취소
+# POST-retrieve: 쿠폰 회수
+def coupon_user(request):
+
+  # 쿠폰 사용
+  if request.method == 'POST' and request.GET.get('use'):
+
+    # 쿠폰 정보 확인
+    code = request.POST.get('code', '')
+    coupon = models.COUPON.objects.select_related('create_account').prefetch_related('used_account', 'own_accounts').filter(
+      code=code
+    ).first()
+    if not coupon: # 쿠폰이 존재하지 않는 경우
+      return JsonResponse({'result': 'not_exist'})
+
+    # 쿠폰 사용자 확인
+    account_username = request.POST.get('account', '')
+    own_accounts = [own_account.username for own_account in coupon.own_accounts.all()]
+    if account_username not in own_accounts: # 쿠폰 소유자가 아닌 경우
+      return JsonResponse({'result': 'permission_denied'})
+
+    # 쿠폰 사용
+    account = models.ACCOUNT.objects.filter(
+      username=account_username
+    ).first()
+    account.mileage -= coupon.required_mileage
+    if account.mileage < 0:
+      return JsonResponse({'result': 'mileage_lack'})
+    account.save()
+    coupon.used_account.add(account)
+    coupon.own_accounts.remove(account)
+    coupon.save()
+
+    # 쿠폰 사용 활동기록 생성
+    models.ACTIVITY.objects.create(
+      account=account,
+      message = f'[쿠폰] {coupon.name} 쿠폰을 사용했습니다.',
+      mileage_change = '-' + str(coupon.required_mileage),
+    )
+    models.ACTIVITY.objects.create(
+      account=coupon.create_account,
+      message = f'[쿠폰] {account_username}님이 {coupon.name} 쿠폰을 사용했습니다.',
+    )
+
+    # 통계 데이터 생성
+    coupon_use = models.STATISTIC.objects.filter(
+      name='coupon_use',
+      date=datetime.datetime.now().strftime('%Y-%m-%d')
+    ).first()
+    if coupon_use:
+      coupon_use.value += 1
+      coupon_use.save()
+    else:
+      models.STATISTIC.objects.create(
+        name='coupon_use',
+        value=1
+      )
+    mileage_use = models.STATISTIC.objects.filter(
+      name='mileage_use',
+      date=datetime.datetime.now().strftime('%Y-%m-%d')
+    ).first()
+    if mileage_use:
+      mileage_use.value += coupon.required_mileage
+      mileage_use.save()
+    else:
+      models.STATISTIC.objects.create(
+        name='mileage_use',
+        value=coupon.required_mileage
+      )
+
+    return JsonResponse({'result': 'success'})
+
+  # 쿠폰 사용 취소
+  if request.method == 'POST' and request.GET.get('cancel'):
+
+    # 쿠폰 정보 확인
+    code = request.POST.get('code', '')
+    coupon = models.COUPON.objects.filter(
+      code=code
+    ).first()
+    if not coupon: # 쿠폰이 존재하지 않는 경우
+      return JsonResponse({'result': 'not_exist'})
+
+    # 쿠폰 사용자 확인
+    account_username = request.POST.get('account', '')
+    used_account = [used_account.username for used_account in coupon.used_account.all()]
+    if account_username not in used_account: # 쿠폰 사용자가 아닌 경우
+      return JsonResponse({'result': 'permission_denied'})
+
+    # 쿠폰 사용 취소
+    account = models.ACCOUNT.objects.filter(
+      username=account_username
+    ).first()
+    account.mileage += coupon.required_mileage
+    account.save()
+    coupon.used_account.remove(account)
+    coupon.own_accounts.add(account)
+    coupon.save()
+
+    # 쿠폰 사용 취소 활동기록 생성
+    models.ACTIVITY.objects.create(
+      account=account,
+      message = f'[쿠폰] {coupon.name} 쿠폰 사용을 취소했습니다.',
+      mileage_change = '+' + str(coupon.required_mileage),
+    )
+    models.ACTIVITY.objects.create(
+      account=coupon.create_account,
+      message = f'[쿠폰] {account_username}님이 {coupon.name} 쿠폰 사용을 취소했습니다.',
+    )
+
+    # 통계 데이터 생성
+    coupon_use = models.STATISTIC.objects.filter(
+      name='coupon_use',
+      date=datetime.datetime.now().strftime('%Y-%m-%d')
+    ).first()
+    if coupon_use:
+      coupon_use.value -= 1
+      coupon_use.save()
+    else:
+      models.STATISTIC.objects.create(
+        name='coupon_use',
+        value=-1
+      )
+    mileage_use = models.STATISTIC.objects.filter(
+      name='mileage_use',
+      date=datetime.datetime.now().strftime('%Y-%m-%d')
+    ).first()
+    if mileage_use:
+      mileage_use.value -= coupon.required_mileage
+      mileage_use.save()
+    else:
+      models.STATISTIC.objects.create(
+        name='mileage_use',
+        value=-coupon.required_mileage
+      )
+
+    return JsonResponse({'result': 'success'})
+
+  # 쿠폰 회수
+  if request.method == 'POST' and request.GET.get('retrieve'):
+
+    # 쿠폰 정보 확인
+    code = request.POST.get('code', '')
+    coupon = models.COUPON.objects.prefetch_related('own_accounts').filter(
+      code=code
+    ).first()
+    if not coupon: # 쿠폰이 존재하지 않는 경우
+      return JsonResponse({'result': 'not_exist'})
+
+    # 쿠폰 회수
+    account_username = request.POST.get('account', '')
+    account = models.ACCOUNT.objects.filter(
+      username=account_username
+    ).first()
+    coupon.own_accounts.remove(account)
+    coupon.save()
+
+    # 쿠폰 회수 활동기록 생성
+    models.ACTIVITY.objects.create(
+      account=account,
+      message = f'[쿠폰] {coupon.name} 쿠폰이 회수되었습니다.',
+    )
+
+    return JsonResponse({'result': 'success'})
 
 # 쿠폰 받기 api
 def receive_coupon(request):

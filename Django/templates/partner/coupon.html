@@ -20,13 +20,13 @@
   <!-- 선택지 버튼 그룹 -->
   <div class="btn-group w-100 d-flex mb-4">
     <div class="w-100 d-flex justify-content-center rounded-2">
-      <a class="w-100 btn" href="{{partner_url}}/coupon?tab=coupon" id="couponTab">
+      <a class="w-100 btn" href="{{partner_url}}/partner/coupon?tab=coupon" id="couponTab">
         보유 쿠폰
       </a>
     </div>
     <span class="divider"></span>
     <div class="w-100 d-flex justify-content-center rounded-2">
-      <a class="w-100 btn" href="{{partner_url}}/coupon?tab=history" id="historyTab">
+      <a class="w-100 btn" href="{{partner_url}}/partner/coupon?tab=history" id="historyTab">
         쿠폰 사용 내역
       </a>
     </div>
@@ -78,7 +78,7 @@
             쿠폰 이름
           </th>
           <th>
-            소유자
+            사용가능
           </th>
           <th>
             확인 코드
@@ -98,13 +98,13 @@
             {{ coupon.name }}
           </td>
           <td>
-            {{ coupon.accounts|length }} 명
+            {{ coupon.accounts.own|length }} 명
           </td>
           <td>
             {{ coupon.code }}
           </td>
           <td>
-            <a href="javascript: new bootstrap.Modal(document.getElementById('couponModal{{coupon.id}}')).show();" class="text-primary">
+            <a href="javascript: new bootstrap.Modal(document.getElementById('couponModal{{coupon.code}}')).show();" class="text-primary">
               <i class="fi fi-rr-search"></i> 상세보기
             </a>
           </td>
@@ -135,21 +135,21 @@
               사용자
             </th>
             <th>
-              발급 날짜
+              만료 날짜
             </th>
             <th>
-              사용 날짜
+              상태
             </th>
             <th></th>
           </tr>
-          {% if histories|length == 0 %}
+          {% if coupons|length == 0 %}
           <tr>
             <td colspan="5">
               쿠폰 사용 내역이 없습니다.
             </td>
           </tr>
           {% else %}
-          {% for coupon in histories %}
+          {% for coupon in coupons %}
           <tr>
             <td>
               <a href="#" class="text-dark">
@@ -157,21 +157,24 @@
               </a>
             </td>
             <td>
-              <a href="{{main_url}}/activity?profile_id={{coupon.user.id}}">
-                <i class="fi fi-rr-search"></i> {{ coupon.user.nickname }}
-              </a>
+              {{ coupon.accounts.use|length }} 명
             </td>
             <td>
-              <a href="{{main_url}}/post/post_view?id={{ coupon.post.id }}" class="text-dark">
-                {{ coupon.post.title }}
-              </a>
+              {{ coupon.expire_at }}
             </td>
             <td>
-              <i class="fi fi-rr-check text-success"></i>
-              {{ coupon.used_dt }}
+              {% if coupon.status == 'deleted' %}
+              <span class="text-danger">
+                삭제됨
+              </span>
+              {% elif coupon.status == 'expired' %}
+              <span class="text-warning">
+                만료됨
+              </span>
+              {% endif %}
             </td>
             <td>
-              <a href="javascript: new bootstrap.Modal(document.getElementById('couponModal{{coupon.id}}')).show();" class="text-primary">
+              <a href="javascript: new bootstrap.Modal(document.getElementById('couponModal{{coupon.code}}')).show();" class="text-primary">
                 <i class="fi fi-rr-search"></i> 상세보기
               </a>
             </td>
@@ -220,16 +223,140 @@
       couponTab.classList.add('text-dark');
       historyTab.classList.add('pastel-beige-background');
       historyTab.classList.remove('text-dark');
+      couponBox.classList.remove('d-none');
+      historyBox.classList.add('d-none');
     } else if (tab == 'history') {
       couponTab.classList.add('pastel-beige-background');
       couponTab.classList.remove('text-dark');
       historyTab.classList.add('pastel-pink-background');
       historyTab.classList.add('text-dark');
+      couponBox.classList.add('d-none');
+      historyBox.classList.remove('d-none');
     }
 
     // Page
     console.log('{{request.GET.page}} | {{last_page}}');
     makePaegeButton('{{request.GET.page}}', '{{last_page}}', '{{partner_url}}/partner/coupon?search={{request.GET.search}}');
+  }
+
+  // 쿠폰 만료 처리(삭제)
+  changeCouponStatusExpire = async (code) => {
+
+    var formData = new FormData();
+    formData.append('code', code);
+    formData.append('status', 'deleted');
+
+    // API 호출
+    var response = await fetch('/api/coupon?patch=y', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRFToken': csrftoken
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log(data);
+      return data.result;
+    });
+
+    // 결과 처리
+    if (response == 'success') {
+      await showAlert('쿠폰 만료 처리', '쿠폰이 만료 처리되었습니다.', 'success');
+      location.reload();
+    } else {
+      await showAlert('쿠폰 만료 처리', '쿠폰 만료 처리에 실패했습니다.', 'danger');
+    }
+  }
+
+  // 쿠폰 사용 처리
+  useCoupon = async (code, account_id) => {
+
+    var formData = new FormData();
+    formData.append('code', code);
+    formData.append('account', account_id);
+
+    // API 호출
+    var response = await fetch('/api/coupon_user?use=y', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRFToken': csrftoken
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log(data);
+      return data.result;
+    });
+
+    // 결과 처리
+    if (response == 'success') {
+      await showAlert('쿠폰 사용 처리', '쿠폰 사용 처리가 완료되었습니다.', 'success');
+      location.reload();
+    } else {
+      await showAlert('쿠폰 사용 처리', '쿠폰 사용 처리에 실패했습니다.', 'danger');
+    }
+  }
+
+  // 쿠폰 회수
+  deleteCoupon = async (code, account_id) => {
+
+    var formData = new FormData();
+    formData.append('code', code);
+    formData.append('account', account_id);
+
+    // API 호출
+    var response = await fetch('/api/coupon_user?retrieve=y', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRFToken': csrftoken
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log(data);
+      return data.result;
+    });
+
+    // 결과 처리
+    if (response == 'success') {
+      await showAlert('쿠폰 회수', '쿠폰 회수가 완료되었습니다.', 'success');
+      location.reload();
+    } else {
+      await showAlert('쿠폰 회수', '쿠폰 회수에 실패했습니다.', 'danger');
+    }
+  }
+
+  // 쿠폰 사용 취소
+  cancelUseCoupon = async (code, account_id) => {
+
+    var formData = new FormData();
+    formData.append('code', code);
+    formData.append('account', account_id);
+
+    // API 호출
+    var response = await fetch('/api/coupon_user?cancel=y', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRFToken': csrftoken
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log(data);
+      return data.result;
+    });
+
+    // 결과 처리
+    if (response == 'success') {
+      await showAlert('쿠폰 사용 취소', '쿠폰 사용 취소가 완료되었습니다.', 'success');
+      location.reload();
+    } else {
+      await showAlert('쿠폰 사용 취소', '쿠폰 사용 취소에 실패했습니다.', 'danger');
+    }
   }
 
 </script>

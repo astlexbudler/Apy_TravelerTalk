@@ -1,6 +1,7 @@
 from datetime import timedelta, timezone
 from apscheduler.schedulers.background import BackgroundScheduler
 from . import models
+import datetime
 
 def startScheduler():
     scheduler = BackgroundScheduler()
@@ -9,6 +10,7 @@ def startScheduler():
     scheduler.add_job(coupon_expire, 'cron', hour=0, minute=0) # 매일 0시 0분에 실행
     scheduler.add_job(place_ad_manage, 'cron', hour=0, minute=30) # 매일 0시 30분에 실행
     scheduler.add_job(delete_account, 'cron', hour=1, minute=0) # 매일 1시 0분에 실행
+    scheduler.add_job(place_info_status_statictic, 'cron', hour=1, minute=30) # 매일 1시 30분에 실행
     scheduler.start()
 
 def empty_schedule_job():
@@ -49,7 +51,7 @@ def coupon_expire():
     coupons = models.COUPON.objects.filter(
         status='normal'
     )
-    today = timezone.now()
+    today = datetime.datetime.now()
     for coupon in coupons:
         if coupon.expire_at < today:
             coupon.status = 'expired'
@@ -102,3 +104,25 @@ def delete_account():
             models.SERVER_LOG.objects.create(
                 content=f'[SCHEDULER] {account.id} 사용자 데이터가 삭제되었습니다.'
             )
+
+def place_info_status_statictic():
+
+    # 광고 요청 여행지 게시글 갯수
+    place_ad_request = models.PLACE_INFO.objects.filter(
+        status='pending'
+    ).count()
+
+    # 광고 중인 여행지 게시글 갯수
+    place_on_ad = models.PLACE_INFO.objects.filter(
+        status='ad'
+    ).count()
+
+    # 통계 저장
+    models.STATISTIC.objects.create(
+        name='place_ad_request',
+        value=place_ad_request
+    )
+    models.STATISTIC.objects.create(
+        name='place_on_ad',
+        value=place_on_ad
+    )

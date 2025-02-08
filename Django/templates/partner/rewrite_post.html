@@ -14,7 +14,7 @@
     </h5>
     <p class="small">
       {% for board in post.boards %}
-      {{ board }} {% if forloop.counter < post.boards|length %} &gt; {% endif %}
+      {{ board.name }} {% if forloop.counter < post.boards|length %} &gt; {% endif %}
       {% endfor %}
     </p>
   </div>

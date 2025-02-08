@@ -213,7 +213,7 @@
 
         <!-- 카테고리 선택 박스 -->
         {% for category in categories %}
-        <div class="py-3 mb-2 border-bottom">
+        <div class="pt-2 pb-3 mb-2 border-bottom">
           {% if category.id in request.GET.category %}
           <a class="nav-link" href="#" style="color: rgb(184, 184, 184);">
             {{ category.name }}
@@ -223,52 +223,56 @@
             {{ category.name }}
           </a>
           {% endif %}
-          {% if category.children|length > 0 %}
-          <div class="ps-2 border-top {% if category.id not in request.GET.categories %}d-none{% endif %}">
-            {% for child in category.children %}
-            {% if child.id in request.GET.category %}
-            <a class="nav-link" href="#" style="color: rgb(184, 184, 184);">
-              {{ child.name }}
-            </a>
-            {% else %}
-            <a class="nav-link" href="javascript:location.href=location.origin + location.pathname + '?board_ids={{request.GET.board_ids}}&category={{ child.id }}'">
-              {{ child.name }}
-            </a>
-            {% endif %}
-            {% if child.children|length > 0 %}
-            <div class="ps-4 border-top {% if child.id not in request.GET.categories %}d-none{% endif %}">
-              {% for child2 in child.children %}
-              {% if child2.id in request.GET.category %}
-              <a class="nav-link" href="#" style="color: rgb(184, 184, 184);">
-                {{ child2.name }}
-              </a>
-              {% else %}
-              <a class="nav-link" href="javascript:location.href=location.origin + location.pathname + '?board_ids={{request.GET.board_ids}}&category={{ child2.id }}'">
-                {{ child2.name }}
-              </a>
-              {% endif %}
-              {% if child2.children|length > 0 %}
-              <div class="ps-6 border-top {% if child2.id not in request.GET.categories %}d-none{% endif %}">
-                {% for child3 in child2.children %}
-                {% if child3.id in request.GET.category %}
-                <a class="nav-link" href="#" style="color: rgb(184, 184, 184);">
-                  {{ child3.name }}
-                </a>
-                {% else %}
-                <a class="nav-link" href="javascript:location.href=location.origin + location.pathname + '?board_ids={{request.GET.board_ids}}&category={{ child3.id }}'">
-                  {{ child3.name }}
-                </a>
-                {% endif %}
-                {% endfor %}
-              </div>
-              {% endif %}
-              {% endfor %}
-            </div>
-            {% endif %}
-            {% endfor %}
-          </div>
+        </div>
+
+        {% if category.children|length > 0 %}
+        <div class="ps-2 pt-2 pb-3 mb-2  border-bottom {% if category.id not in request.GET.categories %}d-none{% endif %}">
+          {% for child in category.children %}
+          {% if child.id in request.GET.category %}
+          <a class="nav-link" href="#" style="color: rgb(184, 184, 184);">
+            {{ child.name }}
+          </a>
+          {% else %}
+          <a class="nav-link" href="javascript:location.href=location.origin + location.pathname + '?board_ids={{request.GET.board_ids}}&category={{ child.id }}'">
+            {{ child.name }}
+          </a>
           {% endif %}
         </div>
+
+        {% if child.children|length > 0 %}
+        <div class="ps-4 pt-2 pb-3 mb-2 border-bottom {% if child.id not in request.GET.categories %}d-none{% endif %}">
+          {% for child2 in child.children %}
+          {% if child2.id in request.GET.category %}
+          <a class="nav-link" href="#" style="color: rgb(184, 184, 184);">
+            {{ child2.name }}
+          </a>
+          {% else %}
+          <a class="nav-link" href="javascript:location.href=location.origin + location.pathname + '?board_ids={{request.GET.board_ids}}&category={{ child2.id }}'">
+            {{ child2.name }}
+          </a>
+          {% endif %}
+        </div>
+
+        {% if child2.children|length > 0 %}
+        <div class="ps-6 pt-2 pb-3 mb-2 border-bottom {% if child2.id not in request.GET.categories %}d-none{% endif %}">
+          {% for child3 in child2.children %}
+          {% if child3.id in request.GET.category %}
+          <a class="nav-link" href="#" style="color: rgb(184, 184, 184);">
+            {{ child3.name }}
+          </a>
+          {% else %}
+          <a class="nav-link" href="javascript:location.href=location.origin + location.pathname + '?board_ids={{request.GET.board_ids}}&category={{ child3.id }}'">
+            {{ child3.name }}
+          </a>
+          {% endif %}
+          {% endfor %}
+        </div>
+
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+        {% endfor %}
+        {% endif %}
         {% endfor %}
 
       </div>

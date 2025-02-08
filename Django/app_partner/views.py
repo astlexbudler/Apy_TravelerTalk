@@ -175,7 +175,6 @@ def rewrite_post(request):
     po.place_info.save()
 
     # 게시판 정보 수정
-    print(board_ids)
     if board_ids != ['']:
       po.boards.clear()
       for board_id in board_ids:
@@ -278,7 +277,10 @@ def coupon(request):
       'created_at': cp.created_at,
       'status': cp.status,
       'note': cp.note,
-      'accounts': own_account + use_accounts,
+      'accounts': {
+        'own': own_account,
+        'use': use_accounts,
+      },
       'post': {
         'id': cp.post.id,
         'title': cp.post.title,

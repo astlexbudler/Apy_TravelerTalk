@@ -36,7 +36,7 @@ def index(request):
     posts.append({
       'id': p.id,
       'title': p.title,
-      'image': '/media/' + p.image if p.image else '/media/default.png',
+      'image': str(p.image) if p.image else '/media/default.png',
       'place_info': {
         'categories': [c.name for c in p.place_info.categories.all()],
         'address': p.place_info.address,
@@ -106,7 +106,7 @@ def profile(request):
 
   # data
   # 최상위 관리자 또는 사용자 권한이 있는 부관리자 계정일 경우, 다른 사용자의 프로필 페이지 접근 가능
-  if contexts['account']['account_type'] == 'supervisor' or (contexts['account']['account_type'] == 'subsupervisor' and 'account' in contexts['account']['subsupervisor_permissions']):
+  if contexts['account']['account_type'] == 'partner' or contexts['account']['account_type'] == 'supervisor' or (contexts['account']['account_type'] == 'subsupervisor' and 'account' in contexts['account']['subsupervisor_permissions']):
     profile_id = request.GET.get('profile_id', request.user.username)
   else: # 그 외의 경우, 자신의 프로필 페이지만 접근 가능
     profile_id = request.user.username

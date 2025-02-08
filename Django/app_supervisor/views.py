@@ -55,7 +55,7 @@ def index(request):
     status='active'
   ).count()
   used_coupon_count = models.COUPON.objects.filter(
-    status='used'
+    Q(status='used') | Q(status='expired') | Q(status='deleted')
   ).count()
   coupon_request_message_count = models.MESSAGE.objects.filter(
     title__startswith='쿠폰 요청:',
@@ -67,10 +67,8 @@ def index(request):
   place_on_ad_count = models.PLACE_INFO.objects.filter(
     status='ad'
   ).count()
-  place_ad_request_message_count = models.MESSAGE.objects.filter(
-    title__startswith='여행지 광고 요청:',
-    is_read=False,
-    to_account='supervisor'
+  place_ad_request_count = models.PLACE_INFO.objects.filter(
+    status='pending'
   ).count()
 
   # 통계 데이터 가져오기
@@ -306,10 +304,9 @@ def index(request):
     ad_request_2_to_1 = 0
   else:
     ad_request_2_to_1 = ad_request_2_to_1.value
-  ad_request_1_to_0 = models.STATISTIC.objects.filter(
-    name='place_ad_request',
-    date=ago_1day
-  ).first()
+  ad_request_1_to_0 = models.PLACE_INFO.objects.filter(
+    status='pending'
+  ).count()
   if not ad_request_1_to_0:
     ad_request_1_to_0 = 0
   else:
@@ -364,10 +361,9 @@ def index(request):
     ad_execute_2_to_1 = 0
   else:
     ad_execute_2_to_1 = ad_execute_2_to_1.value
-  ad_execute_1_to_0 = models.STATISTIC.objects.filter(
-    name='place_on_ad',
-    date=ago_1day
-  ).first()
+  ad_execute_1_to_0 = models.PLACE_INFO.objects.filter(
+    status='ad',
+  ).count()
   if not ad_execute_1_to_0:
     ad_execute_1_to_0 = 0
   else:
@@ -412,7 +408,7 @@ def index(request):
     'used_coupon_count': used_coupon_count, # 사용된 쿠폰 수
     'coupon_request_message_count': coupon_request_message_count, # 관리자에게 도착한 쿠폰 요청 메세지 수
     'place_on_ad_count': place_on_ad_count, # 광고 중인 여행지 수
-    'place_ad_request_message_count': place_ad_request_message_count, # 관리자에게 도착한 여행지 광고 요청 메세지 수
+    'place_ad_request_count': place_ad_request_count, # 관리자에게 도착한 여행지 광고 요청 메세지 수
     'stats': zip(
       [ago_7day, ago_6day, ago_5day, ago_4day, ago_3day, ago_2day, ago_1day, today],
       [
@@ -742,18 +738,18 @@ def post(request):
 
     return JsonResponse({'result': 'success'})
 
-  # 새 게시판 생성 요청 처리
-  if request.method == 'POST':
+  # 새 게시판 생성 요청 또는 게시판 수정 요청 처리
+  if request.method == 'POST' and request.GET.get('board'):
     board_id = request.POST.get('board_id', '')
     board_name = request.POST.get('board_name', '')
     board_type = request.POST.get('board_type', '')
     parent_board_id = request.POST.get('parent_board_id', '')
     display_weight = request.POST.get('display_weight', '')
     level_cut = int(request.POST.get('level_cut', '0'))
-    display_groups = request.POST.getlist('display_groups', [])
-    enter_groups = request.POST.getlist('enter_groups', [])
-    write_groups = request.POST.getlist('write_groups', [])
-    comment_groups = request.POST.getlist('comment_groups', [])
+    display_groups = str(request.POST.get('display_groups', '')).split(',')
+    enter_groups = str(request.POST.get('enter_groups', '')).split(',')
+    write_groups = str(request.POST.get('write_groups', '')).split(',')
+    comment_groups = str(request.POST.get('comment_groups', '')).split(',')
 
     # 부모 게시판 확인
     parent_board = models.BOARD.objects.get(id=parent_board_id) if parent_board_id else None
@@ -836,10 +832,44 @@ def post(request):
     return JsonResponse({'result': 'success'})
 
   # 게시판 삭제 요청 처리
-  if request.method == 'DELETE':
+  if request.method == 'DELETE' and request.GET.get('board'):
     board_id = request.GET.get('board_id', '')
     board = models.BOARD.objects.get(id=board_id)
     board.delete()
+    return JsonResponse({'result': 'success'})
+
+  # 새 카테고리 생성 요청 또는 카테고리 수정 요청 처리
+  if request.method == 'POST' and request.GET.get('category'):
+    category_id = request.POST.get('category_id', '')
+    category_name = request.POST.get('category_name', '')
+    parent_category_id = request.POST.get('parent_category_id', '')
+    display_weight = request.POST.get('category_weight', '')
+
+    # 부모 카테고리 확인
+    parent_category = models.CATEGORY.objects.get(id=parent_category_id) if parent_category_id else None
+
+    if category_id:
+      # 수정
+      category = models.CATEGORY.objects.get(id=category_id)
+      category.name = category_name
+      category.parent_category = parent_category
+      category.display_weight = display_weight
+      category.save()
+    else:
+      # 생성
+      category = models.CATEGORY.objects.create(
+        name=category_name,
+        parent_category=parent_category,
+        display_weight=display_weight,
+      )
+
+    return JsonResponse({'result': 'success'})
+
+  # 카테고리 삭제 요청 처리
+  if request.method == 'DELETE' and request.GET.get('category'):
+    category_id = request.GET.get('category_id', '')
+    category = models.CATEGORY.objects.get(id=category_id)
+    category.delete()
     return JsonResponse({'result': 'success'})
 
   # data
@@ -938,12 +968,10 @@ def post(request):
     boards.append(board_dict[child])
 
   # 게시글 검색
-  print(all_post)
   if is_place_search == 'y':
     sps = all_post.filter(
       Q(place_info__isnull=False), # 여행지 정보가 있는 게시글만 검색
       Q(title__contains=search_post_title),
-      Q(boards__id__contains=search_board_id),
       Q(author__username__contains=search_author_id),
       Q(place_info__categories__id__contains=search_category_id),
       Q(place_info__address__contains=search_address),
@@ -951,12 +979,13 @@ def post(request):
     )
   else:
     sps = all_post.filter(
-      Q(place_info__isnull=True), # 여행지 정보가 없는 게시글만 검색
-      Q(title__contains=search_post_title),
-      Q(boards__id__contains=search_board_id),
-      Q(author__username__contains=search_author_id),
+      place_info__isnull=True,
+      title__contains=search_post_title,
+      author__username__contains=search_author_id,
     )
-  print(sps)
+
+  if search_board_id: # 게시판 필터링
+    sps = sps.filter(boards__id__contains=search_board_id)
 
   # export
   if request.GET.get('export'):
@@ -1019,11 +1048,8 @@ def post(request):
       } if post.review_post else None,
     })
 
-  all_categories = models.CATEGORY.objects.all()
-  categories = [{
-    'id': category.id,
-    'name': category.name,
-  } for category in all_categories]
+  # 카테고리 정보
+  categories = daos.get_category_tree()
 
   return render(request, 'supervisor/post.html', {
     **contexts,
@@ -1052,9 +1078,15 @@ def coupon(request):
   search_coupon_name = request.GET.get('coupon_name', '')
 
   # status
+  status = {
+    'active': models.COUPON.objects.filter(status='normal').count(),
+    'end': models.COUPON.objects.exclude(status='normal').count(),
+  }
+
+  # 쿠폰 검색
   if tab_type == 'coupon':
-    cs = models.COUPON.objects.select_related('post', 'create_account').prefetch_related('own_accounts').exclude(
-      Q(status='deleted') | Q(status='used') | Q(status='expired')
+    cs = models.COUPON.objects.select_related('post', 'create_account').prefetch_related('own_accounts').filter(
+      Q(status='normal')
     ).filter(
       code__contains=search_coupon_code,
       name__contains=search_coupon_name,
@@ -1111,6 +1143,7 @@ def coupon(request):
 
   return render(request, 'supervisor/coupon.html', {
     **contexts,
+    'status': status, # 쿠폰 종류(탭) 별 통계 데이터
     'coupons': coupons, # 검색된 쿠폰 정보
     'last_page': last_page, # 페이지 처리를 위해 필요한 정보
   })
@@ -1268,19 +1301,19 @@ def banner(request):
   # 배너 생성 및 수정 요청 처리
   # 아이디가 있으면 수정, 없으면 생성
   if request.method == 'POST':
-    id = request.POST.get('id')
+    id = request.GET.get('id')
     if id:
       banner = models.BANNER.objects.get(id=id)
       banner.location = request.POST.get('location', banner.location)
       banner.display_weight = request.POST.get('display_weight', banner.display_weight)
-      banner.image = request.POST.get('image', banner.image)
+      banner.image = request.FILES.get('image', banner.image)
       banner.link = request.POST.get('link', banner.link)
       banner.save()
     else:
       models.BANNER.objects.create(
         location = request.POST.get('location', ''),
         display_weight = request.POST.get('display_weight', ''),
-        image = request.POST.get('image', ''),
+        image = request.FILES.get('image', ''),
         link = request.POST.get('link', ''),
       )
     return JsonResponse({'result': 'success'})
@@ -1332,26 +1365,32 @@ def level(request):
 
   # 레벨 생성 및 수정 요청 처리
   if request.method == 'POST':
-    level = request.POST.get('level', '')
-    image = request.FILES.get('image', '')
-    text_color = request.POST.get('text_color', '')
-    background_color = request.POST.get('background_color', '')
-    text = request.POST.get('text', '')
-    required_exp = request.POST.get('required_exp', '')
-    models.LEVEL_RULE( # 그냥 덮어쓰기로 처리
-      level=level,
-      image=image,
-      text_color=text_color,
-      background_color=background_color,
-      text=text,
-      required_exp=required_exp
-    ).save()
+    level_id = request.POST.get('level')
+    if level_id:
+      level = models.LEVEL_RULE.objects.get(level=level_id)
+      if request.FILES.get('image'):
+        level.image = request.FILES.get('image')
+      level.text_color = request.POST.get('text_color', level.text_color)
+      level.background_color = request.POST.get('background_color', level.background_color)
+      level.text = request.POST.get('text', level.text)
+      level.required_exp = request.POST.get('exp', level.required_exp)
+      level.save()
+    else:
+      level = models.LEVEL_RULE.objects.create(
+        text_color=request.POST.get('text_color', ''),
+        background_color=request.POST.get('background_color', ''),
+        text=request.POST.get('text', ''),
+        required_exp=request.POST.get('exp', ''),
+      )
+      if request.FILES.get('image'):
+        level.image = request.FILES.get('image')
+        level.save()
     return JsonResponse({'result': 'success'})
 
   lvs = models.LEVEL_RULE.objects.all().order_by('level')
   levels = [{
     'level': lv.level,
-    'image': lv.image,
+    'image': '/media/' + str(lv.image) if lv.image else None,
     'text': lv.text,
     'text_color': lv.text_color,
     'background_color': lv.background_color,
