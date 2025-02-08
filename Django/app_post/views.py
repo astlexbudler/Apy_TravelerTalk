@@ -434,6 +434,9 @@ def review(request):
   # search posts
   posts, last_page = daos.get_board_posts(str(b.id), page, search)
 
+  today_best_reviews = None
+  weekly_best_reviews = None
+  monthly_best_reviews = None
   if page == 1 and search == '':
     # best reviews
     # 오늘의 베스트 후기(추천, 조회, 업로드 순)

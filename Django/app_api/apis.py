@@ -162,7 +162,7 @@ def account(request):
       )
 
     # 레벨업
-    daos.check_level_up(account.account.username)
+    daos.check_level_up(account.username)
 
     return JsonResponse({'result': status})
 
