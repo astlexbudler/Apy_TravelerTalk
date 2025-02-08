@@ -73,16 +73,16 @@ SITE_ID = 2
 SITE_DOMAIN = 'kibang01.com'
 CSRF_TRUSTED_ORIGINS=[
     'http://127.0.0.1:8000', 
-    'http://kibang01.com', 'http://ptn.kibang01.com', 'http://spv.kibang01.com',
-    'http://kibang02.com', 'http://ptn.kibang02.com', 'http://spv.kibang02.com',
+    'http://kibang01.com', 'http://partner.kibang01.com', 'http://spv.kibang01.com',
+    'http://kibang02.com', 'http://partner.kibang02.com', 'http://spv.kibang02.com',
 ]
 
 MAIN_URL = os.getenv('MAIN_URL', 'http://kibang01.com')
-PARTNER_URL = os.getenv('MAIN_URL', 'http://ptn.kibang01.com')
-SUPERVISOR_URL = os.getenv('MAIN_URL', 'http://spv.kibang01.com')
+PARTNER_URL = os.getenv('PARTNER_URL', 'http://partner.kibang01.com')
+SUPERVISOR_URL = os.getenv('SUPERVISOR_URL', 'http://spv.kibang01.com')
 #MAIN_URL = os.getenv('MAIN_URL', 'http://127.0.0.1:8000')  # 테스트용
-#PARTNER_URL = os.getenv('MAIN_URL', 'http://127.0.0.1:8000/partner') # 테스트용
-#SUPERVISOR_URL = os.getenv('MAIN_URL', 'http://127.0.0.1:8000/supervisor') # 테스트용
+#PARTNER_URL = os.getenv('PARTNER_URL', 'http://127.0.0.1:8000/partner') # 테스트용
+#SUPERVISOR_URL = os.getenv('SUPERVISOR_URL', 'http://127.0.0.1:8000/supervisor') # 테스트용
 
 ROOT_URLCONF = 'apptoaster.urls'
 
