@@ -693,3 +693,15 @@ def get_all_post_comments(post_id):
     },
   } for c in cs]
   return comments
+
+# 레벨업 확인
+def check_level_up(user_id):
+  user = models.ACCOUNT.objects.select_related('level').get(username=user_id)
+  level_rules = models.LEVEL_RULE.objects.all().order_by('level')
+
+  # 레벨업 조건 확인
+  for rule in level_rules:
+    if user.exp >= rule.required_exp: # 레벨업 조건 충족
+      if not user.level or user.level.level < rule.level:
+        user.level = rule # 레벨업
+        user.save()

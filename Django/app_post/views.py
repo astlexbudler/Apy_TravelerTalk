@@ -147,6 +147,9 @@ def write_post(request):
       request.user.mileage += point
       request.user.save()
 
+    # 레벨업
+    daos.check_level_up(request.user.username)
+
     return JsonResponse({'result': 'success', 'post_id': post.id})
 
   # 후기 게시글인 경우

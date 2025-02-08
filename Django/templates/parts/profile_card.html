@@ -80,6 +80,12 @@
           {% endwith %}
 
         </p>
+        <!-- 관리자 계정은 경험치 수정 가능 -->
+        {% if account.account_type == 'supervisor' or account.account_type == 'subsupervisor' and 'account' in account.subsupervisor_permissions %}
+        <a href="javascript: new bootstrap.Modal(document.getElementById('expModal')).show();" class="text-decoration-none">
+          <small> Exp 수정하기</small>
+        </a>
+        {% endif %}
       </div>
       <div class="col-6">
         <p class="text-dark m-0">
@@ -89,6 +95,12 @@
           <i class="fi fi-ss-coins text-secondary"></i> 
           <span class="numberComma">{{ profile.mileage }}</span> <small class="me-2">마일리지</small>
         </p>
+        <!-- 관리자 계정은 마일리지 수정 가능 -->
+        {% if account.account_type == 'supervisor' or account.account_type == 'subsupervisor' and 'account' in account.subsupervisor_permissions %}
+        <a href="javascript: new bootstrap.Modal(document.getElementById('mileageModal')).show();" class="text-decoration-none">
+          <small> 마일리지 수정하기</small>
+        </a>
+        {% endif %}
       </div>
     </div>
   </a>
@@ -107,3 +119,52 @@
   </a>
 </div>
 {% endif %}
+<!-- 경험치 변경 모달 -->
+<div class="modal fade" id="expModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Exp 수정하기</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+        <!-- Exp -->
+        <div class="form-group">
+          <label>Exp</label>
+          <input type="text" class="form-control" placeholder="Exp" id="exp" value="{{ profile.exp }}">
+          <small>
+            사용자 Exp를 수정해도 레벨이 낮아지지는 않습니다.
+          </small>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="updateExp();" data-bs-dismiss="modal">수정하기</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- 마일리지 변경 모달 -->
+<div class="modal fade" id="mileageModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">마일리지 수정하기</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+        <!-- 마일리지 -->
+        <div class="form-group">
+          <label>마일리지</label>
+          <input type="text" class="form-control" placeholder="마일리지" id="mileage" value="{{ profile.mileage }}">
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="updateMileage();" data-bs-dismiss="modal">수정하기</button>
+      </div>
+    </div>
+  </div>
+</div>

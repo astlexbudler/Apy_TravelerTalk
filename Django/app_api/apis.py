@@ -161,6 +161,9 @@ def account(request):
         exp_change = '+' + str(point),
       )
 
+    # 레벨업
+    daos.check_level_up(account.account.username)
+
     return JsonResponse({'result': status})
 
   # 사용자 정보 검색
@@ -253,6 +256,9 @@ def account(request):
         account=user,
         message = f'[계정] {nickname}님의 계정 정보를 수정했습니다.',
       )
+
+    # 레벨업
+    daos.check_level_up(user.username)
 
     return JsonResponse({'success': 'y'})
 
@@ -448,6 +454,9 @@ def comment(request):
     request.user.mileage += int(add_point)
     request.user.exp += int(add_point)
     request.user.save()
+
+    # 레벨업
+    daos.check_level_up(request.user.username)
 
     return JsonResponse({'result': 'success'})
 
