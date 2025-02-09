@@ -41,6 +41,14 @@
           <label>게시판 표시 그룹</label>
           <p>
             <span>
+              <input type="checkbox" class="form-check-input" onclick="toggleAll('{{ to_modify_board.id }}Display', this.checked);">
+              <label class="form-check-label">전체</label>
+            </span>
+            <span>
+              <input type="checkbox" class="form-check-input" id="{{ to_modify_board.id }}DisplayGuest" {% if 'guest' in to_modify_board.display %} checked {% endif %}>
+              <label class="form-check-label" for="{{ to_modify_board.id }}DisplayGuest">비회원</label>
+            </span>
+            <span>
               <input type="checkbox" class="form-check-input" id="{{ to_modify_board.id }}DisplayUser" {% if 'user' in to_modify_board.display %} checked {% endif %}>
               <label class="form-check-label" for="{{ to_modify_board.id }}DisplayUser">사용자</label>
             </span>
@@ -72,7 +80,7 @@
               <label class="form-check-label">전체</label>
             </span>
             <span>
-              <input type="checkbox" class="form-check-input" id="{{ to_modify_board.id }}EnterGuest">
+              <input type="checkbox" class="form-check-input" id="{{ to_modify_board.id }}EnterGuest" {% if 'guest' in to_modify_board.enter %} checked {% endif %}>
               <label class="form-check-label" for="{{ to_modify_board.id }}EnterGuest">비회원</label>
             </span>
             <span>
@@ -106,9 +114,6 @@
               <input type="checkbox" class="form-check-input" onclick="toggleAll('{{ to_modify_board.id }}Write', this.checked);">
               <label class="form-check-label">전체</label>
             <span>
-              <input type="checkbox" class="form-check-input" id="{{ to_modify_board.id }}WriteGuest">
-              <label class="form-check-label" for="{{ to_modify_board.id }}WriteGuest">비회원</label>
-            </span>
             <span>
               <input type="checkbox" class="form-check-input" id="{{ to_modify_board.id }}WriteUser" {% if 'user' in to_modify_board.write %} checked {% endif %}>
               <label class="form-check-label" for="{{ to_modify_board.id }}WriteUser">사용자</label>
@@ -136,6 +141,10 @@
         <div class="form-group {{ to_modify_board.id }}-groups">
           <label>댓글 작성 그룹</label>
           <p>
+            <span>
+              <input type="checkbox" class="form-check-input" onclick="toggleAll('{{ to_modify_board.id }}Comment', this.checked);">
+              <label class="form-check-label">전체</label>
+            </span>
             <span>
               <input type="checkbox" class="form-check-input" id="{{ to_modify_board.id }}CommentUser" {% if 'user' in to_modify_board.comment %} checked {% endif %}>
               <label class="form-check-label" for="{{ to_modify_board.id }}CommentUser">사용자</label>
