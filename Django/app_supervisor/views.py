@@ -798,6 +798,7 @@ def post(request):
       )
 
     # 그룹 추가
+    guest_group = Group.objects.get(name='guest')
     user_group = Group.objects.get(name='user')
     dame_group = Group.objects.get(name='dame')
     partner_group = Group.objects.get(name='partner')
@@ -814,6 +815,8 @@ def post(request):
         board.display_groups.add(subsupervisor_group)
       elif group == 'supervisor':
         board.display_groups.add(supervisor_group)
+      elif group == 'guest':
+        board.display_groups.add(guest_group)
     for group in enter_groups:
       if group == 'user':
         board.enter_groups.add(user_group)
@@ -825,6 +828,8 @@ def post(request):
         board.enter_groups.add(subsupervisor_group)
       elif group == 'supervisor':
         board.enter_groups.add(supervisor_group)
+      elif group == 'guest':
+        board.enter_groups.add(guest_group)
     for group in write_groups:
       if group == 'user':
         board.write_groups.add(user_group)

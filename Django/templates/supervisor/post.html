@@ -667,6 +667,13 @@
           <label>게시판 표시 그룹</label>
           <p>
             <span>
+              <input type="checkbox" class="form-check-input" onclick="if(this.checked) { document.getElementById('newBoardDisplayGuest').checked = true; document.getElementById('newBoardDisplayUser').checked = true; document.getElementById('newBoardDisplayDame').checked = true; document.getElementById('newBoardDisplayPartner').checked = true; document.getElementById('newBoardDisplaySubsupervisor').checked = true; document.getElementById('newBoardDisplaySupervisor').checked = true; }">
+              <label class="form-check-label">전체</label>
+            <span>
+              <input type="checkbox" class="form-check-input" id="newBoardDisplayGuest">
+              <label class="form-check-label" for="newBoardDisplayGuest">비회원</label>
+            </span>
+            <span>
               <input type="checkbox" class="form-check-input" id="newBoardDisplayUser">
               <label class="form-check-label" for="newBoardDisplayUser">사용자</label>
             </span>
@@ -693,6 +700,14 @@
         <div class="form-group new-board-groups">
           <label>게시판 입장 그룹</label>
           <p>
+            <span>
+              <input type="checkbox" class="form-check-input" onclick="if(this.checked) { document.getElementById('newBoardEnterGuest').checked = true; document.getElementById('newBoardEnterUser').checked = true; document.getElementById('newBoardEnterDame').checked = true; document.getElementById('newBoardEnterPartner').checked = true; document.getElementById('newBoardEnterSubsupervisor').checked = true; document.getElementById('newBoardEnterSupervisor').checked = true; }">
+              <label class="form-check-label">전체</label>
+            </span>
+            <span>
+              <input type="checkbox" class="form-check-input" id="newBoardEnterGuest">
+              <label class="form-check-label" for="newBoardEnterGuest">비회원</label>
+            </span>
             <span>
               <input type="checkbox" class="form-check-input" id="newBoardEnterUser">
               <label class="form-check-label" for="newBoardEnterUser">사용자</label>
@@ -721,6 +736,10 @@
           <label>게시글 작성 그룹</label>
           <p>
             <span>
+              <input type="checkbox" class="form-check-input" onclick="if(this.checked) { document.getElementById('newBoardWriteUser').checked = true; document.getElementById('newBoardWriteDame').checked = true; document.getElementById('newBoardWritePartner').checked = true; document.getElementById('newBoardWriteSubsupervisor').checked = true; document.getElementById('newBoardWriteSupervisor').checked = true; }">
+              <label class="form-check-label">전체</label>
+            </span>
+            <span>
               <input type="checkbox" class="form-check-input" id="newBoardWriteUser">
               <label class="form-check-label" for="newBoardWriteUser">사용자</label>
             </span>
@@ -747,6 +766,10 @@
         <div class="form-group new-board-groups">
           <label>댓글 작성 그룹</label>
           <p>
+            <span>
+              <input type="checkbox" class="form-check-input" onclick="if(this.checked) { document.getElementById('newBoardCommentUser').checked = true; document.getElementById('newBoardCommentDame').checked = true; document.getElementById('newBoardCommentPartner').checked = true; document.getElementById('newBoardCommentSubsupervisor').checked = true; document.getElementById('newBoardCommentSupervisor').checked = true; }">
+              <label class="form-check-label">전체</label>
+            </span>
             <span>
               <input type="checkbox" class="form-check-input" id="newBoardCommentUser">
               <label class="form-check-label" for="newBoardCommentUser">사용자</label>
@@ -839,11 +862,13 @@
     var newBoardType = document.getElementById('newBoardType').value;
     var newBoardLevel = document.getElementById('newBoardLevel').value;
     var newBoardWeight = document.getElementById('newBoardWeight').value;
+    var newBoardDisplayGuest = document.getElementById('newBoardDisplayGuest').checked;
     var newBoardDisplayUser = document.getElementById('newBoardDisplayUser').checked;
     var newBoardDisplayDame = document.getElementById('newBoardDisplayDame').checked;
     var newBoardDisplayPartner = document.getElementById('newBoardDisplayPartner').checked;
     var newBoardDisplaySubsupervisor = document.getElementById('newBoardDisplaySubsupervisor').checked;
     var newBoardDisplaySupervisor = document.getElementById('newBoardDisplaySupervisor').checked;
+    var newBoardEnterGuest = document.getElementById('newBoardEnterGuest').checked;
     var newBoardEnterUser = document.getElementById('newBoardEnterUser').checked;
     var newBoardEnterDame = document.getElementById('newBoardEnterDame').checked;
     var newBoardEnterPartner = document.getElementById('newBoardEnterPartner').checked;
@@ -860,8 +885,8 @@
     var newBoardCommentSubsupervisor = document.getElementById('newBoardCommentSubsupervisor').checked;
     var newBoardCommentSupervisor = document.getElementById('newBoardCommentSupervisor').checked;
 
-    var displayGroups = `${newBoardDisplayUser ? 'user' : ''},${newBoardDisplayDame ? 'dame' : ''},${newBoardDisplayPartner ? 'partner' : ''},${newBoardDisplaySubsupervisor ? 'subsupervisor' : ''},${newBoardDisplaySupervisor ? 'supervisor' : ''}`;
-    var enterGroups = `${newBoardEnterUser ? 'user' : ''},${newBoardEnterDame ? 'dame' : ''},${newBoardEnterPartner ? 'partner' : ''},${newBoardEnterSubsupervisor ? 'subsupervisor' : ''},${newBoardEnterSupervisor ? 'supervisor' : ''}`;
+    var displayGroups = `${newBoardDisplayGuest ? 'guest' : ''},${newBoardDisplayUser ? 'user' : ''},${newBoardDisplayDame ? 'dame' : ''},${newBoardDisplayPartner ? 'partner' : ''},${newBoardDisplaySubsupervisor ? 'subsupervisor' : ''},${newBoardDisplaySupervisor ? 'supervisor' : ''}`;
+    var enterGroups = `${newBoardEnterGuest ? 'guest' : ''},${newBoardEnterUser ? 'user' : ''},${newBoardEnterDame ? 'dame' : ''},${newBoardEnterPartner ? 'partner' : ''},${newBoardEnterSubsupervisor ? 'subsupervisor' : ''},${newBoardEnterSupervisor ? 'supervisor' : ''}`;
     var writeGroups = `${newBoardWriteUser ? 'user' : ''},${newBoardWriteDame ? 'dame' : ''},${newBoardWritePartner ? 'partner' : ''},${newBoardWriteSubsupervisor ? 'subsupervisor' : ''},${newBoardWriteSupervisor ? 'supervisor' : ''}`;
     var commentGroups = `${newBoardCommentUser ? 'user' : ''},${newBoardCommentDame ? 'dame' : ''},${newBoardCommentPartner ? 'partner' : ''},${newBoardCommentSubsupervisor ? 'subsupervisor' : ''},${newBoardCommentSupervisor ? 'supervisor' : ''}`;
 
@@ -902,11 +927,13 @@
     var boardType = document.getElementById(board_id + 'Type').value;
     var boardLevel = document.getElementById(board_id + 'Level').value;
     var boardWeight = document.getElementById(board_id + 'Weight').value;
+    var boardDisplayGuest = document.getElementById(board_id + 'DisplayGuest').checked;
     var boardDisplayUser = document.getElementById(board_id + 'DisplayUser').checked;
     var boardDisplayDame = document.getElementById(board_id + 'DisplayDame').checked;
     var boardDisplayPartner = document.getElementById(board_id + 'DisplayPartner').checked;
     var boardDisplaySubsupervisor = document.getElementById(board_id + 'DisplaySubsupervisor').checked;
     var boardDisplaySupervisor = document.getElementById(board_id + 'DisplaySupervisor').checked;
+    var boardEnterGuest = document.getElementById(board_id + 'EnterGuest').checked;
     var boardEnterUser = document.getElementById(board_id + 'EnterUser').checked;
     var boardEnterDame = document.getElementById(board_id + 'EnterDame').checked;
     var boardEnterPartner = document.getElementById(board_id + 'EnterPartner').checked;
@@ -923,8 +950,8 @@
     var boardCommentSubsupervisor = document.getElementById(board_id + 'CommentSubsupervisor').checked;
     var boardCommentSupervisor = document.getElementById(board_id + 'CommentSupervisor').checked;
 
-    var displayGroups = `${boardDisplayUser ? 'user' : ''},${boardDisplayDame ? 'dame' : ''},${boardDisplayPartner ? 'partner' : ''},${boardDisplaySubsupervisor ? 'subsupervisor' : ''},${boardDisplaySupervisor ? 'supervisor' : ''}`;
-    var enterGroups = `${boardEnterUser ? 'user' : ''},${boardEnterDame ? 'dame' : ''},${boardEnterPartner ? 'partner' : ''},${boardEnterSubsupervisor ? 'subsupervisor' : ''},${boardEnterSupervisor ? 'supervisor' : ''}`;
+    var displayGroups = `${boardDisplayGuest ? 'guest' : ''},${boardDisplayUser ? 'user' : ''},${boardDisplayDame ? 'dame' : ''},${boardDisplayPartner ? 'partner' : ''},${boardDisplaySubsupervisor ? 'subsupervisor' : ''},${boardDisplaySupervisor ? 'supervisor' : ''}`;
+    var enterGroups = `${boardEnterGuest ? 'guest' : ''},${boardEnterUser ? 'user' : ''},${boardEnterDame ? 'dame' : ''},${boardEnterPartner ? 'partner' : ''},${boardEnterSubsupervisor ? 'subsupervisor' : ''},${boardEnterSupervisor ? 'supervisor' : ''}`;
     var writeGroups = `${boardWriteUser ? 'user' : ''},${boardWriteDame ? 'dame' : ''},${boardWritePartner ? 'partner' : ''},${boardWriteSubsupervisor ? 'subsupervisor' : ''},${boardWriteSupervisor ? 'supervisor' : ''}`;
     var commentGroups = `${boardCommentUser ? 'user' : ''},${boardCommentDame ? 'dame' : ''},${boardCommentPartner ? 'partner' : ''},${boardCommentSubsupervisor ? 'subsupervisor' : ''},${boardCommentSupervisor ? 'supervisor' : ''}`;
 

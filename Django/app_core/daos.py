@@ -133,7 +133,7 @@ def get_board_tree(group_name):
   group = Group.objects.get(name=group_name)
   boards = models.BOARD.objects.filter(
     display_groups=group,
-  ).order_by('display_weight')
+  ).order_by('-display_weight')
   board_dict = {
     board.name: {
       'id': board.id,
