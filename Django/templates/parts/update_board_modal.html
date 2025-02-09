@@ -68,6 +68,14 @@
           <label>게시판 입장 그룹</label>
           <p>
             <span>
+              <input type="checkbox" class="form-check-input" onclick="toggleAll('{{ to_modify_board.id }}Enter', this.checked);">
+              <label class="form-check-label">전체</label>
+            </span>
+            <span>
+              <input type="checkbox" class="form-check-input" id="{{ to_modify_board.id }}EnterGuest">
+              <label class="form-check-label" for="{{ to_modify_board.id }}EnterGuest">비회원</label>
+            </span>
+            <span>
               <input type="checkbox" class="form-check-input" id="{{ to_modify_board.id }}EnterUser" {% if 'user' in to_modify_board.enter %} checked {% endif %}>
               <label class="form-check-label" for="{{ to_modify_board.id }}EnterUser">사용자</label>
             </span>
@@ -94,6 +102,13 @@
         <div class="form-group {{ to_modify_board.id }}-groups">
           <label>게시글 작성 그룹</label>
           <p>
+            <span>
+              <input type="checkbox" class="form-check-input" onclick="toggleAll('{{ to_modify_board.id }}Write', this.checked);">
+              <label class="form-check-label">전체</label>
+            <span>
+              <input type="checkbox" class="form-check-input" id="{{ to_modify_board.id }}WriteGuest">
+              <label class="form-check-label" for="{{ to_modify_board.id }}WriteGuest">비회원</label>
+            </span>
             <span>
               <input type="checkbox" class="form-check-input" id="{{ to_modify_board.id }}WriteUser" {% if 'user' in to_modify_board.write %} checked {% endif %}>
               <label class="form-check-label" for="{{ to_modify_board.id }}WriteUser">사용자</label>

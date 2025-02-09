@@ -667,7 +667,7 @@
           <label>게시판 표시 그룹</label>
           <p>
             <span>
-              <input type="checkbox" class="form-check-input" onclick="if(this.checked) { document.getElementById('newBoardDisplayGuest').checked = true; document.getElementById('newBoardDisplayUser').checked = true; document.getElementById('newBoardDisplayDame').checked = true; document.getElementById('newBoardDisplayPartner').checked = true; document.getElementById('newBoardDisplaySubsupervisor').checked = true; document.getElementById('newBoardDisplaySupervisor').checked = true; }">
+              <input type="checkbox" class="form-check-input" onclick="toggleAll('newBoardDisplay', this.checked);">
               <label class="form-check-label">전체</label>
             <span>
               <input type="checkbox" class="form-check-input" id="newBoardDisplayGuest">
@@ -701,7 +701,7 @@
           <label>게시판 입장 그룹</label>
           <p>
             <span>
-              <input type="checkbox" class="form-check-input" onclick="if(this.checked) { document.getElementById('newBoardEnterGuest').checked = true; document.getElementById('newBoardEnterUser').checked = true; document.getElementById('newBoardEnterDame').checked = true; document.getElementById('newBoardEnterPartner').checked = true; document.getElementById('newBoardEnterSubsupervisor').checked = true; document.getElementById('newBoardEnterSupervisor').checked = true; }">
+              <input type="checkbox" class="form-check-input" onclick="toggleAll('newBoardEnter', this.checked);">
               <label class="form-check-label">전체</label>
             </span>
             <span>
@@ -852,6 +852,14 @@
     // 게시판 추가 모달
     if ('{{request.GET.is_place_search}}' == 'y') {
       document.getElementById('searchPlace').classList.remove('d-none');
+    }
+  }
+
+  // 토글
+  toggleAll = (name, checked) => {
+    var checkboxes = document.querySelectorAll(`input[id^='${name}']`);
+    for (var i = 0; i < checkboxes.length; i++) {
+      checkboxes[i].checked = checked;
     }
   }
 
