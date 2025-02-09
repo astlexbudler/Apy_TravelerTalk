@@ -569,8 +569,8 @@ def travel(request):
   posts = []
   ps = models.POST.objects.select_related('place_info').prefetch_related('place_info__categories').exclude(
     Q(place_info__status='writing') | Q(place_info__status='blocked'), # place_info의 status가 'writing' 또는 'deleted'인 경우
-    place_info__isnull=True, # 장소 정보가 없는 경우
   ).filter(
+    place_info__isnull=False, # place_info가 있는 경우
     title__contains=search, # 검색어가 제목에 포함된 경우
   )
   if category:
@@ -581,21 +581,19 @@ def travel(request):
   last_page = (ps.count() // 20) + 1
   ps = ps[(page - 1) * 20:page * 20] # 각 페이지에 20개씩 표시
   for p in ps:
-    try:
-      posts.append({
-        'id': p.id,
-        'title': p.title,
-        'image': str(p.image) if p.image else '/media/default.png',
-        'place_info': {
-          'categories': [c.name for c in p.place_info.categories.all()],
-          'address': p.place_info.address,
-          'location_info': p.place_info.location_info,
-          'open_info': p.place_info.open_info,
-          'status': p.place_info.status,
-        }
-      })
-    except:
-      pass
+    print(p.title)
+    posts.append({
+      'id': p.id,
+      'title': p.title,
+      'image': str(p.image) if p.image else '/media/default.png',
+      'place_info': {
+        'categories': [c.name for c in p.place_info.categories.all()],
+        'address': p.place_info.address,
+        'location_info': p.place_info.location_info,
+        'open_info': p.place_info.open_info,
+        'status': p.place_info.status,
+      }
+    })
 
   # 게시판 정보 가져오기(마지막 게시판 정보)
   board = models.BOARD.objects.filter(id=board_ids[-1]).first()
