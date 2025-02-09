@@ -1044,7 +1044,7 @@ def post(request):
       search_posts.append({
         'id': post.id,
         'title': post.title,
-        'image': str(post.image) if post.image else '',
+        'image': '/media/' + str(post.image) if post.image else '/media/default.png',
         'view_count': post.view_count,
         'like_count': post.like_count,
         'created_at': post.created_at,
