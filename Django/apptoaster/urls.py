@@ -38,7 +38,7 @@ class ApplifySitemapClass(Sitemap):
 
 host_patterns = patterns(
     '',
-    host(r'partner', 'app_partner.urls', name='app_partner'),
+    host(r'ptn', 'app_partner.urls', name='app_partner'),
     host(r'spv', 'app_supervisor.urls', name='app_supervisor'),
     host(r'', 'apptoaster.urls', name='main'),
 )
