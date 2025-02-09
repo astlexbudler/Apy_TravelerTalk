@@ -1040,38 +1040,41 @@ def post(request):
   last_page = sps.count() // 20 + 1 # 20개씩 표시
   search_posts = []
   for post in sps[(page - 1) * 20:page * 20]:
-    search_posts.append({
-      'id': post.id,
-      'title': post.title,
-      'image': '/media/' + str(post.image) if post.image else '/media/default.png',
-      'view_count': post.view_count,
-      'like_count': post.like_count,
-      'created_at': post.created_at,
-      'search_weight': post.search_weight,
-      'board': {
-        'name': post.boards.all().last().name,
-        'board_type': post.boards.all().last().board_type,
-      },
-      'author': {
-        'id': post.author.username, # 작성자 아이디
-        'nickname': post.author.first_name, # 작성자 닉네임
-        'partner_name': post.author.last_name, # 작성자 파트너 이름
-      },
-      'place_info': { # 여행지 게시글인 경우, 여행지 정보
-        'categories': [c.name for c in post.place_info.categories.all()],
-        'address': post.place_info.address,
-        'location_info': post.place_info.location_info,
-        'open_info': post.place_info.open_info,
-        'ad_start_at': post.place_info.ad_start_at,
-        'ad_end_at': post.place_info.ad_end_at,
-        'status': post.place_info.status,
-        'note': post.place_info.note,
-      } if post.place_info else None,
-      'review_post': { # 리뷰 게시글인 경우, 리뷰 대상 게시글 정보
-        'id': post.review_post.id,
-        'title': post.review_post.title,
-      } if post.review_post else None,
-    })
+    try:
+      search_posts.append({
+        'id': post.id,
+        'title': post.title,
+        'image': str(post.image) if post.image else '',
+        'view_count': post.view_count,
+        'like_count': post.like_count,
+        'created_at': post.created_at,
+        'search_weight': post.search_weight,
+        'board': {
+          'name': post.boards.all().last().name,
+          'board_type': post.boards.all().last().board_type,
+        },
+        'author': {
+          'id': post.author.username, # 작성자 아이디
+          'nickname': post.author.first_name, # 작성자 닉네임
+          'partner_name': post.author.last_name, # 작성자 파트너 이름
+        },
+        'place_info': { # 여행지 게시글인 경우, 여행지 정보
+          'categories': [c.name for c in post.place_info.categories.all()],
+          'address': post.place_info.address,
+          'location_info': post.place_info.location_info,
+          'open_info': post.place_info.open_info,
+          'ad_start_at': post.place_info.ad_start_at,
+          'ad_end_at': post.place_info.ad_end_at,
+          'status': post.place_info.status,
+          'note': post.place_info.note,
+        } if post.place_info else None,
+        'review_post': { # 리뷰 게시글인 경우, 리뷰 대상 게시글 정보
+          'id': post.review_post.id,
+          'title': post.review_post.title,
+        } if post.review_post else None,
+      })
+    except Exception as e:
+      print(e)
 
   # 카테고리 정보
   categories = daos.get_category_tree()
