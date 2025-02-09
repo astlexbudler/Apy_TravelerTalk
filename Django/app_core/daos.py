@@ -216,7 +216,7 @@ def get_travel_board_tree():
 
   boards = models.BOARD.objects.filter(
     Q(board_type='travel') | Q(board_type='tree') # 여행지 게시판 또는 트리
-  ).order_by('display_weight')
+  ).order_by('-display_weight')
   board_dict = {
     board.name: {
       'id': board.id,
@@ -288,7 +288,7 @@ def get_display_banners():
     'top': [], # 상단 배너
     'side': [], # 사이드 및 하단 배너
   }
-  for b in models.BANNER.objects.all().order_by('display_weight'):
+  for b in models.BANNER.objects.all().order_by('-display_weight'):
     if b.location == 'top':
       banners['top'].append({
         'image': b.image,
@@ -303,7 +303,7 @@ def get_display_banners():
 
 # 카테고리 트리 가져오기
 def get_category_tree():
-  categories = models.CATEGORY.objects.select_related('parent_category').all().order_by('display_weight')
+  categories = models.CATEGORY.objects.select_related('parent_category').all().order_by('-display_weight')
   category_dict = {
     category.name: {
       'id': category.id,
