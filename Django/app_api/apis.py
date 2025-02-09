@@ -308,27 +308,32 @@ def message(request):
     sender = models.ACCOUNT.objects.prefetch_related('groups').filter(
       username=request.user.username
     ).first()
-    sender_groups = [group.name for group in sender.groups.all()]
-    account_type = 'guest'
-    if sender: # 발신자가 존재하는 경우
-      account_type = 'user'
-      if 'dame' in sender_groups:
-        account_type = 'dame'
-      elif 'partner' in sender_groups:
-        account_type = 'partner'
-      elif 'subsupervisor' in sender_groups:
-        account_type = 'subsupervisor'
-      elif 'supervisor' in sender_groups:
-        account_type = 'supervisor'
+    if not sender: # 발신자가 존재하지 않는 경우,
+      guest_id = request.session.get('guest_id', ''.join(random.choices(string.ascii_letters + string.digits, k=16)))
+      request.session['guest_id'] = guest_id
+      sender_id = guest_id
+    else: # 발신자가 존재하는 경우,
+      sender_groups = [group.name for group in sender.groups.all()]
+      account_type = 'guest'
+      if sender: # 발신자가 존재하는 경우
+        account_type = 'user'
+        if 'dame' in sender_groups:
+          account_type = 'dame'
+        elif 'partner' in sender_groups:
+          account_type = 'partner'
+        elif 'subsupervisor' in sender_groups:
+          account_type = 'subsupervisor'
+        elif 'supervisor' in sender_groups:
+          account_type = 'supervisor'
 
-    # 발신자 아이디 설정
-    if account_type == 'guest':
-      sender_id = request.session.get('guest_id', ''.join(random.choices(string.ascii_letters + string.digits, k=16)))
-      request.session['guest_id'] = sender_id
-    elif account_type == 'supervisor' or account_type == 'subsupervisor':
-      sender_id = 'supervisor'
-    else:
-      sender_id = sender.username
+      # 발신자 아이디 설정
+      if account_type == 'guest':
+        sender_id = request.session.get('guest_id', ''.join(random.choices(string.ascii_letters + string.digits, k=16)))
+        request.session['guest_id'] = sender_id
+      elif account_type == 'supervisor' or account_type == 'subsupervisor':
+        sender_id = 'supervisor'
+      else:
+        sender_id = sender.username
 
     # 쪽지 내용 설정
     to_id = request.POST.get('to_id') # 수신자 아이디
