@@ -101,7 +101,7 @@
             <td class="text-center">
 
               <!-- 게시판 수정 -->
-              <a href="javascript: new bootstrap.Modal(document.getElementById('{{ child.id }}Detail')).show()">
+              <a href="javascript: new bootstrap.Modal(document.getElementById('{{ child.id }}EditModal')).show()">
                 <i class="fi fi-rr-edit"></i>
               </a>
               {% with to_modify_board=child %}
@@ -131,7 +131,7 @@
               <td class="text-center">
 
                 <!-- 게시판 수정 -->
-                <a href="javascript: new bootstrap.Modal(document.getElementById('{{ grandchild.id }}Detail')).show()">
+                <a href="javascript: new bootstrap.Modal(document.getElementById('{{ grandchild.id }}EditModal')).show()">
                   <i class="fi fi-rr-edit"></i>
                 </a>
                 {% with to_modify_board=grandchild %}
@@ -151,7 +151,7 @@
                 <td class="text-center">
 
                   <!-- 게시판 수정 -->
-                  <a href="javascript: new bootstrap.Modal(document.getElementById('{{ grandgrandchild.id }}Detail')).show()">
+                  <a href="javascript: new bootstrap.Modal(document.getElementById('{{ grandgrandchild.id }}EditModal')).show()">
                     <i class="fi fi-rr-edit"></i>
                   </a>
                   {% with to_modify_board=grandgrandchild %}
