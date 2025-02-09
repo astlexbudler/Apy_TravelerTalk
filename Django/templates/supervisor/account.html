@@ -243,7 +243,7 @@
     {% endif %}
     {% for search_account in accounts %}
     <div class="col-12 p-2 mb-2 border-bottom">
-      <a href="/profile?profile_id={{ search_account.id }}" target="_blank">
+      <a href="{{main_url}}/profile?profile_id={{ search_account.id }}" target="_blank">
         <div style="display: flex; justify-content: space-between; white-space: nowrap;">
           <div style="display: inline-block; text-align: left;">
             <span class="text-black-50" style="font-size: 14px;">

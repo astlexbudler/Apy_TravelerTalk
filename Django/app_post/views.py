@@ -567,7 +567,7 @@ def travel(request):
 
   # 게시글 가져오기
   posts = []
-  ps = models.POST.objects.select_related('author', 'place_info').prefetch_related('place_info__categories').exclude(
+  ps = models.POST.objects.select_related('place_info').prefetch_related('place_info__categories').exclude(
     Q(place_info__status='writing') | Q(place_info__status='blocked'), # place_info의 status가 'writing' 또는 'deleted'인 경우
     place_info__isnull=True, # 장소 정보가 없는 경우
   ).filter(
@@ -585,15 +585,12 @@ def travel(request):
       'id': p.id,
       'title': p.title,
       'image': str(p.image) if p.image else '/media/default.png',
-      'author': {
-        'nickname': p.author.first_name,
-      },
       'place_info': {
         'categories': [c.name for c in p.place_info.categories.all()],
         'address': p.place_info.address,
         'location_info': p.place_info.location_info,
         'open_info': p.place_info.open_info,
-        'status': 'ad',
+        'status': p.place_info.status,
       },
     })
 
