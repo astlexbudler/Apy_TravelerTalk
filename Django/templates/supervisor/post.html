@@ -965,7 +965,6 @@
     // 삭제 요청
     await fetch('{{supervisor_url}}/supervisor/post?board=y&board_id=' + board_id, {
       method: 'DELETE',
-      body: formData,
       headers: {
         'X-CSRFToken': csrftoken,
       },
@@ -1048,7 +1047,6 @@
     // 삭제 요청
     await fetch('{{supervisor_url}}/supervisor/post?category=y&category_id=' + category_id, {
       method: 'DELETE',
-      body: formData,
       headers: {
         'X-CSRFToken': csrftoken,
       },
