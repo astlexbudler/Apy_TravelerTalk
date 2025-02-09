@@ -581,18 +581,21 @@ def travel(request):
   last_page = (ps.count() // 20) + 1
   ps = ps[(page - 1) * 20:page * 20] # 각 페이지에 20개씩 표시
   for p in ps:
-    posts.append({
-      'id': p.id,
-      'title': p.title,
-      'image': str(p.image) if p.image else '/media/default.png',
-      'place_info': {
-        'categories': [c.name for c in p.place_info.categories.all()],
-        'address': p.place_info.address,
-        'location_info': p.place_info.location_info,
-        'open_info': p.place_info.open_info,
-        'status': p.place_info.status,
-      },
-    })
+    try:
+      posts.append({
+        'id': p.id,
+        'title': p.title,
+        'image': str(p.image) if p.image else '/media/default.png',
+        'place_info': {
+          'categories': [c.name for c in p.place_info.categories.all()],
+          'address': p.place_info.address,
+          'location_info': p.place_info.location_info,
+          'open_info': p.place_info.open_info,
+          'status': p.place_info.status,
+        }
+      })
+    except:
+      pass
 
   # 게시판 정보 가져오기(마지막 게시판 정보)
   board = models.BOARD.objects.filter(id=board_ids[-1]).first()
