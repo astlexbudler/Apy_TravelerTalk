@@ -38,7 +38,7 @@ class ApplifySitemapClass(Sitemap):
 
 host_patterns = patterns(
     '',
-    host(r'ptn', 'app_partner.urls', name='app_partner'),
+    host(r'partner', 'app_partner.urls', name='app_partner'),
     host(r'spv', 'app_supervisor.urls', name='app_supervisor'),
     host(r'', 'apptoaster.urls', name='main'),
 )
@@ -46,8 +46,8 @@ host_patterns = patterns(
 urlpatterns = [
   path('admin/', admin.site.urls),
   path('', include('app_user.urls')),
-  path('partner/', include('app_partner.urls')), # subdomain 처리
-  path('supervisor/', include('app_supervisor.urls')), # subdomain 처리
+  #path('partner/', include('app_partner.urls')), # subdomain 처리
+  #path('supervisor/', include('app_supervisor.urls')), # subdomain 처리
   path('post/', include('app_post.urls')),
   path('coupon/', include('app_coupon.urls')),
   path('message/', include('app_message.urls')),

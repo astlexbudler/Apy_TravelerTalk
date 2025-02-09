@@ -1,4 +1,4 @@
-# 여행자들의 대화(진행중)
+# 여행자들의 대화
 
 Django를 이용하여 제작한 여행자들 대화 익명 여행지 커뮤니티 사이트.  
 각 기능별로 별도의 app으로 구분하여 제작. 실험적으로 모든 테이블을 app_core에 작성하여 관리.
@@ -9,33 +9,32 @@ Django를 이용하여 제작한 여행자들 대화 익명 여행지 커뮤니�
 
 Django를 이용한 여행 정보 공유 커뮤니티 사이트. 위 도메인들로 등록이 되었으며 Django-hosts를 이용해서 서브 도메인 설정을 하였습니다. 서버는 window server 2019버전을 사용했으며, IIS 방식으로 호스팅을 하였습니다.
 
-탬플릿은 Newzy - News / Magazine Template 템플릿을 사용했으며 해당 템플릿 및 디자인은 5만원의 비용을 주고 구매하였습니다.
+탬플릿은 Newzy - News / Magazine Template 템플릿을 사용헤 제작했습니다. 탬플릿 및 추가로 작성한 HTML은 Javascript와 Bootstrap5를 이용해서 개발하였습니다.
 
-총 7명이 프로젝트에 참여하였습니다. 그 중 실제로 프로젝트에 기여한 인원은 4명입니다. (나머지는 작성된 코드가 반영이 안되었거나 기준에 맞지 않았습니다. 죄송합니다.)
+필요한 페이지와 데이터베이스를 정리하였습니다.
 
-진행했던 작업을 간단하게 요약하면 다음과 같았습니다.
-
-초기 백엔드 코드를 작성해주셨습니다. (배현우)
+초기 Django 백엔드 코드를 작성해주셨습니다. (배현우)
 
 초기 HTML 탬플릿 구조를 만들어주셨습니다. (고대건, 김경민)
 
 웹페이지의 제목과 서비스가 확정되고 이후 아이콘을 만들어주셨습니다.(이동근)
 
 백엔드와 탬플릿 구조가 변경되었습니다.
-    - 기능별로 별도의 app으로 구분하여 프로젝트를 구성하였습니다.
-    - 모델이 각 기능에 대당하는 앱으로 이동되었습니다.
-    - 각 기능별로 구분된 탬플릿 구조를 가지게 되었습니다.
+    - 기능별로 별도의 app으로 분리하여 프로젝트를 구성하였습니다.(core, api, user, partner, supervisor, post, coupon, message)
+    - 데이터베이스 모델이 각 기능에 대당하는 앱으로 분리되었습니다.
+    - 각 기능별로 구분된 탬플릿 디렉토리를 가지도록 구성하였습니다.
     - dao를 통해 데이터베이스와 관련된 함수를 view에서 분리했습니다.
+    - 이메일 인증 방식을 제거했습니다.
 
-API요청과 form 요청에 대한 처리를 추가했습니다.
+API요청과 form 요청에 대한 처리를 views에 추가했습니다.
 
-기본적인 자바스크립트와 modal, alert을 통한 사용자 상호작용을 구현하였습니다.
+기본적인 자바스크립트와 modal, alert, form 등을 통한 사용자 상호작용을 구현하였습니다.
 
 백엔드와 템플릿 구조가 변경되었습니다.
-    - 기능별로 구분된 데이터베이스를 app_core에서 일괄적으로 관리하도록 통합하였습니다.
-    - 각 앱별로 따로 관리되던 dao를 app_core에서 일괄 관리하도록 통합했습니다.(중복되는 코드 제거)
-    - 일부 페이지를 합치거나 제거했습니다.(복잡한 게시판 구조 변경. 일부 페이지는 페이지 대신 모달을 이용하도록 변경됨)
-    - 관리자 페이지가 별도의 템플릿 구조를 가지는게 아닌, 사용자 페이지와 동일한 구조를 가지도록 수정했습니다.(유지보수 용이, 불필요한 코드 제거)
+    - 기능별로 구분된 데이터베이스 모델을 app_core에서 일괄적으로 관리하도록 통합하였습니다.
+    - 각 앱별로 따로 관리되던 dao를 app_core에서 일괄 관리하도록 통합했습니다.
+    - 일부 불필요하게 중복되는 코드와 페이지를 정리하였습니다.
+    - 관리자 페이지가 별도의 템플릿 구조를 가지는게 아닌, 사용자 페이지와 동일한 구조와 디자인을 가지도록 수정했습니다.(유지보수 용이, 불필요한 코드 제거)
     - 모든 페이지가 통일된 디자인을 가질 수 있도록, 정해진 템플릿을 상속하고 요소들을 재사용 가능하도록 분리했습니다.
     - 웹페이지에 아이콘을 적용하였습니다.
 
@@ -53,9 +52,11 @@ API요청과 form 요청에 대한 처리를 추가했습니다.
 
 클라이언트 요청에 따라 일부 쿠폰 및 게시판 관련 기능을 수정하고, 데이터베이스를 업데이트하였습니다.
 
+관리자 페이지 뿐만 아니라 파트너 관련 페이지도 서브 도메인에서 처리되도록 수정했습니다.
+
 윈도우 서버에 IIS를 이용하여 제작된 Django 프로젝트를 호스팅하고 실제 적용될 서버 환경에서 프로젝트를 테스트했습니다.
 
-[진행중]: 20여개의 버그를 확인하고 버그를 수정하고 있습니다. 추가로 쿠폰 관련 클라이언트 요청사항을 수정하고 있습니다.
+사용자 레벨 및 게시판 관련 버그를 수정하고 통계 정보가 정상적으로 수집되도록 스케줄러와 데이터베이스에 추가적인 모델을 구성하였습니다.
 
 ---
 
@@ -86,127 +87,137 @@ API요청과 form 요청에 대한 처리를 추가했습니다.
 
 - **app_core**:  
 프로젝트의 기본 설정과 관련된 앱. 사전 설정 데이터 생성 및 스케줄러, 기본적인 설정과 관련된 테이블이 정의되어있습니다.
-  - MODEL:
-    - ACCOUNT (계정 정보)
-      - *id PK
-      - *username 사용자 아이디
-      - *password 사용자 비밀번호
-      - *first_name 사용자 실명
-      - *last_name 사용자 닉네임
-      - *email 이메일
-      - *is_active 계정 활성 여부 (True, False)
-      - *is_staff 관리자 계정 여부 (True, False)
-      - *is_superuser 관리자 계정 여부 (True, False)
-      - *date_joined 가입일
-      - *last_login 마지막 로그인
-      - *groups 사용자 계정 그룹 FK(user, dame, partner, subsupervisor, supervisor)
-      - status 계정 상태(active, pending, deleted, blocked, banned)
-      - note 관리자 노트
-      - coupon_point 쿠폰 포인트
-      - level_point 레벨 포인트
-      - tel 연락처
-      - subsupervisor_permissions 부관리자 권한
-      - bookmarked_places FK 북마크된 여행지 게시글
-      - level FK 사용자 레벨
-    - GROUP (그룹)
-      - name 그룹명
-      - permissions FK (사용안함)
-    - ACTIVITY (계정 활동)
-      - id PK
-      - account FK
-      - message 계정 활동 메세지
-      - point_change 포인트 변동 내역
-      - created_at 생성일
-    - LEVEL_RULE (레벨 규칙)
-      - level PK
-      - image 레벨 뱃지 이미지
-      - text 레벨 뱃지 텍스트
-      - text_color 레벨 뱃지 텍스트 색상
-      - background_color 레벨 뱃지 배경 색상
-      - required_point 레벨 요구 포인트
-    - CATEGORY (여행지 게시글 카테고리)
-      - id PK
-      - parent_category FK
-      - name 카테고리 이름
-      - display_weight 표시 순서
-    - BOARD (게시판)
-      - id PK
-      - parent_board FK
-      - display_groups FK
-      - enter_groups FK
-      - write_groups FK
-      - comment_groups FK
-      - name 게시판 이름
-      - board_type 게시판 타입
-      - display_weight 표시 순서
-    - POST (게시글)
-      - id PK
-      - author FK
-      - boards FK
-      - review_post FK
-      - place_info FK
-      - title 게시글 제목
-      - content 게시글 내용
-      - image_paths 대표 이미지 경로
-      - view_count 조회수
-      - like_count 추천수
-      - search_weight 검색 가중치
-      - created_at 작성일
-    - PLACE_INFO (여행지 정보)
-      - id PK
-      - post FK
-      - categories FK
-      - address 주소
-      - location_info 위치 정보
-      - open_info 운영 정보
-      - ad_start_at 광고 시작일
-      - ad_end_at 광고 종료일
-      - status 상태
-      - note 관리자 메모
-    - COMMENT (댓글)
-      - id PK
-      - author FK
-      - parent_comment FK
-      - post FK
-      - content 댓글 내용
-      - created_at 작성일시
-    - COUPON (쿠폰)
-      - code PK
-      - create_account FK
-      - own_accounts FK
-      - name 쿠폰 이름
-      - content 쿠폰 내용
-      - image 이미지
-      - required_point 요구 포인트
-      - expire_at 만료 일시
-      - created_at 발급 일시
-      - status 상태
-      - note 관리자 메모
-    - MESSAGE (메세지)
-      - id PK
-      - to FK
-      - sender FK
-      - include_coupon FK
-      - title 메세지 제목
-      - content 메세지 내용
-      - is_read 읽음 여부
-      - created_at 발송 일시
-    - UPLOAD (업로드)
-      - id PK
-      - file 파일
-    - SERVER_SETTING (서버 설정)
-      - name PK
-      - value 값
-    - SERVER_LOG (서버 기록)
-      - id PK
-      - content 매새자
-      - created_at 생성 일시
-    - BANNER (배너)
-      - id PK
-      - location 배너 위치
-      - image 배너 이미지
-      - link 링크
-      - display_weight 배너 표시 순서
+  - ACCOUNT (계정)
+    - id: PK (기본 제공)
+    - username: 아이디 (Unique)
+    - password: 비밀번호
+    - first_name: 닉네임
+    - last_name: 파트너 업체명
+    - email: 이메일
+    - is_active: 활성 상태
+    - is_staff: 스태프 여부
+    - is_superuser: 최고 관리자 여부
+    - date_joined: 가입 일자
+    - last_login: 마지막 로그인
+    - groups: M2M → Group
+    - status: 계정 상태 (active, pending, deleted, blocked, banned)
+    - note: 관리자 메모
+    - mileage: 쿠폰 마일리지
+    - exp: 레벨업 경험치
+    - tel: 연락처
+    - subsupervisor_permissions: 관리자 권한 목록
+    - bookmarked_places: M2M → POST (즐겨찾기 여행지)
+    - level: FK → LEVEL_RULE (사용자 레벨)
+    - recent_ip: 최근 접속 IP
+  - GROUP (그룹)
+    - name 그룹 이름
+  - ACTIVITY (계정 활동)
+    - id: PK
+    - account: FK → ACCOUNT
+    - message: 계정 활동 메시지
+    - exp_change: 경험치 변동
+    - mileage_change: 마일리지 변동
+    - created_at: 생성일
+  - LEVEL_RULE (레벨 규칙)
+    - level: PK
+    - image: 레벨 뱃지 이미지
+    - text: 레벨 뱃지 텍스트
+    - text_color: 레벨 뱃지 텍스트 색상
+    - background_color: 레벨 뱃지 배경 색상
+    - required_exp: 레벨 요구 경험치
+  - CATEGORY (카테고리)
+    - id: PK
+    - parent_category: FK → CATEGORY (상위 카테고리)
+    - name: 카테고리 이름
+    - display_weight: 표시 순서
+  - BOARD (게시판)
+    - id: PK
+    - parent_board: FK → BOARD (상위 게시판)
+    - display_groups: M2M → Group (표시 그룹)
+    - enter_groups: M2M → Group (접근 그룹)
+    - write_groups: M2M → Group (작성 그룹)
+    - comment_groups: M2M → Group (댓글 그룹)
+    - level_cut: 레벨 제한
+    - name: 게시판 이름
+    - board_type: 게시판 타입 (tree, travel, event, review, board, attendance, greeting, anonymous, qna, coupon)
+    - display_weight: 표시 순서
+  - POST (게시물)
+    - id: PK
+    - author: FK → ACCOUNT (작성자)
+    - boards: M2M → BOARD (게시판)
+    - review_post: FK → POST (리뷰 게시글)
+    - place_info: FK → PLACE_INFO (여행지 정보)
+    - title: 제목
+    - image: 대표 이미지
+    - content: 내용
+    - view_count: 조회수
+    - like_count: 좋아요 수
+    - search_weight: 검색 가중치
+    - created_at: 작성 일시
+  - PLACE_INFO (여행지 정보)
+    - id: PK
+    - post: FK → POST (게시글)
+    - categories: M2M → CATEGORY (카테고리)
+    - address: 주소
+    - location_info: 위치 정보
+    - open_info: 영업 정보
+    - ad_start_at: 광고 시작 일시
+    - ad_end_at: 광고 종료 일시
+    - status: 상태 (writing, normal, pending, ad, blocked)
+    - note: 관리자 메모
+  - COMMENT (댓글)
+    - id: PK
+    - post: FK → POST (게시글)
+    - author: FK → ACCOUNT (작성자)
+    - parent_comment: FK → COMMENT (상위 댓글)
+    - content: 내용
+    - created_at: 작성 일시
+  - COUPON (쿠폰)
+    - code: PK (쿠폰 코드)
+    - post: FK → POST (게시글)
+    - create_account: FK → ACCOUNT (생성자)
+    - own_accounts: M2M → ACCOUNT (소유 계정)
+    - used_account: M2M → ACCOUNT (사용 계정)
+    - name: 쿠폰 이름
+    - image: 이미지
+    - content: 내용
+    - required_mileage: 필요 마일리지
+    - expire_at: 만료 일시
+    - created_at: 생성 일시
+    - status: 상태 (active, expired, deleted)
+    - note: 관리자 메모
+  - MESSAGE (메시지)
+    - id: PK
+    - to_account: 받는 사람
+    - sender_account: 보낸 사람
+    - include_coupon: FK → COUPON (포함된 쿠폰)
+    - title: 제목
+    - image: 이미지
+    - content: 내용
+    - is_read: 읽음 여부
+    - created_at: 생성 일시
+  - UPLOAD (파일 업로드)
+    - file: 업로드된 파일
+  - SERVER_SETTING (서버 설정)
+    - name: PK (설정 이름)
+    - value: 설정 값
+  - SERVER_LOG (서버 로그)
+    - id: PK
+    - content: 내용
+    - created_at: 생성 일시
+  - BANNER (배너)
+    - id: PK
+    - location: 위치 (top, side)
+    - image: 이미지
+    - link: 링크
+    - display_weight: 표시 순서
+  - STATISTIC (통계)
+    - name: PK (통계 이름)
+    - value: 통계 값
+    - date: 통계 일시
+  - BLOCKED_IP (차단 IP)
+    - id: PK
+    - ip: 차단된 IP
 - **app_api**:  
 API 요청 주소와 해당 요청에 대한 처리가 정의되어있는 앱. 별도로 정의된 테이블은 없습니다.
 - **app_user**:  
@@ -221,19 +232,20 @@ API 요청 주소와 해당 요청에 대한 처리가 정의되어있는 앱. �
     - /contact(제휴문의)
     - /terms(이용약관)
 - **app_partner**:  
-파트너 앱. 파트너 관리자 페이지들에 대한 주소와 해당 요청에 대한 처리가 정의되어있는 앱.  
+파트너 앱. 파트너 관리자 페이지들에 대한 주소와 해당 요청에 대한 처리가 정의되어있는 앱. 서브 도메인으로 접근 가능.  
   - PATH:
+    - /(관리자 로그인)
     - /partner(파트너 관리자)
     - /partner/write_post(여행지 게시글 작성)
     - /partner/rewrite_post(여행지 게시글 수정)
     - /partner/coupon(파트너 쿠폰 관리)
 - **app_supervisor**:  
-사이트 관리자 앱. 사이트 관리자 페이지들에 대한 주소와 해당 요청에 대한 처리가 정의되어있는 앱.  
+사이트 관리자 앱. 사이트 관리자 페이지들에 대한 주소와 해당 요청에 대한 처리가 정의되어있는 앱. 서브 도메인으로 접근 가능.  
   - PATH:
+    - /(관리자 로그인)
     - /supervisor(관리자 메인)
     - /supervisor/account(계정 관리)
     - /supervisor/post(게시글 관리)
-    - /supervisor/ad_post(여행지 관리)
     - /supervisor/coupon(쿠폰 관리)
     - /supervisor/message(쪽지 관리)
     - /supervisor/banner(배너 관리)
@@ -247,16 +259,9 @@ API 요청 주소와 해당 요청에 대한 처리가 정의되어있는 앱. �
     - /post/write_post(글 작성)
     - /post/rewrite_post(글 수정)
     - /post/post_view(글 보기)
-    - /post/notice(공지사항 게시판)
-    - /post/event(이벤트 게시판)
-    - /post/write_event(이벤트 작성)
-    - /post/rewrite_event(이벤트 수정)
-    - /post/event_view(이벤트 보기)
     - /post/attendance(출석체크)
     - /post/greeting(가입인사)
     - /post/review(후기 게시판)
-    - /post/write_review(후기 작성)
-    - /post/rewrite_review(후기 수정)
     - /post/review_view(후기 보기)
     - /post/travel(여행지 게시판)
     - /post/travel_view(여행지 보기)
@@ -324,17 +329,17 @@ Django의 기본 User 테이블을 상속하여 사용합니다.
 데이터베이스 관리자는 Django Admin 계정을 의미합니다. 서버 생성 시 자동으로 생성되며 사이트 관리자는 Admin 접속 권한을 가지지 않습니다.
 데이터베이스 관리자 계정은 사이트 관리 권한을 가지지 않습니다.
 
---- 
+---
 
 ## 색상
 
 - **주 색상**:
-#FCE4EC
+  #FCE4EC
 - **부 색상**:
-#FFF9F0
+  #FFF9F0
 - **회색 색상**:
-#808080
+  #808080
 - **footer 배경색**:
-#E3F2FD
+  #E3F2FD
 - **footer 폰트색**:
-#0D47A1
+  #0D47A1

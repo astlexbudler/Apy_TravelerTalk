@@ -20,6 +20,8 @@ from django.contrib.auth.models import AbstractUser, Group
 # SERVER_SETTING: 서버 설정 테이블
 # SERVER_LOG: 서버 로그 테이블
 # BANNER: 배너 테이블
+# STATISTIC: 통계 테이블
+# BLOCKED_IP: 차단 IP 테이블
 
 def upload_to(instance, filename): # 파일 업로드 경로
   _, ext = os.path.splitext(filename)
@@ -198,4 +200,5 @@ class STATISTIC(models.Model):
 
 # BLOCKED_IP: 차단 IP 테이블
 class BLOCKED_IP(models.Model):
-  ip = models.CharField(max_length=20, primary_key=True, help_text='차단 IP')
+  id = models.AutoField(primary_key=True)
+  ip = models.CharField(max_length=20, help_text='차단 IP')

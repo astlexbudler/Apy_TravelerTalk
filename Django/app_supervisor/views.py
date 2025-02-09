@@ -472,6 +472,24 @@ def account(request):
   if contexts['account']['account_type'] == 'subsupervisor' and 'account' not in contexts['account']['subsupervisor_permissions']:
     return redirect('/supervisor')  # 권한이 없는 경우, 메인 페이지로 리다이렉트
 
+  # 아이피 차단
+  if request.method == 'POST' and request.GET.get('block_ip'):
+    ip_address = request.POST['ip']
+    ip = models.BLOCKED_IP.objects.filter(ip=ip_address).first()
+    if not ip:
+      models.BLOCKED_IP.objects.create(
+        ip = ip_address
+      )
+    return JsonResponse({'result': 'success'})
+
+  # 아이피 차단 해제
+  if request.method == 'POST' and request.GET.get('unblock_ip'):
+    ip_address = request.POST['ip']
+    ip = models.BLOCKED_IP.objects.filter(ip=ip_address).first()
+    if ip:
+      ip.delete()
+    return JsonResponse({'result': 'success'})
+
   # 사용자 계정 생성
   if request.method == 'POST' and request.GET.get('create_user'):
     id = request.POST['id']
@@ -692,7 +710,9 @@ def account(request):
   } for group in all_groups]
 
   # 차단 IP 목록
-  blocked_ips = models.BLOCKED_IP.objects.all()
+  blocked_ips = [{
+    'ip': blocked_ip.ip
+  } for blocked_ip in models.BLOCKED_IP.objects.all()]
 
   return render(request, 'supervisor/account.html', {
     **contexts,
