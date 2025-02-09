@@ -310,7 +310,7 @@ def index(request):
   if not ad_request_1_to_0:
     ad_request_1_to_0 = 0
   else:
-    ad_request_1_to_0 = ad_request_1_to_0.value
+    ad_request_1_to_0 = ad_request_1_to_0
 
   # 광고 집행 건수
   ad_execute_7_to_6 = models.STATISTIC.objects.filter(
@@ -1106,14 +1106,14 @@ def coupon(request):
   # 쿠폰 검색
   if tab_type == 'coupon':
     cs = models.COUPON.objects.select_related('post', 'create_account').prefetch_related('own_accounts').filter(
-      Q(status='normal')
+      Q(status='active')
     ).filter(
       code__contains=search_coupon_code,
       name__contains=search_coupon_name,
     ).order_by('-created_at')
   elif tab_type == 'history':
     cs = models.COUPON.objects.select_related('post', 'create_account').prefetch_related('own_accounts').exclude(
-      Q(status='normal')
+      Q(status='active')
     ).filter(
       code__contains=search_coupon_code,
       name__contains=search_coupon_name,
@@ -1167,7 +1167,6 @@ def coupon(request):
     'coupons': coupons, # 검색된 쿠폰 정보
     'last_page': last_page, # 페이지 처리를 위해 필요한 정보
   })
-
 
 # 쪽지 관리 페이지
 def message(request):

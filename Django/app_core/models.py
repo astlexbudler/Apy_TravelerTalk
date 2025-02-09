@@ -194,7 +194,8 @@ class BANNER(models.Model):
 
 # STATISTIC: 통계 테이블
 class STATISTIC(models.Model):
-  name = models.CharField(max_length=100, primary_key=True, help_text='통계 이름')
+  id = models.AutoField(primary_key=True)
+  name = models.CharField(max_length=100, help_text='통계 이름')
   value = models.IntegerField(help_text='통계 값', default=0)
   date = models.DateTimeField(auto_now_add=True, help_text='통계 일시')
 
