@@ -426,13 +426,13 @@ def comment(request):
 
       # 1등, 2등, 3등의 경우, 추가 포인트 지급
       if models.COMMENT.objects.filter(post=po).count() == 1:
-        add_point = models.SERVER_SETTING.objects.get(name='attendance_point').value * 2
+        add_point = models.SERVER_SETTING.objects.get(name='attend_point').value * 2
       elif models.COMMENT.objects.filter(post=po).count() == 2:
-        add_point = models.SERVER_SETTING.objects.get(name='attendance_point').value * 1.5
+        add_point = models.SERVER_SETTING.objects.get(name='attend_point').value * 1.5
       elif models.COMMENT.objects.filter(post=po).count() == 3:
-        add_point = models.SERVER_SETTING.objects.get(name='attendance_point').value * 1.2
+        add_point = models.SERVER_SETTING.objects.get(name='attend_point').value * 1.2
       else:
-        add_point = models.SERVER_SETTING.objects.get(name='attendance_point').value
+        add_point = models.SERVER_SETTING.objects.get(name='attend_point').value
 
       # 댓글 작성 활동기록 생성
       today = datetime.datetime.now().strftime('%Y-%m-%d')
