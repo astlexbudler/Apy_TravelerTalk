@@ -417,9 +417,17 @@ def comment(request):
     )
 
     # 만약 게시글이 출석 체크 게시글인 경우,
-    if 'attenddance:' in po.title:
-      # 출석 체크
-      add_point = models.SERVER_SETTING.objects.get(name='attendance_point').value
+    if 'attendance:' in po.title:
+
+      # 1등, 2등, 3등의 경우, 추가 포인트 지급
+      if models.COMMENT.objects.filter(post=po).count() == 1:
+        add_point = models.SERVER_SETTING.objects.get(name='attendance_point').value * 2
+      elif models.COMMENT.objects.filter(post=po).count() == 2:
+        add_point = models.SERVER_SETTING.objects.get(name='attendance_point').value * 1.5
+      elif models.COMMENT.objects.filter(post=po).count() == 3:
+        add_point = models.SERVER_SETTING.objects.get(name='attendance_point').value * 1.2
+      else:
+        add_point = models.SERVER_SETTING.objects.get(name='attendance_point').value
 
       # 댓글 작성 활동기록 생성
       today = datetime.datetime.now().strftime('%Y-%m-%d')
@@ -431,6 +439,8 @@ def comment(request):
       )
 
     elif 'greeting' in po.title:
+
+      add_point = models.SERVER_SETTING.objects.get(name='comment_point').value
 
       # 댓글 작성 활동기록 생성
       models.ACTIVITY.objects.create(
@@ -849,8 +859,12 @@ def like_post(request):
   like_posts = request.session.get('like_posts', '')
   if post_id not in like_posts: # 좋아요가 존재하지 않는 경우
     request.session['like_posts'] = like_posts + post_id + ',' # 좋아요 추가
+    post.like_count += 1
+    post.save()
   else:
     request.session['like_posts'] = like_posts.replace(post_id + ',', '') # 좋아요 삭제
+    post.like_count -= 1
+    post.save()
 
   # 게시글 확인
   for board in post.boards.all():
@@ -862,8 +876,6 @@ def like_post(request):
         username=request.user.username,
         bookmarked_places=post
       ).exists()
-      print(user)
-      print(bookmarked)
       if not bookmarked:
         user.bookmarked_places.add(post)
         user.save()

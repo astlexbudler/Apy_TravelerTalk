@@ -23,10 +23,12 @@
       여행지가 없습니다.
     </p>
     {% else %}
-    {% for post in posts %}
-    {% include 'parts/travel_post_card.html' %}
-    {% endfor %}
-    {% endif %}
+    <div class="row">
+      {% for post in posts %}
+      {% include 'parts/travel_post_card.html' %}
+      {% endfor %}
+      {% endif %}
+    </div>
   </div>
 
   <!-- 검색 및 페이지 버튼 -->

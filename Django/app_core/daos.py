@@ -647,6 +647,7 @@ def get_post_info(post_id):
       'id': b.id,
       'name': b.name,
       'comment': [g.name for g in b.comment_groups.all()],
+      'board_type': b.board_type,
     } for b in post.boards.all()],
     'title': post.title,
     'image': str(post.image) if post.image else '/media/default.png',

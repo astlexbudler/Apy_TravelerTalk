@@ -204,30 +204,33 @@
   <!-- categories 파라미터가 있을 경우, 카테고리 검색 영역 표시. 여행지 게시판의 경우, 카테고리 검색 영역 표시 -->
   {% if categories %}
 
-    <!-- 카테고리 검색 영역 -->
-    <div class="card mt-3" style="border-radius: 0px;">
-      <div class="card-header" style="border-radius: 0px; background-color: rgb(246, 246, 246);">
-        <h6 class="card-title text-black-50">서비스 카테고리</h6>
+  <!-- 카테고리 검색 영역 -->
+  <div class="card mt-3" style="border-radius: 0px;">
+    <div class="card-header" style="border-radius: 0px; background-color: rgb(246, 246, 246);">
+      <h6 class="card-title text-black-50">서비스 카테고리</h6>
+    </div>
+
+    <!-- 카테고리 선택 박스 -->
+    <div class="card-body">
+
+      <!-- 1차 카테고리 -->
+      {% for category in categories %}
+      <div class="pt-2 pb-3 mb-2 border-bottom">
+        {% if category.id in request.GET.category %}
+        <a class="nav-link" href="#" style="color: rgb(184, 184, 184);">
+          {{ category.name }}
+        </a>
+        {% else %}
+        <a class="nav-link" href="javascript:location.href=location.origin + location.pathname + '?board_ids={{request.GET.board_ids}}&category={{ category.id }}'">
+          {{ category.name }}
+        </a>
+        {% endif %}
       </div>
-      <div class="card-body">
 
-        <!-- 카테고리 선택 박스 -->
-        {% for category in categories %}
-        <div class="pt-2 pb-3 mb-2 border-bottom">
-          {% if category.id in request.GET.category %}
-          <a class="nav-link" href="#" style="color: rgb(184, 184, 184);">
-            {{ category.name }}
-          </a>
-          {% else %}
-          <a class="nav-link" href="javascript:location.href=location.origin + location.pathname + '?board_ids={{request.GET.board_ids}}&category={{ category.id }}'">
-            {{ category.name }}
-          </a>
-          {% endif %}
-        </div>
-
+        <!-- 2차 카테고리 -->
         {% if category.children|length > 0 %}
+        {% for child in category.children %}
         <div class="ps-2 pt-2 pb-3 mb-2  border-bottom {% if category.id not in request.GET.categories %}d-none{% endif %}">
-          {% for child in category.children %}
           {% if child.id in request.GET.category %}
           <a class="nav-link" href="#" style="color: rgb(184, 184, 184);">
             {{ child.name }}
@@ -239,155 +242,158 @@
           {% endif %}
         </div>
 
-        {% if child.children|length > 0 %}
-        <div class="ps-4 pt-2 pb-3 mb-2 border-bottom {% if child.id not in request.GET.categories %}d-none{% endif %}">
+          <!-- 3차 카테고리 -->
+          {% if child.children|length > 0 %}
           {% for child2 in child.children %}
-          {% if child2.id in request.GET.category %}
-          <a class="nav-link" href="#" style="color: rgb(184, 184, 184);">
-            {{ child2.name }}
-          </a>
-          {% else %}
-          <a class="nav-link" href="javascript:location.href=location.origin + location.pathname + '?board_ids={{request.GET.board_ids}}&category={{ child2.id }}'">
-            {{ child2.name }}
-          </a>
-          {% endif %}
-        </div>
+          <div class="ps-4 pt-2 pb-3 mb-2 border-bottom {% if child.id not in request.GET.categories %}d-none{% endif %}">
+            {% if child2.id in request.GET.category %}
+            <a class="nav-link" href="#" style="color: rgb(184, 184, 184);">
+              {{ child2.name }}
+            </a>
+            {% else %}
+            <a class="nav-link" href="javascript:location.href=location.origin + location.pathname + '?board_ids={{request.GET.board_ids}}&category={{ child2.id }}'">
+              {{ child2.name }}
+            </a>
+            {% endif %}
+          </div>
 
-        {% if child2.children|length > 0 %}
-        <div class="ps-6 pt-2 pb-3 mb-2 border-bottom {% if child2.id not in request.GET.categories %}d-none{% endif %}">
+          <!-- 4차 카테고리 -->
+          {% if child2.children|length > 0 %}
           {% for child3 in child2.children %}
-          {% if child3.id in request.GET.category %}
-          <a class="nav-link" href="#" style="color: rgb(184, 184, 184);">
-            {{ child3.name }}
-          </a>
-          {% else %}
-          <a class="nav-link" href="javascript:location.href=location.origin + location.pathname + '?board_ids={{request.GET.board_ids}}&category={{ child3.id }}'">
-            {{ child3.name }}
-          </a>
-          {% endif %}
+          <div class="ps-6 pt-2 pb-3 mb-2 border-bottom {% if child2.id not in request.GET.categories %}d-none{% endif %}">
+            {% if child3.id in request.GET.category %}
+            <a class="nav-link" href="#" style="color: rgb(184, 184, 184);">
+              {{ child3.name }}
+            </a>
+            {% else %}
+            <a class="nav-link" href="javascript:location.href=location.origin + location.pathname + '?board_ids={{request.GET.board_ids}}&category={{ child3.id }}'">
+              {{ child3.name }}
+            </a>
+            {% endif %}
+          </div>
           {% endfor %}
-        </div>
+          {% endif %}
 
-        {% endif %}
         {% endfor %}
         {% endif %}
-        {% endfor %}
-        {% endif %}
-        {% endfor %}
 
-      </div>
+        {% endfor %}
+        {% endif %}
+
+      {% endfor %}
     </div>
+  </div>
 
   {% else %}
 
   {% if account.account_type != 'admin' and account.account_type != 'supervisor' and account.account_type != 'subsupervisor' %}
 
-    <!-- 즐겨찾기 -->
-    {% if user.is_authenticated %}
-    <div class="card mt-3" style="border-radius: 0px;">
-      <div class="card-body text-center pastel-pink-background">
-        <h5 class="card-title">
-          <a href="{{main_url}}/bookmark" class="text-black-50">즐겨찾기</a>
+  <!-- 즐겨찾기 -->
+  {% if user.is_authenticated %}
+  <div class="card mt-3" style="border-radius: 0px;">
+    <div class="card-body text-center pastel-pink-background">
+      <h5 class="card-title">
+        <a href="{{main_url}}/bookmark" class="text-black-50">즐겨찾기</a>
+      </h5>
+    </div>
+    <div class="card-footer" style="min-height: 200px;">
+      <div class="p-1 py-2">
+
+        {% if account.bookmarked_places == none or account.bookmarked_places|length == 0 %}
+        <p>
+          즐겨찾기한 게시글이 없습니다
+        </p>
+        {% else %}
+        <!-- 즐겨찾기한 여행지 게시글 목록 -->
+        {% for post in account.bookmarked_places %}
+        {% include 'parts/simplified_board_type.html' %}
+        {% endfor %}
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- 내 쿠폰들. 사용자 계정만 표시 -->
+  {% if account.account_type == 'user' or account.account_type == 'dame' %}
+  <div class="card mt-3" style="border-radius: 0px;">
+    <div class="card-body text-center pastel-pink-background">
+      <a href="{{main_url}}/coupon">
+        <h5 class="card-title text-black-50">
+          내 쿠폰들
         </h5>
-      </div>
-      <div class="card-footer" style="min-height: 200px;">
-        <div class="p-1 py-2">
+      </a>
+    </div>
+    <div class="card-footer" style="min-height: 200px;">
+      <div class="p-1 py-2">
 
-          {% if account.bookmarked_places == none or account.bookmarked_places|length == 0 %}
-          <p>
-            즐겨찾기한 게시글이 없습니다
-          </p>
-          {% else %}
-          <!-- 즐겨찾기한 여행지 게시글 목록 -->
-          {% for post in account.bookmarked_places %}
-          {% include 'parts/simplified_board_type.html' %}
-          {% endfor %}
-          {% endif %}
-
+        {% if not user.is_authenticated %}
+        <p>
+          로그인이 필요합니다
+        </p>
+        {% else %}
+        {% if coupons == none or coupons|length == 0 %}
+        <p>
+          사용 가능한 쿠폰이 없습니다
+        </p>
+        {% else %}
+        <!-- 사용 가능한 쿠폰 목록 표시. 쿠폰 이름, 만료일, 관련 게시글 제목 표시 -->
+        {% for coupon in coupons %}
+        <div class="mb-4">
+          <a href="{{main_url}}/coupon">
+            <span class="text-black-50" style="font-size: 12px;">
+              <i class="fi fi-rr-calendar"></i> {{ coupon.expired_dt }}
+            </span>
+            <p class="mt-1 text-black small">
+              [{{ coupon.title }}] {{ coupon.name }}
+            </p>
+          </a>
         </div>
+        {% endfor %}
+        {% endif %}
+        {% endif %}
+
       </div>
     </div>
-    {% endif %}
+  </div>
+  {% endif %}
 
-    <!-- 내 쿠폰들. 사용자 계정만 표시 -->
-    {% if account.account_type == 'user' or account.account_type == 'dame' %}
-    <div class="card mt-3" style="border-radius: 0px;">
-      <div class="card-body text-center pastel-pink-background">
-        <a href="{{main_url}}/coupon">
-          <h5 class="card-title text-black-50">
-            내 쿠폰들
-          </h5>
-        </a>
-      </div>
-      <div class="card-footer" style="min-height: 200px;">
-        <div class="p-1 py-2">
+  <!-- 활동 내역 -->
+  {% if user.is_authenticated %}
+  <div class="card mt-3" style="border-radius: 0px;">
+    <div class="card-body text-center pastel-pink-background">
+      <h5 class="card-title">
+        <a href="{{main_url}}/activity" class="text-black-50">활동 내역</a>
+      </h5>
+    </div>
+    <div class="card-footer" style="min-height: 200px;">
+      <div class="p-1 py-2">
 
-          {% if not user.is_authenticated %}
-          <p>
-            로그인이 필요합니다
-          </p>
-          {% else %}
-          {% if coupons == none or coupons|length == 0 %}
-          <p>
-            사용 가능한 쿠폰이 없습니다
-          </p>
-          {% else %}
-          <!-- 사용 가능한 쿠폰 목록 표시. 쿠폰 이름, 만료일, 관련 게시글 제목 표시 -->
-          {% for coupon in coupons %}
-          <div class="mb-4">
-            <a href="{{main_url}}/coupon">
-              <span class="text-black-50" style="font-size: 12px;">
-                <i class="fi fi-rr-calendar"></i> {{ coupon.expired_dt }}
-              </span>
-              <p class="mt-1 text-black small">
-                [{{ coupon.title }}] {{ coupon.name }}
-              </p>
-            </a>
-          </div>
-          {% endfor %}
-          {% endif %}
-          {% endif %}
-
+        {% if activities == none or activities|length == 0 %}
+        <p>
+          활동 내역이 없습니다
+        </p>
+        {% else %}
+        <!-- 활동 내역 표시. 활동 메세지, 활동 일시 표시 -->
+        {% for activity in activities %}
+        <div class="mb-4">
+          <a href="{{main_url}}/activity">
+            <span class="text-black-50" style="font-size: 12px;">
+              <i class="fi fi-rr-calendar"></i> {{ activity.created_at }}
+            </span>
+            <p class="mt-1 text-black small">
+              {{ activity.message }}
+            </p>
+          </a>
         </div>
+        {% endfor %}
+        {% endif %}
+
       </div>
     </div>
-    {% endif %}
-
-    <!-- 활동 내역 -->
-    {% if user.is_authenticated %}
-    <div class="card mt-3" style="border-radius: 0px;">
-      <div class="card-body text-center pastel-pink-background">
-        <h5 class="card-title">
-          <a href="{{main_url}}/activity" class="text-black-50">활동 내역</a>
-        </h5>
-      </div>
-      <div class="card-footer" style="min-height: 200px;">
-        <div class="p-1 py-2">
-
-          {% if activities == none or activities|length == 0 %}
-          <p>
-            활동 내역이 없습니다
-          </p>
-          {% else %}
-          <!-- 활동 내역 표시. 활동 메세지, 활동 일시 표시 -->
-          {% for activity in activities %}
-          <div class="mb-4">
-            <a href="{{main_url}}/activity">
-              <span class="text-black-50" style="font-size: 12px;">
-                <i class="fi fi-rr-calendar"></i> {{ activity.created_at }}
-              </span>
-              <p class="mt-1 text-black small">
-                {{ activity.message }}
-              </p>
-            </a>
-          </div>
-          {% endfor %}
-          {% endif %}
-
-        </div>
-      </div>
-    </div>
-    {% endif %}
+  </div>
+  {% endif %}
 
   {% endif %}
 

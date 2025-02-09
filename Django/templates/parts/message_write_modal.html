@@ -145,7 +145,7 @@
   var messageReceiverInput = document.querySelector('#messageReceiver');
   messageToAdminCheckbox.addEventListener('change', () => {
     if (messageToAdminCheckbox.checked) { // 체크한 경우
-      messageReceiverInput.value = 'supervisor'; // 수신자 = supervisor
+      messageReceiverInput.value = '관리자'; // 수신자 = supervisor
       document.getElementById('receiverId').value = 'supervisor';
       messageReceiverInput.setAttribute('readonly', true);
       receiverConfirmMessage.innerHTML = '관리자에게 쪽지를 보냅니다.';
