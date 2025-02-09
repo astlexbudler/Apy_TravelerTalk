@@ -1353,7 +1353,7 @@ def banner(request):
     'top': [], # 상단 배너
     'side': [], # 사이드 및 하단 배너
   }
-  for b in models.BANNER.objects.all().order_by('display_weight'):
+  for b in models.BANNER.objects.all().order_by('-display_weight'):
     if b.location == 'side':
       banners['side'].append({
         'id': b.id,
