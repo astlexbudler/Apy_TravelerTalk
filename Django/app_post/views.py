@@ -568,6 +568,7 @@ def travel(request):
   # 게시글 가져오기
   posts = []
   ps = models.POST.objects.select_related('author', 'place_info').prefetch_related('place_info__categories').exclude(
+    Q(place_info__status='writing') | Q(place_info__status='blocked'), # place_info의 status가 'writing' 또는 'deleted'인 경우
     place_info__isnull=True, # 장소 정보가 없는 경우
   ).filter(
     title__contains=search, # 검색어가 제목에 포함된 경우

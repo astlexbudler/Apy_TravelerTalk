@@ -21,6 +21,11 @@
             <option value="board" {% if to_modify_board.board_type == "board" %} selected {% endif %}>게시판</option>
             <option value="travel" {% if to_modify_board.board_type == "travel" %} selected {% endif %}>여행</option>
             <option value="tree" {% if to_modify_board.board_type == "tree" %} selected {% endif %}>폴더</option>
+            <option value="anonymous" {% if to_modify_board.board_type == "anonymous" %} selected {% endif %}>익명</option>
+            <option value="attendance" {% if to_modify_board.board_type == "attendance" %} selected {% endif %}>출석</option>
+            <option value="greeting" {% if to_modify_board.board_type == "greeting" %} selected {% endif %}>인사</option>
+            <option value="qna" {% if to_modify_board.board_type == "qna" %} selected {% endif %}>문의</option>
+            <option value="coupon" {% if to_modify_board.board_type == "coupon" %} selected {% endif %}>쿠폰</option>
           </select>
         </div>
 

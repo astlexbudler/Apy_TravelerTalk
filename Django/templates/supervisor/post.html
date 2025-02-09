@@ -57,7 +57,7 @@
 
                 <!-- 하위 게시판 추가. 트리 타입만 가능 -->
                 {% if board.board_type == 'tree' %}
-                <a href="javascript: document.getElementById('subBoardParent').value = '{{ board.id }}'; new bootstrap.Modal(document.getElementById('addSubBoardModal')).show()"
+                <a href="javascript: document.getElementById('subBoardParent').value = '{{ board.id }}'; new bootstrap.Modal(document.getElementById('addnewBoardModal')).show()"
                 class="btn btn-success p-1 px-2 small">
                   <i class="fi fi-rr-plus"></i> 하위 게시판 추가
                 </a>
@@ -88,7 +88,7 @@
 
                 <!-- 하위 게시판 추가. 트리 타입만 가능 -->
                 {% if child.board_type == 'tree' %}
-                <a href="javascript: document.getElementById('subBoardParent').value = '{{ board.id }}'; new bootstrap.Modal(document.getElementById('addSubBoardModal')).show()"
+                <a href="javascript: document.getElementById('subBoardParent').value = '{{ board.id }}'; new bootstrap.Modal(document.getElementById('addnewBoardModal')).show()"
                 class="btn btn-success p-1 px-2 small">
                   <i class="fi fi-rr-plus"></i> 하위 게시판 추가
                 </a>
@@ -118,7 +118,7 @@
 
                   <!-- 하위 게시판 추가. 트리 타입만 가능 -->
                   {% if grandchild.board_type == 'tree' %}
-                  <a href="javascript: document.getElementById('subBoardParent').value = '{{ board.id }}'; new bootstrap.Modal(document.getElementById('addSubBoardModal')).show()"
+                  <a href="javascript: document.getElementById('subBoardParent').value = '{{ board.id }}'; new bootstrap.Modal(document.getElementById('addnewBoardModal')).show()"
                   class="btn btn-success p-1 px-2 small">
                     <i class="fi fi-rr-plus"></i> 하위 게시판 추가
                   </a>
@@ -624,7 +624,7 @@
 
 <!-- Modal -->
 <!-- 게시판 추가 모달 -->
-<div class="modal fade" id="addBoardModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+<div class="modal fade" id="addnewBoardModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
@@ -646,8 +646,13 @@
           <label>게시판 타입</label>
           <select class="form-control" id="newBoardType">
             <option value="board">게시판</option>
-            <option value="travel">여행</option>
+            <option value="travel">여행지</option>
             <option value="tree">폴더</option>
+            <option value="anonymous">익명</option>
+            <option value="attendance">출석</option>
+            <option value="greeting">인사</option>
+            <option value="qna">문의</option>
+            <option value="coupon">쿠폰</option>
           </select>
         </div>
 
