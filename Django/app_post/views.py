@@ -51,6 +51,10 @@ def index(request):
     return redirect('/post/review?board_ids=' + request.GET.get('board_ids') + '&page=' + str(page) + '&search=' + search)
   elif board.board_type == 'travel':
     return redirect('/post/travel?board_ids=' + request.GET.get('board_ids') + '&page=' + str(page) + '&search=' + search)
+  # 레벨 제한 확인
+  if contexts['account']['account_type'] in ['user', 'dame']:
+    if board.level > int(contexts['account']['level']['level']):
+      return redirect('/?redirect_message=not_allowed_board')
 
   # 게시글 가져오기
   posts, last_page = daos.get_board_posts(board_ids, page, search)
@@ -98,6 +102,10 @@ def write_post(request):
     return redirect('/post/attendance')
   elif board.board_type == 'greeting': # 가입인사 게시판인 경우
     return redirect('/post/greeting')
+  # 레벨 제한 확인
+  if contexts['account']['account_type'] in ['user', 'dame']:
+    if board.level > int(contexts['account']['level']['level']):
+      return redirect('/?redirect_message=not_allowed_board')
 
   # 게시글 작성 처리 요청
   if request.method == 'POST':
@@ -278,6 +286,10 @@ def post_view(request):
 
   # 마지막 게시판 가져오기
   board = post['boards'][-1]
+  # 레벨 제한 확인
+  if contexts['account']['account_type'] in ['user', 'dame']:
+    if board['level'] > int(contexts['account']['level']['level']):
+      return redirect('/?redirect_message=not_allowed_board')
 
   # 댓글 가져오기
   comments = daos.get_all_post_comments(post_id)

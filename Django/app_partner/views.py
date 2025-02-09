@@ -15,7 +15,7 @@ def login(request):
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
 
   # 파트너 계정인 경우, 파트너 관리 페이지로 이동
-  if contexts['account']['account_type'] == 'patner':
+  if contexts['account']['account_type'] == 'partner':
     return redirect('/partner')
 
   return render(request, 'login.html')
@@ -25,7 +25,6 @@ def index(request):
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
 
   if contexts['account']['account_type'] != 'partner': # 파트너 계정이 아닌 경우
-    logout(request)
     return redirect('/') # 로그인 페이지로 리다이렉트
 
   # 사용자 프로필 정보
@@ -134,8 +133,27 @@ def rewrite_post(request):
     author=request.user,
     place_info__isnull=False, # 여행지 정보가 있는 경우
   ).first()
-  if not p: # 여행지 게시글이 없는 경우, 광고 게시글 작성 페이지로 이동
-    return redirect('/partner?redirect_message=travel_post_not_exist') # 홈으로 리다이렉트
+  if not p: # 여행지 게시글이 없는 경우, 기본 여행지 게시글 생성
+    # 여행지 게시글 생성
+    post = models.POST(
+      author=request.user, # 작성자
+      title='파트너사 ' + request.user.last_name + '의 여행지 정보', # 제목
+      content='파트너사 ' + request.user.last_name + '의 여행지 정보입니다.', # 내용
+    )
+    post.save()
+    # 게시글 여행지 정보 생성
+    place_info = models.PLACE_INFO(
+      post=post, # 게시글
+      address='여행지 주소', # 주소
+      location_info='여행지를 찾기위한 간단한 안내입니다.', # 위치 정보
+      open_info='여행지의 영업 시간입니다.', # 영업 정보
+      status='writing' # 상태
+    )
+    place_info.save()
+    post.place_info = place_info
+    post.save()
+    p = post
+
   post = daos.get_post_info(p.id)
 
   # 광고 게시글 작성지 확인
