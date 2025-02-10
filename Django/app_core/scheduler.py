@@ -96,7 +96,7 @@ def delete_account():
     accounts = models.ACCOUNT.objects.filter(
         status='deleted'
     )
-    today = timezone.now()
+    today = datetime.datetime.now()
     for account in accounts:
         # last_login이 90일 이전인 경우 삭제
         if account.last_login < today - timedelta(days=90):

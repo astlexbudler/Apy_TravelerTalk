@@ -490,13 +490,13 @@
   // 비밀번호 변경
   var passwordOk = false;
   var passwordConfirmOk = false;
-  const passwordRegex = /^(?=.*[a-zA-Z])(?=.*[0-9]).{8,16}$/; // 영문, 숫자 포함 8~16자
+  const passwordRegex = /^(?=.*[a-zA-Z])(?=.*[0-9]).{5,}$/; // 영문, 숫자 포함 5자 이상
   var newPasswordInput = document.getElementById('newPassword');
   var newPasswordConfirmInput = document.getElementById('newPasswordConfirm');
   newPasswordInput.addEventListener('input', () => { // 비밀번호 입력 시, 비밀번호 형식 확인
     var newPassword = newPasswordInput.value;
     if (!passwordRegex.test(newPassword)) {
-      document.getElementById('newPasswordConfirmText').innerHTML = '비밀번호는 8글자 이상이어야 합니다.';
+      document.getElementById('newPasswordConfirmText').innerHTML = '비밀번호는 5글자 이상이어야 합니다.';
       document.getElementById('newPasswordConfirmText').classList.remove('text-success');
       document.getElementById('newPasswordConfirmText').classList.add('text-danger');
       passwordOk = false;

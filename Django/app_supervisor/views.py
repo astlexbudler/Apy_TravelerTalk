@@ -560,6 +560,7 @@ def account(request):
   # data
   tab = request.GET.get('tab', 'user') # user, dame, partner, supervisor
   page = int(request.GET.get('page', '1'))
+  search_user_dame = request.GET.get('dame', '')
   search_account_id = request.GET.get('account_id', '')
   search_account_nickname = request.GET.get('account_nickname', '')
   search_account_level_at_least = int(request.GET.get('account_level_at_least', '0'))
@@ -614,7 +615,6 @@ def account(request):
   # 사용자 검색
   if tab == 'user': # 사용자 탭일 경우, user와 dame을 같이 검색
     sats = all_accounts.select_related('level').filter(
-      Q(groups__name='user') | Q(groups__name='dame'),
       Q(username__contains=search_account_id),
       Q(first_name__contains=search_account_nickname),
       Q(level__level__gte=search_account_level_at_least),
@@ -622,6 +622,18 @@ def account(request):
       Q(recent_ip__contains=search_account_ip),
       Q(mileage__gte=search_account_mileage_at_least)
     )
+    if search_user_dame == 'user':
+      sats = sats.filter(
+        Q(groups__name='user')
+      )
+    elif search_user_dame == 'dame':
+      sats = sats.filter(
+        Q(groups__name='dame'),
+      )
+    else:
+      sats = sats.filter(
+        Q(groups__name='user') | Q(groups__name='dame'),
+      )
   elif tab == 'supervisor': # 관리자 탭일 경우, 관리자만 검색
     sats = all_accounts.filter(
       Q(groups__name__in=['supervisor', 'subsupervisor', 'admin']),
@@ -911,7 +923,7 @@ def post(request):
   # 각 게시판 별 게시글 수와 댓글 수, 조회수, 좋아요 수 통계 제공
   all_post = models.POST.objects.prefetch_related('boards').select_related('author', 'place_info', 'review_post').prefetch_related('place_info__categories').all()
   boards = models.BOARD.objects.exclude(
-    Q(name='greeting') | Q(name='attendance') | Q(name='travel')
+    Q(board_type='greeting') | Q(board_type='attendance')
   ).prefetch_related('display_groups', 'enter_groups', 'write_groups', 'comment_groups').all()
   board_dict = {
     board.name: {
@@ -1107,8 +1119,9 @@ def coupon(request):
 
   # status
   status = {
-    'active': models.COUPON.objects.filter(status='normal').count(),
-    'end': models.COUPON.objects.exclude(status='normal').count(),
+    'active': models.COUPON.objects.filter(status='active').count(),
+    'expired': models.COUPON.objects.filter(status='expired').count(),
+    'deleted': models.COUPON.objects.filter(status='deleted').count(),
   }
 
   # 쿠폰 검색
@@ -1165,6 +1178,7 @@ def coupon(request):
         'title': coupon.post.title,
       },
       'create_account': {
+        'id': coupon.create_account.username,
         'partner_name': coupon.create_account.last_name,
       },
     })
@@ -1192,6 +1206,12 @@ def message(request):
   page = int(request.GET.get('page', '1'))
   search_message_title = request.GET.get('message_title', '')
   search_message_receiver = request.GET.get('message_receiver', '')
+
+  # status
+  status = {
+    'unread': models.MESSAGE.objects.filter(is_read=False, to_account='supervisor').count(),
+    'read': models.MESSAGE.objects.filter(is_read=True, to_account='supervisor').count(),
+  }
 
   # 받은 쪽지함
   if tab == 'inbox':
@@ -1229,6 +1249,7 @@ def message(request):
       'content': m.content,
       'is_read': m.is_read,
       'created_at': m.created_at,
+      'image': str(m.image) if m.image else None,
       'include_coupon': {
         'code': m.include_coupon.code,
         'name': m.include_coupon.name,
@@ -1250,6 +1271,7 @@ def message(request):
 
     return render(request, 'supervisor/message.html', {
       **contexts,
+      'status': status,
       'messages': messages,
       'last_page': last_page,
     })
@@ -1289,6 +1311,7 @@ def message(request):
       'content': m.content,
       'is_read': m.is_read,
       'created_at': m.created_at,
+      'image': str(m.image) if m.image else None,
       'include_coupon': {
         'code': m.include_coupon.code,
         'name': m.include_coupon.name,
@@ -1310,6 +1333,7 @@ def message(request):
 
     return render(request, 'supervisor/message.html', {
       **contexts,
+      'status': status,
       'messages': messages,
       'last_page': last_page,
     })

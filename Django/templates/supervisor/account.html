@@ -39,6 +39,37 @@
     </div>
   </div>
 
+  <!-- 차단 IP 목록 -->
+  <div class="rounded border p-3 my4-5 shadow">
+    <p>
+      <i class="fi fi-rr-lock"></i> 차단 IP 목록
+    </p>
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>차단 IP</th>
+          <th style="width: 100px;" class="text-center">
+            <a class="text-success" href="javascript: new bootstrap.Modal(document.getElementById('blockIpModal')).show()">
+              <i class="fi fi-rr-plus"></i> IP 차단
+            </a>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          {% for blocked_ip in blocked_ips %}
+          <td>{{blocked_ip.ip}}</td>
+          <td class="text-center">
+            <a href="javascript: unblockIp('{{blocked_ip.ip}}')" class="text-danger">
+              <i class="fi fi-rr-unlock"></i> 해제
+            </a>
+          </td>
+          {% endfor %}
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
   <!-- 사용자 -->
   <div class="my-5 d-none" id="user">
 
@@ -78,38 +109,6 @@
       </table>
     </div>
 
-    <!-- 차단 IP 목록 -->
-    <div class="rounded border p-3 mb-5 shadow">
-      <p>
-        <i class="fi fi-rr-lock"></i> 차단 IP 목록
-      </p>
-      <table class="table table-bordered">
-        <thead>
-          <tr>
-            <th>차단 IP</th>
-            <th style="width: 100px;" class="text-center">
-              <a class="text-success" href="javascript: new bootstrap.Modal(document.getElementById('blockIpModal')).show()">
-                <i class="fi fi-rr-plus"></i> IP 차단
-              </a>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            {% for blocked_ip in blocked_ips %}
-            <td>{{blocked_ip.ip}}</td>
-            <td class="text-center">
-              <a href="javascript: unblockIp('{{blocked_ip.ip}}')" class="text-danger">
-                <i class="fi fi-rr-unlock"></i> 해제
-              </a>
-            </td>
-            {% endfor %}
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-
     <!-- 검색 -->
     <div class="rounded border p-3 mb-5 shadow">
       <p>
@@ -126,16 +125,26 @@
             <label>닉네임</label>
             <input class="form-control" name="accountNickname" placeholder="사용자 닉네임" value="{{request.GET.accountNickname}}">
           </div>
-          <div class="form-group mt-4 col-12">
-            <label>상태</label>
-            <select class="form-control" name="accountStatus">
-              <option value=''>전체</option>
-              <option value="active" {% if request.GET.accountStatus == 'active' %}selected{% endif %}>정상</option>
-              <option value="pending" {% if request.GET.accountStatus == 'pending' %}selected{% endif %}>승인 대기중</option>
-              <option value="deleted" {% if request.GET.accountStatus == 'deleted' %}selected{% endif %}>탈퇴</option>탈퇴</option>
-              <option value="blocked" {% if request.GET.accountStatus == 'blocked' %}selected{% endif %}>정지</option>>정지</option>
-              <option value="banned" {% if request.GET.accountStatus == 'banned' %}selected{% endif %}>영구차단</option>
-            </select>
+          <div class="row m-0 p-0 mt-4">
+            <div class="form-group col-6">
+              <label>성별</label>
+              <select class="form-control" name="dame">
+                <option value="">전체</option>
+                <option value="user" {% if request.GET.dame == 'user' %}selected{% endif %}>일반 회원</option>
+                <option value="dame" {% if request.GET.dame == 'dame' %}selected{% endif %}>여성 회원</option>
+              </select>
+            </div>
+            <div class="form-group col-6">
+              <label>상태</label>
+              <select class="form-control" name="accountStatus">
+                <option value=''>전체</option>
+                <option value="active" {% if request.GET.accountStatus == 'active' %}selected{% endif %}>정상</option>
+                <option value="pending" {% if request.GET.accountStatus == 'pending' %}selected{% endif %}>승인 대기중</option>
+                <option value="deleted" {% if request.GET.accountStatus == 'deleted' %}selected{% endif %}>탈퇴</option>탈퇴</option>
+                <option value="blocked" {% if request.GET.accountStatus == 'blocked' %}selected{% endif %}>정지</option>>정지</option>
+                <option value="banned" {% if request.GET.accountStatus == 'banned' %}selected{% endif %}>영구차단</option>
+              </select>
+            </div>
           </div>
         </div>
       </form>
@@ -323,7 +332,7 @@
       <div class="my-3">
 
         <!-- 메세지 보내기 버튼 -->
-        <a class="btn btn-primary small p-1 px-2" href="/message?tab=inbox&to={{ search_account.id }}">
+        <a class="btn btn-primary small p-1 px-2" href="{{supervisor_url}}/supervior/message?tab=inbox&to={{ search_account.id }}">
           <i class="fi fi-rr-envelope"></i> 메시지 보내기
         </a>
 

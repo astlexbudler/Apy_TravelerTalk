@@ -33,9 +33,6 @@
     </div>
   </div>
 
-  <!-- 쿠폰 -->
-  <div class="my-5" id="couponBox">
-
     <!-- 통계 -->
     <div class="rounded border p-3 mb-5 shadow">
       <p>
@@ -46,7 +43,8 @@
           <tr>
             <th>구분</th>
             <th>발행한 쿠폰</th>
-            <th>사용한 쿠폰</th>
+            <th>만료된 쿠폰</th>
+            <th>삭제된 쿠폰</th>
           </tr>
         </thead>
         <tbody>
@@ -58,11 +56,17 @@
               {{status.active}}
             </td>
             <td>
-              {{status.end}}
+              {{status.expired}}
+            </td>
+            <td>
+              {{status.deleted}}
             </td>
         </tbody>
       </table>
     </div>
+
+  <!-- 쿠폰 -->
+  <div class="my-5" id="couponBox">
 
     <!-- 검색 -->
     <div class="rounded border p-3 mb-5 shadow">
@@ -157,39 +161,6 @@
 
   <!-- 쿠폰 사용 내역 -->
   <div class="my-5" id="historyBox">
-
-    <!-- 통계 -->
-    <div class="rounded border p-3 mb-5 shadow">
-      <p>
-        <i class="fi fi-rr-stats"></i> 통계
-      </p>
-      <table class="table table-bordered">
-        <thead>
-          <tr>
-            <th>구분</th>
-            <th>사용한 쿠폰</th>
-            <th>만료된 쿠폰</th>
-            <th>회수된 쿠폰</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>
-              전체
-            </td>
-            <td>
-              {{status.history.used}}
-            </td>
-            <td>
-              {{status.history.expired}}
-            </td>
-            <td>
-              {{status.history.deleted}}
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
 
     <!-- 검색 -->
     <div class="rounded border p-3 mb-5 shadow">

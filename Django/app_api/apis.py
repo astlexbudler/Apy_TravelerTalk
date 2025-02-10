@@ -230,10 +230,10 @@ def account(request):
     note = request.POST.get('note', user.note)
     user.note = note
     # 마일리지
-    mileage = request.POST.get('mileage', user.mileage)
+    mileage = int(request.POST.get('mileage', user.mileage))
     user.mileage = mileage
     # 레벨 경험치
-    exp = request.POST.get('exp', user.exp)
+    exp = int(request.POST.get('exp', user.exp))
     user.exp = exp
     # 연락처
     tel = request.POST.get('tel', user.tel)
@@ -426,11 +426,11 @@ def comment(request):
 
       # 1등, 2등, 3등의 경우, 추가 포인트 지급
       if models.COMMENT.objects.filter(post=po).count() == 1:
-        add_point = models.SERVER_SETTING.objects.get(name='attend_point').value * 2
+        add_point = int(models.SERVER_SETTING.objects.get(name='attend_point').value) * 2
       elif models.COMMENT.objects.filter(post=po).count() == 2:
-        add_point = models.SERVER_SETTING.objects.get(name='attend_point').value * 1.5
+        add_point = int(models.SERVER_SETTING.objects.get(name='attend_point').value) * 1.5
       elif models.COMMENT.objects.filter(post=po).count() == 3:
-        add_point = models.SERVER_SETTING.objects.get(name='attend_point').value * 1.2
+        add_point = int(models.SERVER_SETTING.objects.get(name='attend_point').value) * 1.2
       else:
         add_point = models.SERVER_SETTING.objects.get(name='attend_point').value
 

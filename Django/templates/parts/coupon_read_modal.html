@@ -11,14 +11,7 @@
 
         <!-- 쿠폰 정보 -->
         <div class="row">
-
-          <!-- 쿠폰 이미지 -->
-          {% if coupon.image != None %}
-          <div class="col-6">
-            <img src="{{coupon.image}}" class="w-100">
-          </div>
-          {% endif %}
-          <div class="{% if coupon.images.0 == '' %}col-12{% else %}col-6{% endif %}">
+          <div class="col-12">
             <p>
               {{coupon.name}}
             </p>

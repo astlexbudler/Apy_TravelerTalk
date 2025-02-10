@@ -172,27 +172,27 @@
             </a>
           </div>
           <div class="header-search" style="display: inline-block;">
-            <form class="header-search-form" onkeyup="if(event.keyCode == 13) searchPost('pc');">
+            <div class="header-search-form" onkeyup="if(event.keyCode == 13) searchPost('pc');">
               <input id="pcSearchKeyword" placeholder="검색어를 입력해주세요." value="{{ request.GET.search }}" class="form-control">
               <button class="btn search-btn" onclick="searchPost('pc');">
                 <i class="fi fi-rr-search"></i>
               </button>
-            </form>
+            </div>
           </div>
         </div>
 
         <!-- 헤더 메뉴 -->
         <div class="header-bottom">
           <div class="align-items-center">
-            <nav class="navbar navbar-expand">
+            <nav class="navbar navbar-expand border-0">
               <div class="offcanvas nav-offcanvas offcanvas-start" tabindex="-1" id="offcanvas_Header_01"
                 aria-labelledby="offcanvas_Header_01">
-                <div class="offcanvas-header border-bottom border-gray-200">
+                <div class="offcanvas-header">
                   <div class="offcanvas-title flex-fill pe-3">
-                    <form class="header-search-form d-flex">
+                    <div class="header-search-form d-flex">
                       <input type="text" placeholder="Search Here" value="" class="form-control">
                       <button class="btn btn-primary search-btn px-3 ms-1"><i class="bi bi-search"></i></button>
-                    </form>
+                    </div>
                   </div>
                   <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#offcanvas_Header_01"
                     aria-label="Close"></button>
@@ -228,7 +228,7 @@
             {% if board.children|length > 0 %}
 
             <!-- 2차 -->
-            <div class="mb-3 ps-3 border-bottom pb-2 d-none sub_board" id="sub_board_{{ board.id }}">
+            <div class="mb-3 ps-3 pb-2 d-none sub_board" id="sub_board_{{ board.id }}">
               {% for sub1_board in board.children %}
               {% if sub1_board.board_type == 'tree' %}
               <div class="p-2 text-center" style="white-space: nowrap; display: inline;">
@@ -236,13 +236,13 @@
                   document.querySelectorAll('.sub_board').forEach(function(e){e.classList.add('d-none');}); 
                   document.getElementById('sub_board_{{ board.id }}').classList.toggle('d-none'); 
                   document.getElementById('sub_board_{{ sub1_board.id }}').classList.toggle('d-none');" 
-                  class="text-decoration-none text-black-50 small">
+                  class="text-decoration-none text-black small">
                   {{ sub1_board.name }}
                 </a>
               </div>
               {% else %}
               <div class="p-2 text-center" style="white-space: nowrap; display: inline;">
-                <a href="/post?board_ids={{board.id}},{{ sub1_board.id }}" class="text-decoration-none text-black-50 small">
+                <a href="/post?board_ids={{board.id}},{{ sub1_board.id }}" class="text-decoration-none text-black small">
                   {{ sub1_board.name }}
                 </a>
               </div>
@@ -253,7 +253,7 @@
             <!-- 3차 -->
             {% for sub1_board in board.children %}
               {% if sub1_board.children|length > 0 %}
-              <div class="mb-3 ps-3 border-bottom pb-2 d-none sub_board" id="sub_board_{{ sub1_board.id }}">
+              <div class="mb-3 ps-3 pb-2 d-none sub_board" id="sub_board_{{ sub1_board.id }}">
                 {% for sub2_board in sub1_board.children %}
                 {% if sub2_board.board_type == 'tree' %}
                 <div class="p-2 text-center" style="white-space: nowrap; display: inline;">
@@ -262,13 +262,13 @@
                     document.getElementById('sub_board_{{ sub1_board.id }}').classList.toggle('d-none');
                     document.getElementById('sub_board_{{ sub2_board.id }}').classList.toggle('d-none');
                     document.getElementById('sub_board_{{ board.id }}').classList.toggle('d-none');"
-                    class="text-decoration-none text-black-50 small">
+                    class="text-decoration-none text-black small">
                     {{ sub2_board.name }}
                   </a>
                 </div>
                 {% else %}
                 <div class="p-2 text-center" style="white-space: nowrap; display: inline;">
-                  <a href="/post?board_ids={{board.id}},{{ sub1_board.id }},{{ sub2_board.id }}" class="text-decoration-none text-black-50 small">
+                  <a href="/post?board_ids={{board.id}},{{ sub1_board.id }},{{ sub2_board.id }}" class="text-decoration-none text-black small">
                     {{ sub2_board.name }}
                   </a>
                 </div>
@@ -280,7 +280,7 @@
               <!-- 4차 -->
               {% for sub2_board in sub1_board.children %}
                 {% if sub2_board.children|length > 0 %}
-                <div class="mb-3 ps-3 border-bottom pb-2 d-none sub_board" id="sub_board_{{ sub2_board.id }}">
+                <div class="mb-3 ps-3 pb-2 d-none sub_board" id="sub_board_{{ sub2_board.id }}">
                   {% for sub3_board in sub2_board.children %}
                   {% if sub3_board.board_type == 'tree' %}
                   <div class="p-2 text-center" style="white-space: nowrap; display: inline;">
@@ -290,13 +290,13 @@
                     document.getElementById('sub_board_{{ sub2_board.id }}').classList.toggle('d-none');
                     document.getElementById('sub_board_{{ sub1_board.id }}').classList.toggle('d-none');
                     document.getElementById('sub_board_{{ board.id }}').classList.toggle('d-none');"
-                    class="text-decoration-none text-black-50 small">
+                    class="text-decoration-none text-black small">
                       {{ sub3_board.name }}
                     </a>
                   </div>
                   {% else %}
                   <div class="p-2 text-center" style="white-space: nowrap; display: inline;">
-                    <a href="/post?board_ids={{board.id}},{{ sub1_board.id }},{{ sub2_board.id }},{{ sub3_board.id }}" class="text-decoration-none text-black-50 small">
+                    <a href="/post?board_ids={{board.id}},{{ sub1_board.id }},{{ sub2_board.id }},{{ sub3_board.id }}" class="text-decoration-none text-black small">
                       {{ sub3_board.name }}
                     </a>
                   </div>

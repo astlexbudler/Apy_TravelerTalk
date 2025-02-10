@@ -60,13 +60,16 @@ def get_default_contexts(request):
     } for m in models.MESSAGE.objects.filter(to_account=request.user.username, is_read=False).order_by('-created_at')[:5]]
 
     # 내 쿠폰 가져오기
+    cs = models.COUPON.objects.select_related('post').prefetch_related('own_accounts').filter(
+      own_accounts=request.user, status='active'
+    ).order_by('expire_at')[:5]
     coupons = [{
       'name': c.name,
-      'expire_at': c.expire_at,
+      'expire_at': datetime.datetime.strftime(c.expire_at, '%Y-%m-%d'),
       'post': {
         'title': p.title,
       } if (p := c.post) else None,
-    } for c in models.COUPON.objects.select_related('post').filter(own_accounts=request.user, status='normal').order_by('expire_at')[:5]]
+    } for c in cs]
 
   else: # 로그인 되어있지 않은 경우
     guest_id = request.session.get('guest_id', ''.join(random.choices(string.ascii_letters + string.digits, k=16)))
@@ -430,7 +433,7 @@ def get_all_bookmarked_places(user_id):
   return [{
     'id': b.id,
     'title': b.title,
-    'image': str(b.image) if b.image else '/media/default.png',
+    'image': '/media/' + str(b.image) if b.image else '/media/default.png',
     'place_info': {
       'categories': [c.name for c in b.place_info.categories.all()],
       'address': b.place_info.address,
@@ -647,6 +650,7 @@ def get_post_info(post_id):
       'id': b.id,
       'name': b.name,
       'comment': [g.name for g in b.comment_groups.all()],
+      'level_cut': b.level_cut,
       'board_type': b.board_type,
     } for b in post.boards.all()],
     'title': post.title,

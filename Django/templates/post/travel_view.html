@@ -42,13 +42,14 @@
             <i class="fi fi-rr-eye"></i> {{ post.view_count }}
           </span>
           <span class="me-1" style="white-space: nowrap;">
-            <i class="fi fi-rr-comment-alt-dots"></i> {{ post.comments|length }}
-          </span>
-          <span class="me-1" style="white-space: nowrap;">
-            <i class="fi fi-rr-social-network"></i> {{ post.like_count }}
+            <i class="fi fi-rr-comment-alt-dots"></i> {{ comments|length }}
           </span>
         </p>
-        {%  if post.author.id != account.id %}
+        <a href="javascript: scrollToComment()"
+          class="btn btn-sm btn-success mt-2 p-1 px-2">
+          <i class="fi fi-rr-comment-alt-dots"></i> 댓글 바로가기
+        </a>
+        {% if post.author.id != account.id %}
         {% if bookmarkable %}
         <a href="javascript: bookmark()"
           class="btn btn-sm btn-success mt-2 p-1 px-2">
@@ -60,6 +61,10 @@
           <i class="fi fi-rr-star-filled"></i> 즐겨찾기 해제
         </a>
         {% endif %}
+        <a href="javascript: {{main_url}}/post/review?search={{post.title}}"
+          class="btn btn-sm btn-primary mt-2 p-1 px-2">
+          <i class="fi fi-rr-star"></i> 후기검색
+        </a>
         <a href="/post/write_post?review_post_id={{ post.id }}"
           class="btn btn-sm btn-primary mt-2 p-1 px-2">
           <i class="fi fi-rr-comment-alt-dots"></i> 리뷰 작성
@@ -112,7 +117,7 @@
   </div>
 
   <!-- 댓글 목록 -->
-  <ul class="list-unstyled mt-5">
+  <ul class="list-unstyled mt-5" id="commentUl">
     {% if comments|length < 1 %} <li>
       <p>
         댓글이 없습니다.
@@ -143,7 +148,7 @@
     el: document.querySelector('#viewer'),
     viewer: true,
     height: '500px',
-    initialValue: `{{ post.content }}`,
+    initialValue: `{{ post.content|safe }}`,
   });
 
   bookmark = async () => {

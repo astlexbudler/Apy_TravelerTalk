@@ -53,7 +53,7 @@ def index(request):
     return redirect('/post/travel?board_ids=' + request.GET.get('board_ids') + '&page=' + str(page) + '&search=' + search)
   # 레벨 제한 확인
   if contexts['account']['account_type'] in ['user', 'dame']:
-    if board.level > int(contexts['account']['level']['level']):
+    if board.level_cut > int(contexts['account']['level']['level']):
       return redirect('/?redirect_message=not_allowed_board')
 
   # 게시글 가져오기
@@ -104,13 +104,13 @@ def write_post(request):
     return redirect('/post/greeting')
   # 레벨 제한 확인
   if contexts['account']['account_type'] in ['user', 'dame']:
-    if board.level > int(contexts['account']['level']['level']):
+    if board.level_cut > int(contexts['account']['level']['level']):
       return redirect('/?redirect_message=not_allowed_board')
 
   # 게시글 작성 처리 요청
   if request.method == 'POST':
     title = request.POST.get('title')
-    content = request.POST.get('content')
+    content = str(request.POST.get('content')).replace('`', "'")
     review_post_id = request.POST.get('review_post_id') # 후기 게시글 작성시, 대상 게시글 아이디
     image = request.FILES.get('image') if request.FILES.get('image') else None
     review_post_id = request.POST.get('review_post_id') # 후기 게시글 작성시, 대상 게시글 아이디
@@ -206,7 +206,7 @@ def rewrite_post(request):
   # 게시글 수정 요청
   if request.method == 'POST':
     title = request.POST.get('title')
-    content = request.POST.get('content')
+    content = str(request.POST.get('content')).replace('`', "'")
     image = request.FILES.get('image') if request.FILES.get('image') else None
     if not title or not content: # 제목 또는 내용이 없는 경우
       return JsonResponse({'result': 'error'})
@@ -288,7 +288,7 @@ def post_view(request):
   board = post['boards'][-1]
   # 레벨 제한 확인
   if contexts['account']['account_type'] in ['user', 'dame']:
-    if board['level'] > int(contexts['account']['level']['level']):
+    if board['level_cut'] > int(contexts['account']['level']['level']):
       return redirect('/?redirect_message=not_allowed_board')
 
   # 댓글 가져오기
@@ -444,7 +444,26 @@ def review(request):
   search = request.GET.get('search', '')
 
   # search posts
-  posts, last_page = daos.get_board_posts(str(b.id), page, search)
+  posts = models.POST.objects.select_related('author', 'review_post').prefetch_related('boards').filter(
+    Q(title__contains=search) | Q(review_post__title__contains=search),
+    boards__id__in=[str(b.id)],
+  ).order_by('search_weight')
+  last_page = len(posts) // 20 + 1
+  posts = [{
+    'id': p.id,
+    'title': p.title,
+    'image': '/media/' + str(p.image) if p.image else '/media/default.png',
+    'view_count': p.view_count,
+    'like_count': p.like_count,
+    'created_at': p.created_at,
+    'author': {
+      'nickname': p.author.first_name, # 작성자 닉네임
+    },
+    'review_post': { # 리뷰 게시글인 경우, 리뷰 대상 게시글 정보
+      'id': p.review_post.id,
+      'title': p.review_post.title,
+    } if p.review_post else None,
+  } for p in posts[(page - 1) * 20:page * 20]]
 
   today_best_reviews = None
   weekly_best_reviews = None
@@ -454,11 +473,12 @@ def review(request):
     # 오늘의 베스트 후기(추천, 조회, 업로드 순)
     today = datetime.datetime.now().strftime('%Y-%m-%d')
     today_best_reviews = []
-    tbrs = models.POST.objects.select_related('author', 'review_post').filter(
-      boards__id__in=str(b.id),
+    tbrs = models.POST.objects.select_related('author', 'review_post').prefetch_related('boards').filter(
+      boards__id__in=[str(b.id)],
       created_at__date=today,
     ).order_by('-like_count', '-view_count', '-created_at')[:10]
     for tbr in tbrs:
+      print(tbr.title)
       today_best_reviews.append({
         'id': tbr.id,
         'title': tbr.title,
@@ -474,8 +494,8 @@ def review(request):
       })
     # 주간 베스트 후기(weight 기준)
     weekly_best_reviews = []
-    wbrs = models.POST.objects.select_related('author', 'review_post').filter(
-      boards__id__in=str(b.id),
+    wbrs = models.POST.objects.select_related('author', 'review_post').prefetch_related('boards').filter(
+      boards__id__in=[str(b.id)],
       created_at__gte=datetime.datetime.now() - datetime.timedelta(days=7),
     ).order_by('-search_weight')[:10]
     for wbr in wbrs:
@@ -495,8 +515,8 @@ def review(request):
     # 월간 베스트 후기(weight 기준)
     now = datetime.datetime.now()
     monthly_best_reviews = []
-    mbrs = models.POST.objects.select_related('author', 'review_post').filter(
-      boards__id__in=str(b.id),
+    mbrs = models.POST.objects.select_related('author', 'review_post').prefetch_related('boards').filter(
+      boards__id__in=[str(b.id)],
       created_at__year=now.year,
       created_at__month=now.month,
     ).order_by('-search_weight')[:10]
@@ -575,7 +595,7 @@ def travel(request):
   board_ids = request.GET.get('board_ids')
   page = int(request.GET.get('page', '1'))
   search = request.GET.get('search', '')
-  category = request.GET.get('category', '')
+  category = request.GET.get('category')
 
   # 게시글 가져오기
   posts = []
@@ -587,17 +607,16 @@ def travel(request):
   )
   if category:
     ps.filter(
-      place_info__categories__name=category
+      place_info__categories__id=category
     )
   ps.order_by('search_weight')
   last_page = (ps.count() // 20) + 1
   ps = ps[(page - 1) * 20:page * 20] # 각 페이지에 20개씩 표시
   for p in ps:
-    print(p.title)
     posts.append({
       'id': p.id,
       'title': p.title,
-      'image': str(p.image) if p.image else '/media/default.png',
+      'image': '/media/' + str(p.image) if p.image else '/media/default.png',
       'place_info': {
         'categories': [c.name for c in p.place_info.categories.all()],
         'address': p.place_info.address,
@@ -657,7 +676,6 @@ def travel_view(request):
 
   # 댓글 작성 가능 여부
   commentable = False
-  print(post['boards'][-1]['comment'])
   if contexts['account']['account_type'] in post['boards'][-1]['comment']:
     commentable = True
 

@@ -165,7 +165,7 @@ def rewrite_post(request):
     po = models.POST.objects.select_related('place_info').get(id=post['id'])
 
     title = request.POST.get('title', po.title)
-    content = request.POST.get('content', po.content)
+    content = str(request.POST.get('content', po.content)).replace('`', "'")
     board_ids = str(request.POST.get('board_ids')).split(',') # 게시판 ID(여러 개일 수 있음)
     service_ids = str(request.POST.get('service_ids')).split(',') # 서비스 ID(여러 개일 수 있음)
     location_info = request.POST.get('location_info', po.place_info.location_info)

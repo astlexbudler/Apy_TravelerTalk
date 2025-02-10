@@ -173,7 +173,7 @@ logout = async () => {
 searchPost = async () => {
   // 현재 게시판 정보 확인
   var pcSearchKeyword = document.getElementById('pcSearchKeyword').value; // 검색어 가져오기 2 (모바일 검색바)
-  location.href = `/?search=${mobileSearchKeyword + pcSearchKeyword}`;
+  location.href = `/?search=${pcSearchKeyword}`;
 }
 
 // 게시판 내 검색바 검색 버튼 클릭 시
@@ -326,4 +326,10 @@ openExportDataPage = () => {
     nowUrl = nowUrl + '?export=y';
   }
   window.open(nowUrl, '_blank');
+}
+
+scrollToComment = () => {
+  commentUl = document.getElementById('commentUl');
+  commentUly = commentUl.getBoundingClientRect().top;
+  window.scrollTo({'top': commentUly, 'behavior': 'smooth'});
 }
