@@ -872,20 +872,20 @@ def like_post(request):
     post.save()
 
   # 게시글 확인
-  for board in post.boards.all():
-    if 'travel' == board.board_type: # 여행지 게시글인 경우, 북마크 추가
-      user = models.ACCOUNT.objects.prefetch_related('bookmarked_places').filter(
-        username=request.user.username
-      ).first()
-      bookmarked = models.ACCOUNT.objects.prefetch_related('bookmarked_places').filter(
-        username=request.user.username,
-        bookmarked_places=post
-      ).exists()
-      if not bookmarked:
-        user.bookmarked_places.add(post)
-        user.save()
-      else:
-        user.bookmarked_places.remove(post)
-        user.save()
+  board = post.boards.all().last()
+  if 'travel' == board.board_type: # 여행지 게시글인 경우, 북마크 추가
+    user = models.ACCOUNT.objects.prefetch_related('bookmarked_places').filter(
+      username=request.user.username
+    ).first()
+    bookmarked = models.ACCOUNT.objects.prefetch_related('bookmarked_places').filter(
+      username=request.user.username,
+      bookmarked_places=post
+    ).exists()
+    if not bookmarked:
+      user.bookmarked_places.add(post)
+      user.save()
+    else:
+      user.bookmarked_places.remove(post)
+      user.save()
 
   return JsonResponse({'result': 'success'})

@@ -45,7 +45,7 @@
         <thead>
           <tr>
             <th>구분</th>
-            <th>받은 쪽지 수</th>
+            <th>읽은 쪽지 수</th>
             <th>읽지 않은 쪽지 수</th>
           </tr>
         </thead>
@@ -146,10 +146,12 @@
           </td>
           <td>
             <span class="text-dark">
-              {% if message.sender.partner_name != '' %}
+              {% if message.sender.partner_name %}
               {{ message.sender.partner_name }}
-              {% else %}
+              {% elif message.sender.nickname %}
               {{ message.sender.nickname }}
+              {% else %}
+              비회원 {{message.sender.id}}
               {% endif %}
             </span>
           </td>
@@ -263,10 +265,12 @@
         <tr style="cursor: pointer;" onclick="new bootstrap.Modal(document.getElementById('messageModal{{message.id}}')).show();">
           <td>
             <span class="text-dark">
-              {% if message.to.partner_name != '' %}
+              {% if message.to.partner_name%}
               {{ message.to.partner_name }}
-              {% else %}
+              {% elif message.to.nickname %}
               {{ message.to.nickname }}
+              {% else %}
+              비회원 {{message.to.id}}
               {% endif %}
             </span>
           </td>

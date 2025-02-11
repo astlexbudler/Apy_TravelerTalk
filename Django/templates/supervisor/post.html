@@ -207,7 +207,7 @@
               <p class="ms-2">
                 {{ child.name }}<br>
 
-                <a href="javascript: document.getElementById('subCategoryParent').value = '{{ category.id }}'; new bootstrap.Modal(document.getElementById('addCategoryModal')).show()"
+                <a href="javascript: document.getElementById('subCategoryParent').value = '{{ child.id }}'; new bootstrap.Modal(document.getElementById('addCategoryModal')).show()"
                 class="btn btn-success p-1 px-2 small">
                   <i class="fi fi-rr-plus"></i> 하위 카테고리 추가
                 </a>
@@ -217,10 +217,10 @@
             <td class="text-center">
 
               <!-- 게시판 수정 -->
-              <a href="javascript: new bootstrap.Modal(document.getElementById('{{ child.id }}Detail')).show()">
+              <a href="javascript: new bootstrap.Modal(document.getElementById('{{ child.id }}CategoryEditModal')).show()">
                 <i class="fi fi-rr-edit"></i>
               </a>
-              {% with to_modify_category=category %}
+              {% with to_modify_category=child %}
               {% include 'parts/update_category_modal.html' %}
               {% endwith %}
 
@@ -232,7 +232,7 @@
                 <p class="ms-4">
                   {{ grandchild.name }}<br>
 
-                  <a href="javascript: document.getElementById('subCategoryParent').value = '{{ category.id }}'; new bootstrap.Modal(document.getElementById('addCategoryModal')).show()"
+                  <a href="javascript: document.getElementById('subCategoryParent').value = '{{ grandchild.id }}'; new bootstrap.Modal(document.getElementById('addCategoryModal')).show()"
                   class="btn btn-success p-1 px-2 small">
                     <i class="fi fi-rr-plus"></i> 하위 카테고리 추가
                   </a>
@@ -242,10 +242,10 @@
               <td class="text-center">
 
                 <!-- 게시판 수정 -->
-                <a href="javascript: new bootstrap.Modal(document.getElementById('{{ grandchild.id }}Detail')).show()">
+                <a href="javascript: new bootstrap.Modal(document.getElementById('{{ grandchild.id }}CategoryEditModal')).show()">
                   <i class="fi fi-rr-edit"></i>
                 </a>
-                {% with to_modify_category=category %}
+                {% with to_modify_category=grandchild %}
                 {% include 'parts/update_category_modal.html' %}
                 {% endwith %}
 
@@ -260,7 +260,7 @@
                 <td class="text-center">
 
                   <!-- 게시판 수정 -->
-                  <a href="javascript: new bootstrap.Modal(document.getElementById('{{ grandchild.id }}Detail')).show()">
+                  <a href="javascript: new bootstrap.Modal(document.getElementById('{{ grandgrandchild.id }}CategoryEditModal')).show()">
                     <i class="fi fi-rr-edit"></i>
                   </a>
                   {% with to_modify_category=grandgrandchild %}
@@ -461,6 +461,8 @@
             <span class="badge bg-danger">숨김</span>
             {% elif post.place_info.status == 'writing' %}
             <span class="badge bg-warning">작성중</span>
+            {% elif post.place_info.status == 'pending' %}
+            <span class="badge bg-info">광고 승인대기</span>
             {% endif %}
           </p>
           <p class="text-black">
@@ -1079,6 +1081,7 @@
 
   // 카테고리 삭제
   deleteCategory = async (category_id) => {
+    console.log(category_id);
     // 삭제 요청
     await fetch('{{supervisor_url}}/supervisor/post?category=y&category_id=' + category_id, {
       method: 'DELETE',
@@ -1093,7 +1096,7 @@
         await showAlert('삭제 성공', '카테고리가 삭제되었습니다.', 'success');
         location.reload();
       } else {
-        await showAlert('삭제 실패', '카테고리 삭제에 실패했습니다.', 'danger');
+        await showAlert('삭제 실패', '카테고리 삭제에 실패했습니다.', 'error');
       }
     });
   }

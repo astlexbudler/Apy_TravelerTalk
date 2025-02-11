@@ -612,7 +612,7 @@ def get_board_posts(board_ids, page, search):
       board_count=Count('boards', filter=Q(boards__id__in=board_ids), distinct=True)
   ).filter(
       board_count=len(board_ids)  # 모든 board_ids 포함된 게시글만 필터
-  ).order_by('search_weight')
+  ).order_by('search_weight', '-created_at')
   last_page = len(posts) // 20 + 1
   posts = [{
     'id': p.id,
@@ -654,7 +654,7 @@ def get_post_info(post_id):
       'board_type': b.board_type,
     } for b in post.boards.all()],
     'title': post.title,
-    'image': str(post.image) if post.image else '/media/default.png',
+    'image': '/media/' + str(post.image) if post.image else '/media/default.png',
     'content': post.content,
     'view_count': post.view_count,
     'like_count': post.like_count,

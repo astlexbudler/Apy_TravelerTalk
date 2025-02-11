@@ -43,9 +43,7 @@
 
   <div class="form-group mt-2 mb-3">
     <label>내용</label>
-    <div id="postContent">
-      {{ post.content|safe }}
-    </div>
+    <div id="postContent"></div>
     <div class="d-none" id="viewer"></div>
   </div>
 
@@ -70,7 +68,7 @@
     el: document.querySelector('#postContent'),
     height: '500px',
     initialEditType: 'wysiwyg',
-    initialValue: '내용을 입력해 주세요.',
+    initialValue: `{{ post.content|safe }}`,
     previewStyle: 'vertical',
     hideModeSwitch: true,
     language: 'ko-KR'

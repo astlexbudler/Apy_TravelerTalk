@@ -21,11 +21,23 @@
             </p>
             {% if request.GET.tab == 'outbox' %}
             <p class="text-black-50 mb-1 small">
+              {% if message.to.partner_name %}
+              To. <small>{{message.to.partner_name}}</small>
+              {% elif message.to.nickname %}
               To. <small>{{message.to.nickname}}</small>
+              {% else %}
+              To. <small>비회원 {{message.to.id}}</small>
+              {% endif %}
             </p>
             {% else %}
             <p class="text-black-50 mb-1 small">
+              {% if message.sender.partner_name %}
+              From. <small>{{message.sender.partner_name}}</small>
+              {% elif message.sender.nickname %}
               From. <small>{{message.sender.nickname}}</small>
+              {% else %}
+              From. <small>비회원 {{message.sender.id}}</small>
+              {% endif %}
             </p>
             {% endif %}
             <p class="text-black-50 mb-1 small">

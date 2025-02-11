@@ -40,7 +40,7 @@
   </div>
 
   <!-- 차단 IP 목록 -->
-  <div class="rounded border p-3 my4-5 shadow">
+  <div class="rounded border p-3 my-4 shadow">
     <p>
       <i class="fi fi-rr-lock"></i> 차단 IP 목록
     </p>
@@ -95,7 +95,6 @@
             <td>{{status.user.pending}}</td>
             <td>{{status.user.deleted}}</td>
             <td>{{status.user.blocked}}</td>
-            <td>{{status.user.banned}}</td>
           </tr>
           <tr>
             <td>여성 회원</td>
@@ -103,7 +102,6 @@
             <td>{{status.dame.pending}}</td>
             <td>{{status.dame.deleted}}</td>
             <td>{{status.dame.blocked}}</td>
-            <td>{{status.dame.banned}}</td>
           </tr>
         </tbody>
       </table>
@@ -114,7 +112,7 @@
       <p>
         <i class="fi fi-rr-search"></i> 검색
       </p>
-      <form id="userSearchForm" method="get" action="/account">
+      <form id="userSearchForm" method="get" action="{{supervisor_url}}/supervisor/account">
         <div class="row">
           <input type="hidden" name="tab" value="{{request.GET.tab}}">
           <div class="form-group mt-4 col-6">
@@ -141,8 +139,7 @@
                 <option value="active" {% if request.GET.accountStatus == 'active' %}selected{% endif %}>정상</option>
                 <option value="pending" {% if request.GET.accountStatus == 'pending' %}selected{% endif %}>승인 대기중</option>
                 <option value="deleted" {% if request.GET.accountStatus == 'deleted' %}selected{% endif %}>탈퇴</option>탈퇴</option>
-                <option value="blocked" {% if request.GET.accountStatus == 'blocked' %}selected{% endif %}>정지</option>>정지</option>
-                <option value="banned" {% if request.GET.accountStatus == 'banned' %}selected{% endif %}>영구차단</option>
+                <option value="blocked" {% if request.GET.accountStatus == 'blocked' %}selected{% endif %}>정지</option>정지</option>
               </select>
             </div>
           </div>
@@ -188,7 +185,7 @@
       <p>
         <i class="fi fi-rr-search"></i> 검색
       </p>
-      <form id="partnerSearchForm" method="get" action="/account">
+      <form id="partnerSearchForm" method="get" action="{{supervisor_url}}/supervisor/account">
         <div class="row">
           <input type="hidden" name="tab" value="{{request.GET.tab}}">
           <div class="form-group mt-4 col-6">
@@ -332,7 +329,7 @@
       <div class="my-3">
 
         <!-- 메세지 보내기 버튼 -->
-        <a class="btn btn-primary small p-1 px-2" href="{{supervisor_url}}/supervior/message?tab=inbox&to={{ search_account.id }}">
+        <a class="btn btn-primary small p-1 px-2" href="{{supervisor_url}}/supervisor/message?tab=inbox&to={{ search_account.id }}">
           <i class="fi fi-rr-envelope"></i> 메시지 보내기
         </a>
 

@@ -61,13 +61,13 @@
           <i class="fi fi-rr-star-filled"></i> 즐겨찾기 해제
         </a>
         {% endif %}
-        <a href="javascript: {{main_url}}/post/review?search={{post.title}}"
+        <a href="{{main_url}}/post/review?search={{post.title}}"
           class="btn btn-sm btn-primary mt-2 p-1 px-2">
           <i class="fi fi-rr-star"></i> 후기검색
         </a>
         <a href="/post/write_post?review_post_id={{ post.id }}"
           class="btn btn-sm btn-primary mt-2 p-1 px-2">
-          <i class="fi fi-rr-comment-alt-dots"></i> 리뷰 작성
+          <i class="fi fi-rr-comment-alt-dots"></i> 후기 작성
         </a>
         {% endif %}
       </div>

@@ -39,7 +39,7 @@
               <span class="text-black-50">
 
                 <!-- 작성자가 파트너일 경우, 파트너 명 표시 -->
-                {% if post.author.partner_name != '' %}
+                {% if post.author.partner_name %}
                 <i class="fi fi-rr-user"></i> {{ post.author.partner_name }}
 
                 <!-- 작성자가 파트너가 아닐 경우, 닉네임 표시 -->

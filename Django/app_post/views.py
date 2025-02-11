@@ -393,7 +393,7 @@ def greeting(request):
 
   # 가입인사 게시글 가져오기
   post = models.POST.objects.filter(
-    boards__id__in=str(b.id),
+    boards__id__in=[str(b.id)],
     title='greeting',
   ).first()
   if not post:
@@ -447,7 +447,7 @@ def review(request):
   posts = models.POST.objects.select_related('author', 'review_post').prefetch_related('boards').filter(
     Q(title__contains=search) | Q(review_post__title__contains=search),
     boards__id__in=[str(b.id)],
-  ).order_by('search_weight')
+  ).order_by('-created_at')
   last_page = len(posts) // 20 + 1
   posts = [{
     'id': p.id,
@@ -457,6 +457,7 @@ def review(request):
     'like_count': p.like_count,
     'created_at': p.created_at,
     'author': {
+      'id': p.author.id,
       'nickname': p.author.first_name, # 작성자 닉네임
     },
     'review_post': { # 리뷰 게시글인 경우, 리뷰 대상 게시글 정보
@@ -478,7 +479,6 @@ def review(request):
       created_at__date=today,
     ).order_by('-like_count', '-view_count', '-created_at')[:10]
     for tbr in tbrs:
-      print(tbr.title)
       today_best_reviews.append({
         'id': tbr.id,
         'title': tbr.title,

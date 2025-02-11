@@ -367,7 +367,7 @@ def index(request):
   if not ad_execute_1_to_0:
     ad_execute_1_to_0 = 0
   else:
-    ad_execute_1_to_0 = ad_execute_1_to_0.value
+    ad_execute_1_to_0 = ad_execute_1_to_0
 
   # 시간
   ago_7day = ago_7day.strftime('%Y-%m-%d')
@@ -772,7 +772,7 @@ def post(request):
 
   # 새 게시판 생성 요청 또는 게시판 수정 요청 처리
   if request.method == 'POST' and request.GET.get('board'):
-    board_id = request.POST.get('board_id', '')
+    board_id = request.POST.get('board_id')
     board_name = request.POST.get('board_name', '')
     board_type = request.POST.get('board_type', '')
     parent_board_id = request.POST.get('parent_board_id', '')
@@ -791,7 +791,6 @@ def post(request):
       board = models.BOARD.objects.get(id=board_id)
       board.name = board_name
       board.board_type = board_type
-      board.parent_board = parent_board
       board.display_weight = display_weight
       board.level_cut = level_cut
       board.display_groups.clear()
@@ -904,8 +903,10 @@ def post(request):
 
   # 카테고리 삭제 요청 처리
   if request.method == 'DELETE' and request.GET.get('category'):
-    category_id = request.GET.get('category_id', '')
-    category = models.CATEGORY.objects.get(id=category_id)
+    category_id = request.GET.get('category_id')
+    if not category_id:
+      return JsonResponse({'result': 'fail'})
+    category = models.CATEGORY.objects.get(id=int(category_id))
     category.delete()
     return JsonResponse({'result': 'success'})
 
@@ -924,7 +925,7 @@ def post(request):
   all_post = models.POST.objects.prefetch_related('boards').select_related('author', 'place_info', 'review_post').prefetch_related('place_info__categories').all()
   boards = models.BOARD.objects.exclude(
     Q(board_type='greeting') | Q(board_type='attendance')
-  ).prefetch_related('display_groups', 'enter_groups', 'write_groups', 'comment_groups').all()
+  ).prefetch_related('display_groups', 'enter_groups', 'write_groups', 'comment_groups').all().order_by('-display_weight')
   board_dict = {
     board.name: {
       'id': board.id,
@@ -1219,18 +1220,17 @@ def message(request):
       to_account='supervisor',
       title__contains=search_message_title,
       sender_account__contains=search_message_receiver,
-    )
+    ).order_by('-created_at')
 
     # export
     if request.GET.get('export'):
-      headers = ['id', 'title', 'content', 'is_read', 'created_at', 'include_coupon', 'sender']
+      headers = ['id', 'title', 'content', 'is_read', 'created_at', 'sender']
       values = [
         [m.id for m in msgs],
         [m.title for m in msgs],
         [m.content for m in msgs],
         [m.is_read for m in msgs],
         [m.created_at for m in msgs],
-        [m.include_coupon.code for m in msgs],
         [m.sender_account for m in msgs],
       ]
 
@@ -1266,7 +1266,7 @@ def message(request):
           'background_color': sd.level.background_color,
         } if sd.level else None,
         'groups': [g.name for g in sd.groups.all()],
-      } if (sd := get_user_model().objects.prefetch_related('groups').select_related('level').get(username=m.sender_account)) else {'id': m.sender_account},
+      } if (sd := models.ACCOUNT.objects.prefetch_related('groups').select_related('level').filter(username=m.sender_account).first()) else {'id': m.sender_account},
     } for m in msgs[(page - 1) * 20:page * 20]]
 
     return render(request, 'supervisor/message.html', {
@@ -1281,18 +1281,17 @@ def message(request):
       sender_account='supervisor',
       title__contains=search_message_title,
       to_account__contains=search_message_receiver,
-    )
+    ).order_by('-created_at')
 
     # export
     if request.GET.get('export'):
-      headers = ['id', 'title', 'content', 'is_read', 'created_at', 'include_coupon', 'to']
+      headers = ['id', 'title', 'content', 'is_read', 'created_at', 'to']
       values = [
         [m.id for m in msgs],
         [m.title for m in msgs],
         [m.content for m in msgs],
         [m.is_read for m in msgs],
         [m.created_at for m in msgs],
-        [m.include_coupon.code for m in msgs],
         [m.to_account for m in msgs],
       ]
 
@@ -1385,7 +1384,7 @@ def banner(request):
       banners['side'].append({
         'id': b.id,
         'location': b.location,
-        'image': b.image,
+        'image': '/media/' + str(b.image),
         'link': b.link,
         'display_weight': b.display_weight,
       })
@@ -1393,7 +1392,7 @@ def banner(request):
       banners['top'].append({
         'id': b.id,
         'location': b.location,
-        'image': b.image,
+        'image': '/media/' + str(b.image),
         'link': b.link,
         'display_weight': b.display_weight,
       })

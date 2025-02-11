@@ -70,7 +70,11 @@
               </a>
             </td>
             <td>
+              {% if coupon.create_account.partner_name %}
               {{ coupon.create_account.partner_name }}
+              {% else %}
+              {{server.service_name}}
+              {% endif %}
             </td>
             <td>
               <a href="/post/post_view?id={{ coupon.post.id }}" class="text-dark">
@@ -78,7 +82,7 @@
               </a>
             </td>
             <td>
-              <a href="javascript: new bootstrap.Modal(document.getElementById('couponModal{{coupon.id}}')).show();" class="text-primary">
+              <a href="javascript: new bootstrap.Modal(document.getElementById('couponModal{{coupon.code}}')).show();" class="text-primary">
                 <i class="fi fi-rr-search"></i> 상세보기
               </a>
             </td>

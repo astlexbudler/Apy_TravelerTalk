@@ -62,7 +62,7 @@
     이 배너는 모바일에서만 보여짐
     PC는 right_aside_main.html에 포함되어 있음
   -->
-  {% if banner.bottom|length > 0 %}
+  {% if banners.side|length > 0 %}
   <div class="row mb-5 d-lg-none">
     {% for banner in banners.side %}
     <div class="col-12 col-md-6 p-1">
