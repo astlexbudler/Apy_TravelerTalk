@@ -46,8 +46,8 @@ host_patterns = patterns(
 urlpatterns = [
   path('admin/', admin.site.urls),
   path('', include('app_user.urls')),
-  path('partner/', include('app_partner.urls')), # subdomain 처리
-  path('supervisor/', include('app_supervisor.urls')), # subdomain 처리
+  path('partner/', include('app_partner.urls')), # subdomain 처리된 경로
+  path('supervisor/', include('app_supervisor.urls')), # subdomain 처리된 경로
   path('post/', include('app_post.urls')),
   path('coupon/', include('app_coupon.urls')),
   path('message/', include('app_message.urls')),
