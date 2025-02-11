@@ -607,9 +607,9 @@ def travel(request):
   )
   if category:
     ps.filter(
-      place_info__categories__id=category
+      place_info__categories__id=[category]
     )
-  ps.order_by('search_weight')
+  ps.order_by('__place_info_status', '-search_weight', '-created_at')
   last_page = (ps.count() // 20) + 1
   ps = ps[(page - 1) * 20:page * 20] # 각 페이지에 20개씩 표시
   for p in ps:
