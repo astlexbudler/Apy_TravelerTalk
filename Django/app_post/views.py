@@ -594,7 +594,7 @@ def travel(request):
   # 데이터 가져오기
   board_ids = request.GET.get('board_ids')
   page = int(request.GET.get('page', '1'))
-  search = request.GET.get('search', '')
+  search = request.GET.get('search')
   category = request.GET.get('category')
 
   # 게시글 가져오기
@@ -606,10 +606,10 @@ def travel(request):
     title__contains=search, # 검색어가 제목에 포함된 경우
   )
   if category:
-    ps.filter(
+    ps = ps.filter(
       place_info__categories__id=[category]
     )
-  ps.order_by('__place_info_status', '-search_weight', '-created_at')
+  ps.order_by('place_info__status', '-search_weight', '-created_at')
   last_page = (ps.count() // 20) + 1
   ps = ps[(page - 1) * 20:page * 20] # 각 페이지에 20개씩 표시
   for p in ps:
