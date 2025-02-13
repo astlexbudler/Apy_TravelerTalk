@@ -35,6 +35,31 @@
   <!-- 프로필 카드 -->
   {% include 'parts/profile_card.html' %}
 
+  <!-- 통계 -->
+  <div class="rounded border p-3 my-5 shadow">
+    <p>
+      <i class="fi fi-rr-stats"></i> 통계
+    </p>
+    <table class="table table-bordered text-center">
+      <thead>
+        <tr>
+          <th>출석체크</th>
+          <th>후기 작성</th>
+          <th>게시글 작성</th>
+          <th>댓글 작성</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>{{status.total_attend}} 회</td>
+          <td>{{status.review_count}} 회</td>
+          <td>{{status.post_count}} 회</td>
+          <td>{{status.comment_count}} 회</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
   {% if activities|length == 0 %}
   <p>
     사용자 활동 내역이 없습니다.

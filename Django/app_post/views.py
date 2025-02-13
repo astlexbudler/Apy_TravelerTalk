@@ -6,6 +6,7 @@ from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.contrib.auth import authenticate, logout, get_user_model
 from django.db.models import Q
+from django.db.models import Case, When, IntegerField
 
 from app_core import models
 from app_core import daos
@@ -280,6 +281,7 @@ def post_view(request):
   post = daos.get_post_info(post_id)
 
   # 여행지 게시글인지 확인
+  # TODO: 여행지 게시글인 경우, travel_view로 redirect
   if post['boards'][-1]['board_type'] == 'travel':
     return redirect('/post/travel_view?post_id=' + post_id)
 
@@ -473,7 +475,7 @@ def review(request):
   today_best_reviews = None
   weekly_best_reviews = None
   monthly_best_reviews = None
-  if page == 1 and search == '':
+  if page == 1:
     # best reviews
     # 오늘의 베스트 후기(추천, 조회, 업로드 순)
     today = datetime.datetime.now().strftime('%Y-%m-%d')
@@ -602,18 +604,29 @@ def travel(request):
   category = request.GET.get('category')
 
   # 게시글 가져오기
+  last_board = str(board_ids).split(',')[-1]
   posts = []
   ps = models.POST.objects.select_related('place_info').prefetch_related('place_info__categories').exclude(
     Q(place_info__status='writing') | Q(place_info__status='blocked')
   ).filter(
     place_info__isnull=False, # place_info가 있는 경우
     title__contains=search, # 검색어가 제목에 포함된 경우
+    boards__id__in=[int(last_board)], # 마지막 게시판에 속한 게시글만 가져오기
   )
   if category:
     ps = ps.filter(
       place_info__categories__id__in=[int(category)]
     )
-  ps.order_by('place_info__status', '-search_weight', '-created_at')
+  # place_info__status = normal, pending, ad
+  ps = ps.annotate(
+      status_order=Case(
+          When(place_info__status='ad', then=0),  # 'ad'는 가장 앞으로
+          When(place_info__status__in=['normal', 'pending'], then=1),  # 'normal'과 'pending'을 동일한 우선순위로 설정
+          default=2,  # 기타 값은 가장 뒤로
+          output_field=IntegerField(),
+      )
+  ).order_by('status_order', '-search_weight', '-created_at')
+
   last_page = (ps.count() // 20) + 1
   ps = ps[(page - 1) * 20:page * 20] # 각 페이지에 20개씩 표시
   for p in ps:

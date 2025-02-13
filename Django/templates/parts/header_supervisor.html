@@ -178,13 +178,13 @@
                     {% if account.account_type == 'supervisor' or account.account_type == 'subsupervisor' and 'message' in account.subsupervisor_permissions %}
                     <div class="nav-item" style="white-space: nowrap;">
                       <a class="nav-link text-dark" href="{{supervisor_url}}/supervisor/message">
-                        <i class="fi fi-rr-envelope"></i> 문의 관리
+                        <i class="fi fi-rr-envelope"></i> 쪽지 관리
                       </a>
                     </div>
                     {% else %}
                     <div class="nav-item" style="white-space: nowrap;">
                       <a class="nav-link text-black-50" href="#">
-                        <i class="fi fi-rr-envelope"></i> 문의 관리
+                        <i class="fi fi-rr-envelope"></i> 쪽지 관리
                       </a>
                     </div>
                     {% endif %}

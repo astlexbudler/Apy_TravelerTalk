@@ -162,12 +162,21 @@ def activity(request):
   # 프로필의 활동 내역 가져오기
   activities, last_page = daos.get_user_activities(profile_id, page)
 
+  # 활동 내역 요약 정보
+  status = {
+    'total_attend': models.ACTIVITY.objects.select_related('account').filter(account__id=profile['id'], message__startswith='[출석체크]').count(),
+    'review_count': models.ACTIVITY.objects.select_related('account').filter(account__id=profile['id'], message__contains='후기를 작성하였습니다.').count(),
+    'post_count': models.ACTIVITY.objects.select_related('account').filter(account__id=profile['id'], message__contains='게시글을 작성하였습니다.').count(),
+    'comment_count': models.ACTIVITY.objects.select_related('account').filter(account__id=profile['id'], message__contains='게시글에 댓글을 작성했습니다.').count(),
+  }
+
   return render(request, 'activity.html', {
     **contexts, # 기본 컨텍스트 정보
     'boards': boards, # 게시판 정보
     'profile': profile, # 사용자 또는 profile_id에 해당하는 사용자의 프로필 정보
     'activities': activities, # 사용자 또는 profile_id에 해당하는 사용자의 활동 내역
     'last_page': last_page, # 페이지 처리를 위해 필요한 정보
+    'status': status, # 활동 내역 요약 정보
   })
 
 # 북마크 페이지

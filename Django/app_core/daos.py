@@ -313,6 +313,7 @@ def get_category_tree():
       'name': category.name,
       'display_weight': category.display_weight,
       'children': [],
+      'post_count': models.POST.objects.filter(place_info__categories=category).count(),
     } for category in categories if not category.parent_category
   }
   for category in categories:
@@ -323,6 +324,7 @@ def get_category_tree():
           'name': category.name,
           'display_weight': category.display_weight,
           'children': [],
+          'post_count': models.POST.objects.filter(place_info__categories=category).count(),
         })
       else:
         loop = True
@@ -336,6 +338,7 @@ def get_category_tree():
                 'name': category.name,
                 'display_weight': category.display_weight,
                 'children': [],
+                'post_count': models.POST.objects.filter(place_info__categories=category).count(),
               })
               loop = False
             if loop:
@@ -348,6 +351,7 @@ def get_category_tree():
                     'name': category.name,
                     'display_weight': category.display_weight,
                     'children': [],
+                    'post_count': models.POST.objects.filter(place_info__categories=category).count(),
                   })
                   loop = False
   categories = []
@@ -604,13 +608,14 @@ def get_selected_board_info(board_ids):
 
 # 선택된 게시판의 게시글 가져오기
 def get_board_posts(board_ids, page, search):
+
   posts = models.POST.objects.select_related(
       'author', 'place_info', 'review_post'
   ).prefetch_related('place_info__categories', 'review_post__place_info').filter(
       title__contains=search
-  ).annotate(
+  ).annotate( # 게시글이 포함된 게시판 수
       board_count=Count('boards', filter=Q(boards__id__in=board_ids), distinct=True)
-  ).filter(
+  ).filter( # 게시글이 포함된 게시판 수가 전체 게시판 수와 같은 게시글만 필터
       board_count=len(board_ids)  # 모든 board_ids 포함된 게시글만 필터
   ).order_by('search_weight', '-created_at')
   last_page = len(posts) // 20 + 1
@@ -653,6 +658,7 @@ def get_post_info(post_id):
       'level_cut': b.level_cut,
       'board_type': b.board_type,
     } for b in post.boards.all()],
+    'board_ids': [b.id for b in post.boards.all()],
     'title': post.title,
     'image': '/media/' + str(post.image) if post.image else '/media/default.png',
     'content': post.content,
@@ -666,6 +672,7 @@ def get_post_info(post_id):
     },
     'place_info': {
       'categories': [c.name for c in post.place_info.categories.all()],
+      'category_ids': [c.id for c in post.place_info.categories.all()],
       'address': post.place_info.address,
       'location_info': post.place_info.location_info,
       'open_info': post.place_info.open_info,

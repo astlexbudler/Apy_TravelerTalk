@@ -218,11 +218,11 @@
       <div class="pt-2 pb-3 mb-2 border-bottom">
         {% if category.id in request.GET.category %}
         <a class="nav-link" href="#" style="color: rgb(184, 184, 184);">
-          {{ category.name }}
+          {{ category.name }} ({{ category.post_count }})
         </a>
         {% else %}
         <a class="nav-link" href="javascript:location.href=location.origin + location.pathname + '?board_ids={{request.GET.board_ids}}&category={{ category.id }}'">
-          {{ category.name }}
+          {{ category.name }} ({{ category.post_count }})
         </a>
         {% endif %}
       </div>
@@ -233,11 +233,11 @@
         <div class="ps-2 pt-2 pb-3 mb-2  border-bottom {% if category.id not in request.GET.categories %}d-none{% endif %}">
           {% if child.id in request.GET.category %}
           <a class="nav-link" href="#" style="color: rgb(184, 184, 184);">
-            {{ child.name }}
+            {{ child.name }} ({{ child.post_count }})
           </a>
           {% else %}
           <a class="nav-link" href="javascript:location.href=location.origin + location.pathname + '?board_ids={{request.GET.board_ids}}&category={{ child.id }}'">
-            {{ child.name }}
+            {{ child.name }} ({{ child.post_count }})
           </a>
           {% endif %}
         </div>
@@ -248,11 +248,11 @@
           <div class="ps-4 pt-2 pb-3 mb-2 border-bottom {% if child.id not in request.GET.categories %}d-none{% endif %}">
             {% if child2.id in request.GET.category %}
             <a class="nav-link" href="#" style="color: rgb(184, 184, 184);">
-              {{ child2.name }}
+              {{ child2.name }} ({{ child2.post_count }})
             </a>
             {% else %}
             <a class="nav-link" href="javascript:location.href=location.origin + location.pathname + '?board_ids={{request.GET.board_ids}}&category={{ child2.id }}'">
-              {{ child2.name }}
+              {{ child2.name }} ({{ child2.post_count }})
             </a>
             {% endif %}
           </div>
@@ -263,11 +263,11 @@
           <div class="ps-6 pt-2 pb-3 mb-2 border-bottom {% if child2.id not in request.GET.categories %}d-none{% endif %}">
             {% if child3.id in request.GET.category %}
             <a class="nav-link" href="#" style="color: rgb(184, 184, 184);">
-              {{ child3.name }}
+              {{ child3.name }} ({{ child3.post_count }})
             </a>
             {% else %}
             <a class="nav-link" href="javascript:location.href=location.origin + location.pathname + '?board_ids={{request.GET.board_ids}}&category={{ child3.id }}'">
-              {{ child3.name }}
+              {{ child3.name }} ({{ child3.post_count }})
             </a>
             {% endif %}
           </div>
