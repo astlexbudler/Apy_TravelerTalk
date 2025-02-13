@@ -279,6 +279,10 @@ def post_view(request):
   # post 확인
   post = daos.get_post_info(post_id)
 
+  # 여행지 게시글인지 확인
+  if post['boards'][-1]['board_type'] == 'travel':
+    return redirect('/post/travel_view?post_id=' + post_id)
+
   # 댓글 권한 확인
   commentable = False
   if contexts['account']['account_type'] in post['boards'][-1]['comment']:
@@ -594,20 +598,20 @@ def travel(request):
   # 데이터 가져오기
   board_ids = request.GET.get('board_ids')
   page = int(request.GET.get('page', '1'))
-  search = request.GET.get('search')
+  search = request.GET.get('search', '')
   category = request.GET.get('category')
 
   # 게시글 가져오기
   posts = []
   ps = models.POST.objects.select_related('place_info').prefetch_related('place_info__categories').exclude(
-    Q(place_info__status='writing') | Q(place_info__status='blocked'), # place_info의 status가 'writing' 또는 'deleted'인 경우
+    Q(place_info__status='writing') | Q(place_info__status='blocked')
   ).filter(
     place_info__isnull=False, # place_info가 있는 경우
     title__contains=search, # 검색어가 제목에 포함된 경우
   )
   if category:
     ps = ps.filter(
-      place_info__categories__id=[category]
+      place_info__categories__id__in=[int(category)]
     )
   ps.order_by('place_info__status', '-search_weight', '-created_at')
   last_page = (ps.count() // 20) + 1

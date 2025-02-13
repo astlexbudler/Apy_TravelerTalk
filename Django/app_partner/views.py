@@ -155,6 +155,7 @@ def rewrite_post(request):
     p = post
 
   post = daos.get_post_info(p.id)
+  post['image'] = str(post['image'])[6:]
 
   # 광고 게시글 작성지 확인
   if contexts['account']['id'] != post['author']['id']:  # 광고 게시글 작성자가 아닌 경우
