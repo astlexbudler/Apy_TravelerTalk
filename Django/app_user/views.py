@@ -164,10 +164,10 @@ def activity(request):
 
   # 활동 내역 요약 정보
   status = {
-    'total_attend': models.ACTIVITY.objects.select_related('account').filter(account__id=profile['id'], message__startswith='[출석체크]').count(),
-    'review_count': models.ACTIVITY.objects.select_related('account').filter(account__id=profile['id'], message__contains='후기를 작성하였습니다.').count(),
-    'post_count': models.ACTIVITY.objects.select_related('account').filter(account__id=profile['id'], message__contains='게시글을 작성하였습니다.').count(),
-    'comment_count': models.ACTIVITY.objects.select_related('account').filter(account__id=profile['id'], message__contains='게시글에 댓글을 작성했습니다.').count(),
+    'total_attend': models.ACTIVITY.objects.select_related('account').filter(account__username=profile['id'], message__startswith='[출석체크]').count(),
+    'review_count': models.ACTIVITY.objects.select_related('account').filter(account__username=profile['id'], message__contains='후기를 작성하였습니다.').count(),
+    'post_count': models.ACTIVITY.objects.select_related('account').filter(account__username=profile['id'], message__contains='게시글을 작성하였습니다.').count(),
+    'comment_count': models.ACTIVITY.objects.select_related('account').filter(account__username=profile['id'], message__contains='게시글에 댓글을 작성했습니다.').count(),
   }
 
   return render(request, 'activity.html', {
