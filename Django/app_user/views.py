@@ -23,6 +23,10 @@ def index(request):
 
   # 배너 정보 가져오기
   banners = daos.get_display_banners()
+  for banner in banners['top']:
+    banner['image'] = 'media/' + str(banner['image'])
+  for banner in banners['side']:
+    banner['image'] = 'media/' + str(banner['image'])
 
   # 메인 페에지에 표시할 여행지 게시글 가져오기
   posts = []
