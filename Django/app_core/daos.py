@@ -9,6 +9,233 @@ from django.db.models import Q, Count
 from django.conf import settings
 from . import models
 
+####################
+# DAOS
+# * 아래 dao 함수들에 대해서는 권한을 확인할 필요는 없음. 권한 확인은 views에서 처리
+# * page 파라메터를 받는 함수들은 반환 시 last_page도 함께 반환(페이지네이션을 위함) 예: return activities, last_page
+# get_default_contexts(request): 기본 컨텍스트 정보 가져오기
+#  - account, activities_preview, unread_messages, coupons_preview, best_reviews, server_settings
+#  - 각 항목은 사용자 정보, 사용자 활동 내역, 받은 메세지, 내 쿠폰, 베스트 리뷰, 서버 설정 정보로 구성. 다른 함수를 통해 각 항목을 가져옴
+##### [ACCOUNT]
+# select_account(account_id): 사용자 정보 가져오기
+#  - username(로그인 아이디), nickname(first_name 닉네임), partner_name(last_name 파트너 이름), email, group(그룹), status(상태), subsupervisor_permissions(부관리자 권한), level(레벨), exp(경험치), mileage(마일리지)
+#  - level은 레벨 정보를 가져오며, 레벨 정보는 level(레벨), image(레벨 이미지), text(레벨 텍스트), text_color(텍스트 색상), background_color(배경 색상)로 구성됨.
+# select_account_detail(account_id): 사용자 상세 정보 가져오기(모든 정보)
+#  - select_account를 통해 가져온 정보에 추가로 note(메모)도 포함해서 반환하도록 함
+# create_account(data): 사용자 생성
+#  - id, password, nickname, partner_name, email, group, account_type를 받아 사용자 생성
+#  - exp, mileage는 SERVER_SETTING.register_point에 설정된 값으로 초기화. level은 1로 초기화
+#  - 만약 account_type이 partner, dame인 경우 staus를 'pending'으로 설정. 그 외 경우 'active'로 설정. account_type과 같은 이름의 GROUP을 ACCOUNT에 할당(user, dame, partner, subsupervisor)
+# update_account(account_id, data): 사용자 정보 업데이트
+#  - data에 포함되어있는 정보만 업데이트, password는 set_password로 업데이트
+#  - password, nickname(first_name 닉네임), partner_name(last_name 파트너 이름), email, status, note, subsupervisor_permissions, exp, mileage를 업데이트
+# delete_account(account_id): 사용자 삭제(모든 정보 삭제)
+#  - 사용자 정보 삭제. 사용자를 삭제하면 나머지 정보는 cascade로 삭제됨.
+#  - 이 함수는 시스템에 의해서 자동으로 사용자를 삭제하는 경우에만 사용됨. 사용자가 직접 삭제하면 30일 후 삭제되도록 설정됨.(schedule로 처리)
+# search_accounts(nickname=None, id=None, any=None): 사용자 검색(닉네임, 아이디, 모두)
+#  - nickname(first_name 닉네임), id(username 로그인 아이디)로 검색. any(닉네임 또는 아이디)로 검색
+#  - username, nickname, status 반환
+##### [ACTIVITY]
+# get_account_activity_stats(account_id, page=1): 사용자 활동 통계 정보 가져오기
+#  - message(활동 내용), exp_change(경험치 변화), mileage_change(마일리지 변화), created_at(생성일)로 구성
+#  - 사용자의 활동 내역을 가져오며, page에 따라 20개씩 가져옴
+# select_account_activities(account_id, page): 사용자 활동 내역 가져오기
+#  - 사용자의 활동 내역을 가져오며, page에 따라 20개씩 가져옴
+#  - id, message, exp_change, mileage_change, created_at 반환
+# create_account_activity(account_id, data): 사용자 활동 생성
+#  - message(활동 내용), exp_change(경험치 변화), mileage_change(마일리지 변화)를 받아 사용자 활동 생성
+##### [LEVEL]
+# select_level(level): 레벨 정보 가져오기
+#  - level(레벨), image(레벨 이미지), text(레벨 텍스트), text_color(텍스트 색상), background_color(배경 색상)로 구성
+# select_all_levels(): 모든 레벨 정보 가져오기
+#  - 모든 레벨 정보를 가져오며, level, image, text, text_color, background_color로 구성
+# create_level(data): 레벨 생성
+#  - level(레벨), image(레벨 이미지), text(레벨 텍스트), text_color(텍스트 색상), background_color(배경 색상)를 받아 레벨 생성
+# update_level(level, data): 레벨 정보 업데이트
+#  - data에 포함되어있는 정보만 업데이트. level은 변경 불가
+##### [POST & PLACE_INFO]
+# search_posts(title=None, category_id=None, board_id=None, page=1): 게시글 검색(제목, 카테고리, 게시판, 페이지)
+#  - title(제목), category(카테고리), board(게시판)로 검색. page에 따라 20개씩 가져옴
+#  - POST.boards에 포함된 게시판 검색 boards__id__in, category_id는 PLACE_INFO.categories__id__in으로 검색
+#  - id, author(작성자), related_post(관련 게시글), place_info(여행지 정보), boards(게시판), title(제목), content(내용 toastfulEditor), image(대표 이미지), view_count(조회수), like_count(좋아요수), created_at(생성일), comment_count(댓글수) 반환
+#  - search_weight 내림차순 정렬 및 created_at 내림차순 정렬
+#  - author는 nickname(first_name 닉네임), partner_name(last_name 파트너 이름), level(level, image, text, text_color, background_color)로 구성
+#  - place_info는 categories(id, name), location_info, open_info, status로 구성
+#  - related_post는 id, title로 구성
+#  - boards는 id, name로 구성
+# select_post(post_id): 게시글 정보 가져오기
+#  - id, author(작성자), related_post(관련 게시글), place_info(여행지 정보), boards(게시판), title(제목), content(내용 toastfulEditor), view_count(조회수), like_count(좋아요수), created_at(생성일) 반환.
+# create_post(data): 게시글 생성
+#  - author(작성자), related_post_id(관련 게시글), title(제목), content(내용 toastfulEditor), image(대표 이미지), board_ids(게시판)를 받아 게시글 생성
+#  - 생성된 게시글의 id 반환
+# create_post_place_info(data): 게시글의 여행지 정보 생성
+#  - post_id(게시글), category_ids(카테고리), location_info(위치 정보), open_info(영업 정보), status(상태)를 받아 여행지 정보 생성
+# update_post(post_id, data): 게시글 정보 업데이트
+#  - data에 포함되어있는 정보만 업데이트
+#  - title(제목), content(내용 toastfulEditor), image(대표 이미지), board_ids(게시판)를 받아 게시글 정보 업데이트
+#  - 변경한 게시글의 id 반환
+# update_place_info(post_id, data): 게시글의 여행지 정보 업데이트
+#  - data에 포함되어있는 정보만 업데이트
+#  - category_ids(카테고리), location_info(위치 정보), open_info(영업 정보), status(상태)를 받아 여행지 정보 업데이트
+#  - 변경한 게시글의 id 반환
+# increase_post_like(post_id, account_id): 게시글 좋아요 추가
+#  - 게시글 좋아요 추가. 게시글 좋아요 추가 시 ACCOUNT.like_posts에 추가
+#  - 게시글의 like_count 증가
+# decrease_post_like(post_id, account_id): 게시글 좋아요 삭제
+#  - 게시글 좋아요 삭제. 게시글 좋아요 삭제 시 ACCOUNT.like_posts에서 삭제
+#  - 게시글의 like_count 감소
+# increase_post_view(post_id): 게시글 조회수 증가
+#  - 게시글 조회수 증가
+# delete_post(post_id): 게시글 삭제
+#  - 게시글 삭제. 게시글을 삭제하면 나머지 정보는 cascade로 삭제됨.
+##### [COMMENT]
+# select_comments(post_id): 게시글 댓글 가져오기
+#  - post_id에 해당하는 게시글의 댓글을 가져옴
+#  - id, account(작성자), content(내용), created_at(생성일) 반환
+#  - account는 nickname(first_name 닉네임), partner_name(last_name 파트너 이름), level(level, image, text, text_color, background_color)로 구성
+# create_comment(data): 댓글 생성
+#  - post_id(게시글), account_id(작성자), content(내용)을 받아 댓글 생성
+# update_comment(comment_id, data): 댓글 업데이트
+#  - data에 포함되어있는 정보만 업데이트
+#  - content(내용)을 받아 댓글 업데이트
+# delete_comment(comment_id): 댓글 삭제
+#  - 댓글 삭제
+##### [COUPON]
+# select_all_coupons(status=None): 모든 쿠폰 정보 가져오기
+#  - status에 따라 쿠폰 정보를 가져옴.
+#  - status가 없는 경우, 모든 쿠폰. not_active인 경우, active가 아닌 모든 쿠폰. 그 외 status가 status인 쿠폰을 가져옴
+#  - code, related_post(관련 게시글), name(이름), content(toastfulEditor), image(이미지), expire_at(만료일), required_mileage(필요 마일리지), own_accounts(소유 계정), status(상태) 반환
+#  - related_post는 id, title로 구성, own_accounts는 id, nickname로 구성
+# select_created_coupons(account_id, status=None): 사용자가 생성한 쿠폰 정보 가져오기
+#  - create_account__id=account_id이며 status에 따라 쿠폰 정보를 가져옴.
+#  - status가 없는 경우, 모든 쿠폰. not_active인 경우, active가 아닌 모든 쿠폰. 그 외 status가 status인 쿠폰을 가져옴
+#  - code, related_post(관련 게시글), name(이름), content(toastfulEditor), image(이미지), expire_at(만료일), required_mileage(필요 마일리지), own_accounts(소유 계정), status(상태) 반환
+# select_owned_coupons(account_id, status=None): 사용자가 소유한 쿠폰 정보 가져오기
+#  - own_accounts__id=account_id이며 status에 따라 쿠폰 정보를 가져옴.
+#  - status가 없는 경우, 모든 쿠폰. not_active인 경우, active가 아닌 모든 쿠폰. 그 외 status가 status인 쿠폰을 가져옴
+#  - code, related_post(관련 게시글), name(이름), content(toastfulEditor), image(이미지), expire_at(만료일), required_mileage(필요 마일리지), own_accounts(소유 계정), status(상태) 반환
+# create_coupon(data): 쿠폰 생성
+#  - code, related_post_id(관련 게시글), name(이름), content(toastfulEditor), image(이미지), expire_at(만료일), required_mileage(필요 마일리지)를 받아 쿠폰 생성
+# update_coupon(coupon_id, data): 쿠폰 정보 업데이트
+#  - data에 포함되어있는 정보만 업데이트
+#  - name(이름), content(toastfulEditor), image(이미지), expire_at(만료일), required_mileage(필요 마일리지), own_account_id(소유 계정), status(상태)를 받아 쿠폰 정보 업데이트
+##### [MESSAGE]
+# select_received_messages(account_id, page=1): 사용자가 받은 메세지 가져오기
+#  - to_account=account_id인 메세지를 가져옴
+#  - title(제목), sender(보낸 사람), content(내용), created_at(생성일), is_read(읽음 여부), include_coupon(쿠폰)
+#  - sender는 id, nickname로 구성
+#  - sender_id가 supervisor인 경우, nickname로 '관리자'로 표시. 그 외 ACCOUNT.username이 sender_id인 사용자의 first_name으로 표시. 만약 ACCOUNT가 존재하지 않는 경우, nickname로 '게스트'으로 표시
+#  - include_coupon은 code, name, related_post(title)로 구성
+#  - page에 따라 20개씩 가져옴
+# select_sent_messages(account_id): 사용자가 보낸 메세지 가져오기
+#  - from_account=account_id인 메세지를 가져옴
+#  - title(제목), receiver(받는 사람), content(내용), created_at(생성일), is_read(읽음 여부), include_coupon(쿠폰)
+#  - receiver는 id, nickname로 구성. receiver_id가 supervisor인 경우, nickname로 '관리자'로 표시. 그 외 ACCOUNT.username이 receiver_id인 사용자의 first_name으로 표시. 만약 ACCOUNT가 존재하지 않는 경우, nickname로 '게스트'으로 표시
+#  - include_coupon은 code, name, related_post(title)로 구성
+#  - page에 따라 20개씩 가져옴
+# create_message(data): 메세지 생성
+#  - sender, receiver, title, content, image, include_coupon_code를 받아 메세지 생성
+# update_message(message_id, data): 메세지 정보 업데이트
+#  - data에 포함되어있는 정보만 업데이트
+#  - title(제목), content(내용), image(이미지), is_read(읽음 여부)를 받아 메세지 정보 업데이트
+##### [SERVER_SETTING & UPLOAD]
+# select_all_server_settings(): 모든 서버 설정 가져오기
+#  - name, value로 구성
+#  - 각 name을 key로 하는 dict 형태로 반환
+# select_server_setting(name): 서버 설정 가져오기
+#  - name에 해당하는 서버 설정 가져오기
+#  - value 반환
+# update_server_setting(name, value): 서버 설정 업데이트
+#  - value를 업데이트
+# upload_file(file): 파일 업로드 및 경로 반환
+#  - 파일을 업로드하고 업로드된 파일의 URL을 반환(UPLOAD)
+##### [BANNER]
+# select_banners(): 배너 정보 가져오기
+#  - id, image(이미지), link(링크), display_weight(가중치), location(위치)로 구성
+# create_banner(data): 배너 생성
+#  - image(이미지), link(링크), display_weight(가중치), location(위치)를 받아 배너 생성
+# update_banner(banner_id, data): 배너 정보 업데이트
+#  - data에 포함되어있는 정보만 업데이트
+#  - image(이미지), link(링크), display_weight(가중치), location(위치)를 받아 배너 정보 업데이트
+# delete_banner(banner_id): 배너 삭제
+#  - 배너 삭제
+##### [STATISTIC]
+# select_all_statistics(days_ago=7): 통계 정보 가져오기
+#  - days_ago일 전부터 현재까지의 통계 정보를 가져옴
+#  - id, name(통계 이름), value(통계 값), date(날짜)로 구성
+#  - name을 key로 하는 dict 형태로 반환
+# create_statistic(data): 통계 생성
+#  - name(통계 이름), value(통계 값), date(날짜)를 받아 통계 생성
+#  - 만약 같은 name과 date를 가진 통계가 이미 존재하는 경우, value를 더함(+1)
+##### [BLOCKED_IP]
+# select_blocked_ips(): 차단된 IP 정보 가져오기
+#  - id, ip(아이피)로 구성
+# create_blocked_ip(data): IP 차단
+#  - ip(아이피)를 받아 BLOCKED_IP에 추가
+# delete_blocked_ip(ip): IP 차단 해제
+#  - ip(아이피)를 받아 BLOCKED_IP에서 삭제
+##### [BOARD & CATEGORY TREE]
+# make_board_tree(group_name): 게시판 트리 생성
+#  - parent_id를 사용하여 게시판 트리를 생성
+#  - BOARD.display_groups에 group_name이 포함된 게시판만 가져옴(게시판 표시 권한 확인)
+#  - 트리는 최대 4단계까지 생성될 수 있음
+#  - 하위 노드가 업는 게시판은 제외(빈 노드는 표시하지 않음)
+#  - id, name, display_groups, enter_groups, write_groups, comment_groups, children로 구성
+# make_travel_board_tree(): 여행지 게시판 생성
+#  - parent_id를 사용하여 여행지 게시판 트리를 생성
+#  - BOARD.board_type이 'travel' 이거나 'tree'인 게시판만 가져옴
+#  - 트리는 최대 4단계까지 생성될 수 있음
+#  - 하위 노드가 업는 'tree' 게시판은 제외(빈 노드는 표시하지 않음)
+#  - id, name, display_groups, enter_groups, write_groups, comment_groups, children로 구성
+# select_board(board_id): 게시판 정보 가져오기
+#  - id, name, board_type, display_groups, enter_groups, write_groups, comment_groups로 구성
+#  - 해당 게시판의 정보만 가져옴
+# create_board(data): 게시판 생성
+#  - parent_board_id(상위 게시판), name, board_type, display_groups, enter_groups, write_groups, comment_groups를 받아 게시판 생성
+#  - parent_board_id가 None인 경우 최상위 게시판으로 생성됨
+# update_board(board_id, data): 게시판 정보 업데이트
+#  - data에 포함되어있는 정보만 업데이트
+#  - parent_board_id(상위 게시판), name, board_type, display_groups, enter_groups, write_groups, comment_groups를 받아 게시판 정보 업데이트
+# delete_board(board_id): 게시판 삭제(하위 게시판이 있다면 전부 삭제. 게시글, 댓글, 관련 정보도 삭제)
+#  - 게시판 삭제. 게시판을 삭제하면 나머지 정보는 cascade로 삭제됨.
+#  - 하위 게시판이 있는 경우, 하위 게시판들의 parent_board_id를 None으로 변경해야함.
+# make_category_tree(): 카테고리 트리 생성
+#  - parent_id를 사용하여 카테고리 트리를 생성
+#  - 카테고리 트리는 최대 4단계까지 생성될 수 있음
+#  - id, name, children로 구성
+# select_category(category_id): 카테고리 정보 가져오기
+#  - id, name 구성
+#  - 해당 카테고리의 정보만 가져옴
+# create_category(data): 카테고리 생성
+#  - parent_category_id(상위 카테고리), name을 받아 카테고리 생성
+#  - parent_category_id가 None인 경우 최상위 카테고리로 생성됨
+# update_category(category_id, data): 카테고리 정보 업데이트
+#  - data에 포함되어있는 정보만 업데이트
+#  - parent_category_id(상위 카테고리), name을 받아 카테고리 정보 업데이트
+# delete_category(category_id): 카테고리 삭제(하위 카테고리가 있다면 전부 삭제. 게시글, 댓글, 관련 정보도 삭제)
+#  - 카테고리 삭제. 카테고리를 삭제하면 나머지 정보는 cascade로 삭제됨.
+#  - 하위 카테고리가 있는 경우, 하위 카테고리들의 parent_category_id를 None으로 변경해야함.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+####아래 코드는 업데이트 전 코드입니다. 업데이트 후 코드는 위에 있습니다.(2025-02-22일)
 # 기본 컨텍스트 정보 가져오기
 def get_default_contexts(request):
   if request.user.is_authenticated: # 로그인 되어있는 경우

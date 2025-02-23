@@ -12,13 +12,13 @@ __pycache__/
 *.DS_Store
 
 # Django 환경
-db.sqlite3
-*.sqlite3
-*.log
-*.pot
-*.pyc
-*.pyo
-*.migrations/
+#db.sqlite3
+#*.sqlite3
+#*.log
+#*.pot
+#*.pyc
+#*.pyo
+#*.migrations/
 
 # 환경 변수 파일
 .env

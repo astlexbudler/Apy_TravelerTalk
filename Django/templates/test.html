@@ -6,7 +6,7 @@
 <!--
   ==================================================
   * Template Name: main_base.html
-  * 이 페이지는 파트너 페이지들의 기본 레이아웃을 정의합니다.
+  * 이 페이지는 기본적인 페이지들의 기본 레이아웃을 정의합니다.
 -->
 
 <head>
@@ -16,7 +16,9 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-  <title>파트너 관리자</title>
+  <title>
+    {{server.server_name}}
+  </title>
 
   <!-- FAVICON
   ================================================== -->
@@ -61,19 +63,8 @@
   ================================================== -->
   <div class="wrapper">
 
-    <!-- HEADER -->
-    {% include 'parts/header_partner.html' %}
-
-    <!-- MAIN SECTION
-    ================================================== -->
-    <main class="mt-2" style="display: flex; align-items: flex-start;">
-      <!-- 이 부분은 각 페이지에서 오버라이딩 됩니다. -->
-      {% block content %} {% endblock %}
-      <!-- 이 부분은 각 페이지에서 오버라이딩 됩니다. -->
-    </main>
-
-    <!-- FOOTER -->
-    {% include 'parts/footer_main.html' %}
+    <!-- 아래에 테스트할 컴포넌트를 넣어보고 확인해보기! -->
+    {% include 'components/aside/aside_left.html' %}
 
   </div>
   <script>
@@ -83,6 +74,12 @@
     document.querySelectorAll('.numberComma').forEach(element => {
       element.innerHTML = element.innerHTML.replace(/[^0-9]/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     });
+
+    window.onload = function() {
+
+      // 테스트로 모달 띄우기
+      new bootstrap.modal('').show();
+    }
   </script>
 
 </body>

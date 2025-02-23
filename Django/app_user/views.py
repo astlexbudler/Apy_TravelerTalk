@@ -13,6 +13,8 @@ from app_core import daos
 # 광고 베너, 사용자 활동 요약, 추천 콘텐츠 및 이벤트 정보 표시
 # 모든 여행지 게시글을 weight룰 기준으로 정렬하여 보여줌
 def index(request):
+  return render(request, 'test.html')
+
   # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
   boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보

@@ -21,7 +21,6 @@ urlpatterns = [
   # POST-create: 사용자 정보 생성
   # GET: 사용자 정보 검색
   # POST-update: 사용자 정보 수정
-  # DELETE: 사용자 정보 삭제
   path('account', a.account, name='account'),
 
   # 메세지 API
@@ -47,13 +46,6 @@ urlpatterns = [
   # 닉네임 중복 확인 api
   # nickname => 'exist'(존재하는 닉네임) or 'not_exist'(존재하지 않는 닉네임)
   path('check_nickname', a.check_nickname, name='check_nickname'),
-
-  # 쿠폰 사용자 api
-  # GET: 쿠폰 받기
-  # POST-use: 쿠폰 사용
-  # POST-cancel: 쿠폰 사용 취소
-  # POST-retrieve: 쿠폰 회수
-  path('coupon_user', a.coupon_user, name='coupon_user'),
 
   # 쿠폰 받기 api
   path('receive_coupon', a.receive_coupon, name='receive_coupon'),

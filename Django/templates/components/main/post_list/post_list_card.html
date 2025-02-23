@@ -1,0 +1,31 @@
+<!--
+    post_list_card.html
+    이 컴포넌트는 카드형으로 여행지 게시글 목록을 표시하는 컴포넌트 입니다.
+    카드 내에서는 대표 이미지, 제목, 파트너 이름, 위치 안내 정보, 조회수, 좋아요 수, 댓글 수와 카테고리를 보여줍니다.
+
+    게시글의 요약 정보는 보통 다음과 같은 정보를 포함합니다:
+    post = {
+        'id': 'post id Integer.',
+        'boards': [{ # 게시글이 속한 게시판 리스트.
+            'id': 'board id Integer.',
+            'name': 'board name String.',
+        }],
+        'title': 'post title String.',
+        'author': { # 게시글 작성자 정보. 만약 여행지 게시글일 경우, partner_name으로 표시해야함.
+            'nickname': 'author nickname String.',
+            'partner_name': 'author partner name String.',
+        },
+        'created_at': 'post created time String(YYYY-MM-DD HH:MM).',
+        'view_count': 'post view count Integer.',
+        'like_count': 'post like count Integer.',
+        'comment_count': 'post comment count Integer.',
+        'place_info': { # 여행지 게시글일 경우, 여행지 정보를 포함. 아닐 경우 None.
+            'categories': [{ # 여행지 게시글이 속한 카테고리 리스트.
+                'id': 'category id Integer.',
+                'name': 'category name String.',
+            }],
+            'location_info': 'location info String.', # 간단한 위치 안내.
+            'status': 'place status String.', # 상태가 ad일 경우, 광고 뱃지 표시.
+        },
+    }
+-->
