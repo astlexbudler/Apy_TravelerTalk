@@ -1,9 +1,14 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Comment
-from .serializers import CommentSerializer
+from app_core import models, daos
+from . import serializer as serializers
 from django.http import JsonResponse
+from django.db.models import Q
+from django.shortcuts import get_object_or_404
+import datetime
+import random
+import string
 
 ####################
 # APIS
@@ -95,14 +100,26 @@ class api_account(APIView):
         nickname = request.query_params.get('nickname')
         any = request.query_params.get('any') # 닉네임 또는 아이디로 검색
 
-        # 응답
-        accounts = [{
-            'id': 'username',
-            'nickname': 'first_name',
-            'status': 'active'
-        }]
+        # 필터 조건 설정
+        filters = Q()
+
+        if any:
+            # 'username' 또는 'first_name' 필드에서 'any' 값이 포함된 사용자 찾기
+            filters &= (Q(username__icontains=any) | Q(first_name__icontains=any))
+
+        if id:
+            filters &= Q(username__icontains=id)
+        if nickname:
+            filters &= Q(first_name__icontains=nickname)
+
+        # 필터된 사용자 목록 가져오기
+        accounts = models.ACCOUNT.objects.filter(filters)
+
+        # 시리얼라이저를 사용해 반환할 데이터 생성
+        serializer = serializers.AccountSerializer(accounts, many=True)
+
         response = {
-            'accounts': accounts,
+            'accounts': serializer.data,
             'total_count': len(accounts),
         }
 
@@ -118,8 +135,89 @@ class api_account(APIView):
         partner_name = request.data.get('partner_name')
         email = request.data.get('email')
         account_type = request.data.get('account_type')
+        status = None
+        point = None
+        level = models.LEVEL_RULE.objects.get(level=1)
 
-        return JsonResponse({"success": True, 'status': 200, "message": "사용자 생성 성공"})
+        # 회원 상태 설정
+        if account_type == 'partner' or account_type == 'dame': # 파트너 또는 여성 회원일 경우
+            status = 'pending'
+            # 승인 대기는 관리자가 확인 후 활성화 가능.
+            # 승인 대기 상태에서는 일부 기능 제한
+            # 글 작성, 댓글 작성, 출석 불가
+        else:
+            status = 'active'
+
+        # 가입 포인트 설정
+        if account_type == 'user' or account_type == 'dame': # 사용자 또는 여성 회원일 경우
+            point = int(models.SERVER_SETTING.objects.get(name='register_point').value) # 가입 포인트 지급
+        else:
+            point = 0
+
+        # 아이디, 닉네임 중복 확인
+        if models.ACCOUNT.objects.filter(username=id).exists() or models.ACCOUNT.objects.filter(first_name=nickname).exists():
+            return JsonResponse({"success": False, 'status': 400, "message": "이미 존재하는 ID 또는 닉네임 입니다."})
+
+        # 회원가입 데이터 생성
+        account_data = {
+            'username': id,
+            'first_name': nickname,
+            'last_name': partner_name,
+            'email': email,
+            'status': status,
+            'mileage': point,
+            'exp': point,
+            'account_type': account_type,
+            'level': level
+        }
+
+        # Serializer로 회원가입 처리
+        serializer = serializers.AccountCreateSerializer(data=account_data)
+
+        if serializer.is_valid():
+            # 유효성 검사를 통과하면 데이터 저장
+            account = serializer.save()
+
+            account.set_password(password) # 비밀번호 설정
+
+            if account_type == 'partner':
+                account.groups.add(models.Group.objects.get(name='partner'))
+            elif account_type == 'dame':
+                account.groups.add(models.Group.objects.get(name='dame'))
+            elif account_type == 'user':
+                account.groups.add(models.Group.objects.get(name='user'))
+            account.save()
+
+            if account_type == 'partner':
+                # 여행지 게시글 생성
+                post = models.POST(
+                    author=account, # 작성자
+                    title=account.last_name + ' 여행지', # 제목
+                    content='파트너사 ' + account.last_name + '의 여행지 정보입니다.', # 내용
+                )
+                post.save()
+
+            # 회원가입 활동기록 생성
+            if account_type == 'partner':
+                models.ACTIVITY.objects.create(
+                    account=account,
+                    message = f'[계정] {nickname}님의 파트너사 계정을 생성했습니다.',
+                )
+            elif account_type == 'dame' or account_type == 'user':
+                models.ACTIVITY.objects.create(
+                    account=account,
+                    message = f'[계정] {nickname}님의 계정을 생성했습니다.',
+                    mileage_change = '+' + str(point),
+                    exp_change = '+' + str(point),
+                )
+
+            # 레벨업
+            daos.check_level_up(account.username)
+
+            return JsonResponse({"success": True, 'status': 200, "message": "사용자 생성 성공"})
+        else:
+            # 유효하지 않은 데이터 처리
+            return JsonResponse({"success": False, 'status': 400, "message": serializer.errors})
 
     # 사용자 수정 api(PATCH)
     def patch(self, request, *args, **kwargs):
@@ -135,7 +233,45 @@ class api_account(APIView):
         mileage = request.data.get('mileage')
         subsupervisor_permissions = request.data.get('subsupervisor_permissions') # ,로 구분된 문자열(user,post,coupon,setting..)
 
-        return JsonResponse({"success": True, 'status': 200, "message": "사용자 수정 성공"})
+        if not request.user.is_authenticated: # 비로그인 상태인 경우, 에러 반환
+            return JsonResponse({"success": False, 'status': 401, "message": "로그인이 필요합니다."})
+
+        # 사용자 존재 여부 확인
+        try:
+            account = models.ACCOUNT.objects.get(username=id)
+        except models.ACCOUNT.DoesNotExist:
+            return JsonResponse({"success": False, 'status': 404, "message": "사용자를 찾을 수 없습니다."})
+
+        # 회원가입 데이터 생성
+        account_data = {
+            'username': id,
+            'first_name': nickname,
+            'last_name': partner_name,
+            'email': email,
+            'status': status,
+            'mileage': mileage,
+            'exp': exp,
+            'subsupervisor_permissions': subsupervisor_permissions
+        }
+
+        # Serializer를 사용하여 데이터 검증
+        serializer = serializers.AccountUpdateSerializer(account, data=account_data, partial=True)
+
+        if serializer.is_valid():
+            # 유효한 데이터라면 저장
+            account = serializer.save()
+
+            if password != '':
+                account.set_password(password) # 비밀번호 설정
+                account.save()
+
+            # 레벨업
+            daos.check_level_up(account.username)
+
+            return JsonResponse({"success": True, 'status': 200, "message": "사용자 수정 성공"})
+        else:
+            # 유효하지 않은 데이터 처리
+            return JsonResponse({"success": False, 'status': 400, "message": serializer.errors})
 
 # 메세지 REST API
 class api_message(APIView):
@@ -144,7 +280,16 @@ class api_message(APIView):
 
         # 메세지 읽음 처리
         message_id = request.query_params.get('message_id')
-        account_id = request.user.username
+
+        # 메세지 조회
+        try:
+            message = models.MESSAGE.objects.get(id=message_id)
+        except models.MESSAGE.DoesNotExist:
+            return JsonResponse({"success": False, 'status': 200, "message": "메세지가 없습니다."})
+
+        # 읽음 처리
+        message.is_read = True
+        message.save()
 
         return JsonResponse({"success": True, 'status': 200, "message": "메세지 읽음 처리 성공"})
 
@@ -158,8 +303,77 @@ class api_message(APIView):
         content = request.data.get('content') # toastful editor 사용
         image = request.data.get('image')
         include_coupon_code = request.data.get('include_coupon_code')
+        account_type = None
 
-        return JsonResponse({"success": True, 'status': 200, "message": "메세지 생성 성공"})
+        # 발신자 계정 가져오기
+        sender = models.ACCOUNT.objects.filter(id=sender_id).first()
+        if not sender:
+            # 발신자가 존재하지 않으면, guest ID로 처리
+            account_type = 'guest'
+        else:
+            # 발신자 계정이 존재하는 경우, 그에 맞는 그룹 확인 및 타입 설정
+            sender_groups = [group.name for group in sender.groups.all()]
+            account_type = 'user'
+            if 'dame' in sender_groups:
+                account_type = 'dame'
+            elif 'partner' in sender_groups:
+                account_type = 'partner'
+            elif 'subsupervisor' in sender_groups:
+                account_type = 'subsupervisor'
+            elif 'supervisor' in sender_groups:
+                account_type = 'supervisor'
+
+        # 발신자 아이디 설정
+        if account_type == 'guest':
+            sender_id = request.session.get('guest_id', ''.join(random.choices(string.ascii_letters + string.digits, k=16)))
+            request.session['guest_id'] = sender_id
+        elif account_type == 'supervisor' or account_type == 'subsupervisor':
+            sender_id = 'supervisor'
+        else:
+            sender_id = sender.username
+
+        # 쪽지 확인
+        if not title or not content: # 제목 또는 내용이 없는 경우, 에러 반환
+            return JsonResponse({"success": False, 'status': 400, "message": "메세지 생성 실패", "errors": "title 또는 content가 비어있습니다."})
+
+        # 쪽지 저장
+        message_data = {
+            'sender': 'supervisor' if account_type == 'supervisor' or account_type == 'subsupervisor' else sender_id,
+            'receiver': receiver_id,
+            'title': title,
+            'content': content,
+            'image': image,
+        }
+
+        if include_coupon_code: # 쿠폰 코드가 있는 경우, 쿠폰 저장
+            coupon = models.COUPON.objects.filter(code=include_coupon_code).first()
+            if coupon:
+                message_data.include_coupon = coupon
+
+        # Serializer로 데이터 유효성 검사 및 저장
+        serializer = serializers.MessageSerializer(data=message_data)
+
+        if serializer.is_valid():
+            serializer.save()  # 데이터베이스에 저장
+
+            # 쪽지 발송 활동기록 생성
+            if request.user.is_authenticated: # 로그인 상태인 경우
+
+                # 관리자에게 보낸 경우, receiver를 '관리자'로 설정
+                if receiver_id == 'supervisor':
+                    receiver = '관리자'
+                else:
+                    receiver = models.ACCOUNT.objects.get(username=receiver_id).first_name
+
+                activity = models.ACTIVITY(
+                    account=request.user,
+                    message = f'[쪽지] {receiver}님에게 쪽지를 보냈습니다.',
+                )
+                activity.save()
+
+            return JsonResponse({"success": True, 'status': 200, "message": "메세지 생성 성공"})
+        else:
+            return JsonResponse({"success": False, 'status': 400, "message": "메세지 생성 실패", "errors": serializer.errors})
 
 # 댓글 REST API
 class api_comment(APIView):
@@ -171,7 +385,25 @@ class api_comment(APIView):
         account_id = request.user.username
         content = request.data.get('content')
 
-        return JsonResponse({"success": True, 'status': 200, "message": "댓글 생성 성공"})
+        # 관련된 포스트와 계정 가져오기
+        post = get_object_or_404(models.POST, id=post_id)
+        author = get_object_or_404(models.ACCOUNT, id=account_id)
+
+        # 댓글 데이터 준비
+        comment_data = {
+            'post': post.id,
+            'author': author.id,
+            'content': content
+        }
+
+        # Serializer로 데이터 유효성 검사 및 저장
+        serializer = serializers.CommentSerializer(data=comment_data)
+
+        if serializer.is_valid():
+            serializer.save()  # 데이터베이스에 저장
+            return JsonResponse({"success": True, 'status': 200, "message": "댓글 생성 성공"})
+        else:
+            return JsonResponse({"success": False, 'status': 400, "message": "댓글 생성 실패", "errors": serializer.errors})
 
     # 댓글 수정 api(PATCH)
     def patch(self, request, *args, **kwargs):
@@ -180,13 +412,34 @@ class api_comment(APIView):
         comment_id = request.data.get('comment_id')
         content = request.data.get('content')
 
-        return JsonResponse({"success": True, 'status': 200, "message": "댓글 수정 성공"})
+        # 댓글 가져오기
+        comment = get_object_or_404(models.COMMENT, id=comment_id)
+
+        # 수정할 데이터 준비
+        update_data = {
+            'content': content
+        }
+
+        # Serializer로 데이터 유효성 검사 및 수정
+        serializer = serializers.CommentSerializer(comment, data=update_data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()  # 수정된 데이터 저장
+            return JsonResponse({"success": True, 'status': 200, "message": "댓글 수정 성공"})
+        else:
+            return JsonResponse({"success": False, 'status': 400, "message": "댓글 수정 실패", "errors": serializer.errors})
 
     # 댓글 삭제 api(DELETE)
     def delete(self, request, *args, **kwargs):
 
         # 댓글 삭제
         comment_id = request.query_params.get('comment_id')
+
+        # 댓글 가져오기
+        comment = get_object_or_404(models.COMMENT, id=comment_id)
+
+        # 댓글 삭제
+        comment.delete()
 
         return JsonResponse({"success": True, 'status': 200, "message": "댓글 삭제 성공"})
 
@@ -197,17 +450,18 @@ class api_coupon(APIView):
 
         # 쿠폰 조회
         code = request.query_params.get('code')
+        if not code:
+            return JsonResponse({"success": False, "status": 400, "message": "쿠폰 코드가 필요합니다."})
 
-        # 응답
-        coupon = {
-            'code': 'coupon_code',
-            'title': 'coupon_title',
-        }
-        response = {
-            'coupon': coupon,
-        }
+        try:
+            coupon = models.COUPON.objects.get(code=code)
+        except models.COUPON.DoesNotExist:
+            return JsonResponse({"success": False, "status": 404, "message": "쿠폰을 찾을 수 없습니다."})
 
-        return JsonResponse({"success": True, 'status': 200, "message": "쿠폰 조회 성공"})
+        # serializer로 쿠폰 객체 직렬화
+        serializer = serializers.CouponSerializer(coupon)
+
+        return JsonResponse({"success": True, "status": 200, "message": "쿠폰 조회 성공", "coupon": serializer.data})
 
     # 쿠폰 생성 api(POST)
     def post(self, request, *args, **kwargs):
@@ -221,7 +475,56 @@ class api_coupon(APIView):
         expire_date = request.data.get('expire_date')
         required_mileage = request.data.get('required_mileage')
 
-        return JsonResponse({"success": True, 'status': 200, "message": "쿠폰 생성 성공"})
+        if not all([code, title, content, expire_date, required_mileage]):
+            return JsonResponse({"success": False, "status": 400, "message": "필수 항목이 누락되었습니다."})
+
+        if models.COUPON.objects.filter(code=code).exists():
+            return JsonResponse({"success": False, "status": 400, "message": "이미 존재하는 쿠폰 코드 입니다."})
+
+        # 관련 게시글 확인
+        related_post = None
+        if related_post_id:
+            try:
+                related_post = models.POST.objects.get(id=related_post_id)
+            except models.POST.DoesNotExist:
+                return JsonResponse({"success": False, "status": 404, "message": "게시글을 찾을 수 없습니다."})
+
+        # 쿠폰 생성
+        coupon_data = {
+            'code': code,
+            'name': title,
+            'content': content,
+            'expire_at': expire_date,
+            'required_mileage': required_mileage,
+            'related_post': related_post,
+            'image': image,
+            'create_account': request.user
+        }
+
+        # Serializer로 데이터 유효성 검사 및 저장
+        serializer = serializers.CouponCreateSerializer(data=coupon_data)
+
+        if serializer.is_valid():
+            serializer.save()
+
+            # 통계 데이터 생성
+            coupon_create = models.STATISTIC.objects.filter(
+                name='coupon_create',
+                date=datetime.datetime.now().strftime('%Y-%m-%d')
+            ).first()
+            if coupon_create:
+                coupon_create.value += 1
+                coupon_create.save()
+            else:
+                models.STATISTIC.objects.create(
+                    name='coupon_create',
+                    value=1
+                )
+
+            return JsonResponse({"success": True, 'status': 200, "message": "쿠폰 생성 성공"})
+        else:
+            return JsonResponse({"success": False, 'status': 400, "message": "쿠폰 생성 실패", "errors": serializer.errors})
+
 
     # 쿠폰 수정 api(PATCH)
     def patch(self, request, *args, **kwargs):
@@ -236,7 +539,34 @@ class api_coupon(APIView):
         own_account_id = request.data.get('own_account_id')
         status = request.data.get('status')
 
-        return JsonResponse({"success": True, 'status': 200, "message": "쿠폰 수정 성공"})
+        if not code:
+            return JsonResponse({"success": False, "status": 400, "message": "쿠폰 코드가 필요합니다."})
+
+        # 쿠폰 조회
+        try:
+            coupon = models.COUPON.objects.get(code=code)
+        except models.COUPON.DoesNotExist:
+            return JsonResponse({"success": False, "status": 404, "message": "쿠폰을 찾을 수 없습니다."})
+
+        coupon_data = {
+            'code': code,
+            'name': title,
+            'content': content,
+            'expire_at': expire_date,
+            'required_mileage': required_mileage,
+            'own_account_id': own_account_id,
+            'image': image,
+            'status': status
+        }
+
+        # serializer로 업데이트
+        serializer = serializers.CouponUpdateSerializer(coupon, data=coupon_data, partial=True)
+        if serializer.is_valid():
+            # 변경사항 저장
+            serializer.save()
+            return JsonResponse({"success": True, "status": 200, "message": "쿠폰 수정 성공"})
+        else:
+            return JsonResponse({"success": False, "status": 400, "message": serializer.errors})
 
 
 
