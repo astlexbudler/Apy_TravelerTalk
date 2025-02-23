@@ -53,6 +53,12 @@ def api_file_upload(request):
     # 파일 업로드 처리
     file = request.FILES['file']
 
+    # 응답
+    file_path = ''
+    response = {
+        'path': 'media/' + file_path,
+    }
+
     return JsonResponse({"success": True, 'status': 200, "message": "파일 업로드 성공"})
 
 # 쿠폰 받기 api
@@ -72,6 +78,11 @@ def api_like_post(request):
     account_id = request.user.username
     account_like_post_ids = request.session.get('like_post_ids', '')
 
+    # 응답
+    response = {
+        'is_liked': False,
+    }
+
     return JsonResponse({"success": True, 'status': 200, "message": "게시글 좋아요 토글 성공"})
 
 # 사용자 REST API
@@ -83,6 +94,17 @@ class api_account(APIView):
         id = request.query_params.get('id')
         nickname = request.query_params.get('nickname')
         any = request.query_params.get('any') # 닉네임 또는 아이디로 검색
+
+        # 응답
+        accounts = [{
+            'id': 'username',
+            'nickname': 'first_name',
+            'status': 'active'
+        }]
+        response = {
+            'accounts': accounts,
+            'total_count': len(accounts),
+        }
 
         return JsonResponse({"success": True, 'status': 200, "message": "사용자 조회 성공"})
 
@@ -175,6 +197,15 @@ class api_coupon(APIView):
 
         # 쿠폰 조회
         code = request.query_params.get('code')
+
+        # 응답
+        coupon = {
+            'code': 'coupon_code',
+            'title': 'coupon_title',
+        }
+        response = {
+            'coupon': coupon,
+        }
 
         return JsonResponse({"success": True, 'status': 200, "message": "쿠폰 조회 성공"})
 
