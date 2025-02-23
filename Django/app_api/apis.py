@@ -106,7 +106,7 @@ class api_account(APIView):
             'total_count': len(accounts),
         }
 
-        return JsonResponse({"success": True, 'status': 200, "message": "사용자 조회 성공"})
+        return JsonResponse({"success": True, 'status': 200, "message": "사용자 조회 성공", 'data': response})
 
     # 사용자 생성 api(POST)
     def post(self, request, *args, **kwargs):
