@@ -137,7 +137,7 @@ class api_account(APIView):
         account_type = request.data.get('account_type')
         status = None
         point = None
-        level = models.LEVEL_RULE.objects.get(level=1)
+        level = models.LEVEL_RULE.objects.get(level=1).level
 
         # 회원 상태 설정
         if account_type == 'partner' or account_type == 'dame': # 파트너 또는 여성 회원일 경우
@@ -167,7 +167,6 @@ class api_account(APIView):
             'status': status,
             'mileage': point,
             'exp': point,
-            'account_type': account_type,
             'level': level
         }
 
@@ -233,13 +232,13 @@ class api_account(APIView):
         mileage = request.data.get('mileage')
         subsupervisor_permissions = request.data.get('subsupervisor_permissions') # ,로 구분된 문자열(user,post,coupon,setting..)
 
-        if not request.user.is_authenticated: # 비로그인 상태인 경우, 에러 반환
-            return JsonResponse({"success": False, 'status': 401, "message": "로그인이 필요합니다."})
+        # if not request.user.is_authenticated: # 비로그인 상태인 경우, 에러 반환
+        #     return JsonResponse({"success": False, 'status': 401, "message": "로그인이 필요합니다."})
 
         # 사용자 존재 여부 확인
         try:
             account = models.ACCOUNT.objects.get(username=id)
-        except models.ACCOUNT.DoesNotExist:
+        except account.DoesNotExist:
             return JsonResponse({"success": False, 'status': 404, "message": "사용자를 찾을 수 없습니다."})
 
         # 회원가입 데이터 생성
@@ -284,7 +283,7 @@ class api_message(APIView):
         # 메세지 조회
         try:
             message = models.MESSAGE.objects.get(id=message_id)
-        except models.MESSAGE.DoesNotExist:
+        except message.DoesNotExist:
             return JsonResponse({"success": False, 'status': 200, "message": "메세지가 없습니다."})
 
         # 읽음 처리
@@ -306,7 +305,7 @@ class api_message(APIView):
         account_type = None
 
         # 발신자 계정 가져오기
-        sender = models.ACCOUNT.objects.filter(id=sender_id).first()
+        sender = models.ACCOUNT.objects.get(username=sender_id)
         if not sender:
             # 발신자가 존재하지 않으면, guest ID로 처리
             account_type = 'guest'
@@ -339,7 +338,7 @@ class api_message(APIView):
         # 쪽지 저장
         message_data = {
             'sender': 'supervisor' if account_type == 'supervisor' or account_type == 'subsupervisor' else sender_id,
-            'receiver': receiver_id,
+            'to_account': receiver_id,
             'title': title,
             'content': content,
             'image': image,
@@ -363,7 +362,7 @@ class api_message(APIView):
                 if receiver_id == 'supervisor':
                     receiver = '관리자'
                 else:
-                    receiver = models.ACCOUNT.objects.get(username=receiver_id).first_name
+                    receiver = daos.get_user_profile_by_id(receiver_id).nickname
 
                 activity = models.ACTIVITY(
                     account=request.user,
@@ -382,12 +381,13 @@ class api_comment(APIView):
 
         # 댓글 생성
         post_id = request.data.get('post_id')
-        account_id = request.user.username
+        account_id = request.data.get('username')
+        # account_id = request.user.username
         content = request.data.get('content')
 
         # 관련된 포스트와 계정 가져오기
-        post = get_object_or_404(models.POST, id=post_id)
-        author = get_object_or_404(models.ACCOUNT, id=account_id)
+        post = models.POST.objects.get(id=post_id)
+        author = models.ACCOUNT.objects.get(username=account_id)
 
         # 댓글 데이터 준비
         comment_data = {
@@ -455,7 +455,7 @@ class api_coupon(APIView):
 
         try:
             coupon = models.COUPON.objects.get(code=code)
-        except models.COUPON.DoesNotExist:
+        except coupon.DoesNotExist:
             return JsonResponse({"success": False, "status": 404, "message": "쿠폰을 찾을 수 없습니다."})
 
         # serializer로 쿠폰 객체 직렬화
@@ -474,6 +474,7 @@ class api_coupon(APIView):
         image = request.data.get('image')
         expire_date = request.data.get('expire_date')
         required_mileage = request.data.get('required_mileage')
+        username = request.data.get('username')
 
         if not all([code, title, content, expire_date, required_mileage]):
             return JsonResponse({"success": False, "status": 400, "message": "필수 항목이 누락되었습니다."})
@@ -486,8 +487,15 @@ class api_coupon(APIView):
         if related_post_id:
             try:
                 related_post = models.POST.objects.get(id=related_post_id)
-            except models.POST.DoesNotExist:
+            except related_post.DoesNotExist:
                 return JsonResponse({"success": False, "status": 404, "message": "게시글을 찾을 수 없습니다."})
+
+        account = None
+        if username:
+            try:
+                account = models.ACCOUNT.objects.get(username=username)
+            except account.DoesNotExist:
+                return JsonResponse({"success": False, "status": 404, "message": "사용자를 찾을 수 없습니다."})
 
         # 쿠폰 생성
         coupon_data = {
@@ -496,9 +504,9 @@ class api_coupon(APIView):
             'content': content,
             'expire_at': expire_date,
             'required_mileage': required_mileage,
-            'related_post': related_post,
+            'related_post': related_post.id,
             'image': image,
-            'create_account': request.user
+            'create_account': account.id
         }
 
         # Serializer로 데이터 유효성 검사 및 저장
@@ -545,7 +553,7 @@ class api_coupon(APIView):
         # 쿠폰 조회
         try:
             coupon = models.COUPON.objects.get(code=code)
-        except models.COUPON.DoesNotExist:
+        except coupon.DoesNotExist:
             return JsonResponse({"success": False, "status": 404, "message": "쿠폰을 찾을 수 없습니다."})
 
         coupon_data = {
