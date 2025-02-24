@@ -3777,36 +3777,35 @@ textarea.form-control-lg {
 
 .btn-primary {
     --bs-btn-color: #fff;
-    --bs-btn-bg: #4361ee;
-    --bs-btn-border-color: #4361ee;
+    --bs-btn-bg: #fb94b8;
+    --bs-btn-border-color: #fb94b8;
     --bs-btn-hover-color: #fff;
-    --bs-btn-hover-bg: #3952ca;
-    --bs-btn-hover-border-color: #364ebe;
-    --bs-btn-focus-shadow-rgb: 95, 121, 241;
+    --bs-btn-hover-bg: #eb6183;
+    --bs-btn-hover-border-color: #eb6183;
+    --bs-btn-focus-shadow-rgb: 240, 123, 152;
     --bs-btn-active-color: #fff;
-    --bs-btn-active-bg: #364ebe;
-    --bs-btn-active-border-color: #3249b3;
+    --bs-btn-active-bg: #e25473;
+    --bs-btn-active-border-color: #e25473;
     --bs-btn-active-shadow: unset;
     --bs-btn-disabled-color: #fff;
-    --bs-btn-disabled-bg: #4361ee;
-    --bs-btn-disabled-border-color: #4361ee;
-}
+    --bs-btn-disabled-bg: #fb94b8;
+    --bs-btn-disabled-border-color: #fb94b8;
+  }
 
 .btn-secondary {
     --bs-btn-color: #fff;
-    --bs-btn-bg: #EBA948;
-    --bs-btn-border-color: #EBA948;
+    --bs-btn-bg: #929ea8;
+    --bs-btn-border-color: #97a0a7;
     --bs-btn-hover-color: #fff;
-    --bs-btn-hover-bg: #c8903d;
-    --bs-btn-hover-border-color: #bc873a;
-    --bs-btn-focus-shadow-rgb: 238, 182, 99;
+    --bs-btn-hover-bg: #929ea8;
+    --bs-btn-hover-border-color: #929ea8;
+    --bs-btn-focus-shadow-rgb: 108,117,125;
     --bs-btn-active-color: #fff;
-    --bs-btn-active-bg: #bc873a;
-    --bs-btn-active-border-color: #b07f36;
-    --bs-btn-active-shadow: unset;
+    --bs-btn-active-bg: #4e555b;
+    --bs-btn-active-border-color: #4e555b;
     --bs-btn-disabled-color: #fff;
-    --bs-btn-disabled-bg: #EBA948;
-    --bs-btn-disabled-border-color: #EBA948;
+    --bs-btn-disabled-bg: #929ea8;
+    --bs-btn-disabled-border-color: #929ea8;
 }
 
 .btn-success {
@@ -3963,19 +3962,19 @@ textarea.form-control-lg {
 }
 
 .btn-outline-secondary {
-    --bs-btn-color: #EBA948;
-    --bs-btn-border-color: #EBA948;
-    --bs-btn-hover-color: #fff;
-    --bs-btn-hover-bg: #EBA948;
-    --bs-btn-hover-border-color: #EBA948;
-    --bs-btn-focus-shadow-rgb: 235, 169, 72;
-    --bs-btn-active-color: #fff;
-    --bs-btn-active-bg: #EBA948;
-    --bs-btn-active-border-color: #EBA948;
+    --bs-btn-color: rgba(0, 0, 0, 0.6); /* 일반 텍스트 색상 */
+    --bs-btn-border-color: #97a0a7; /* 일반 테두리 색상 */
+    --bs-btn-hover-color: #fff; /* 호버 시 텍스트 색상 */
+    --bs-btn-hover-bg: #929ea8; /* 호버 시 배경 색상 (채워짐) */
+    --bs-btn-hover-border-color: #929ea8; /* 호버 시 테두리 색상 */
+    --bs-btn-focus-shadow-rgb: 108,117,125; /* 포커스 효과용 */
+    --bs-btn-active-color: #fff; /* 활성 시 텍스트 색상 */
+    --bs-btn-active-bg: #4e555b; /* 활성 시 배경 색상 (더 어두운 톤) */
+    --bs-btn-active-border-color: #4e555b; /* 활성 시 테두리 색상 */
     --bs-btn-active-shadow: unset;
-    --bs-btn-disabled-color: #EBA948;
+    --bs-btn-disabled-color: #929ea8; /* 비활성 시 텍스트 색상 */
     --bs-btn-disabled-bg: transparent;
-    --bs-btn-disabled-border-color: #EBA948;
+    --bs-btn-disabled-border-color: #929ea8; /* 비활성 시 테두리 색상 */
     --bs-gradient: none;
 }
 
@@ -5680,27 +5679,27 @@ textarea.form-control-lg {
     --bs-pagination-padding-x: 0.75rem;
     --bs-pagination-padding-y: 0.375rem;
     --bs-pagination-font-size: 1rem;
-    --bs-pagination-color: var(--bs-link-color);
+    --bs-pagination-color: #ffa8c6; /* 기존 #fb94b8보다 연한 색상 */
     --bs-pagination-bg: var(--bs-body-bg);
     --bs-pagination-border-width: var(--bs-border-width);
-    --bs-pagination-border-color: var(--bs-border-color);
+    --bs-pagination-border-color: #ffa8c6;
     --bs-pagination-border-radius: var(--bs-border-radius);
-    --bs-pagination-hover-color: var(--bs-link-hover-color);
-    --bs-pagination-hover-bg: var(--bs-tertiary-bg);
-    --bs-pagination-hover-border-color: var(--bs-border-color);
-    --bs-pagination-focus-color: var(--bs-link-hover-color);
-    --bs-pagination-focus-bg: var(--bs-secondary-bg);
+    --bs-pagination-hover-color: #fff;
+    --bs-pagination-hover-bg: #ff9abd; /* 기존 #eb6183보다 연한 색상 */
+    --bs-pagination-hover-border-color: #ff9abd;
+    --bs-pagination-focus-color: #fff;
+    --bs-pagination-focus-bg: #ffa8c6;
     --bs-pagination-focus-box-shadow: unset;
     --bs-pagination-active-color: #fff;
-    --bs-pagination-active-bg: #4361ee;
-    --bs-pagination-active-border-color: #4361ee;
+    --bs-pagination-active-bg: #ff9abd; /* 기존 #e25473보다 연한 색상 */
+    --bs-pagination-active-border-color: #ff9abd;
     --bs-pagination-disabled-color: var(--bs-secondary-color);
     --bs-pagination-disabled-bg: var(--bs-secondary-bg);
     --bs-pagination-disabled-border-color: var(--bs-border-color);
     display: flex;
     padding-left: 0;
     list-style: none;
-}
+  }  
 
 .page-link {
     position: relative;
@@ -10670,6 +10669,11 @@ textarea.form-control-lg {
 .text-black-50 {
     --bs-text-opacity: 1;
     color: rgba(0, 0, 0, 0.5) !important;
+}
+
+.text-black-60 {
+    --bs-text-opacity: 1;
+    color: rgba(0, 0, 0, 0.6) !important;
 }
 
 .text-white-50 {

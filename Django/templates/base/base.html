@@ -57,25 +57,28 @@
 <body style="word-break: keep-all;" class="theme-light bg-white">
 
   <!-- PAGE LOADING -->
-  {% include 'parts/preloader.html' %}
+  {% include 'components/other/loading.html' %}
 
   <!-- MAIN WRAPPER
   ================================================== -->
   <div class="wrapper">
 
     <!-- HEADER -->
-    {% include 'parts/header_main.html' %}
+    {% include 'components/header/header.html' %}
 
     <!-- MAIN SECTION
     ================================================== -->
-    <main class="mt-2" style="display: flex; align-items: flex-start;">
-      <!-- 이 부분은 각 페이지에서 오버라이딩 됩니다. -->
-      {% block content %} {% endblock %}
-      <!-- 이 부분은 각 페이지에서 오버라이딩 됩니다. -->
+    <!-- 아래에 테스트할 컴포넌트를 넣어보고 확인해보기! -->
+    <main class="container" style="display: flex; align-items: flex-start;">
+      {% include 'components/aside/aside_left.html' %}
+
+      <div class="main-section px-5 px-lg-1" style="flex: 1; min-height: 100vh;"></div>
+
+      {% include 'components/aside/aside_right.html' %}
     </main>
 
     <!-- FOOTER -->
-    {% include 'parts/footer_main.html' %}
+    {% include 'components/footer/footer.html' %}
 
   </div>
   <script>
@@ -85,6 +88,12 @@
     document.querySelectorAll('.numberComma').forEach(element => {
       element.innerHTML = element.innerHTML.replace(/[^0-9]/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     });
+
+    window.onload = function() {
+
+      // 테스트로 모달 띄우기
+      // new bootstrap.modal('').show();
+    }
   </script>
 
 </body>
