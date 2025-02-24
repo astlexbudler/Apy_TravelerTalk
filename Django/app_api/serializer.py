@@ -13,13 +13,14 @@ class CommentSerializer(serializers.ModelSerializer):
 class AccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.ACCOUNT
-        fields = ['id', 'nickname', 'status']
+        fields = ['username', 'first_name', 'status']
 
 # 계정 생성 serializer
 class AccountCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.ACCOUNT
-        fields = ['username', 'first_name', 'last_name', 'email', 'status', 'mileage', 'exp', 'account_type', 'level']
+        fields = ['username', 'first_name', 'last_name', 'email', 'status', 'mileage', 'exp', 'level']
+        extra_kwargs = {'email': {'required': False, 'allow_null': True}}
 
 # 계정 수정 serializer
 class AccountUpdateSerializer(serializers.ModelSerializer):
@@ -31,8 +32,8 @@ class AccountUpdateSerializer(serializers.ModelSerializer):
 # 메세지 생성 serializer
 class MessageSerializer(serializers.ModelSerializer):
     include_coupon = serializers.PrimaryKeyRelatedField(queryset=models.COUPON.objects.all(), required=False)
-    sender_account = serializers.CharField(source='sender_account', read_only=True)  # 보낸 사람
-    to_account = serializers.CharField(source='to_account', required=True)  # 받는 사람
+    sender_account = serializers.CharField(read_only=True)  # 보낸 사람
+    to_account = serializers.CharField(required=True)  # 받는 사람
 
     class Meta:
         model = models.MESSAGE
