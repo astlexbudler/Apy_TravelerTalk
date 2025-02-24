@@ -50,7 +50,7 @@ class CommentSerializer(serializers.ModelSerializer):
 # 쿠폰 조회 serializer
 class CouponSerializer(serializers.ModelSerializer):
     related_post = serializers.PrimaryKeyRelatedField(queryset=models.POST.objects.all(), required=False)  # 게시글 연결
-    create_account = serializers.PrimaryKeyRelatedField(queryset=models.ACCOUNT.objects.all(), read_only=True)  # 생성자
+    create_account = serializers.PrimaryKeyRelatedField(queryset=models.ACCOUNT.objects.all())  # 생성자
     own_account = serializers.PrimaryKeyRelatedField(queryset=models.ACCOUNT.objects.all(), required=False)  # 소유 계정
 
     class Meta:

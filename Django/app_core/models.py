@@ -44,7 +44,7 @@ class ACCOUNT(AbstractUser):
   tel = models.CharField(blank=True, max_length=20, help_text='연락처')
   subsupervisor_permissions = models.CharField(blank=True, max_length=200, help_text='관리자 권한(account, post, coupon, message, banner, setting)')
   bookmarked_places = models.ManyToManyField('POST', help_text='즐겨찾기 여행지', related_name='account_bookmarked_places')
-  level = models.ForeignKey('LEVEL_RULE', null=True, help_text='사용자 레벨', related_name='account_level')
+  level = models.ForeignKey('LEVEL_RULE', null=True, help_text='사용자 레벨', related_name='account_level', on_delete=models.SET_NULL)
   recent_ip = models.CharField(max_length=20, blank=True, help_text='최근 접속 IP')
 
 # GROUP: 그룹 테이블
@@ -121,7 +121,7 @@ class COUPON(models.Model):
 class MESSAGE(models.Model):
   to_account = models.CharField(max_length=60, help_text='받는 사람(관리자일 경우 supervisor, 게스트일 경우, guest_id, 그 외 계정일 경우, 계정 id)')
   sender_account = models.CharField(max_length=60, help_text='보낸 사람(관리자일 경우 supervisor, 게스트일 경우, guest_id, 그 외 계정일 경우, 계정 id)')
-  include_coupon = models.ForeignKey('COUPON', null=True, help_text='포함된 쿠폰', related_name='message_include_coupon')
+  include_coupon = models.ForeignKey('COUPON', null=True, help_text='포함된 쿠폰', related_name='message_include_coupon', on_delete=models.SET_NULL)
   title = models.CharField(max_length=100, help_text='제목')
   image = models.FileField(upload_to='message/', null=True, help_text='이미지')
   content = models.TextField(help_text='내용(ToastfulEditor)', null=True)
