@@ -13,7 +13,7 @@ from app_core import daos
 # 광고 베너, 사용자 활동 요약, 추천 콘텐츠 및 이벤트 정보 표시
 # 모든 여행지 게시글을 weight룰 기준으로 정렬하여 보여줌
 def index(request):
-  return render(request, 'test.html', {'last_page': 3})
+  return render(request, 'index.html', {'last_page': 3})
   # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
   boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보
@@ -61,6 +61,7 @@ def index(request):
 
 # 회원가입 페이지
 def signup(request):
+  return render(request, 'signup.html', {'last_page': 3})
   # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
   boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보
@@ -82,25 +83,10 @@ def signup(request):
     'categories': categories, # 카테고리 정보
   })
 
-# 계정 찾기 페이지
-# 계정 찾기는 관리자 문의를 통해 가능함
-def find_account(request):
-  # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
-  contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
-  boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보
-
-  # 이미 로그인된 경우, 리다이렉트 후 메세지 표시
-  if contexts['account']['account_type'] != 'guest': # account_type = guest, user, dame, partner, supervisor, subsupervisor
-    return redirect('/?redirect_message=already_login')
-
-  return render(request, 'find_account.html', {
-    **contexts,
-    'boards': boards, # 게시판 정보
-  })
-
 # 프로필 페이지
 # 관릐자의 경우, 다른 계정의 프로필 조회 가능.
 def profile(request):
+  return render(request, 'profile.html', {'last_page': 3})
   # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
   boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보
@@ -144,6 +130,7 @@ def profile(request):
 # 활동 페이지
 # 관리자와 파트너는 다른 사용자의 활동 페이지를 조회 가능.
 def activity(request):
+  return render(request, 'activity.html', {'last_page': 3})
   # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
   boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보
@@ -186,6 +173,7 @@ def activity(request):
 
 # 북마크 페이지
 def bookmark(request):
+  return render(request, 'bookmark.html', {'last_page': 3})
   # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
   boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보
@@ -203,19 +191,9 @@ def bookmark(request):
     'bookmarks': bookmarks, # 사용자의 북마크 정보
   })
 
-# 제휴 문의 페이지
-def contact(request):
-  # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
-  contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
-  boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보
-
-  return render(request, 'contact.html', {
-    **contexts, # 기본 컨텍스트 정보
-    'boards': boards, # 게시판 정보
-  })
-
 # 이용약관 페이지
 def terms(request):
+  return render(request, 'terms.html', {'last_page': 3})
   # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
   boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보

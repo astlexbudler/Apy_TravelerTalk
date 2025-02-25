@@ -15,12 +15,6 @@ urlpatterns = [
   # 파트너 및 여성 회원은 가입 후 관리자 승인 필요. status = pending
   path('signup', v.signup, name='signup'),
 
-  # 계정 찾기 페이지
-  # 사용자 계정 복구 센터
-  # 관리자에게 쪽지 보내기 버튼으로 대체됨.
-  # 별도의 계정 찾기 기능은 없음.
-  path('find_account', v.find_account, name='find_account'),
-
   # 프로필 페이지
   # 사용자 정보 수정 및 회원 탈퇴 기능 제공
   # 사용자 프로필 정보 표시 및 수정 기능 제공.
@@ -37,11 +31,6 @@ urlpatterns = [
   # 일반 게시글 형태로 북마크된 게시글 목록 표시.
   # 페이지 기능은 없음. 전부 읽괄 조회
   path('bookmark', v.bookmark, name='bookmark'),
-
-  # 제휴 문의 페이지
-  # 제휴 문의 메세지 전송 폼 및 관리자 연락처 제공
-  # 관리자에게 다이렉트로 메세지 전송하기 폼 제공
-  path('contact', v.contact, name='contact'),
 
   # 이용약관 페이지
   # 서비스 이용약관 및 개인정보 처리방침 제공

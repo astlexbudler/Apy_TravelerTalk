@@ -1,104 +1,62 @@
-{% extends 'base/main_base.html' %}
+{% extends 'base/base.html' %}
 {% block content %}
-<!--
-  왼쪽 사이드바
-  - left_aside_main.html 파일을 include 하려면, context에서 bookmarks, activities를 전달해줘야함.
--->
-<aside class="d-none d-lg-block" style="width: 320px;">
-  {% include 'parts/left_aside_main.html' %}
-</aside>
+<main class="container" style="display: flex; align-items: flex-start;">
 
-<!-- 중앙 섹션 -->
-<section class="main-section px-5 px-lg-1" style="flex: 1; min-height: 100vh;">
+  <!-- 왼쪽 사이드바 -->
+  {% include 'components/aside/aside_left.html' %}
 
-  <!--
-    상단 광고 베너 컨테이너
-    클릭 시 새 탭으로, 배너 링크을 열도록 설정
-  -->
-  {% if banners.top|length > 0 %}
-  <div class="row mb-3">
-    {% for banner in banners.top %}
-    <div class="col-12 col-md-6 p-1">
-      <a href="{{ banner.link }}" target="_blank">
-          <div class="w-100 shadow-sm" style="height: 200px; background: black url('{{ banner.image }}') center/cover no-repeat;"></div>
-      </a>
+  <div class="main-section px-5" style="flex: 1;">
+
+    <div style="min-height: calc(100vh - 160px);">
+
+      <!-- 상단 배너 영역 -->
+      {% include 'components/main/banner.html' %}
+
+      <!-- 페이지 타이틀 -->
+      {% include 'components/main/title_section.html' with title='여행' subtitle='여행 정보를 확인해보세요.' %}
+
+      <!-- 여행지 게시글 목록 -->
+      <div class="row">
+        {% include 'components/main/post_list/post_list_card.html' %}
+      </div>
+
     </div>
-    {% endfor %}
-  </div>
-  {% endif %}
 
-  <!-- 게시글 컨테이너 -->
-  <div class='row mb-5' style="min-height: 30vh;">
+    <!-- 검색 영역 -->
+    {% include 'components/main/search_bar.html' %}
 
-    <p class='text-black'>
-      <i class="fi fi-rr-navigation"></i> 여행지
-    </p>
+    <!-- 페이지네이션 영역 -->
+    {% include 'components/main/pagination.html' %}
 
-    {% if posts|length == 0 %}
-    <p>
-      여행지가 없습니다.
-    </p>
-    {% else %}
-    {% for post in posts %}
-    {% include 'parts/travel_post_card.html' %}
-    {% endfor %}
-    {% endif %}
+    <!-- 하단 배너 영역 -->
+    {% include 'components/main/banner.html' %}
 
   </div>
 
-  <!-- 페이지 버튼 -->
-  <div id="pageButton"></div>
+  <!-- 오른쪽 사이드바 -->
+  {% include 'components/aside/aside_right.html' %}
 
-  <!-- 맨 위로 버튼 -->
-  <div class="text-end">
-    <button class="btn text-white m-0" id="topBtn" onclick="window.scrollTo({ top: 0, behavior: 'smooth' })" style="background-color: rgb(184, 184, 184);">
-      Top <i class="fi fi-rr-arrow-up"></i>
-    </button>
-  </div>
-
-  <!--
-    하단 광고 베너 컨테이너
-    클릭 시 새 탭으로, 배너 링크을 열도록 설정
-    이 배너는 모바일에서만 보여짐
-    PC는 right_aside_main.html에 포함되어 있음
-  -->
-  {% if banners.side|length > 0 %}
-  <div class="row mb-5 d-lg-none">
-    {% for banner in banners.side %}
-    <div class="col-12 col-md-6 p-1">
-      <a href="{{ banner.link }}" target="_blank">
-        <div class="w-100 shadow-sm" style="height: 200px; background: black url('{{ banner.image }}') center/cover no-repeat;"></div>
-      </a>
-    </div>
-    {% endfor %}
-  </div>
-  {% endif %}
-
-</section>
-
-<!--
-  오른쪽 사이드바
-  - right_aside_main.html 파일을 include 하려면, context에서 best_reviews를 전달해줘야함.
-  - 메인 페이지의 경우 banners도 전달해줘야함.(메인페이지만 필요)
--->
-<aside class="d-none d-lg-block" style="width: 320px;">
-  {% include 'parts/right_aside_main.html' %}
-</aside>
+</main>
 
 <script>
 
-  window.onload = () => {
-    console.log(`Window loaded at ${getNowDatetimeString()}`);
+  window.addEventListener('load', () => {
 
-    // Page
-    console.log('{{request.GET.page}} | {{last_page}}');
-    makePaegeButton('{{request.GET.page}}', '{{last_page}}', `/?search=''`);
+    // pagination
+    // 만약 contexts에서 lastpage를 받았고, pagination 컴포넌트가 있다면, 페이지네이션을 생성합니다.
+    if ('{{last_page}}' && document.querySelector('#pageButton')) {
+      const search = '{{request.GET.search}}';
+      makePaegeButton('{{request.GET.page}}', '{{last_page}}', `/post?search=${search}`);
+    }
 
     // 에러 메세지 관리
-    handleRedirectMessage();
+    const redirect_message = '{{request.GET.redirect_message}}';
+    if (redirect_message) {
+      handleRedirectMessage();
+    }
+  });
 
-  }
-
+  // 에러 메세지 관리
   handleRedirectMessage = async () => {
     const redirect_message = '{{request.GET.redirect_message}}';
 

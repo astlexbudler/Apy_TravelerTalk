@@ -29,12 +29,15 @@
   <link href="/static/travelertalk/css/style.css" rel="stylesheet">
   <link href="/static/travelertalk/css/custom.css" rel="stylesheet">
   <link rel='stylesheet' href='/static/travelertalk/css/calendarwidget.css'>
-  <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-rounded/css/uicons-regular-rounded.css'>
+  <link rel='stylesheet'
+    href='https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-rounded/css/uicons-regular-rounded.css'>
   <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/2.6.0/uicons-brands/css/uicons-brands.css'>
   <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/2.6.0/uicons-bold-straight/css/uicons-bold-straight.css'>
-  <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-straight/css/uicons-regular-straight.css'>
+  <link rel='stylesheet'
+    href='https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-straight/css/uicons-regular-straight.css'>
   <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/2.6.0/uicons-solid-rounded/css/uicons-solid-rounded.css'>
-  <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/2.6.0/uicons-solid-straight/css/uicons-solid-straight.css'>
+  <link rel='stylesheet'
+    href='https://cdn-uicons.flaticon.com/2.6.0/uicons-solid-straight/css/uicons-solid-straight.css'>
   <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css" />
 
   <!-- JS
@@ -68,32 +71,25 @@
 
     <!-- MAIN SECTION
     ================================================== -->
-    <!-- 아래에 테스트할 컴포넌트를 넣어보고 확인해보기! -->
-    <main class="container" style="display: flex; align-items: flex-start;">
-      {% include 'components/aside/aside_left.html' %}
-
-      <div class="main-section px-5 px-lg-1" style="flex: 1; min-height: 100vh;"></div>
-
-      {% include 'components/aside/aside_right.html' %}
-    </main>
+    <!-- 아래 부분은 각 페이지에서 오버라이딩 됩니다. -->
+    {% block content %}{% endblock %}
 
     <!-- FOOTER -->
     {% include 'components/footer/footer.html' %}
 
   </div>
   <script>
-    // numberComma
-    // numberComma 클래스가 포함된 요소의 텍스트를 숫자로 변환 후 콤마를 추가합니다.
-    // 예: 1000 => 1,000
-    document.querySelectorAll('.numberComma').forEach(element => {
-      element.innerHTML = element.innerHTML.replace(/[^0-9]/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+    window.addEventListener('load', (event) => {
+      console.log(`Window loaded at ${getNowDatetimeString()}`);
+
+      // numberComma
+      // numberComma 클래스가 포함된 요소의 텍스트를 숫자로 변환 후 콤마를 추가합니다.
+      // 예: 1000 => 1,000
+      document.querySelectorAll('.numberComma').forEach(element => {
+        element.innerHTML = element.innerHTML.replace(/[^0-9]/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      });
     });
-
-    window.onload = function() {
-
-      // 테스트로 모달 띄우기
-      // new bootstrap.modal('').show();
-    }
   </script>
 
 </body>
