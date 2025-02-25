@@ -5,216 +5,1517 @@ from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.contrib.auth import authenticate, logout, get_user_model
 from django.contrib.auth.models import Group
-from django.db.models import Q, Count
+from django.db.models import Q, Count, Case, When, Value, IntegerField
 from django.conf import settings
 from . import models
 
+"""
 ####################
-# DAOS
-# * 아래 dao 함수들에 대해서는 권한을 확인할 필요는 없음. 권한 확인은 views에서 처리
-# * page 파라메터를 받는 함수들은 반환 시 last_page도 함께 반환(페이지네이션을 위함) 예: return activities, last_page
-# get_default_contexts(request): 기본 컨텍스트 정보 가져오기
-#  - account, activities_preview, unread_messages, coupons_preview, best_reviews, server_settings
-#  - 각 항목은 사용자 정보, 사용자 활동 내역, 받은 메세지, 내 쿠폰, 베스트 리뷰, 서버 설정 정보로 구성. 다른 함수를 통해 각 항목을 가져옴
+#  DAOS
+아래 dao 함수들에 대해서는 권한을 확인할 필요는 없음. 권한 확인은 views에서 처리
+page 파라메터를 받는 함수들은 반환 시 last_page도 함께 반환(페이지네이션을 위함) 예: return activities, last_page
 ##### [ACCOUNT]
-# select_account(account_id): 사용자 정보 가져오기
-#  - username(로그인 아이디), nickname(first_name 닉네임), partner_name(last_name 파트너 이름), email, group(그룹), status(상태), subsupervisor_permissions(부관리자 권한), level(레벨), exp(경험치), mileage(마일리지)
-#  - level은 레벨 정보를 가져오며, 레벨 정보는 level(레벨), image(레벨 이미지), text(레벨 텍스트), text_color(텍스트 색상), background_color(배경 색상)로 구성됨.
-# select_account_detail(account_id): 사용자 상세 정보 가져오기(모든 정보)
-#  - select_account를 통해 가져온 정보에 추가로 note(메모)도 포함해서 반환하도록 함
-# create_account(data): 사용자 생성
-#  - id, password, nickname, partner_name, email, group, account_type를 받아 사용자 생성
-#  - exp, mileage는 SERVER_SETTING.register_point에 설정된 값으로 초기화. level은 1로 초기화
-#  - 만약 account_type이 partner, dame인 경우 staus를 'pending'으로 설정. 그 외 경우 'active'로 설정. account_type과 같은 이름의 GROUP을 ACCOUNT에 할당(user, dame, partner, subsupervisor)
-# update_account(account_id, data): 사용자 정보 업데이트
-#  - data에 포함되어있는 정보만 업데이트, password는 set_password로 업데이트
-#  - password, nickname(first_name 닉네임), partner_name(last_name 파트너 이름), email, status, note, subsupervisor_permissions, exp, mileage를 업데이트
-# delete_account(account_id): 사용자 삭제(모든 정보 삭제)
-#  - 사용자 정보 삭제. 사용자를 삭제하면 나머지 정보는 cascade로 삭제됨.
-#  - 이 함수는 시스템에 의해서 자동으로 사용자를 삭제하는 경우에만 사용됨. 사용자가 직접 삭제하면 30일 후 삭제되도록 설정됨.(schedule로 처리)
-# search_accounts(nickname=None, id=None, any=None): 사용자 검색(닉네임, 아이디, 모두)
-#  - nickname(first_name 닉네임), id(username 로그인 아이디)로 검색. any(닉네임 또는 아이디)로 검색
-#  - username, nickname, status 반환
+get_default_contexts(request): 기본 컨텍스트 정보 가져오기
+    - account, activities_preview, unread_messages, coupons_preview, best_reviews, server_settings 정보를 가져옴.
+    - 각 항목은 사용자 정보, 사용자 활동 내역, 받은 메세지, 내 쿠폰, 베스트 리뷰, 서버 설정 정보로 구성됨.
+
+select_account(account_id): 사용자 정보 가져오기
+    - username(로그인 아이디), nickname(first_name 닉네임), partner_name(last_name 파트너 이름), email, group(그룹), status(상태), subsupervisor_permissions(부관리자 권한), level(레벨), exp(경험치), mileage(마일리지) 반환.
+    - level 정보에는 level(레벨), image(레벨 이미지), text(레벨 텍스트), text_color(텍스트 색상), background_color(배경 색상) 포함.
+
+select_account_detail(account_id): 사용자 상세 정보 가져오기(모든 정보)
+    - select_account 정보를 포함하며 추가로 note(메모) 반환.
+
+create_account(data): 사용자 생성
+    - id, password, nickname, partner_name, email, group, account_type을 받아 사용자 생성.
+    - exp, mileage는 SERVER_SETTING.register_point 값으로 초기화, level은 1로 설정.
+    - account_type이 partner 또는 dame일 경우 status는 'pending', 그 외는 'active'로 설정.
+
+update_account(account_id, data): 사용자 정보 업데이트
+    - data에 포함된 정보만 업데이트.
+    - password(set_password 사용), nickname(first_name), partner_name(last_name), email, status, note, subsupervisor_permissions, exp, mileage 업데이트.
+
+delete_account(account_id): 사용자 삭제(모든 정보 삭제)
+    - 사용자 정보 삭제. cascade로 관련 정보도 삭제됨.
+    - 시스템 자동 삭제 시 사용, 사용자가 직접 삭제 시 30일 후 삭제(scheduler 처리).
+
+search_accounts(nickname=None, id=None, any=None): 사용자 검색
+    - nickname(first_name), id(username), any(닉네임 또는 아이디)로 검색.
+    - username, nickname, status 반환.
+
 ##### [ACTIVITY]
-# get_account_activity_stats(account_id, page=1): 사용자 활동 통계 정보 가져오기
-#  - message(활동 내용), exp_change(경험치 변화), mileage_change(마일리지 변화), created_at(생성일)로 구성
-#  - 사용자의 활동 내역을 가져오며, page에 따라 20개씩 가져옴
-# select_account_activities(account_id, page): 사용자 활동 내역 가져오기
-#  - 사용자의 활동 내역을 가져오며, page에 따라 20개씩 가져옴
-#  - id, message, exp_change, mileage_change, created_at 반환
-# create_account_activity(account_id, data): 사용자 활동 생성
-#  - message(활동 내용), exp_change(경험치 변화), mileage_change(마일리지 변화)를 받아 사용자 활동 생성
+get_account_activity_stats(account_id): 사용자 활동 통계 정보 가져오기
+    - 작성한 리뷰, 게시글, 댓글, 출석체크한 날짜 수 확인
+
+select_account_activities(account_id, page=1): 사용자 활동 내역 가져오기
+    - id, message, exp_change, mileage_change, created_at 반환.
+    - page당 20개 항목 가져옴.
+
+create_account_activity(account_id, data): 사용자 활동 생성
+    - message(활동 내용), exp_change(경험치 변화), mileage_change(마일리지 변화) 입력받아 생성.
+
 ##### [LEVEL]
-# select_level(level): 레벨 정보 가져오기
-#  - level(레벨), image(레벨 이미지), text(레벨 텍스트), text_color(텍스트 색상), background_color(배경 색상)로 구성
-# select_all_levels(): 모든 레벨 정보 가져오기
-#  - 모든 레벨 정보를 가져오며, level, image, text, text_color, background_color로 구성
-# create_level(data): 레벨 생성
-#  - level(레벨), image(레벨 이미지), text(레벨 텍스트), text_color(텍스트 색상), background_color(배경 색상)를 받아 레벨 생성
-# update_level(level, data): 레벨 정보 업데이트
-#  - data에 포함되어있는 정보만 업데이트. level은 변경 불가
+select_level(level): 레벨 정보 가져오기
+    - level, image, text, text_color, background_color 반환.
+
+select_all_levels(): 모든 레벨 정보 가져오기
+    - level, image, text, text_color, background_color 포함한 모든 레벨 반환.
+
+create_level(data): 레벨 생성
+    - level, image, text, text_color, background_color 입력받아 생성.
+
+update_level(level, data): 레벨 정보 업데이트
+    - data에 포함된 항목만 업데이트. level 값은 변경 불가.
+
 ##### [POST & PLACE_INFO]
-# search_posts(title=None, category_id=None, board_id=None, page=1): 게시글 검색(제목, 카테고리, 게시판, 페이지)
-#  - title(제목), category(카테고리), board(게시판)로 검색. page에 따라 20개씩 가져옴
-#  - POST.boards에 포함된 게시판 검색 boards__id__in, category_id는 PLACE_INFO.categories__id__in으로 검색
-#  - id, author(작성자), related_post(관련 게시글), place_info(여행지 정보), boards(게시판), title(제목), content(내용 toastfulEditor), image(대표 이미지), view_count(조회수), like_count(좋아요수), created_at(생성일), comment_count(댓글수) 반환
-#  - search_weight 내림차순 정렬 및 created_at 내림차순 정렬
-#  - author는 nickname(first_name 닉네임), partner_name(last_name 파트너 이름), level(level, image, text, text_color, background_color)로 구성
-#  - place_info는 categories(id, name), location_info, open_info, status로 구성
-#  - related_post는 id, title로 구성
-#  - boards는 id, name로 구성
-# select_post(post_id): 게시글 정보 가져오기
-#  - id, author(작성자), related_post(관련 게시글), place_info(여행지 정보), boards(게시판), title(제목), content(내용 toastfulEditor), view_count(조회수), like_count(좋아요수), created_at(생성일) 반환.
-# create_post(data): 게시글 생성
-#  - author(작성자), related_post_id(관련 게시글), title(제목), content(내용 toastfulEditor), image(대표 이미지), board_ids(게시판)를 받아 게시글 생성
-#  - 생성된 게시글의 id 반환
-# create_post_place_info(data): 게시글의 여행지 정보 생성
-#  - post_id(게시글), category_ids(카테고리), location_info(위치 정보), open_info(영업 정보), status(상태)를 받아 여행지 정보 생성
-# update_post(post_id, data): 게시글 정보 업데이트
-#  - data에 포함되어있는 정보만 업데이트
-#  - title(제목), content(내용 toastfulEditor), image(대표 이미지), board_ids(게시판)를 받아 게시글 정보 업데이트
-#  - 변경한 게시글의 id 반환
-# update_place_info(post_id, data): 게시글의 여행지 정보 업데이트
-#  - data에 포함되어있는 정보만 업데이트
-#  - category_ids(카테고리), location_info(위치 정보), open_info(영업 정보), status(상태)를 받아 여행지 정보 업데이트
-#  - 변경한 게시글의 id 반환
-# increase_post_like(post_id, account_id): 게시글 좋아요 추가
-#  - 게시글 좋아요 추가. 게시글 좋아요 추가 시 ACCOUNT.like_posts에 추가
-#  - 게시글의 like_count 증가
-# decrease_post_like(post_id, account_id): 게시글 좋아요 삭제
-#  - 게시글 좋아요 삭제. 게시글 좋아요 삭제 시 ACCOUNT.like_posts에서 삭제
-#  - 게시글의 like_count 감소
-# increase_post_view(post_id): 게시글 조회수 증가
-#  - 게시글 조회수 증가
-# delete_post(post_id): 게시글 삭제
-#  - 게시글 삭제. 게시글을 삭제하면 나머지 정보는 cascade로 삭제됨.
+search_posts(title=None, category_id=None, board_id=None, related_post_id=None, order='default', page=1): 게시글 검색
+    - title(제목), category(카테고리), board(게시판)으로 검색.
+    - page당 20개 가져오며, search_weight 및 created_at 기준 내림차순 정렬.
+    - 반환값: id, author(작성자), related_post(관련 게시글), place_info(여행지 정보), boards(게시판), title, content, image, view_count, like_count, created_at, comment_count.
+
+select_account_bookmarked_posts(account_id): 사용자 북마크한 게시글 가져오기
+    - account에 북마크한 게시글 목록 반환.
+
+select_post(post_id): 게시글 정보 가져오기
+    - 게시글 상세 정보 반환.
+
+create_post(data): 게시글 생성
+    - author_id, related_post_id, title, content, image, board_ids 입력받아 생성.
+
+update_post(post_id, data): 게시글 정보 업데이트
+    - data 포함 항목만 업데이트.
+
+delete_post(post_id): 게시글 삭제
+    - 게시글 및 관련 정보 cascade 삭제.
+
+create_post_place_info(data): 게시글의 여행지 정보 생성
+    - post_id, category_ids, location_info, open_info, status 입력받아 생성.
+
+update_place_info(post_id, data): 게시글의 여행지 정보 업데이트
+    - data 포함 항목만 업데이트.
+
 ##### [COMMENT]
-# select_comments(post_id): 게시글 댓글 가져오기
-#  - post_id에 해당하는 게시글의 댓글을 가져옴
-#  - id, account(작성자), content(내용), created_at(생성일) 반환
-#  - account는 nickname(first_name 닉네임), partner_name(last_name 파트너 이름), level(level, image, text, text_color, background_color)로 구성
-# create_comment(data): 댓글 생성
-#  - post_id(게시글), account_id(작성자), content(내용)을 받아 댓글 생성
-# update_comment(comment_id, data): 댓글 업데이트
-#  - data에 포함되어있는 정보만 업데이트
-#  - content(내용)을 받아 댓글 업데이트
-# delete_comment(comment_id): 댓글 삭제
-#  - 댓글 삭제
+select_comments(post_id): 게시글 댓글 가져오기
+    - post_id로 댓글 목록 반환.
+    - id, account(작성자), content, created_at 포함.
+
+create_comment(data): 댓글 생성
+    - post_id, account_id, content 입력받아 생성.
+
+update_comment(comment_id, data): 댓글 업데이트
+    - content 업데이트.
+
+delete_comment(comment_id): 댓글 삭제
+
 ##### [COUPON]
-# select_all_coupons(status=None): 모든 쿠폰 정보 가져오기
-#  - status에 따라 쿠폰 정보를 가져옴.
-#  - status가 없는 경우, 모든 쿠폰. not_active인 경우, active가 아닌 모든 쿠폰. 그 외 status가 status인 쿠폰을 가져옴
-#  - code, related_post(관련 게시글), name(이름), content(toastfulEditor), image(이미지), expire_at(만료일), required_mileage(필요 마일리지), own_accounts(소유 계정), status(상태) 반환
-#  - related_post는 id, title로 구성, own_accounts는 id, nickname로 구성
-# select_created_coupons(account_id, status=None): 사용자가 생성한 쿠폰 정보 가져오기
-#  - create_account__id=account_id이며 status에 따라 쿠폰 정보를 가져옴.
-#  - status가 없는 경우, 모든 쿠폰. not_active인 경우, active가 아닌 모든 쿠폰. 그 외 status가 status인 쿠폰을 가져옴
-#  - code, related_post(관련 게시글), name(이름), content(toastfulEditor), image(이미지), expire_at(만료일), required_mileage(필요 마일리지), own_accounts(소유 계정), status(상태) 반환
-# select_owned_coupons(account_id, status=None): 사용자가 소유한 쿠폰 정보 가져오기
-#  - own_accounts__id=account_id이며 status에 따라 쿠폰 정보를 가져옴.
-#  - status가 없는 경우, 모든 쿠폰. not_active인 경우, active가 아닌 모든 쿠폰. 그 외 status가 status인 쿠폰을 가져옴
-#  - code, related_post(관련 게시글), name(이름), content(toastfulEditor), image(이미지), expire_at(만료일), required_mileage(필요 마일리지), own_accounts(소유 계정), status(상태) 반환
-# create_coupon(data): 쿠폰 생성
-#  - code, related_post_id(관련 게시글), name(이름), content(toastfulEditor), image(이미지), expire_at(만료일), required_mileage(필요 마일리지)를 받아 쿠폰 생성
-# update_coupon(coupon_id, data): 쿠폰 정보 업데이트
-#  - data에 포함되어있는 정보만 업데이트
-#  - name(이름), content(toastfulEditor), image(이미지), expire_at(만료일), required_mileage(필요 마일리지), own_account_id(소유 계정), status(상태)를 받아 쿠폰 정보 업데이트
+select_all_coupons(status=None): 모든 쿠폰 정보 가져오기
+    - status에 따라 쿠폰 필터링.
+    - code, related_post, name, content, image, expire_at, required_mileage, own_accounts, status 반환.
+
+select_created_coupons(account_id, status=None): 사용자가 생성한 쿠폰 가져오기
+select_owned_coupons(account_id, status=None): 사용자가 소유한 쿠폰 가져오기
+    - status로 필터링하여 쿠폰 반환.
+
+create_coupon(account_id, code, related_post_id, name, content, image, expire_at, required_mileage): 쿠폰 생성
+update_coupon(coupon_id, data): 쿠폰 정보 업데이트
+
 ##### [MESSAGE]
-# select_received_messages(account_id, page=1): 사용자가 받은 메세지 가져오기
-#  - to_account=account_id인 메세지를 가져옴
-#  - title(제목), sender(보낸 사람), content(내용), created_at(생성일), is_read(읽음 여부), include_coupon(쿠폰)
-#  - sender는 id, nickname로 구성
-#  - sender_id가 supervisor인 경우, nickname로 '관리자'로 표시. 그 외 ACCOUNT.username이 sender_id인 사용자의 first_name으로 표시. 만약 ACCOUNT가 존재하지 않는 경우, nickname로 '게스트'으로 표시
-#  - include_coupon은 code, name, related_post(title)로 구성
-#  - page에 따라 20개씩 가져옴
-# select_sent_messages(account_id): 사용자가 보낸 메세지 가져오기
-#  - from_account=account_id인 메세지를 가져옴
-#  - title(제목), receiver(받는 사람), content(내용), created_at(생성일), is_read(읽음 여부), include_coupon(쿠폰)
-#  - receiver는 id, nickname로 구성. receiver_id가 supervisor인 경우, nickname로 '관리자'로 표시. 그 외 ACCOUNT.username이 receiver_id인 사용자의 first_name으로 표시. 만약 ACCOUNT가 존재하지 않는 경우, nickname로 '게스트'으로 표시
-#  - include_coupon은 code, name, related_post(title)로 구성
-#  - page에 따라 20개씩 가져옴
-# create_message(data): 메세지 생성
-#  - sender, receiver, title, content, image, include_coupon_code를 받아 메세지 생성
-# update_message(message_id, data): 메세지 정보 업데이트
-#  - data에 포함되어있는 정보만 업데이트
-#  - title(제목), content(내용), image(이미지), is_read(읽음 여부)를 받아 메세지 정보 업데이트
+select_received_messages(account_id, page=1): 받은 메세지 가져오기
+select_sent_messages(account_id, page=1): 보낸 메세지 가져오기
+    - title, sender/receiver, content, created_at, is_read, include_coupon 포함.
+
+create_message(data): 메세지 생성
+update_message(message_id, data): 메세지 업데이트
+
 ##### [SERVER_SETTING & UPLOAD]
-# select_all_server_settings(): 모든 서버 설정 가져오기
-#  - name, value로 구성
-#  - 각 name을 key로 하는 dict 형태로 반환
-# select_server_setting(name): 서버 설정 가져오기
-#  - name에 해당하는 서버 설정 가져오기
-#  - value 반환
-# update_server_setting(name, value): 서버 설정 업데이트
-#  - value를 업데이트
-# upload_file(file): 파일 업로드 및 경로 반환
-#  - 파일을 업로드하고 업로드된 파일의 URL을 반환(UPLOAD)
+select_all_server_settings(): 모든 서버 설정 가져오기
+select_server_setting(name): 서버 설정 가져오기
+update_server_setting(name, value): 서버 설정 업데이트
+upload_file(file): 파일 업로드 및 경로 반환
+
 ##### [BANNER]
-# select_banners(): 배너 정보 가져오기
-#  - id, image(이미지), link(링크), display_weight(가중치), location(위치)로 구성
-# create_banner(data): 배너 생성
-#  - image(이미지), link(링크), display_weight(가중치), location(위치)를 받아 배너 생성
-# update_banner(banner_id, data): 배너 정보 업데이트
-#  - data에 포함되어있는 정보만 업데이트
-#  - image(이미지), link(링크), display_weight(가중치), location(위치)를 받아 배너 정보 업데이트
-# delete_banner(banner_id): 배너 삭제
-#  - 배너 삭제
+select_banners(): 배너 정보 가져오기
+create_banner(data): 배너 생성
+update_banner(banner_id, data): 배너 업데이트
+delete_banner(banner_id): 배너 삭제
+
 ##### [STATISTIC]
-# select_all_statistics(days_ago=7): 통계 정보 가져오기
-#  - days_ago일 전부터 현재까지의 통계 정보를 가져옴
-#  - id, name(통계 이름), value(통계 값), date(날짜)로 구성
-#  - name을 key로 하는 dict 형태로 반환
-# create_statistic(data): 통계 생성
-#  - name(통계 이름), value(통계 값), date(날짜)를 받아 통계 생성
-#  - 만약 같은 name과 date를 가진 통계가 이미 존재하는 경우, value를 더함(+1)
+select_all_statistics(days_ago=7): 통계 정보 가져오기
+create_statistic(data): 통계 생성
+
 ##### [BLOCKED_IP]
-# select_blocked_ips(): 차단된 IP 정보 가져오기
-#  - id, ip(아이피)로 구성
-# create_blocked_ip(data): IP 차단
-#  - ip(아이피)를 받아 BLOCKED_IP에 추가
-# delete_blocked_ip(ip): IP 차단 해제
-#  - ip(아이피)를 받아 BLOCKED_IP에서 삭제
+select_blocked_ips(): 차단된 IP 목록 가져오기
+create_blocked_ip(data): IP 차단
+delete_blocked_ip(ip): IP 차단 해제
+
 ##### [BOARD & CATEGORY TREE]
-# make_board_tree(group_name): 게시판 트리 생성
-#  - parent_id를 사용하여 게시판 트리를 생성
-#  - BOARD.display_groups에 group_name이 포함된 게시판만 가져옴(게시판 표시 권한 확인)
-#  - 트리는 최대 4단계까지 생성될 수 있음
-#  - 하위 노드가 업는 게시판은 제외(빈 노드는 표시하지 않음)
-#  - id, name, display_groups, enter_groups, write_groups, comment_groups, children로 구성
-# make_travel_board_tree(): 여행지 게시판 생성
-#  - parent_id를 사용하여 여행지 게시판 트리를 생성
-#  - BOARD.board_type이 'travel' 이거나 'tree'인 게시판만 가져옴
-#  - 트리는 최대 4단계까지 생성될 수 있음
-#  - 하위 노드가 업는 'tree' 게시판은 제외(빈 노드는 표시하지 않음)
-#  - id, name, display_groups, enter_groups, write_groups, comment_groups, children로 구성
-# select_board(board_id): 게시판 정보 가져오기
-#  - id, name, board_type, display_groups, enter_groups, write_groups, comment_groups로 구성
-#  - 해당 게시판의 정보만 가져옴
-# create_board(data): 게시판 생성
-#  - parent_board_id(상위 게시판), name, board_type, display_groups, enter_groups, write_groups, comment_groups를 받아 게시판 생성
-#  - parent_board_id가 None인 경우 최상위 게시판으로 생성됨
-# update_board(board_id, data): 게시판 정보 업데이트
-#  - data에 포함되어있는 정보만 업데이트
-#  - parent_board_id(상위 게시판), name, board_type, display_groups, enter_groups, write_groups, comment_groups를 받아 게시판 정보 업데이트
-# delete_board(board_id): 게시판 삭제(하위 게시판이 있다면 전부 삭제. 게시글, 댓글, 관련 정보도 삭제)
-#  - 게시판 삭제. 게시판을 삭제하면 나머지 정보는 cascade로 삭제됨.
-#  - 하위 게시판이 있는 경우, 하위 게시판들의 parent_board_id를 None으로 변경해야함.
-# make_category_tree(): 카테고리 트리 생성
-#  - parent_id를 사용하여 카테고리 트리를 생성
-#  - 카테고리 트리는 최대 4단계까지 생성될 수 있음
-#  - id, name, children로 구성
-# select_category(category_id): 카테고리 정보 가져오기
-#  - id, name 구성
-#  - 해당 카테고리의 정보만 가져옴
-# create_category(data): 카테고리 생성
-#  - parent_category_id(상위 카테고리), name을 받아 카테고리 생성
-#  - parent_category_id가 None인 경우 최상위 카테고리로 생성됨
-# update_category(category_id, data): 카테고리 정보 업데이트
-#  - data에 포함되어있는 정보만 업데이트
-#  - parent_category_id(상위 카테고리), name을 받아 카테고리 정보 업데이트
-# delete_category(category_id): 카테고리 삭제(하위 카테고리가 있다면 전부 삭제. 게시글, 댓글, 관련 정보도 삭제)
-#  - 카테고리 삭제. 카테고리를 삭제하면 나머지 정보는 cascade로 삭제됨.
-#  - 하위 카테고리가 있는 경우, 하위 카테고리들의 parent_category_id를 None으로 변경해야함.
+make_board_tree(group_name): 게시판 트리 생성
+make_travel_board_tree(): 여행지 게시판 트리 생성
+select_board(board_id): 게시판 정보 가져오기
+create_board(data): 게시판 생성
+update_board(board_id, data): 게시판 업데이트
+delete_board(board_id): 게시판 삭제
+
+make_category_tree(): 카테고리 트리 생성
+select_category(category_id): 카테고리 정보 가져오기
+create_category(data): 카테고리 생성
+update_category(category_id, data): 카테고리 업데이트
+delete_category(category_id): 카테고리 삭제
+"""
+
+
+
+
+##### [ACCOUNT]
+# 기본 컨텍스트 정보 가져오기
+def get_default_contexts(request):
+    return
+
+# 사용자 정보 가져오기
+def select_account(account_id):
+
+    # 사용자 정보 확인
+    account = models.ACCOUNT.objects.select_related(
+        'level'
+    ).prefetch_related(
+        'bookmarked_posts', 'group'
+    ).filter(
+        id=account_id
+    ).first()
+
+    # 딕셔너리 형태로 포멧
+    if account:
+        return {
+            'id': account.id,
+            'username': account.username,
+            'nickname': account.first_name,
+            'account_type': account.groups.all()[0].name, # 각 계정은 하나의 그룹만 가짐
+            'status': account.status,
+            'subsupervisor_permissions': str(account.subsupervisor_permissions).split(','),
+            'level': select_level(account.level.level),
+            'bookmarked_posts': [post.id for post in account.bookmarked_posts.all()],
+            'exp': account.exp,
+            'mileage': account.mileage,
+        }
+    else: # 사용자 정보가 없는 경우
+        return None
+
+# 사용자 상세 정보 가져오기(모든 정보)
+def select_account_detail(account_id):
+
+    # 사용자 정보 확인
+    account = models.ACCOUNT.objects.select_related(
+        'level'
+    ).prefetch_related(
+        'bookmarked_posts', 'group'
+    ).filter(
+        id=account_id
+    ).first()
+
+    # 딕셔너리 형태로 포멧
+    if account:
+        return {
+            'id': account.id,
+            'username': account.username,
+            'nickname': account.first_name,
+            'partner_name': account.last_name,
+            'email': account.email,
+            'account_type': account.groups.all()[0].name, # 각 계정은 하나의 그룹만 가짐
+            'status': account.status,
+            'subsupervisor_permissions': str(account.subsupervisor_permissions).split(','),
+            'level': select_level(account.level.level),
+            'bookmarked_posts': [post.id for post in account.bookmarked_posts.all()],
+            'exp': account.exp,
+            'mileage': account.mileage,
+            'note': account.note,
+        }
+    else: # 사용자 정보가 없는 경우
+        return None
+
+# 사용자 생성
+def create_account(username, password, first_name, last_name, email, account_type):
+
+    # 사용자 정보 확인(중복 확인)
+    exist = models.ACCOUNT.objects.filter(
+        Q(username=username) | Q(first_name=first_name) # 아이디 또는 닉네임 중복 확인
+    ).exists()
+    if exist:
+        return {
+            'success': False,
+            'message': '이미 존재하는 사용자입니다.',
+        }
+
+    # 사용자 생성
+    account = models.ACCOUNT.objects.create(
+        username=username,
+        first_name=first_name,
+        last_name=last_name,
+        email=email,
+    )
+    account.set_password(password)
+    if account_type == 'user': # 사용자
+        account.groups.add(Group.objects.get(name='user'))
+        account.status = 'active'
+    elif account_type == 'partner': # 파트너
+        account.groups.add(Group.objects.get(name='partner'))
+        account.status = 'pending'
+    elif account_type == 'dame': # 여성 회원
+        account.groups.add(Group.objects.get(name='dame'))
+        account.status = 'pending'
+    elif account_type == 'subsupervisor': # 부관리자
+        account.groups.add(Group.objects.get(name='subsupervisor'))
+        account.status = 'active'
+    account.save()
+
+    return {
+        'success': True,
+        'message': '사용자가 생성되었습니다.',
+        'pk': account.id,
+    }
+
+# 사용자 정보 업데이트
+def update_account(account_id, password=None, first_name=None, last_name=None, email=None, status=None, note=None, subsupervisor_permissions=None, exp=None, mileage=None):
+
+    # 사용자 정보 확인
+    account = models.ACCOUNT.objects.filter(
+        id=account_id
+    )
+    if not account.exists():
+        return {
+            'success': False,
+            'message': '사용자 정보가 존재하지 않습니다.',
+        }
+
+    # 사용자 정보 업데이트
+    account = account.first()
+    if password: # 비밀번호 업데이트
+        account.set_password(password)
+    if first_name: # 닉네임 업데이트
+        account.first_name = first_name
+    if last_name: # 파트너 이름 업데이트
+        account.last_name = last_name
+    if email: # 이메일 업데이트
+        account.email = email
+    if status: # 상태 업데이트
+        account.status = status
+    if note: # 메모 업데이트
+        account.note = note
+    if subsupervisor_permissions: # 부관리자 권한 업데이트
+        account.subsupervisor_permissions = subsupervisor_permissions
+    if exp: # 경험치 업데이트
+        account.exp = exp
+    if mileage: # 마일리지 업데이트
+        account.mileage = mileage
+    account.save()
+
+    return {
+        'success': True,
+        'message': '사용자 정보가 업데이트 되었습니다.',
+        'pk': account.pk,
+    }
+
+# 사용자 삭제(모든 정보 삭제)
+def delete_account(account_id):
+
+    # 사용자 정보 확인
+    account = models.ACCOUNT.objects.filter(
+        id=account_id
+    )
+    if not account.exists():
+        return {
+            'success': False,
+            'message': '사용자 정보가 존재하지 않습니다.',
+        }
+
+    # 사용자 정보 삭제
+    account = account.first()
+    if account.is_active: # 사용자가 직접 삭제한 경우
+        account.status = 'deleted'
+        account.is_active = False
+        account.save()
+    else: # 시스템이 자동 삭제한 경우
+        account.delete() # 사용자가 생성한 데이터는 cascade로 삭제됨
+
+    return {
+        'success': True,
+        'message': '사용자 정보가 삭제되었습니다.',
+    }
+
+# 사용자 검색
+def search_accounts(username=None, nickname=None, any=None, status=None, account_type=None, page=1):
+
+    # 사용자 정보 확인
+    accounts = models.ACCOUNT.objects.select_related('level').prefetch_related('group')
+    query = Q()
+
+    if username:
+        query &= Q(username__icontains=username)
+    if nickname:
+        query &= Q(first_name__icontains=nickname)
+    if any:
+        query &= Q(username__icontains=any) | Q(first_name__icontains=any)
+    if status:
+        query &= Q(status=status)
+    if account_type:
+        query &= Q(group__name=account_type)
+
+    accounts = accounts.filter(query).order_by('-date_joined')
+
+    # 페이지네이션
+    last_page = (accounts.count() // 20) + 1
+    accounts = accounts[(page-1)*20:page*20]
+
+    # 사용자 정보 포멧
+    accounts_data = [{
+        'id': account.id,
+        'username': account.username,
+        'nickname': account.first_name,
+        'partner_name': account.last_name,
+        'account_type': account.groups.all()[0].name, # 각 계정은 하나의 그룹만 가짐
+        'status': account.status,
+        'subsupervisor_permissions': str(account.subsupervisor_permissions).split(','),
+        'level': select_level(account.level.level),
+        'exp': account.exp,
+        'mileage': account.mileage,
+    } for account in accounts]
+
+    return accounts_data, last_page
+
+
+
+##### [ACTIVITY]
+# 사용자 활동 통계 정보 가져오기
+def get_account_activity_stats(account_id, page=1):
+
+    # 사용자 활동 통계 정보 확인
+    activities = models.ACTIVITY.objects.select_related(
+        'account'
+    ).filter(
+        account__id=account_id
+    )
+
+    # 작성한 리뷰
+    review_count = activities.filter(
+        message='리뷰 작성'
+    ).count()
+
+    # 작성한 게시글
+    post_count = activities.filter(
+        message='게시글 작성'
+    ).count()
+
+    # 작성한 댓글
+    comment_count = activities.filter(
+        message='댓글 작성'
+    ).count()
+
+    # 출석체크한 날짜 수
+    check_count = activities.filter(
+        message='출석체크'
+    ).count()
+
+    return {
+        'review_count': review_count,
+        'post_count': post_count,
+        'comment_count': comment_count,
+        'check_count': check_count,
+    }
+
+# 사용자 활동 내역 가져오기
+def select_account_activities(account_id, page=1):
+
+    # 사용자 활동 내역 확인
+    activities = models.ACTIVITY.objects.select_related(
+        'account'
+    ).filter(
+        account__id=account_id
+    )
+
+    # 페이지네이션
+    last_page = (activities.count() // 20) + 1
+    activities = activities[(page-1)*20:page*20]
+
+    # 사용자 활동 내역 포멧
+    activities_data = [{
+        'id': activity.id,
+        'message': activity.message,
+        'exp_change': activity.exp_change,
+        'mileage_change': activity.mileage_change,
+        'created_at': activity.created_at,
+    } for activity in activities]
+
+    return activities_data, last_page
+
+# 사용자 활동 생성
+def create_account_activity(account_id, message, exp_change, mileage_change):
+
+    # 사용자 정보 확인
+    account = models.ACCOUNT.objects.filter(
+        id=account_id
+    ).first()
+    if not account:
+        return {
+            'success': False,
+            'message': '사용자 정보가 존재하지 않습니다.',
+        }
+
+    # 사용자 활동 생성
+    activity = models.ACTIVITY.objects.create(
+        account=account,
+        message=message,
+        exp_change=exp_change,
+        mileage_change=mileage_change,
+    )
+
+    return {
+        'success': True,
+        'message': '사용자 활동이 생성되었습니다.',
+        'pk': activity.id,
+    }
+
+
+
+##### [LEVEL]
+# 레벨 정보 가져오기
+def select_level(level):
+
+    # 레벨 정보 확인
+    level = models.LEVEL_RULE.objects.filter(
+        level=level
+    ).first()
+
+    # 딕셔너리 형태로 포멧
+    if level:
+        return {
+            'level': level.level,
+            'image': level.image,
+            'text': level.text,
+            'text_color': level.text_color,
+            'background_color': level.background_color,
+        }
+    else: # 레벨 정보가 없는 경우
+        return None
+
+# 모든 레벨 정보 가져오기
+def select_all_levels():
+
+    # 모든 레벨 정보 확인
+    levels = models.LEVEL_RULE.objects.all()
+
+    # 딕셔너리 형태로 포멧
+    levels_data = [{
+        'level': level.level,
+        'image': level.image,
+        'text': level.text,
+        'text_color': level.text_color,
+        'background_color': level.background_color,
+    } for level in levels]
+
+    return levels_data
+
+# 레벨 생성
+def create_level(level, image, text, text_color, background_color):
+
+    # 레벨 확인
+    exist = models.LEVEL_RULE.objects.filter(
+        level=level
+    ).exists()
+    if exist:
+        return {
+            'success': False,
+            'message': '이미 존재하는 레벨입니다.',
+        }
+
+    # 레벨 생성
+    level = models.LEVEL_RULE.objects.create(
+        level=level,
+        image=image,
+        text=text,
+        text_color=text_color,
+        background_color=background_color,
+    )
+
+    return {
+        'success': True,
+        'message': '레벨이 생성되었습니다.',
+        'pk': level.level,
+    }
+
+# 레벨 정보 업데이트
+def update_level(level, image=None, text=None, text_color=None, background_color=None):
+
+    # 레벨 정보 확인
+    level = models.LEVEL_RULE.objects.filter(
+        level=level
+    )
+    if not level.exists():
+        return {
+            'success': False,
+            'message': '레벨 정보가 존재하지 않습니다.',
+        }
+
+    # 레벨 정보 업데이트
+    level = level.first()
+    if image: # 이미지 업데이트
+        level.image = image
+    if text: # 텍스트 업데이트
+        level.text = text
+    if text_color: # 텍스트 색상 업데이트
+        level.text_color = text_color
+    if background_color: # 배경 색상 업데이트
+        level.background_color = background_color
+    level.save()
+
+    return {
+        'success': True,
+        'message': '레벨 정보가 업데이트 되었습니다.',
+        'pk': level.level,
+    }
+
+
+
+##### [POST & PLACE_INFO]
+# 게시글 검색
+def search_posts(title=None, category_id=None, board_id=None, related_post_id=None, order='default', page=1):
+
+    # 게시글 정보 확인
+    posts = models.POST.objects.select_related(
+        'author' 'related_post', 'place_info'
+    ).prefetch_related(
+        'boards', 'place_info__categories'
+    )
+    query = Q()
+
+    if title:
+        query &= Q(title__icontains=title)
+    if category_id:
+        query &= Q(place_info__categories__id__in=[category_id])
+    if board_id:
+        query &= Q(boards__id__in=[board_id])
+    if related_post_id:
+        query &= Q(related_post__id=related_post_id)
+
+    posts = posts.filter(query)
+
+    # 정렬
+    if order == 'best':
+        posts = posts.filter(query).annotate(
+            ad_priority=Case(
+                When(place_info__status='ad', then=Value(0)),   # 'ad' 상태일 때 우선순위 0
+                default=Value(1),                                # 그 외는 우선순위 1
+                output_field=IntegerField(),
+            )
+        ).order_by('ad_priority', '-search_weight', '-created_at')
+    elif order == 'default':
+        posts = posts.filter(query).order_by('-created_at')
+
+    # 페이지네이션
+    last_page = (posts.count() // 20) + 1
+    posts = posts[(page-1)*20:page*20]
+
+    # 게시글 정보 포멧
+    posts_data = [{
+        'id': post.id,
+        'author': {
+            'nickname': post.author.last_name,
+            'partner_name': post.author.first_name,
+        },
+        'related_post': {
+            'id': post.related_post.id,
+            'title': post.related_post.title,
+        } if post.related_post else None,
+        'place_info': {
+            'categories': [{
+                'id': c.id,
+                'name': c.name,
+            } for c in post.place_info.categories.all()],
+            'category_ids': [c.id for c in post.place_info.categories.all()],
+            'location_info': post.place_info.location_info,
+            'open_info': post.place_info.open_info,
+            'status': post.place_info.status,
+        } if post.place_info else None,
+        'boards': [{
+            'id': board.id,
+            'name': board.name,
+        } for board in post.boards.all()],
+        'board_ids': [board.id for board in post.boards.all()],
+        'title': post.title,
+        'image': post.image,
+        'view_count': post.view_count,
+        'like_count': post.like_count,
+        'created_at': post.created_at,
+        'comment_count': models.COMMENT.objects.filter(post=post).count(),
+    } for post in posts]
+
+    return posts_data, last_page
+
+# 사용자 북마크한 게시글 가져오기
+def select_account_bookmarked_posts(account_id):
+
+    # 사용자 확인
+    account = models.ACCOUNT.objects.prefetch_related(
+        'bookmarked_posts'
+    ).select_related(
+        'bookmarked_posts__author', 'bookmarked_posts__related_post', 'bookmarked_posts__place_info'
+    ).prefetch_related(
+        'bookmarked_posts__boards', 'bookmarked_posts__place_info__categories'
+    ).filter(
+        id=account_id
+    )
+    if not account.exists():
+        return {
+            'success': False,
+            'message': '사용자 정보가 존재하지 않습니다.',
+        }
+
+    # 사용자 북마크한 게시글 확인
+    posts = account.first().bookmarked_posts.all()
+
+    # 게시글 정보 포멧
+    posts_data = [{
+        'id': post.id,
+        'author': {
+            'nickname': post.author.last_name,
+            'partner_name': post.author.first_name,
+        },
+        'related_post': {
+            'id': post.related_post.id,
+            'title': post.related_post.title,
+        } if post.related_post else None,
+        'place_info': {
+            'categories': [{
+                'id': c.id,
+                'name': c.name,
+            } for c in post.place_info.categories.all()],
+            'category_ids': [c.id for c in post.place_info.categories.all()],
+            'location_info': post.place_info.location_info,
+            'open_info': post.place_info.open_info,
+            'status': post.place_info.status,
+        } if post.place_info else None,
+        'boards': [{
+            'id': board.id,
+            'name': board.name,
+        } for board in post.boards.all()],
+        'board_ids': [board.id for board in post.boards.all()],
+        'title': post.title,
+        'image': post.image,
+        'view_count': post.view_count,
+        'like_count': post.like_count,
+        'created_at': post.created_at,
+        'comment_count': models.COMMENT.objects.filter(post=post).count(),
+    } for post in posts]
+
+    return posts_data
+
+# 게시글 정보 가져오기
+def select_post(post_id):
+
+    # 게시글 정보 확인
+    post = models.POST.objects.select_related(
+        'author', 'related_post', 'place_info'
+    ).prefetch_related(
+        'boards', 'place_info__categories'
+    ).filter(
+        id=post_id
+    ).first()
+    if not post:
+        return {
+            'success': False,
+            'message': '게시글 정보가 존재하지 않습니다.',
+        }
+
+    # 게시글 정보 포멧
+    post_data = {
+        'id': post.id,
+        'author': {
+            'nickname': post.author.last_name,
+            'partner_name': post.author.first_name,
+        },
+        'related_post': {
+            'id': post.related_post.id,
+            'title': post.related_post.title,
+        } if post.related_post else None,
+        'place_info': {
+            'categories': [{
+                'id': c.id,
+                'name': c.name,
+            } for c in post.place_info.categories.all()],
+            'category_ids': [c.id for c in post.place_info.categories.all()],
+            'location_info': post.place_info.location_info,
+            'open_info': post.place_info.open_info,
+            'status': post.place_info.status,
+        } if post.place_info else None,
+        'boards': [{
+            'id': board.id,
+            'name': board.name,
+        } for board in post.boards.all()],
+        'board_ids': [board.id for board in post.boards.all()],
+        'title': post.title,
+        'content': post.content,
+        'image': post.image,
+        'view_count': post.view_count,
+        'like_count': post.like_count,
+        'created_at': post.created_at,
+        'comment_count': models.COMMENT.objects.filter(post=post).count(),
+    }
+
+    return post_data
+
+# 게시글 생성
+def create_post(author_id, related_post_id, title, content, image, board_ids):
+
+    # 사용자 확인
+    account = models.ACCOUNT.objects.filter(
+        id=author_id
+    )
+    if not account.exists():
+        return {
+            'success': False,
+            'message': '사용자 정보가 존재하지 않습니다.',
+        }
+
+    # related_post 확인
+    if related_post_id:
+        related_post = models.POST.objects.filter(
+            id=related_post_id
+        )
+        if not related_post.exists():
+            return {
+                'success': False,
+                'message': '관련 게시글 정보가 존재하지 않습니다.',
+            }
+
+    # board_ids 확인
+    boards = []
+    board_ids = str(board_ids).split(',')
+    for board_id in board_ids:
+        board = models.BOARD.objects.filter(
+            id=board_id
+        )
+        if not board.exists():
+            return {
+                'success': False,
+                'message': '게시판 정보가 존재하지 않습니다.',
+            }
+        else:
+            boards.append(board.first())
+
+    # 게시글 생성
+    post = models.POST.objects.create(
+        author=account.first(),
+        related_post=related_post.first() if related_post_id else None,
+        title=title,
+        content=content,
+        image=image,
+    )
+    post.boards.set(boards)
+    post.save()
+
+    return {
+        'success': True,
+        'message': '게시글이 생성되었습니다.',
+        'pk': post.id,
+    }
+
+# 게시글의 여행지 정보 생성
+def create_post_place_info(post_id, category_ids, location_info, open_info, status):
+
+    # 게시글 확인
+    post = models.POST.objects.filter(
+        id=post_id
+    )
+    if not post.exists():
+        return {
+            'success': False,
+            'message': '게시글 정보가 존재하지 않습니다.',
+        }
+
+    # category_ids 확인
+    categories = []
+    for category_id in category_ids:
+        category = models.CATEGORY.objects.filter(
+            id=category_id
+        )
+        if not category.exists():
+            return {
+                'success': False,
+                'message': '카테고리 정보가 존재하지 않습니다.',
+            }
+        else:
+            categories.append(category.first())
+
+    # 게시글의 여행지 정보 생성
+    place_info = models.PLACE_INFO.objects.create(
+        post=post.first(),
+        location_info=location_info,
+        open_info=open_info,
+        status=status,
+    )
+    place_info.categories.set(categories)
+    place_info.save()
+
+    return {
+        'success': True,
+        'message': '게시글의 여행지 정보가 생성되었습니다.',
+        'pk': place_info.id,
+    }
+
+# 게시글 정보 업데이트
+def update_post(post_id, title=None, content=None, image=None, board_ids=None, search_weight=None, view_count=None, like_count=None):
+
+    # 게시글 확인
+    post = models.POST.objects.filter(
+        id=post_id
+    )
+    if not post.exists():
+        return {
+            'success': False,
+            'message': '게시글 정보가 존재하지 않습니다.',
+        }
+
+    # board_ids 확인
+    boards = []
+    if board_ids:
+        board_ids = str(board_ids).split(',')
+        for board_id in board_ids:
+            board = models.BOARD.objects.filter(
+                id=board_id
+            )
+            if not board.exists():
+                return {
+                    'success': False,
+                    'message': '게시판 정보가 존재하지 않습니다.',
+                }
+            else:
+                boards.append(board.first())
+
+    # 게시글 정보 업데이트
+    post = post.first()
+    if title: # 제목 업데이트
+        post.title = title
+    if content: # 내용 업데이트
+        post.content = content
+    if image: # 이미지 업데이트
+        post.image = image
+    if boards: # 게시판 업데이트
+        post.boards.set(boards)
+    if search_weight: # 검색 가중치 업데이트
+        post.search_weight = search_weight
+    if view_count: # 조회수 업데이트
+        post.view_count = view_count
+    if like_count: # 좋아요 수 업데이트
+        post.like_count = like_count
+    post.save()
+
+    return {
+        'success': True,
+        'message': '게시글 정보가 업데이트 되었습니다.',
+        'pk': post.id,
+    }
+
+# 게시글의 여행지 정보 업데이트
+def update_place_info(post_id, category_ids=None, location_info=None, open_info=None, status=None, ad_start_at=None, ad_end_at=None, note=None):
+
+    # 게시글 확인
+    post = models.POST.objects.filter(
+        id=post_id
+    )
+    if not post.exists():
+        return {
+            'success': False,
+            'message': '게시글 정보가 존재하지 않습니다.',
+        }
+
+    # category_ids 확인
+    categories = []
+    if category_ids:
+        for category_id in category_ids:
+            category = models.CATEGORY.objects.filter(
+                id=category_id
+            )
+            if not category.exists():
+                return {
+                    'success': False,
+                    'message': '카테고리 정보가 존재하지 않습니다.',
+                }
+            else:
+                categories.append(category.first())
+
+    # 게시글의 여행지 정보 확인
+    place_info = models.PLACE_INFO.objects.filter(
+        post=post.first()
+    )
+    if not place_info.exists():
+        return {
+            'success': False,
+            'message': '게시글의 여행지 정보가 존재하지 않습니다.',
+        }
+
+    # 게시글의 여행지 정보 업데이트
+    place_info = place_info.first()
+    if categories: # 카테고리 업데이트
+        place_info.categories.set(categories)
+    if location_info: # 위치 정보 업데이트
+        place_info.location_info = location_info
+    if open_info: # 오픈 정보 업데이트
+        place_info.open_info = open_info
+    if status: # 상태 업데이트
+        place_info.status = status
+    if ad_start_at: # 광고 시작일 업데이트
+        place_info.ad_start_at = ad_start_at
+    if ad_end_at: # 광고 종료일 업데이트
+        place_info.ad_end_at = ad_end_at
+    if note: # 메모 업데이트
+        place_info.note = note
+    place_info.save()
+
+    return {
+        'success': True,
+        'message': '게시글의 여행지 정보가 업데이트 되었습니다.',
+        'pk': place_info.id,
+    }
+
+# 게시글 삭제
+def delete_post(post_id):
+
+    # 게시글 삭제
+    post = models.POST.objects.filter(
+        id=post_id
+    ).first()
+    post.delete()
+
+    return {
+        'success': True,
+        'message': '게시글이 삭제되었습니다.',
+    }
+
+
+
+##### [COMMENT]
+# 게시글 댓글 가져오기
+def select_comments(post_id):
+
+    # 게시글 확인
+    post = models.POST.objects.filter(
+        id=post_id
+    )
+    if not post.exists():
+        return {
+            'success': False,
+            'message': '게시글 정보가 존재하지 않습니다.',
+        }
+
+    # 게시글 댓글 확인
+    comments = models.COMMENT.objects.select_related(
+        'author'
+    ).filter(
+        post=post.first()
+    )
+
+    # 게시글 댓글 포멧
+    comments_data = [{
+        'id': comment.id,
+        'author': {
+            'nickname': comment.author.last_name,
+            'partner_name': comment.author.first_name,
+        },
+        'content': comment.content,
+        'created_at': comment.created_at,
+    } for comment in comments]
+
+    return comments_data
+
+# 댓글 생성
+def create_comment(post_id, account_id, content):
+
+    # 게시글 확인
+    post = models.POST.objects.filter(
+        id=post_id
+    )
+    if not post.exists():
+        return {
+            'success': False,
+            'message': '게시글 정보가 존재하지 않습니다.',
+        }
+
+    # 사용자 확인
+    account = models.ACCOUNT.objects.filter(
+        id=account_id
+    )
+    if not account.exists():
+        return {
+            'success': False,
+            'message': '사용자 정보가 존재하지 않습니다.',
+        }
+
+    # 댓글 생성
+    comment = models.COMMENT.objects.create(
+        post=post.first(),
+        author=account.first(),
+        content=content,
+    )
+
+    return {
+        'success': True,
+        'message': '댓글이 생성되었습니다.',
+        'pk': comment.id,
+    }
+
+# 댓글 업데이트
+def update_comment(comment_id, content):
+
+    # 댓글 확인
+    comment = models.COMMENT.objects.filter(
+        id=comment_id
+    )
+    if not comment.exists():
+        return {
+            'success': False,
+            'message': '댓글 정보가 존재하지 않습니다.',
+        }
+
+    # 댓글 업데이트
+    comment = comment.first()
+    comment.content = content
+    comment.save()
+
+    return {
+        'success': True,
+        'message': '댓글이 업데이트 되었습니다.',
+        'pk': comment.id,
+    }
+
+# 댓글 삭제
+def delete_comment(comment_id):
+
+    # 댓글 삭제
+    comment = models.COMMENT.objects.filter(
+        id=comment_id
+    ).first()
+    comment.delete()
+
+    return {
+        'success': True,
+        'message': '댓글이 삭제되었습니다.',
+    }
+
+
+
+##### [COUPON]
+# 모든 쿠폰 정보 가져오기
+def select_all_coupons(status=None):
+
+    # 모든 쿠폰 정보 확인
+    coupons = models.COUPON.objects.select_related(
+        'own_account', 'related_post', 'created_account', 'own_account__level',
+    ).prefetch_related(
+        'created_account__group'
+    ).filter(
+        status=status
+    )
+
+    # 정렬
+    coupons = coupons.order_by('-created_at')
+
+    # 쿠폰 정보 포멧
+    coupons_data = [{
+        'code': coupon.code,
+        'related_post': {
+            'id': coupon.related_post.id,
+            'title': coupon.related_post.title,
+        } if coupon.related_post else None,
+        'name': coupon.name,
+        'content': coupon.content,
+        'image': coupon.image,
+        'expire_at': coupon.expire_at,
+        'required_mileage': coupon.required_mileage,
+        'own_account': {
+            'id': coupon.own_account.id,
+            'nickname': coupon.own_account.first_name,
+            'level': select_level(coupon.own_account.level.level),
+        } if coupon.own_account else None,
+        'created_account': {
+            'id': coupon.created_account.id,
+            'nickname': coupon.created_account.first_name,
+            'partner_name': coupon.created_account.last_name,
+            'account_type': coupon.created_account.groups.all()[0].name, # 각 계정은 하나의 그룹만 가짐
+        } if coupon.created_account else None,
+        'status': coupon.status,
+        'note': coupon.note,
+    } for coupon in coupons]
+
+    return coupons_data
+
+# 사용자가 생성한 쿠폰 정보 가져오기
+def select_created_coupons(account_id, status=None):
+
+    # 사용자 확인
+    account = models.ACCOUNT.objects.filter(
+        id=account_id
+    )
+    if not account.exists():
+        return {
+            'success': False,
+            'message': '사용자 정보가 존재하지 않습니다.',
+        }
+
+    # 사용자가 생성한 쿠폰 정보 확인
+    coupons = models.COUPON.objects.select_related(
+        'own_account', 'related_post', 'created_account', 'own_account__level',
+    ).prefetch_related(
+        'created_account__group'
+    ).filter(
+        created_account=account.first(),
+        status=status
+    )
+
+    # 정렬
+    coupons = coupons.order_by('-created_at')
+
+    # 쿠폰 정보 포멧
+    coupons_data = [{
+        'code': coupon.code,
+        'related_post': {
+            'id': coupon.related_post.id,
+            'title': coupon.related_post.title,
+        } if coupon.related_post else None,
+        'name': coupon.name,
+        'content': coupon.content,
+        'image': coupon.image,
+        'expire_at': coupon.expire_at,
+        'required_mileage': coupon.required_mileage,
+        'own_account': {
+            'id': coupon.own_account.id,
+            'nickname': coupon.own_account.first_name,
+            'level': select_level(coupon.own_account.level.level),
+        } if coupon.own_account else None,
+        'created_account': {
+            'id': coupon.created_account.id,
+            'nickname': coupon.created_account.first_name,
+            'partner_name': coupon.created_account.last_name,
+            'account_type': coupon.created_account.groups.all()[0].name, # 각 계정은 하나의 그룹만 가짐
+        } if coupon.created_account else None,
+        'status': coupon.status,
+        'note': coupon.note,
+    } for coupon in coupons]
+
+    return coupons_data
+
+# 사용자가 소유한 쿠폰 정보 가져오기
+def select_owned_coupons(account_id, status=None):
+
+    # 사용자 확인
+    account = models.ACCOUNT.objects.filter(
+        id=account_id
+    )
+    if not account.exists():
+        return {
+            'success': False,
+            'message': '사용자 정보가 존재하지 않습니다.',
+        }
+
+    # 사용자가 소유한 쿠폰 정보 확인
+    coupons = models.COUPON.objects.select_related(
+        'own_account', 'related_post', 'created_account', 'own_account__level',
+    ).prefetch_related(
+        'created_account__group'
+    ).filter(
+        own_account=account.first(),
+        status=status
+    )
+
+    # 정렬
+    coupons = coupons.order_by('-created_at')
+
+    # 쿠폰 정보 포멧
+    coupons_data = [{
+        'code': coupon.code,
+        'related_post': {
+            'id': coupon.related_post.id,
+            'title': coupon.related_post.title,
+        } if coupon.related_post else None,
+        'name': coupon.name,
+        'content': coupon.content,
+        'image': coupon.image,
+        'expire_at': coupon.expire_at,
+        'required_mileage': coupon.required_mileage,
+        'own_account': {
+            'id': coupon.own_account.id,
+            'nickname': coupon.own_account.first_name,
+            'level': select_level(coupon.own_account.level.level),
+        } if coupon.own_account else None,
+        'created_account': {
+            'id': coupon.created_account.id,
+            'nickname': coupon.created_account.first_name,
+            'partner_name': coupon.created_account.last_name,
+            'account_type': coupon.created_account.groups.all()[0].name, # 각 계정은 하나의 그룹만 가짐
+        } if coupon.created_account else None,
+        'status': coupon.status,
+        'note': coupon.note,
+    } for coupon in coupons]
+
+    return coupons_data
+
+# 쿠폰 생성
+def create_coupon(account_id, code, related_post_id, name, content, image, expire_at, required_mileage):
+
+    # 사용자 확인
+    account = models.ACCOUNT.objects.filter(
+        id=account_id
+    )
+    if not account.exists():
+        return {
+            'success': False,
+            'message': '사용자 정보가 존재하지 않습니다.',
+        }
+
+    # related_post 확인
+    related_post = models.POST.objects.filter(
+        id=related_post_id
+    )
+    if not related_post.exists():
+        return {
+            'success': False,
+            'message': '관련 게시글 정보가 존재하지 않습니다.',
+        }
+
+    # 코드 중복 확인
+    exist = models.COUPON.objects.filter(
+        code=code
+    ).exists()
+    if exist:
+        return {
+            'success': False,
+            'message': '이미 존재하는 코드입니다.',
+        }
+
+    # 쿠폰 생성
+    coupon = models.COUPON.objects.create(
+        code=code,
+        related_post=related_post.first(),
+        name=name,
+        content=content,
+        image=image,
+        expire_at=expire_at,
+        required_mileage=required_mileage,
+        created_account=account.first(),
+    )
+
+    return {
+        'success': True,
+        'message': '쿠폰이 생성되었습니다.',
+        'pk': coupon.code,
+    }
+
+# 쿠폰 정보 업데이트
+def update_coupon(code, name=None, content=None, image=None, expire_at=None, required_mileage=None, own_account_id=None, status=None, note=None):
+
+    # 쿠폰 확인
+    coupon = models.COUPON.objects.filter(
+        code=code
+    )
+    if not coupon.exists():
+        return {
+            'success': False,
+            'message': '쿠폰 정보가 존재하지 않습니다.',
+        }
+
+    # 사용자 확인
+    own_account = models.ACCOUNT.objects.filter(
+        id=own_account_id
+    )
+    if own_account_id and not own_account.exists():
+        return {
+            'success': False,
+            'message': '사용자 정보가 존재하지 않습니다.',
+        }
+
+    # 쿠폰 정보 업데이트
+    coupon = coupon.first()
+    if name: # 이름 업데이트
+        coupon.name = name
+    if content: # 내용 업데이트
+        coupon.content = content
+    if image: # 이미지 업데이트
+        coupon.image = image
+    if expire_at: # 만료일 업데이트
+        coupon.expire_at = expire_at
+    if required_mileage: # 필요 마일리지 업데이트
+        coupon.required_mileage = required_mileage
+    if own_account_id: # 소유자 업데이트
+        coupon.own_account = own_account.first()
+    if status: # 상태 업데이트
+        coupon.status = status
+    if note: # 메모 업데이트
+        coupon.note = note
+    coupon.save()
+
+    return {
+        'success': True,
+        'message': '쿠폰 정보가 업데이트 되었습니다.',
+        'pk': coupon.code,
+    }
+
+
+
+##### [MESSAGE]
+# 사용자가 받은 메세지 가져오기
+def select_received_messages(account_id, page=1):
+
+    # 사용자 확인
+    account = models.ACCOUNT.objects.filter(
+        id=account_id
+    )
+    if not account.exists():
+        return {
+            'success': False,
+            'message': '사용자 정보가 존재하지 않습니다.',
+        }
+
+    # 사용자가 받은 메세지 확인
+    messages = models.MESSAGE.objects.filter(
+        to_account=account_id
+    )
+
+    # 정렬
+    messages = messages.order_by('-created_at')
+
+    # 페이지네이션
+    last_page = (messages.count() // 20) + 1
+    messages = messages[(page-1)*20:page*20]
+
+    # 메세지 정보 포멧
+    for message in messages:
+        from_account = None
+        to_account = None
+        # TODO: 내일 이어서 작업
+
+    return
+
+# 사용자가 보낸 메세지 가져오기
+def select_sent_messages(account_id, page=1):
+    return
+
+# 메세지 생성
+def create_message(sender_id, receiver_id, title, content, image, include_coupon_code):
+    return
+
+# 메세지 정보 업데이트(읽음 처리)
+def update_message(message_id):
+    return
+
+
+
+##### [SERVER_SETTING & UPLOAD]
+# 모든 서버 설정 가져오기
+def select_all_server_settings():
+    return
+
+# 서버 설정 가져오기
+def select_server_setting(name):
+    return
+
+# 서버 설정 업데이트
+def update_server_setting(name, value):
+    return
+
+# 파일 업로드 및 경로 반환
+def upload_file(file):
+    return
+
+
+
+##### [BANNER]
+# 배너 정보 가져오기
+def select_banners():
+    return
+
+# 배너 생성
+def create_banner(image, link, display_weight, location, size):
+    return
+
+# 배너 정보 업데이트
+def update_banner(banner_id, image=None, link=None, display_weight=None, location=None, size=None):
+    return
+
+# 배너 삭제
+def delete_banner(banner_id):
+    return
+
+
+
+##### [STATISTIC]
+# 통계 정보 가져오기
+def select_all_statistics(days_ago=7):
+    return
+
+# 통계 생성
+def create_statistic(name, value, date):
+    return
+
+
+
+##### [BLOCKED_IP]
+# 차단된 IP 정보 가져오기
+def select_blocked_ips():
+    return
+
+# IP 차단
+def create_blocked_ip(ip):
+    return
+
+# IP 차단 해제
+def delete_blocked_ip(ip):
+    return
+
+
+
+##### [BOARD & CATEGORY TREE]
+# 게시판 트리 생성
+def make_board_tree(group_name):
+    return
+
+# 여행지 게시판 생성
+def make_travel_board_tree():
+    return
+
+# 게시판 정보 가져오기
+def select_board(board_id):
+    return
+
+# 게시판 생성
+def create_board(parent_board_id, name, board_type, display_groups, enter_groups, write_groups, comment_groups, level_cut):
+    return
+
+# 게시판 정보 업데이트
+def update_board(board_id, parent_board_id=None, name=None, board_type=None, display_groups=None, enter_groups=None, write_groups=None, comment_groups=None, level_cut=None):
+    return
+
+# 게시판 삭제 및 하위 게시판 초기화
+def delete_board(board_id):
+    return
+
+# 카테고리 트리 생성
+def make_category_tree():
+    return
+
+# 카테고리 정보 가져오기
+def select_category(category_id):
+    return
+
+# 카테고리 생성
+def create_category(parent_category_id, name):
+    return
+
+# 카테고리 정보 업데이트
+def update_category(category_id, parent_category_id=None, name=None):
+    return
+
+# 카테고리 삭제 및 하위 카테고리 초기화
+def delete_category(category_id):
+    return
+
+
 
 
 
@@ -240,7 +1541,7 @@ from . import models
 def get_default_contexts(request):
   if request.user.is_authenticated: # 로그인 되어있는 경우
     # 사용자 정보 가져오기
-    user = get_user_model().objects.select_related('level').prefetch_related('bookmarked_places').get(username=request.user.username)
+    user = get_user_model().objects.select_related('level').prefetch_related('bookmarked_posts').get(username=request.user.username)
 
     account = {
       'id': user.username,
@@ -256,7 +1557,7 @@ def get_default_contexts(request):
         'text_color': lv.text_color,
         'background_color': lv.background_color,
       } if (lv := user.level) else None, # 사용자 레벨 정보
-      'bookmarked_places': [{
+      'bookmarked_posts': [{
         'id': bp.id,
         'title': bp.title,
         'view_count': bp.view_count,
@@ -267,7 +1568,7 @@ def get_default_contexts(request):
         'place_info': {
           'categories': [c.name for c in pi.categories.all()],
         } if (pi := bp.place_info) else None,
-      } for bp in user.bookmarked_places.all()[:5]],
+      } for bp in user.bookmarked_posts.all()[:5]],
     }
 
     # 사용자 활동 내역 가져오기
@@ -657,10 +1958,10 @@ def get_user_activities(user_id, page):
   return activities, last_page
 
 # 사용자의 모든 북마크 가져오기
-def get_all_bookmarked_places(user_id):
-  bookmarks = models.ACCOUNT.objects.prefetch_related('bookmarked_places').prefetch_related('bookmarked_places__place_info__categories',).get(
+def get_all_bookmarked_posts(user_id):
+  bookmarks = models.ACCOUNT.objects.prefetch_related('bookmarked_posts').prefetch_related('bookmarked_posts__place_info__categories',).get(
     username=user_id
-  ).bookmarked_places.all()
+  ).bookmarked_posts.all()
   return [{
     'id': b.id,
     'title': b.title,

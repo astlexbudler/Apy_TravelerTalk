@@ -37,4 +37,7 @@ urlpatterns = [
   # 이용약관은 server_settings.terms에 저장된 내용을 불러옴
   path('terms', v.terms, name='terms'),
 
+  # wysiwig 에디터
+  path('editor', v.editor, name='editor'),
+
 ]

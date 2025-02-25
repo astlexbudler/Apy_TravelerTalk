@@ -72,6 +72,7 @@ def index(request):
 
 # 게시글 작성 페이지
 def write_post(request):
+  return render(request, 'post/write_post.html', {'board_ids': '1'})
   # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
   boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보

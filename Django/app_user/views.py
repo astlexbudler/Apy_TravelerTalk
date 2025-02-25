@@ -206,3 +206,7 @@ def terms(request):
     'boards': boards, # 게시판 정보
     'terms': terms, # 이용약관 본문
   })
+
+# wysiwig 에디터
+def editor(request):
+  return render(request, 'editor.html')

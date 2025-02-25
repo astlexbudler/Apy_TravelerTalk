@@ -4538,7 +4538,7 @@ textarea.form-control-lg {
     --bs-dropdown-bg: #434a57;
     --bs-dropdown-border-color: var(--bs-gray-300);
     --bs-dropdown-box-shadow: ;
-  --bs-dropdown-link-color: #e3e9ef;
+    --bs-dropdown-link-color: #e3e9ef;
     --bs-dropdown-link-hover-color: #fff;
     --bs-dropdown-divider-bg: var(--bs-gray-300);
     --bs-dropdown-link-hover-bg: rgba(255, 255, 255, 0.15);
@@ -20125,7 +20125,7 @@ textarea.form-control-lg {
 }
 
 .dropdown-toggle:after {
-    content: "\f282";
+    content: '>';
     display: inline-block;
     font-family: bootstrap-icons !important;
     font-style: normal;

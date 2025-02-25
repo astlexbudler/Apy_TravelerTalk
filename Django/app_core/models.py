@@ -43,7 +43,7 @@ class ACCOUNT(AbstractUser):
   exp = models.IntegerField(help_text='레벨업 경험치', default=0)
   tel = models.CharField(blank=True, max_length=20, help_text='연락처')
   subsupervisor_permissions = models.CharField(blank=True, max_length=200, help_text='관리자 권한(account, post, coupon, message, banner, setting)')
-  bookmarked_places = models.ManyToManyField('POST', help_text='즐겨찾기 여행지', related_name='account_bookmarked_places')
+  bookmarked_posts = models.ManyToManyField('POST', help_text='즐겨찾기 여행지', related_name='account_bookmarked_places')
   level = models.ForeignKey('LEVEL_RULE', null=True, help_text='사용자 레벨', related_name='account_level', on_delete=models.SET_NULL)
   recent_ip = models.CharField(max_length=20, blank=True, help_text='최근 접속 IP')
 

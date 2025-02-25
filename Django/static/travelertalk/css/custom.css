@@ -19,3 +19,9 @@
     height: 100%;
     background-color: white;
 }
+
+/* 에디터 전체 박스 스타일 변경 */
+.note-editor {
+    border-radius: 0px;
+    background-color: white;
+}
