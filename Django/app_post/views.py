@@ -17,6 +17,7 @@ from app_core import daos
 # 2. 전체 글 검색을 하는 경우(board_id 가 없음) => 전체 게시글 검색
 # 3. 사전 정의되지 않은 기타 게시판의 경우 => 해당 게시글 검색
 def index(request):
+  return redirect(request, '/post/board.html', {'last_page': 3})
   # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
   boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보
@@ -318,6 +319,7 @@ def post_view(request):
 
 # 출석체크 게시판
 def attendance(request):
+  return render(request, 'post/attendance.html')
   # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
   boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보
@@ -379,6 +381,7 @@ def attendance(request):
 
 # 가입인사 게시판
 def greeting(request):
+  return render(request, 'post/greeting.html', {'last_page': 3})
   # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
   boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보
@@ -434,6 +437,7 @@ def greeting(request):
 # 후기 게시글은 target_post가 존재.
 # 후기 게시글의 순위를 나타내는 weight는 스케줄러에서 관리함.
 def review(request):
+  return render(request, 'post/review.html', {'last_page': 3})
   # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
   boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보
@@ -704,3 +708,7 @@ def travel_view(request):
     'comments': comments, # 댓글 정보
     'commentable': commentable, # 댓글 작성 가능 여부
   })
+
+# 쿠폰 게시판
+def coupon(request):
+  return render(request, 'post/coupon.html', {'last_page': 3})

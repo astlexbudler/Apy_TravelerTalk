@@ -34,3 +34,42 @@
         }
     }
 -->
+<a href="#" class="text-dark text-decoration-none">
+    <div style="display: flex; white-space: nowrap;" class="mb-3 pb-3 border-bottom">
+        <div style="display: inline-block; text-align: left;">
+            <img src="/media/default.png" class="img-fluid rounded img-web shadow m-1"
+                style="width: 6vw; min-width: 80px; max-width: 100px;">
+        </div>
+        <div style="display: inline-block; text-align: left; flex: 1;">
+            <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+                <div style="display: inline-block; text-align: left;">
+                    <div class="ps-3">
+                        <p class="text-black-50 small mb-1">
+                            <span class="me-2">글 작성자 닉네임</span>
+                            {% include 'components/other/level_badge.html' %}
+                        </p>
+                        <p>
+                            게시글 제목
+                        </p>
+                        <p class="text-black-50 small m-0">
+                            2021-01-01 12:00
+                        </p>
+                    </div>
+                </div>
+                <div style="display: inline-block; text-align: right;">
+                    <p class="m-0 text-end text-black-50" style="font-size: 12px;">
+                        <span class="me-1" style="white-space: nowrap;">
+                            <i class="fi fi-rr-eye"></i> 100
+                        </span>
+                        <span class="me-1" style="white-space: nowrap;">
+                            <i class="fi fi-rr-social-network"></i> 100
+                        </span>
+                        <span style="white-space: nowrap;">
+                            <i class="fi fi-rr-comment-dots"></i> 100
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</a>

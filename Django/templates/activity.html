@@ -106,11 +106,19 @@
 </main>
 
 <script>
-  // 페이지 로드 시 탭 선택 확인
+
   window.addEventListener('load', () => {
+
+    // 페이지 로드 시 탭 선택 확인
     const tab = '{{request.GET.tab}}';
     if (!tab) {
       location.href = '/activity?tab=activityTab';
+    }
+
+    // pagination
+    // 만약 contexts에서 lastpage를 받았고, pagination 컴포넌트가 있다면, 페이지네이션을 생성합니다.
+    if ('{{last_page}}' && document.querySelector('#pageButton')) {
+      makePaegeButton('{{request.GET.page}}', '{{last_page}}', `/message?search=`);
     }
   });
 </script>

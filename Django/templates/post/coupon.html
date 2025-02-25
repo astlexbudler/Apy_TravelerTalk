@@ -11,8 +11,7 @@
 
       <!-- 페이지 타이틀 -->
       {% include 'components/main/breadcrumbs.html' %}
-      {% include 'components/main/title_section.html' with title='후기' subtitle='여행 후기를 작성해보세요.' %}
-
+      {% include 'components/main/title_section.html' with title='쿠폰' subtitle='쿠폰 받기 게시판에서 쿠폰을 받아보세요.' %}
       <!-- 후기 게시글 목록 -->
       <div class="row">
 
@@ -24,7 +23,16 @@
     </div>
 
     <!-- 검색 영역 -->
-    {% include 'components/main/search_bar.html' %}
+    <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+      <div style="display: inline-block; text-align: left;">
+        {% include 'components/main/search_bar.html' %}
+      </div>
+      <div style="display: inline-block; text-align: right;">
+        <a href="#" class="btn btn-primary">
+          <i class="fi fi-rr-edit"></i> 글 작성
+        </a>
+      </div>
+    </div>
 
     <!-- 페이지네이션 영역 -->
     {% include 'components/main/pagination.html' %}

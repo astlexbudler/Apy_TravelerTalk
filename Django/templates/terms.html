@@ -1,37 +1,30 @@
-{% extends 'base/main_base.html' %}
+{% extends 'base/base.html' %}
 {% block content %}
-<!-- 왼쪽 사이드바 -->
-<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+<main class="container">
 
-<!-- 중앙 섹션 -->
-<section class="main-section px-5 px-lg-1" style="flex: 1; min-height: 100vh;">
+  <div class="main-section">
 
-  <!-- 제목 -->
-  <div class="mt-4 mb-5">
-    {% include 'parts/goback.html' %}
-    <h5 class="mt-5">
-      Terms of Service
-    </h5>
-    <p>
-      개인정보 처리 방침 및 이용약관 (2024-10-26) Original
-    </p>
+    <div style="min-height: calc(100vh - 160px);">
+
+
+      <!-- 페이지 타이틀 -->
+      {% include 'components/main/title_section.html' with title='Terms of Service' subtitle='개인정보 처리 방침 및 이용약관 (2024-10-26) Original' %}
+
+      <!-- 이용 약관 -->
+      <div class="mt-4">
+        <textarea class="form-control w-100" style="height: 500px;" readonly>
+          {{ terms }}
+        </textarea>
+      </div>
+
+    </div>
+
+    <!-- 맨 위로 가기 버튼 -->
+    <div class="text-end">
+      {% include 'components/main/top_button.html' %}
+    </div>
+
   </div>
 
-  <textarea class="form-control w-100" style="height: 500px;" readonly>
-    {{ terms }}
-  </textarea>
-
-</section>
-
-<!-- 오른쪽 사이드바 -->
-<aside class="d-none d-lg-block" style="width: 320px;"></aside>
-
-<script>
-
-  window.onload = () => {
-    console.log(`Window loaded at ${getNowDatetimeString()}`);
-  }
-
-</script>
-
+</main>
 {% endblock %}

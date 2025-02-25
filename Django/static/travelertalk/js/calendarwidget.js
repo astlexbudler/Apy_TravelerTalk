@@ -26,6 +26,7 @@ const CalendarWidget = {
         this.createCal();
     },
 
+    // 달력 생성
     createCal: function () {
         this.$month.textContent = `${this.today.getFullYear()}년 ${this.MONTH[this.today.getMonth()]}월`;
 
@@ -40,11 +41,13 @@ const CalendarWidget = {
         let cell = "";
         let count = 0;
 
+        // 달력의 첫째 주에 빈 칸을 채우기
         for (let i = 0; i < firstDate.getDay(); i++) {
             cell = row.insertCell();
             count++;
         }
 
+        // 날짜 채우기
         for (let j = 1; j <= lastDate.getDate(); j++) {
             if (count % 7 === 0) {
                 row = this.tbody.insertRow();
@@ -55,6 +58,9 @@ const CalendarWidget = {
 
             count++;
         }
+
+        // Add event delegation to tbody for handling clicks on day cells
+        // this.tbody.addEventListener("click", this.handleDateClick.bind(this));
     },
 
     handleDateClick: function (event) {
@@ -63,14 +69,21 @@ const CalendarWidget = {
             const selectedDay = event.target.dataset.day;
             const selectedDate = `${this.today.getFullYear()}-${this.MONTH[this.today.getMonth()]}-${selectedDay}`;
             console.log("Selected Date:", selectedDate);
-            
+
             // 다른 on 지우기
             //Array.from(this.tbody.querySelectorAll("td")).forEach(cell => {
             //    cell.classList.remove("on");
             //});
-    
+
+            // 만약 이미 on 상태라면 해제
+            //if (this.selectedDate && this.selectedDate === selectedDate) {
+            //    event.target.classList.remove("on");
+            //    this.selectedDate = null;
+            //    return;
+            //}
+
             // 방금 선택한 on 선택
-            event.target.classList.add("on");
+            //event.target.classList.add("on");
 
             this.selectedDate = selectedDate;
         }

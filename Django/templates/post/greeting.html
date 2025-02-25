@@ -1,100 +1,52 @@
-{% extends 'base/main_base.html' %}
+{% extends 'base/base.html' %}
 {% block content %}
-<!-- 왼쪽 사이드바 -->
-<aside class="d-none d-lg-block" style="width: 320px;">
-  {% include 'parts/left_aside_main.html' %}
-</aside>
+<main class="container" style="display: flex; align-items: flex-start;">
 
-<!-- 중앙 섹션 -->
-<section class="main-section px-5 px-lg-1" style="flex: 1; min-height: 100vh;">
+  <!-- 왼쪽 사이드바 -->
+  {% include 'components/aside/aside_left.html' %}
 
-  <!-- title -->
-  <div class="mt-4 mb-5">
-    {% include 'parts/goback.html' %}
-    <h5 class="mt-5">
-      가입인사
-    </h5>
-    <p class="small">
-      가입인사를 남겨주세요.
-    </p>
-  </div>
+  <div class="main-section px-5" style="flex: 1;">
 
-  <!-- 가입인사 메세지 컨테이너 -->
-  <div class="mt-5 mb-3 pb-3 border-bottom">
-    <p class="text-dark">
-      가입인사 메세지
-    </p>
-    {% if not is_greeted %}
-    <textarea id="commentInput" class="form-control" rows="3" onkeyup="event.keyCode == 13 ? writeComment() : null"
-      placeholder="가입인사 메세지를 작성해주세요."></textarea>
-    <button class="btn btn-primary mt-4" onclick="writeComment()">가입인사 작성</button>
-    {% else %}
-    <textarea id="commentInput" class="form-control" rows="3" disabled
-      placeholder="가입인사는 한 번만 작성할 수 있습니다."></textarea>
-    <button class="btn btn-primary mt-4" disabled>메세지 작성</button>
-    {% endif %}
-  </div>
+    <div style="min-height: 300px;">
 
-  <!-- 메세지 목록 -->
-  <ul class="list-unstyled mt-5">
-    {% if comments|length < 1 %} 
-    <li>
-      <p>
-        아직 가입인사를 남긴 사용자가 없습니다.
-      </p>
-    </li>
-    {% else %}
-    {% for comment in comments %}
-    <li>
-      <div class="mb-4">
-        <div class="d-flex w-100">
-          <div class="d-flex w-100 ">
-  
-            <!-- 댓글 작성자 이름. 파트너 이름 또는 사용자 닉네임 -->
-            {% if comment.author.partner_name %}
-            <h6 class="mt-0 mb-1">{{ comment.author.partner_name }}</h6>
-            {% else %}
-            <h6 class="mt-0 mb-1">{{ comment.author.nickname }}</h6>
-            {% endif %}
-  
-          </div>
-          <div class="d-flex w-100 flex-row-reverse">
-            <small class="mb-2">{{ comment.created_at }}</small>
-          </div>
-        </div>
-        <p class="text-black-50">
-          {{ comment.content }}
-        </p>
-      </div>
-    </li>
-    {% endfor %}
-    {% endif %}
-  </ul>
+      <!-- 페이지 타이틀 -->
+      {% include 'components/main/breadcrumbs.html' %}
+      {% include 'components/main/title_section.html' with title='가입인사' subtitle='가입인사를 남겨주세요.' %}
 
-  <!-- 검색 및 페이지 버튼 -->
-  <div>
+      <!-- 댓글 작성 폼 -->
+      {% include 'components/main/post_view/comment/comment_form.html' with commentable=true comment_form_title='가입인사' placeholder='가입인사 한마디를 작성해주세요.' button_text='가입인사 작성' %}
 
-    <!-- 페이지 버튼 -->
-    <div id="pageButton"></div>
+      <!-- 댓글 목록 -->
+      {% include 'components/main/post_view/comment/comment_list.html' %}
+
+    </div>
+
+    <!-- 페이지네이션 영역 -->
+    {% include 'components/main/pagination.html' %}
+
+    <!-- 맨 위로 가기 버튼 -->
+    <div class="text-end">
+      {% include 'components/main/top_button.html' %}
+    </div>
 
   </div>
 
-</section>
+  <!-- 오른쪽 사이드바 -->
+  {% include 'components/aside/aside_right.html' %}
 
-<!-- 오른쪽 사이드바 -->
-<aside class="d-none d-lg-block" style="width: 320px;">
-  {% include 'parts/right_aside_main.html' %}
-</aside>
+</main>
 
 <script>
 
-  window.onload = () => {
-    console.log(`Window loaded at ${getNowDatetimeString()}`);
+  window.addEventListener('load', () => {
 
-    // Page
-    console.log('{{request.GET.page}} | {{last_page}}');
-    makePaegeButton('{{request.GET.page}}', '{{last_page}}', '/post/greeting?search=');
-  }
+    // pagination
+    // 만약 contexts에서 lastpage를 받았고, pagination 컴포넌트가 있다면, 페이지네이션을 생성합니다.
+    if ('{{last_page}}' && document.querySelector('#pageButton')) {
+      makePaegeButton('{{request.GET.page}}', '{{last_page}}', `/post/greeting?search=`);
+    }
+
+  });
 
   writeComment = async () => {
     const comment = document.getElementById('commentInput').value;
@@ -114,11 +66,11 @@
       },
       body: formdata
     })
-    .then(response => response.json())
-    .then(data => {
-      console.log(data);
-      return data.result;
-    });
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        return data.result;
+      });
 
     if (result == 'success') {
       await showAlert('가입인사', '가입인사를 작성했습니다.', 'success');
