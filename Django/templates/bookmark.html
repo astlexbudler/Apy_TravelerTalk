@@ -1,51 +1,40 @@
-{% extends 'base/main_base.html' %}
+{% extends 'base/base.html' %}
 {% block content %}
-<!-- 왼쪽 사이드바 -->
-<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+<main class="container" style="display: flex; align-items: flex-start;">
 
-<!-- 중앙 섹션 -->
-<section class="main-section px-5 px-lg-1" style="flex: 1; min-height: 100vh;">
+  <!-- 왼쪽 사이드바 -->
+  {% include 'components/aside/aside_left.html' %}
 
-  <!-- 제목 -->
-  <div class="mt-4 mb-5">
-    {% include 'parts/goback.html' %}
-    <h5 class="mt-5">
-      북마크된 여행지
-    </h5>
-    <p>
-      북마크한 여행지 게시글을 확인할 수 있습니다.
-    </p>
+  <div class="main-section px-5" style="flex: 1;">
+
+    <div style="min-height: 300px;">
+
+      <!-- 페이지 타이틀 -->
+      {% include 'components/main/breadcrumbs.html' %}
+      {% include 'components/main/title_section.html' with title='즐겨찾기' subtitle='북마크한 여행지 게시글을 확인할 수 있습니다.' %}
+
+      <!-- 여행지 게시글 목록 -->
+      <div class="row">
+        {% include 'components/main/post_list/post_list_card.html' %}
+      </div>
+
+    </div>
+
+    <!-- 페이지네이션 영역 -->
+    {% include 'components/main/pagination.html' %}
+
+    <!-- 맨 위로 가기 버튼 -->
+    <div class="text-end">
+      {% include 'components/main/top_button.html' %}
+    </div>
+
   </div>
 
-  <!-- 북마크한 여행지 게시글 -->
-  {% if bookmarks|length == 0 %}
-  <p>
-    북마크된 게시글이 없습니다.
-  </p>
-  {% else %}
-  {% for post in bookmarks %}
-  {% include 'parts/travel_post_card.html' %}
-  {% endfor %}
-  {% endif %}
+  <!-- 오른쪽 사이드바 -->
+  {% include 'components/aside/aside_right.html' %}
 
-  <!-- 맨 위로 버튼 -->
-  <div class="text-end">
-    <button class="btn text-white m-0" id="topBtn" onclick="window.scrollTo({ top: 0, behavior: 'smooth' })" style="background-color: rgb(184, 184, 184);">
-      Top <i class="fi fi-rr-arrow-up"></i>
-    </button>
-  </div>
-
-</section>
-
-<!-- 오른쪽 사이드바 -->
-<aside class="d-none d-lg-block" style="width: 320px;"></aside>
-
+</main>
 <script>
-
-  window.onload = () => {
-    console.log(`Window loaded at ${getNowDatetimeString()}`);
-  }
-
 </script>
 
 {% endblock %}

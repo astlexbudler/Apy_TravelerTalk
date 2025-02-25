@@ -1,0 +1,101 @@
+{% extends 'base/main_base.html' %}
+{% block content %}
+<!-- 왼쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;">
+  {% include 'parts/left_aside_main.html' %}
+</aside>
+
+<!-- 중앙 섹션 -->
+<section class="main-section px-5 px-lg-1" style="flex: 1; min-height: 100vh;">
+
+  <!-- 제목 -->
+  <div class="mt-4 mb-5">
+    {% include 'parts/goback.html' %}
+    <h5 class="mt-5">
+      {{board.name}}
+    </h5>
+  </div>
+
+  <!-- best reviews -->
+  <div class="row mb-5 border rounded p-3">
+    <div class="col-4 col-lg-4">
+      <h6 class="mb-3">오늘의 추천 리뷰</h6>
+      {% if today_reviews|length == 0 %}
+      <p>오늘의 추천 리뷰가 없습니다.</p>
+      {% else %}
+      {% for post in today_reviews %}
+      {% include 'parts/simplified_board_type.html' %}
+      {% endfor %}
+      {% endif %}
+    </div>
+    <div class="col-12 col-lg-4">
+      <h6 class="mb-3">이번주 추천 리뷰</h6>
+      {% if weekly_reviews|length == 0 %}
+      <p>오늘의 추천 리뷰가 없습니다.</p>
+      {% else %}
+      {% for post in weekly_reviews %}
+      {% include 'parts/simplified_board_type.html' %}
+      {% endfor %}
+      {% endif %}
+    </div>
+    <div class="col-12 col-lg-4">
+      <h6 class="mb-3">이번달 추천 리뷰</h6>
+      {% if monthly_reviews|length == 0 %}
+      <p>오늘의 추천 리뷰가 없습니다.</p>
+      {% else %}
+      {% for post in monthly_reviews %}
+      {% include 'parts/simplified_board_type.html' %}
+      {% endfor %}
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- 게시글 검색 결과 -->
+  <div class="mb-5" style="min-height: 30vh;">
+    {% if posts|length == 0 %}
+    <p>
+      게시글이 없습니다.
+    </p>
+    {% else %}
+
+    <!-- 이미지가 있는 게시글 형태 -->
+    {% for post in posts %}
+    {% include 'parts/normal_board_type.html' %}
+    {% endfor %}
+
+    {% endif %}
+
+  </div>
+
+  <!-- 검색 및 페이지 버튼 -->
+  <div>
+    <!-- 검색 컴포넌트 -->
+    {% include 'parts/search.html' %}
+
+    <!-- 페이지 버튼 -->
+    <div id="pageButton"></div>
+
+    <!-- 게시판 버튼(맨 위로, 글쓰기) -->
+    {% include 'parts/board_buttons.html' %}
+  </div>
+
+</section>
+
+<!-- 오른쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;">
+  {% include 'parts/right_aside_main.html' %}
+</aside>
+
+<script>
+
+  window.onload = () => {
+    console.log(`Window loaded at ${getNowDatetimeString()}`);
+
+    // Page
+    console.log('{{request.GET.page}} | {{last_page}}');
+    makePaegeButton('{{request.GET.page}}', '{{last_page}}', '/post/review?search={{request.GET.search}}');
+  }
+
+</script>
+
+{% endblock %}

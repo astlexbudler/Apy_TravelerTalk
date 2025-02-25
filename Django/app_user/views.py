@@ -61,7 +61,7 @@ def index(request):
 
 # 회원가입 페이지
 def signup(request):
-  return render(request, 'signup.html', {'last_page': 3})
+  return render(request, 'signup.html')
   # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
   boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보

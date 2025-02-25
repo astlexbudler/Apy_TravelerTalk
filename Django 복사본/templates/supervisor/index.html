@@ -1,0 +1,145 @@
+{% extends 'base/supervisor_base.html' %}
+{% block content %}
+<!-- 왼쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;">
+  {% include 'parts/left_aside_main.html' %}
+</aside>
+
+<!-- 중앙 섹션 -->
+<section class="main-section px-5 px-lg-1" style="flex: 1; min-height: 100vh;">
+
+    <!-- 제목 -->
+    <div class="mt-4 mb-5">
+      <h5 class="mt-5">
+        관리자
+      </h5>
+      <p class="small">
+        관리자 페이지입니다. 상단 메뉴를 통해 관리할 메뉴를 선택해주세요.
+      </p>
+    </div>
+
+    <div class="my-5">
+
+      <!-- 통계 -->
+      <div class="rounded border p-3 mb-5 shadow">
+        <p>
+          <i class="fi fi-rr-stats"></i> 통계
+        </p>
+        <table class="table table-bordered">
+            <tr>
+              <td rowspan="2">
+                파트너 가입
+              </td>
+              <td>신청</td>
+              <td>완료</td>
+              <td rowspan="2">
+                문의
+              </td>
+              <td>미답변</td>
+              <td colspan="2">완료</td>
+            </tr>
+            <tr>
+              <td>{{pending_partner}}</td>
+              <td>{{active_partner}}</td>
+              <td>{{qna_no_answer}}</td>
+              <td colspan="2">{{qna_answer}}</td>
+            </tr><tr>
+              <td rowspan="2">
+                쿠폰
+              </td>
+              <td>사용 가능</td>
+              <td>사용됨</td>
+              <td>쿠폰 요청</td>
+              <td rowspan="2">
+                광고
+              </td>
+              <td>요청</td>
+              <td>진행중</td>
+            </tr>
+            <tr>
+              <td>{{active_coupon_count}}</td>
+              <td>{{used_coupon_count}}</td>
+              <td>{{coupon_request_message_count}}</td>
+              <td>{{place_ad_request_count}}</td>
+              <td>{{place_on_ad_count}}</td>
+            </tr>
+        </table>
+      </div>
+
+    <!-- 버튼 -->
+    <div class="p-3 mb-5 text-end">
+      <a href="javascript: openExportDataPage();" class="btn btn-sm btn-success">
+        <i class="fi fi-rr-file-excel"></i> 다운로드
+      </a>
+    </div>
+
+    <!-- 현황 -->
+    <div class="rounded border p-3 mb-5 shadow">
+      <p>
+        <i class="fi fi-rr-list"></i> 현황
+        {{coupon_create.0}}
+      </p>
+      <table class="table table-border small border text-center">
+        <tbody>
+          <tr>
+            <td>
+              날짜
+            </td>
+            <td>
+              쿠폰 생성
+            </td>
+            <td>
+              쿠폰 사용
+            </td>
+            <td>
+              마일리지 사용
+            </td>
+            <td>
+              광고 신청
+            </td>
+            <td>
+              광고 신청 수락
+            </td>
+          </tr>
+          {% for date, create, use, mileage, ad_request, execute in stats %}
+          <tr>
+            <td>
+              {{ date }}
+            </td>
+            <td>
+              {{ create }}
+            </td>
+            <td>
+              {{ use }}
+            </td>
+            <td>
+              {{ mileage }}
+            </td>
+            <td>
+              {{ ad_request }}
+            </td>
+            <td>
+              {{ execute }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+</section>
+
+<!-- 오른쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+
+<script>
+
+  window.onload = () => {
+    console.log(`Window loaded at ${getNowDatetimeString()}`);
+  }
+
+</script>
+
+{% endblock %}

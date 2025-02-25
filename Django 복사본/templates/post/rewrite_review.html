@@ -1,0 +1,47 @@
+{% extends 'base/main_base.html' %}
+{% block content %}
+<!-- 왼쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;">
+  {% include 'parts/left_aside_main.html' %}
+</aside>
+
+<!-- 중앙 섹션 -->
+<section class="main-section" style="flex: 1;">
+
+    <!-- 제목 -->
+    <div class="mt-4 mb-5">
+      {% include 'parts/goback.html' %}
+      <h5 class="mt-5">
+        {{board.name}}
+      </h5>
+    </div>
+
+
+    {% if posts|length == 0 %}
+    <p>
+      {{board.name}} 게시글이 없습니다.
+    </p>
+    {% else %}
+    {% for post in posts %}
+    {% endfor %}
+    {% endif %}
+
+  <div id="pageButton"></div>
+
+</section>
+
+<!-- 오른쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;">
+  {% include 'parts/right_aside_main.html' %}
+</aside>
+
+<script>
+
+  window.onload = () => {
+    console.log(`Window loaded at ${getNowDt()}`);
+    makePaegeButton('{{request.GET.page}}', '{{last_page}}', '/?search={{request.GET.search}}');
+  }
+
+</script>
+
+{% endblock %}

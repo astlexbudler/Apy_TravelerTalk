@@ -1,0 +1,39 @@
+<aside class="px-3">
+
+  <!-- 베스트 후기 -->
+  <div class="card mt-1" style="border-radius: 0;">
+    <div class="card-body text-center pastel-pink-background">
+      <h5 class="card-title text-black-50">베스트 후기</h5>
+    </div>
+    <div class="card-footer" style="min-height: 200px;">
+      <div class="p-1 py-2">
+
+        {% if best_reviews == none or best_reviews|length == 0 %}
+        <p>
+          베스트 후기가 없습니다
+        </p>
+        {% else %}
+        <!-- 베스트 리뷰 게시글 표시. 게시글 제목, 조회수, 추천수 -->
+        {% for post in best_reviews %}
+        {% include 'parts/simplified_board_type.html' %}
+        {% endfor %}
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+
+  <!-- 배너 광고 리스트 -->
+  <div class="mt-5">
+
+    {% for banner in banners.side %}
+    <div class="col-12 mt-3">
+      <a href="{{ banner.link }}" target="_blank">
+        <div class="w-100 shadow-sm" style="height: 200px; background: black url('{{ banner.image }}') center/cover no-repeat;"></div>
+      </a>
+    </div>
+    {% endfor %}
+
+  </div>
+
+</aside>

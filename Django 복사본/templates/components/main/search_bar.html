@@ -1,0 +1,28 @@
+<!--
+    search_bar.html
+    이 컴포넌트는 검색창을 표시하는 컴포넌트 입니다.
+    검색창을 표시하고 검색을 수행하는 JS 함수를 호출합니다.
+-->
+
+<div style="display: flex; justify-content: space-between; white-space: nowrap;" class="border-top py-4">
+    <div style="display: inline-block; text-align: left;">
+        <form onkeyup="if(event.keyCode == 13) searchBoard('{{request.GET.board_ids}}')" id="searchForm">
+            <select class="form-select me-2" style="width: 100px; display: inline-block;">
+                <option value="title">제목</option>
+            </select>
+            <div class="form-group position-relative" style="width: 200px; display: inline-block;">
+                <input class="form-control p-2 pe-6 ms-2" style="font-size: 14px; background: transparent"
+                    placeholder="검색어를 입력해주세요." value="{{ request.GET.search }}" id="searchInput">
+                <a href="javascript:searchBoard('{{request.GET.board_ids}}')" class="position-absolute text-black-50"
+                    style="right: 15px; top: 50%; transform: translateY(-50%); font-size: 14px;">
+                    <i class="fi fi-rr-search"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+    <div style="display: inline-block; text-align: right;">
+        <button class="btn btn-secondary m-0" id="topBtn" onclick="window.scrollTo({ top: 0, behavior: 'smooth' })">
+        Top <i class="fi fi-rr-arrow-up"></i>
+    </button>
+    </div>
+</div>

@@ -1,0 +1,102 @@
+<!--
+    footer.html
+    이 컴포넌트는 페이지의 하단에 위치하는 푸터를 구성합니다.
+
+    푸터는 다음과 같은 정보를 포함합니다:
+    - 사이드 이름, 로고, Copyright 정보
+    - 사이트 링크 목록(이건 user, partner, supervisor 페이지마다 다르게 표시됨)
+
+    settings = {
+        'site_name': 'site name String.',
+        'site_logo': 'site logo url String.',
+    }
+-->
+
+<footer class="pt-5 mt-5 border-top text-dark" style="background-color: rgba(220, 220, 230, 0.08);">
+
+    <!-- 푸터 상단 -->
+    <div class="container pt-3 pb-5">
+        <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+
+            <!-- 로고 -->
+            <div style="display: inline-block; text-align: left;">
+                <div class="pb-2 footer-logo">
+                    <img class="footer-logo-light" height="50" src="/static/travelertalk/img/icon.png">
+                    <img class="footer-logo-dark" height="50" src="/static/travelertalk/img/icon.png">
+                </div>
+                <div class="pt-2" style="width: 200px;">
+                    회사 소개를 적어주세요.
+                </div>
+            </div>
+
+            <!-- 사이트 링크 목록 -->
+            <div style="flex: 1; display: inline-block; text-align: left;">
+                <div class="row ps-5">
+                    <div class="col-sm-4">
+                        <h6 class="text-black-60">
+                            메인
+                        </h6>
+                        <ul class="list-unstyled m-0">
+                            <li class="mb-1">
+                                <a href="{{main_url}}" class="small text-black-50">메인 페이지</a>
+                            </li>
+                            <li class="mb-1">
+                                <a href="{{main_url}}/signup" class="small text-black-50">회원가입</a>
+                            </li>
+                            <li class="mb-1">
+                                <a href="{{main_url}}/find_account" class="small text-black-50">계정 찾기</a>
+                            </li>
+                            <li class="mb-1">
+                                <a href="{{main_url}}/terms" class="small text-black-50">이용약관</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-sm-4">
+                        <h6 class="text-black-60">
+                            사용자
+                        </h6>
+                        <ul class="list-unstyled m-0">
+                            <li class="mb-1">
+                                <a href="{{main_url}}/profile" class="small text-black-50">프로필</a>
+                            </li>
+                            <li class="mb-1">
+                                <a href="{{main_url}}/activity" class="small text-black-50">활동</a>
+                            </li>
+                            <li class="mb-1">
+                                <a href="{{main_url}}/coupon" class="small text-black-50">쿠폰</a>
+                            </li>
+                            <li class="mb-1">
+                                <a href="{{main_url}}/message" class="small text-black-50">메시지</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-sm-4">
+                        <h6 class="text-black-60">
+                            게시판
+                        </h6>
+                        <ul class="list-unstyled m-0">
+                            <li class="mb-1">
+                                <a href="{{main_url}}/post/attendance" class="small text-black-50">출석 게시판</a>
+                            </li>
+                            <li class="mb-1">
+                                <a href="{{main_url}}/post/greeting" class="small text-black-50">인사말 게시판</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 푸터 하단(저작권 정보) -->
+    <div class="border-top pt-3">
+        <div class="container py-3">
+            <div style="display: flex; justify-content: space-between;">
+                <div style="display: inline-block; text-align: left;">
+                    <p>© 2025 여행자들의 대화. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>

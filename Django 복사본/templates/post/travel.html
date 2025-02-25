@@ -1,0 +1,59 @@
+{% extends 'base/main_base.html' %}
+{% block content %}
+<!-- 왼쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;">
+  {% include 'parts/left_aside_main.html' %}
+</aside>
+
+<!-- 중앙 섹션 -->
+<section class="main-section px-5 px-lg-1" style="flex: 1; min-height: 100vh;">
+
+  <!-- 제목 -->
+  <div class="mt-4 mb-5">
+    {% include 'parts/goback.html' %}
+    <h5 class="mt-5">
+      {{board.name}}
+    </h5>
+  </div>
+
+  <!-- 게시글 검색 결과 -->
+  <div class="mb-5 row" style="min-height: 30vh;">
+    {% if posts|length == 0 %}
+    <p>
+      여행지가 없습니다.
+    </p>
+    {% endif %}
+    {% for post in posts %}
+    {% include 'parts/travel_post_card.html' %}
+    {% endfor %}
+  </div>
+
+  <!-- 검색 및 페이지 버튼 -->
+  <div>
+    <!-- 검색 컴포넌트 -->
+    {% include 'parts/search.html' %}
+
+    <!-- 페이지 버튼 -->
+    <div id="pageButton"></div>
+
+    <!-- 게시판 버튼(맨 위로, 글쓰기) -->
+    {% include 'parts/board_buttons.html' %}
+  </div>
+
+</section>
+
+<!-- 오른쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;">
+  {% include 'parts/right_aside_main.html' %}
+</aside>
+
+<script>
+
+  window.onload = () => {
+    console.log(`Window loaded at ${getNowDatetimeString()}`);
+    makePaegeButton('{{request.GET.page}}', '{{last_page}}', '/?search={{request.GET.search}}');
+  }
+
+</script>
+
+{% endblock %}

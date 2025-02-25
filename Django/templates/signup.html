@@ -13,23 +13,11 @@
 
       <!-- 선택지 버튼 그룹 -->
       <div class="btn-group w-100 d-flex">
-        <div class="w-100 d-flex justify-content-center rounded-2">
-          <a class="w-100 btn" href="/signup?tab=user" id="userTab">
-            일반 회원
-          </a>
-        </div>
+        {% include 'components/main/page_tab.html' with tab_name='일반 회원' tab_id='userTab' tab_link='/signup?tab=userTab' %}
         <span class="divider"></span>
-        <div class="w-100 d-flex justify-content-center rounded-2">
-          <a class="w-100 btn" id="dameTab" href="/signup?tab=dame">
-            여성회원
-          </a>
-        </div>
+        {% include 'components/main/page_tab.html' with tab_name='여성회원' tab_id='dameTab' tab_link='/signup?tab=dameTab' %}
         <span class="divider"></span>
-        <div class="w-100 d-flex justify-content-center rounded-2">
-          <a class="w-100 btn" href="/signup?tab=partner" id="partnerTab">
-            파트너 업체
-          </a>
-        </div>
+        {% include 'components/main/page_tab.html' with tab_name='파트너 업체' tab_id='partnerTab' tab_link='/signup?tab=partnerTab' %}
       </div>
 
 
@@ -103,14 +91,14 @@
         </form>
 
         <!-- 여성 회원 가입 폼 -->
-        <form id="dameForm" class="d-none mt-5">
+        <form id="dameTabBox" class="d-none mt-5">
           <div class="alert alert-info small">
             <i class="fi fi-rr-info"></i> 여성회원의 경우 가입 후 인증이 필요합니다.
           </div>
         </form>
 
         <!-- 파트너 업체 가입 폼 -->
-        <form id="partnerForm" class="d-none mt-5">
+        <form id="partnerTabBox" class="d-none mt-5">
           <h6 class="text-black-60 mb-3 pb-3 border-bottom">
             파트너 업체 가입 정보
           </h6>
@@ -129,147 +117,8 @@
           </div>
 
           <!-- 지역, 업종 카테고리 선택 -->
-          <div class="row mt-5">
-            <div class="form-group col-6">
-              <label>지역 카테고리 선택</label><br>
-              <div class="mb-3">
-                <!-- Level 1 -->
-                <select class="form-select mb-1" onchange="
-              document.getElementById('selectedBoard').value = this.options[this.selectedIndex].value;
-              document.querySelectorAll('.subBoard').forEach(e => e.classList.add('d-none'));
-              document.getElementById('board' + this.value).classList.toggle('d-none');">
-                  <option>-선택해주세요-</option>
-                  {% for travel_board in travel_boards %}
-                  <option value="{{travel_board.id}}">{{travel_board.name}}</option>
-                  {% endfor %}
-                </select>
-  
-                {% for travel_board in travel_boards %}
-                {% if travel_board.children|length > 0 %}
-                <!-- Level 2 -->
-                <select class="subBoard form-select d-none mb-1" id="board{{travel_board.id}}" onchange="
-              document.getElementById('selectedBoard').value = this.options[this.selectedIndex].value;
-              document.querySelectorAll('.subBoard').forEach(e => e.classList.add('d-none'));
-              document.getElementById('board' + '{{travel_board.id}}').classList.toggle('d-none');
-              document.getElementById('board' + this.value).classList.toggle('d-none');">
-                  <option>-선택해주세요-</option>
-                  {% for child in travel_board.children %}
-                  <option value="{{child.id}},{{travel_board.id}}">{{travel_board.name}} > {{child.name}}</option>
-                  {% endfor %}
-                </select>
-                {% endif %}
-  
-                {% for child in travel_board.children %}
-                {% if child.children|length > 0 %}
-                <!-- Level 3 -->
-                <select class="subBoard form-select d-none mb-1" id="board{{child.id}}" onchange="
-              document.getElementById('selectedBoard').value = this.options[this.selectedIndex].value;
-              document.querySelectorAll('.subBoard').forEach(e => e.classList.add('d-none'));
-              document.getElementById('board' + '{{travel_board.id}}').classList.toggle('d-none');
-              document.getElementById('board' + '{{child.id}}').classList.toggle('d-none');
-              document.getElementById('board' + this.value).classList.toggle('d-none');">
-                  <option>-선택해주세요-</option>
-                  {% for child2 in child.children %}
-                  <option value="{{child.id}},{{travel_board.id}},{{child2.id}}">{{travel_board.name}} >
-                    {{child.name}} >
-                    {{child2.name}}</option>
-                  {% endfor %}
-                </select>
-                {% endif %}
-  
-                {% for child2 in child.children %}
-                {% if child2.children|length > 0 %}
-                <!-- Level 4 -->
-                <select class="subBoard form-select d-none mb-1" id="board{{child2.id}}" onchange="
-              document.getElementById('selectedBoard').value = this.options[this.selectedIndex].value;
-              document.querySelectorAll('.subBoard').forEach(e => e.classList.add('d-none'));
-              document.getElementById('board' + '{{travel_board.id}}').classList.toggle('d-none');
-              document.getElementById('board' + '{{child.id}}').classList.toggle('d-none');
-              document.getElementById('board' + '{{child2.id}}').classList.toggle('d-none');
-              document.getElementById('board' + this.value).classList.toggle('d-none');">
-                  <option>-선택해주세요-</option>
-                  {% for child3 in child2.children %}
-                  <option value="{{child.id}},{{travel_board.id}},{{child2.id}},{{child3.id}}">{{travel_board.name}} >
-                    {{child.name}} > {{child2.name}} > {{child3.name}}</option>
-                  {% endfor %}
-                </select>
-                {% endif %}
-                {% endfor %}
-                {% endfor %}
-                {% endfor %}
-  
-              </div>
-              <input class="d-none" id="selectedBoard">
-            </div>
-            <div class="form-group col-6">
-              <label>업종 카테고리 선택</label><br>
-              <div class="mb-3">
-                <!-- category1 -->
-                <select class="form-select mb-1" onchange="
-              document.getElementById('serviceCategory').value = this.options[this.selectedIndex].value;
-              document.querySelectorAll('.subCategory').forEach(e => e.classList.add('d-none'));
-              document.getElementById('category' + this.value).classList.toggle('d-none');">
-                  <option>-선택해주세요-</option>
-                  {% for category in categories %}
-                  <option value="{{category.id}}">{{category.name}}</option>
-                  {% endfor %}
-                </select>
-                {% for category in categories %}
-                {% if category.children|length > 0 %}
-                <!-- category2 -->
-                <select class="subCategory form-select d-none mb-1" id="category{{category.id}}" onchange="
-              document.getElementById('serviceCategory').value = this.options[this.selectedIndex].value;
-              document.querySelectorAll('.subCategory').forEach(e => e.classList.add('d-none'));
-              document.getElementById('category' + '{{category.id}}').classList.toggle('d-none');
-              document.getElementById('category' + this.value).classList.toggle('d-none');">
-                  <option>-선택해주세요-</option>
-                  {% for child in category.children %}
-                  <option value="{{category.id}},{{child.id}}">{{category.name}} > {{child.name}}</option>
-                  {% endfor %}
-                </select>
-                {% endif %}
-  
-                {% for child in category.children %}
-                {% if child.children|length > 0 %}
-                <!-- category3 -->
-                <select class="subCategory form-select d-none mb-1" id="category{{child.id}}" onchange="
-              document.getElementById('serviceCategory').value = this.options[this.selectedIndex].value;
-              document.querySelectorAll('.subCategory').forEach(e => e.classList.add('d-none'));
-              document.getElementById('category' + '{{category.id}}').classList.toggle('d-none');
-              document.getElementById('category' + '{{child.id}}').classList.toggle('d-none');
-              document.getElementById('category' + this.value).classList.toggle('d-none');">
-                  <option>-선택해주세요-</option>
-                  {% for child2 in child.children %}
-                  <option value="{{category.id}},{{child.id}},{{child2.id}}">{{category.name}} > {{child.name}} >
-                    {{child2.name}}</option>
-                  {% endfor %}
-                </select>
-                {% endif %}
-  
-                {% for child2 in child.children %}
-                {% if child2.children|length > 0 %}
-                <!-- category4 -->
-                <select class="subCategory form-select d-none mb-1" id="category{{child2.id}}" onchange="
-              document.getElementById('serviceCategory').value = this.options[this.selectedIndex].value;
-              document.querySelectorAll('.subCategory').forEach(e => e.classList.add('d-none'));
-              document.getElementById('category' + '{{category.id}}').classList.toggle('d-none');
-              document.getElementById('category' + '{{child.id}}').classList.toggle('d-none');
-              document.getElementById('category' + '{{child2.id}}').classList.toggle('d-none');
-              document.getElementById('category' + this.value).classList.toggle('d-none');">
-                  <option>-선택해주세요-</option>
-                  {% for child3 in child2.children %}
-                  <option value="{{category.id}},{{child.id}},{{child2.id}},{{child3.id}}">{{category.name}} >
-                    {{child.name}} > {{child2.name}} > {{child3.name}}</option>
-                  {% endfor %}
-                </select>
-                {% endif %}
-                {% endfor %}
-                {% endfor %}
-                {% endfor %}
-  
-              </div>
-              <input class="d-none" id="serviceCategory">
-            </div>
+          <div class="mt-5">
+            {% include 'components/main/input_partner_category.html' %}
           </div>
 
           <!-- 연락처 및 이메일 주소 -->
@@ -298,104 +147,9 @@
             </div>
           </div>
 
-          <!-- 주소 -->
-          <div class="form-group mt-5">
-            <div style="display: flex; justify-content: space-between; white-space: nowrap;">
-              <div style="display: inline-block; text-align: left;">
-                <label class="mt-5">주소</label>
-              </div>
-              <div style="display: inline-block; text-align: right;">
-                <a class="btn btn-success mt-3" href="javascript: sample3_execDaumPostcode();">주소검색</a>
-              </div>
-            </div>
-            <div class="content">
-              <div id="wrap"
-                style="display:none;border:1px solid;width:100%;height:300px;margin:5px 0;position:relative">
-                <img src="//t1.daumcdn.net/postcode/resource/images/close.png" id="btnFoldWrap"
-                  style="cursor:pointer;position:absolute;right:0px;top:-1px;z-index:1" onclick="foldDaumPostcode()"
-                  alt="접기 버튼">
-              </div>
-              <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
-              <script>
-                // 우편번호 찾기 찾기 화면을 넣을 element
-                var element_wrap = document.getElementById('wrap');
-
-                function foldDaumPostcode() {
-                  // iframe을 넣은 element를 안보이게 한다.
-                  element_wrap.style.display = 'none';
-                }
-
-                function sample3_execDaumPostcode() {
-                  // 현재 scroll 위치를 저장해놓는다.
-                  var currentScroll = Math.max(document.body.scrollTop, document.documentElement.scrollTop);
-                  new daum.Postcode({
-                    oncomplete: function (data) {
-                      // 검색결과 항목을 클릭했을때 실행할 코드를 작성하는 부분.
-
-                      // 각 주소의 노출 규칙에 따라 주소를 조합한다.
-                      // 내려오는 변수가 값이 없는 경우엔 공백('')값을 가지므로, 이를 참고하여 분기 한다.
-                      var addr = ''; // 주소 변수
-                      var extraAddr = ''; // 참고항목 변수
-
-                      //사용자가 선택한 주소 타입에 따라 해당 주소 값을 가져온다.
-                      if (data.userSelectedType === 'R') { // 사용자가 도로명 주소를 선택했을 경우
-                        addr = data.roadAddress;
-                      } else { // 사용자가 지번 주소를 선택했을 경우(J)
-                        addr = data.jibunAddress;
-                      }
-
-                      // 사용자가 선택한 주소가 도로명 타입일때 참고항목을 조합한다.
-                      if (data.userSelectedType === 'R') {
-                        // 법정동명이 있을 경우 추가한다. (법정리는 제외)
-                        // 법정동의 경우 마지막 문자가 "동/로/가"로 끝난다.
-                        if (data.bname !== '' && /[동|로|가]$/g.test(data.bname)) {
-                          extraAddr += data.bname;
-                        }
-                        // 건물명이 있고, 공동주택일 경우 추가한다.
-                        if (data.buildingName !== '' && data.apartment === 'Y') {
-                          extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
-                        }
-                        // 표시할 참고항목이 있을 경우, 괄호까지 추가한 최종 문자열을 만든다.
-                        if (extraAddr !== '') {
-                          extraAddr = ' (' + extraAddr + ')';
-                        }
-                      }
-
-                      // 우편번호와 주소 정보를 해당 필드에 넣는다.
-                      document.getElementById("address").value = addr;
-
-                      // iframe을 넣은 element를 안보이게 한다.
-                      // (autoClose:false 기능을 이용한다면, 아래 코드를 제거해야 화면에서 사라지지 않는다.)
-                      element_wrap.style.display = 'none';
-
-                      // 우편번호 찾기 화면이 보이기 이전으로 scroll 위치를 되돌린다.
-                      document.body.scrollTop = currentScroll;
-                    },
-                    // 우편번호 찾기 화면 크기가 조정되었을때 실행할 코드를 작성하는 부분. iframe을 넣은 element의 높이값을 조정한다.
-                    onresize: function (size) {
-                      element_wrap.style.height = size.height + 'px';
-                    },
-                    width: '100%',
-                    height: '100%'
-                  }).embed(element_wrap);
-
-                  // iframe을 넣은 element를 보이게 한다.
-                  element_wrap.style.display = 'block';
-                }
-              </script>
-            </div>
-            <div class="form-group position-relative col-12 mt-3" style="display: inline-block;">
-              <input class="form-control pe-6" placeholder="소재지가 해외인경우 직접 입력해주세요." id="address">
-              <div class="position-absolute" style="right: 15px; top: 50%; transform: translateY(-50%);">
-                <i class="fi fi-rr-marker text-success"></i>
-              </div>
-            </div>
-            <div class="form-group position-relative col-12 mt-2" style="display: inline-block;">
-              <input class="form-control pe-6" placeholder="상세 주소를 입력해주세요.(선택)" id="addressDetail">
-              <div class="position-absolute" style="right: 15px; top: 50%; transform: translateY(-50%);">
-                <i class="fi fi-rr-check text-success"></i>
-              </div>
-            </div>
+          <!-- 주소 address, addressDetail -->
+          <div class="mt-5">
+            {% include 'components/main/input_address.html' %}
           </div>
 
           <div class="alert alert-info small mt-5">
@@ -429,6 +183,15 @@
 </main>
 
 <script>
+
+  // 페이지 로드 시 탭 선택 확인
+  window.addEventListener('load', () => {
+    const tab = '{{request.GET.tab}}';
+    if (!tab) {
+      location.href = '/signup?tab=userTab';
+    }
+  });
+
   var idOk = false;
   var passwordOk = false;
   var passwordCheckOk = false;
@@ -440,37 +203,6 @@
   var addressOk = false;
   var emailOk = false;
   var nowRegisterType = '{{request.GET.tab}}';
-
-  window.addEventListener('load', () => {
-    console.log(`Window loaded at ${getNowDatetimeString()}`);
-
-    // Tab
-    tab = '{{request.GET.tab}}';
-    if (tab == '') {
-      location.href = '/signup?tab=user';
-    }
-    var userTab = document.getElementById('userTab');
-    var dameTab = document.getElementById('dameTab');
-    var partnerTab = document.getElementById('partnerTab');
-    if (tab == 'user') {
-      userTab.classList.add('pastel-pink-background');
-      userTab.classList.add('text-white');
-      partnerTab.classList.add('pastel-beige-background');
-      dameTab.classList.add('pastel-beige-background');
-    } else if (tab == 'dame') {
-      userTab.classList.add('pastel-beige-background');
-      partnerTab.classList.add('pastel-beige-background');
-      dameTab.classList.add('pastel-pink-background');
-      dameTab.classList.add('text-white');
-      document.getElementById('dameForm').classList.remove('d-none');
-    } else if (tab == 'partner') {
-      userTab.classList.add('pastel-beige-background');
-      partnerTab.classList.add('pastel-pink-background');
-      partnerTab.classList.add('text-white');
-      dameTab.classList.add('pastel-beige-background');
-      document.getElementById('partnerForm').classList.remove('d-none');
-    }
-  });
 
 
   // 아이디 중복 검사

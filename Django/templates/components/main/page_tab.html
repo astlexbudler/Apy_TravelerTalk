@@ -6,3 +6,28 @@
     현재 주소가 해당 탭의 주소와 일치하면 탭에 active 클래스를 추가해야 합니다.
     탭을 클릭하면 해당 탭의 링크로 이동해야 합니다.
 -->
+<div class="w-100 d-flex justify-content-center rounded-2">
+    <a class="w-100 btn" href="{{tab_link}}" id="{{tab_id}}">
+        {{tab_name}}
+    </a>
+</div>
+<script>
+    window.addEventListener('load', () => {
+        if ('{{request.GET.tab}}' == '{{tab_id}}') { // 해당 탭이 선택 되었을 경우,
+            document.getElementById('{{tab_id}}').classList.add('pastel-pink-background');
+            document.getElementById('{{tab_id}}').classList.add('text-white');
+
+            // 탭 박스가 있다면 표시
+            if (document.getElementById('{{tab_id}}Box')) {
+                document.getElementById('{{tab_id}}Box').classList.remove('d-none');
+            }
+        } else { // 해당 탭이 선택 되지 않았을 경우,
+            document.getElementById('{{tab_id}}').classList.add('pastel-beige-background');
+
+            // 탭 박스가 있다면 숨김
+            if (document.getElementById('{{tab_id}}Box')) {
+                document.getElementById('{{tab_id}}Box').classList.add('d-none');
+            }
+        }
+    });
+</script>

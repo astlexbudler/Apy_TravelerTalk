@@ -1,0 +1,243 @@
+<!--
+    header.html
+    이 컴포넌트는 사이트의 헤더와 네비게이션을 구성합니다.
+
+    네비게이션은 사용자, 파트너, 관리자 페이지별로 다르게 구성됩니다.
+
+    로고, 출석체크, 즐겨찾기, 쿠폰함, 프로필, 쪽지, 로그아웃(로그인) 버튼이 포함됩니다.
+-->
+
+<!-- header -->
+<header class="header-main header-option-01 mb-5">
+    <div class="header-top">
+        <div class="container">
+
+            <!-- 헤더 상단 메뉴 -->
+            <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+                <div style="display: inline-block; text-align: left;">
+                    <a class="text-black-50 small me-3" style="white-space: nowrap;" href="#">
+                        <i class="fi fi-rr-calendar-check"></i> 출석체크
+                    </a>
+                    <a class="text-black-50 small me-3" style="white-space: nowrap;" href="#">
+                        <i class="fi fi-rr-bookmark"></i> 즐겨찾기
+                    </a>
+                    <a class="text-black-50 small" style="white-space: nowrap;" href="#">
+                        <i class="fi fi-rr-ticket"></i> 쿠폰함
+                    </a>
+                </div>
+                <div style="display: inline-block; text-align: right;">
+                    <a class="text-black-50 small me-3" style="white-space: nowrap;" href="#">
+                        <i class="fi fi-rr-user"></i> 프로필
+                    </a>
+                    <div class="h-col h-switch dropdown me-3" style="display: inline-block;">
+                        <a class="theme-switch text-black-50 small" type="button" style="white-space: nowrap;"
+                            aria-expanded="false" data-bs-toggle="dropdown" data-bs-display="static">
+                            <span class="bi my-1">
+                                <i class="fi fi-rr-envelope"></i> 쪽지함
+                            </span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end p-0" aria-labelledby="bd-theme">
+                            <li>
+                                <div style="width: 240px;" class="pt-3">
+                                    <p class="p-2">
+                                        새로운 쪽지가 없습니다.
+                                    </p>
+                                </div>
+                            </li>
+                            <li class="text-end p-2 border-top">
+                                <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+                                    <a class="text-black-50" href="/message">
+                                        <i class="fi fi-rr-envelope"></i> 쪽지함
+                                    </a>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <a class="text-black-50 small" href="#">
+                        <i class="fi fi-rr-exit"></i> 로그아웃
+                    </a>
+                </div>
+            </div>
+
+            <!-- 헤더 메인 -->
+            <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+                <div style="display: inline-block; text-align: left;">
+                    <div style="width: 80px; height: 80px;">
+
+                        <!-- 로고 -->
+                        <a href="/">
+                            <img class="logo-dark" src="/static/travelertalk/img/icon.png">
+                            <img class="logo-light" src="/static/travelertalk/img/icon.png">
+                        </a>
+
+                        <!-- 메뉴(오프캔버스) -->
+                        <nav class="navbar navbar-expand-lg" style="display: inline-block;">
+                            <div class="offcanvas nav-offcanvas offcanvas-start" tabindex="-1" id="offcanvas_Header_01"
+                                aria-labelledby="offcanvas_Header_01">
+
+                                <!-- 아래 메뉴는 모바일에서만 보입니다. -->
+                                <div class="offcanvas-header border-bottom border-gray-200 p-0">
+
+                                    <!-- 모바일 오프 캔버스 타이틀 -->
+                                    <div class="pastel-pink-background shadow w-100 p-3">
+                                        <div
+                                            style="display: flex; justify-content: space-between; white-space: nowrap;">
+                                            <div style="display: inline-block; text-align: left;">
+                                                <h6 class="text-black-60 pt-1 m-0">
+                                                    여행자들의 대화
+                                                </h6>
+                                            </div>
+                                            <div style="display: inline-block; text-align: right;">
+                                                <button class="btn-close" data-bs-dismiss="offcanvas"
+                                                    data-bs-target="#offcanvas_Header_01" aria-label="Close"></button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 모바일 로그인 -->
+                                    <div class="my-5 p-3">
+                                        <h5 class="text-black-60">
+                                            로그인
+                                        </h5>
+                                        <form id="loginForm" onkeyup="if(event.keyCode == 13) tryLogin();">
+                                            <div class="form-group">
+                                                <label>아이디</label>
+                                                <input class="form-control" placeholder="아이디를 입력해주세요" name="loginId">
+                                            </div>
+                                            <div class="form-group mt-2">
+                                                <label>비밀번호</label>
+                                                <input type="password" class="form-control" placeholder="비밀번호를 입력해주세요"
+                                                    name="loginPassword">
+                                            </div>
+                                            <div class="form-group mt-1">
+                                                <input type="checkbox" class="form-check-input" id="loginRemember"
+                                                    name="loginRemember">
+                                                <label for="loginRemember" class="small">로그인 상태 유지</label>
+                                            </div>
+                                            <div class="mt-4">
+                                                <a href="#"
+                                                    class="btn btn-primary btn-sm small me-1">로그인</a>
+                                                <a href="{{main_url}}/signup"
+                                                    class="btn btn-secondary btn-sm small">회원가입</a>
+                                            </div>
+                                        </form>
+                                    </div>
+
+                                    <!-- 모바일 게시판 타이틀 -->
+                                    <div class="px-3 mb-4">
+                                        <h6 class="text-black-60">
+                                            게시판
+                                        </h6>
+                                    </div>
+
+                                </div>
+                                <div class="offcanvas-body">
+                                    <ul class="navbar-nav mx-auto">
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="#">
+                                                여행
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="#">
+                                                이벤트
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="#">
+                                                커뮤니티
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="#">
+                                                후기
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="#">
+                                                쿠폰
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </nav>
+
+                    </div>
+                </div>
+                <div style="display: inline-block; text-align: right;">
+
+                    <!-- 모바일 오프캔버스 버튼 -->
+                    <div class="header-icons d-lg-none" style="padding-top: 16px;">
+                        <div class="h-col h-toggler d-lg-none">
+                            <button class="navbar-toggler h-burgur-icon" type="button" data-bs-toggle="offcanvas"
+                                data-bs-target="#offcanvas_Header_01" aria-controls="offcanvas_Header_01">
+                                <span></span>
+                            </button>
+                        </div>
+                        <div class="h-col h-extra-menu-toggle d-none d-lg-block">
+                            <a class="h-burgur-icon h-icon" data-bs-toggle="offcanvas" href="#header_extra_menu"
+                                role="button" aria-controls="header_extra_menuLabel">
+                                <span></span>
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 헤더 이미지 -->
+    <div class="header-bottom border-bottom border-gray-200" style="box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); padding-bottom: 1px;">
+        <!-- 이미지 헤더 -->
+        <div class="w-100" style="height: 120px; background: url('/media/default.png') center center no-repeat; background-size: cover;">
+        </div>
+    </div>
+
+</header>
+
+<div class="d-none">
+    <button class="theme-switch h-icon dropdown-toggle" id="bd-theme" type="button" aria-expanded="false"
+        data-bs-toggle="dropdown" data-bs-display="static">
+        <span class="bi my-1 theme-icon-active">
+            <i class="bi-circle-half"></i>
+        </span>
+        <span class="d-none">Toggle theme</span>
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="bd-theme">
+        <li>
+            <button type="button" class="dropdown-item" data-bs-theme-value="light">
+                <span class="bi me-2 opacity-50 theme-icon">
+                    <i class="bi-sun-fill"></i>
+                </span>
+                Light
+                <span class="bi ms-auto d-none">
+                    <i class="bi-check2"></i>
+                </span>
+            </button>
+        </li>
+        <li>
+            <button type="button" class="dropdown-item" data-bs-theme-value="dark">
+                <span class="bi me-2 opacity-50 theme-icon">
+                    <i class="bi-moon-stars-fill"></i>
+                </span>
+                Dark
+                <span class="bi ms-auto d-none">
+                    <i class="bi-check2"></i>
+                </span>
+            </button>
+        </li>
+        <li>
+            <button type="button" class="dropdown-item active" data-bs-theme-value="auto">
+                <span class="bi me-2 opacity-50 theme-icon">
+                    <i class="bi-circle-half"></i>
+                </span>
+                Auto
+                <span class="bi ms-auto d-none">
+                    <i class="bi-check2"></i>
+                </span>
+            </button>
+        </li>
+    </ul>
+</div>

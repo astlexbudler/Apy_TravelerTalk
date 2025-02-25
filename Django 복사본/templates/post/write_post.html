@@ -1,0 +1,131 @@
+{% extends 'base/main_base.html' %}
+{% block content %}
+<!-- 왼쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+
+<!-- 중앙 섹션 -->
+<section class="main-section" style="flex: 1; min-height: 100vh;">
+
+  <!-- 제목 -->
+  <div class="mt-4 mb-5">
+    {% include 'parts/goback.html' %}
+    <h5 class="mt-5">
+      게시글 작성
+    </h5>
+    <p class="small">
+      {{ board.name }}
+    </p>
+  </div>
+
+  <!-- 대표 이미지 -->
+  <div class="my-4">
+    <p>
+      썸네일 등록
+    </p>
+    <div id="imagePreview" class="mb-2 row">
+    </div>
+    <a href="javascript: document.getElementById('imageInput').click();" class="btn btn-success">
+      이미지 추가
+    </a>
+    <input type="file" class="d-none" id="imageInput">
+  </div>
+
+  <!-- 제목 -->
+  <div class="form-group mt-2 mb-3">
+    <label>제목</label>
+    <input type="text" id="postTitle" class="form-control" placeholder="제목을 입력해주세요"
+    value="{% if request.GET.review_post_id %}{{review_post.title}} 후기: {% endif %}">
+  </div>
+
+  <div class="form-group mt-2 mb-3">
+    <label>내용</label>
+    <div id="postContent"></div>
+    <div class="d-none" id="viewer"></div>
+  </div>
+
+  <div class="my-5">
+    <a class="btn btn-primary" href="javascript: writePost()">
+      작성하기 <i class="fi fi-rr-edit"></i>
+    </a>
+  </div>
+
+</section>
+
+<!-- 오른쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+
+<script>
+
+  window.onload = () => {
+    console.log(`Window loaded at ${getNowDatetimeString()}`);
+  }
+
+  const editor = new toastui.Editor({
+    el: document.querySelector('#postContent'),
+    height: '500px',
+    initialEditType: 'wysiwyg',
+    initialValue: '내용을 입력해 주세요.',
+    previewStyle: 'vertical',
+    hideModeSwitch: true,
+    language: 'ko-KR'
+  });
+
+  // 대표 이미지 추가
+  document.getElementById('imageInput').addEventListener('change', async (e) => {
+    const files = e.target.files;
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const imagePath = e.target.result;
+        document.getElementById('imagePreview').innerHTML = `
+        <div class="mb-2 me-2 shadow-sm text-end p-2" style="min-width: 150px; width: 12vw; background: url('${imagePath}') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw;"></div>
+        `;
+      }
+      reader.readAsDataURL(file);
+    }
+  });
+
+  writePost = async () => {
+    const title = document.querySelector('#postTitle').value;
+    const content = editor.getMarkdown();
+
+    if (title.length < 2) {
+      showAlert('제목 오류', '제목이 너무 짧습니다. 2자 이상 작성해주세요.', 'error');
+      return;
+    }
+    if (content.length < 10) {
+      showAlert('내용 오류', '내용이 너무 짧습니다. 10자 이상 입력해주세요.', 'error');
+      return;
+    }
+
+    var formData = new FormData();
+    formData.append('title', title);
+    formData.append('content', content);
+    formData.append('review_post_id', '{{ request.GET.review_post_id }}');
+    if (document.getElementById('imageInput')) {
+      formData.append('image', document.getElementById('imageInput').files[0]); // 대표 이미지
+    }
+
+    await fetch('/post/write_post?board_ids={{board_ids}}', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrftoken
+      },
+      body: formData,
+    })
+    .then(response => response.json())
+    .then(async (data) => {
+      if (data.result == 'success') {
+        await showAlert('게시글 작성 완료', '게시글이 성공적으로 작성되었습니다.', 'success');
+        window.location.href = '/post/post_view?post_id=' + data.post_id;
+      } else {
+        showAlert('게시글 작성 실패', '게시글 작성에 실패했습니다. 잠시 후 다시 시도해주세요.', 'error');
+      }
+    });
+  }
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,31 @@
+<li>
+  <div class="mb-4 border-bottom">
+    <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+      <div style="display: inline-block; text-align: left;">
+        <!-- 댓글 작성자 이름. 파트너 이름 또는 사용자 닉네임 -->
+        {% if board.board_type != 'anonymous' %}
+        {% if comment.author.partner_name %}
+        <span class="mt-0 mb-1 me-2 h6">{{ comment.author.partner_name }}</span>
+        {% else %}
+        <span class="mt-0 mb-1 me-2 h6">{{ comment.author.nickname }}</span>
+        {% endif %}
+        {% else %}
+        <span class="mt-0 mb-1 me-2 h6">익명 사용자</span>
+        {% endif %}
+        {% if account.id == comment.author.id or account.account_type == 'supervisor' or account.account_type == 'subsupervisor' and 'post' in account.subsupervisor_permissions %}
+        <a class="small text-black-50" href="javascript: deleteComment('{{ comment.id }}');">
+          <i class="fi fi-rr-trash"></i> 댓글 삭제
+        </a>
+        {% endif %}
+      </div>
+      <div style="display: inline-block; text-align: right;">
+        <div class="d-flex w-100 flex-row-reverse">
+          <small class="mb-2">{{ comment.created_at }}</small>
+        </div>
+      </div>
+    </div>
+    <p class="text-black-50">
+      {{ comment.content }}
+    </p>
+  </div>
+</li>

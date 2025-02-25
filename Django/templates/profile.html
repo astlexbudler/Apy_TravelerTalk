@@ -1,267 +1,121 @@
-{% extends 'base/main_base.html' %}
+{% extends 'base/base.html' %}
 {% block content %}
-<!-- 왼쪽 사이드바 -->
-<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+<main class="container">
 
-<!-- 중앙 섹션 -->
-<section class="main-section px-5 px-lg-1" style="flex: 1; min-height: 100vh;">
+  <div class="main-section">
 
-  <!-- 제목 -->
-  <div class="mt-4 mb-5">
-    {% include 'parts/goback.html' %}
-    <h5 class="mt-5">
-      사용자 프로필
-    </h5>
-    <p>
-      사용자 프로필을 확인하거나 수정할 수 있습니다.
-    </p>
-  </div>
+    <div style="min-height: calc(100vh - 160px);">
 
-  <!-- 선택지 버튼 그룹 -->
-  <div class="btn-group w-100">
-    <div class="w-100 d-flex justify-content-center rounded-2 pastel-pink-background">
-      <a class="w-100 btn text-dark fw-semibold" href="/profile?profile_id={{ profile.id }}" id="profileTab">
-        프로필
-      </a>
-    </div>
-    <span class="divider"></span>
-    <div class="w-100 d-flex justify-content-center rounded-2 pastel-beige-background">
-      <a class="w-100 btn" href="/activity?profile_id={{ profile.id }}" id="activityTab">
-        활동 기록
-      </a>
-    </div>
-  </div>
 
-  <!-- 프로필 상자 -->
-  <div class="my-5">
-    <p class="text-dark">
-      프로필 정보
-    </p>
+      <!-- 페이지 타이틀 -->
+      {% include 'components/main/breadcrumbs.html' %}
+      {% include 'components/main/title_section.html' with title='프로필' subtitle='프로필 정보를 확인하거나 수정할 수 있습니다.' %}
 
-    <!-- 프로필 카드 -->
-    {% include 'parts/profile_card.html' %}
-
-    <!--
-      레벨 정보 테이블 표시
-      - 사용자 계정일 때만 표시, 다른 계정은 표시하지 않음(다른 계정은 레벨이 없음)
-    -->
-    {% if profile.account_type in 'user, dame' %}
-    <p class="text-black-50 small">
-      <i class="fi fi-rr-info"></i> 포인트는 게시글 또는 댓글 작성, 출석 체크 등 활동에 따라 적립되며, 사용자 등급 상승 및 쿠폰 구매에 사용됩니다.
-    </p>
-    <div class="mb-5">
-      <p class="text-dark m-0">
-        등급 정보
-      </p>
-      <div>
-        <table class="table table-border small border shadow text-center">
-          {% for rule in level_rules %}
-          <tr>
-            <td class="pe-5"></td>
-            <td class="text-start">
-              {{ rule.level }} 레벨
-
-              <!-- 레벨 뱃지 -->
-              {% with level=rule.level %}
-              {% include 'parts/level_badge.html' %}
-              {% endwith %}
-
-            </td>
-            <td>
-              <i class="fi fi-ss-coins"></i> <span class="numberComma">{{ rule.required_exp }}</span> Exp
-            </td>
-          </tr>
-          {% endfor %}
-        </table>
-        <p class="text-black-50 small">
-          <i class="fi fi-rr-info"></i> 등급 상승은 Exp를 넘긴 후 자동으로 승급됩니다. (반영되는데 몇분정도 소요될 수 있습니다.)
-        </p>
+      <!-- 선택지 버튼 그룹 -->
+      <div class="btn-group w-100 d-flex">
+        {% include 'components/main/page_tab.html' with tab_name='프로필' tab_id='profileTab' tab_link='/profile?tab=profileTab' %}
+        <span class="divider"></span>
+        {% include 'components/main/page_tab.html' with tab_name='활동 기록' tab_id='activityTab' tab_link='/activity?tab=activityTab' %}
       </div>
-    </div>
-    {% endif %}
 
-    <div class="mb-5">
-      <p class="text-dark m-0">
-        상태
+      <!-- 프로필 정보 -->
+      <div class="mt-4">
 
-        <!--
-          관리자 또는 사용자 편집 권한이 있는 부관리자만 보이는 메뉴
-          사용자 상태 변경 버튼
-        -->
-        {% if account.account_type == 'supervisor' or account.account_type == 'subsupervisor' and 'user' in account.subsupervisor_permissions %}
-        <a class="text-black-50" href="javascript: new bootstrap.Modal(document.getElementById('changeStatusModal')).show();">
-          <i class="fi fi-rr-pen-clip"></i>
-        </a>
-        {% endif %}
+        <!-- 프로필 카드 -->
+        {% include 'components/main/profile_card.html' %}
 
-      </p>
+        <!-- 등급 정보 -->
+        <div class="mb-5">
+          <h6 class="text-black-60 mb-3 pb-3 border-bottom">
+            등급 정보
+          </h6>
+          <div class="accordion shadow">
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button bg-white text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#levelTableAccordionItem" aria-expanded="true" aria-controls="levelTableAccordionItem">
+                  등급 정보 확인
+                </button>
+              </h2>
+              <div id="levelTableAccordionItem" class="accordion-collapse collapse show">
+                <div class="accordion-body">
+                  <table class="table table-border border">
+                    <tr>
+                      <td class="ps-5">
+                        0 레벨
+                      </td>
+                      <td>
+                        {% include 'components/other/level_badge.html' %}
+                      </td>
+                      <td class="pe-5 text-end">
+                        <i class="fi fi-ss-coins"></i> <span class="numberComma">1000</span> Exp
+                      </td>
+                    </tr>
+                  </table>
+                  <div class="alert alert-info small">
+                    <i class="fi fi-rr-info"></i> 등급 상승은 Exp를 넘긴 후 자동으로 승급됩니다.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-      <!-- 사용자 상태 -->
-      {% if profile.status == 'pending' %}
-      <p class="text-black-50">
-        가입 대기중..
-      </p>
-      {% elif profile.status == 'active' %}
-      <p class="text-black-50">
-        정상
-      </p>
-      {% elif profile.status == 'deleted' %}
-      <p class="text-black-50">
-        삭제 대기중..
-      </p>
-      {% elif profile.status == 'blocked' %}
-      <p class="text-black-50">
-        정지됨
-      </p>
-      {% endif %}
+        <!-- 프로필 정보 -->
+        <div class="mb-5">
+          <h6 class="text-black-60 mb-3 pb-3 border-bottom">
+            프로필 수정
+          </h6>
+          <div class="mt-2 mb-5">
+            <p class="text-dark">
+              아이디
+            </p>
+            <p class="text-black-50">
+              사용자 아이디
+            </p>
+          </div>
+          <div class="mb-5 row">
+            <div class="col-8">
+              <p class="text-dark">
+                닉네임
+                <a class="text-black-50" href="#">
+                  <i class="fi fi-rr-edit"></i>
+                </a>
+              </p>
+              <p class="text-black-50">
+                사용자 닉네임
+              </p>
+            </div>
+            <div class="col-4">
+              <p class="text-dark">
+                상태
+                <a class="text-black-50" href="#">
+                  <i class="fi fi-rr-edit"></i>
+                </a>
+              </p>
+              <p class="text-black-50">
+                정상
+              </p>
+            </div>
+          </div>
+        </div>
 
-    </div>
-    <div class="mt-2 mb-5">
-      <p class="text-dark m-0">
-        아이디
-      </p>
-      <p class="text-black-50">
-        {{ profile.id }}
-      </p>
-    </div>
-    <div class="mb-5">
-      <p class="text-dark m-0">
-        닉네임
-      </p>
-      {% if account.id == profile.id or account.account_type == 'supervisor' or account.account_type == 'subsupervisor' and 'user' in account.subsupervisor_permissions %}
-      <a class="text-black-50"
-        href="javascript: new bootstrap.Modal(document.getElementById('rewriteNickNameModal')).show();">
-        {{ profile.nickname }} <i class="fi fi-rr-pen-clip"></i>
-      </a>
-      {% else %}
-      <p class="text-black-50">
-        {{ profile.nickname }}
-      </p>
-      {% endif %}
-    </div>
-    <div class="mb-5">
-      <p class="text-dark m-0">
-        비밀번호
-      </p>
-      {% if account.id == profile.id or account.account_type == 'supervisor' or account.account_type == 'subsupervisor' and 'user' in account.subsupervisor_permissions %}
-      <a class="text-black-50"
-        href="javascript: new bootstrap.Modal(document.getElementById('rewritePasswordModal')).show();">
-        비밀번호 변경 <i class="fi fi-rr-pen-clip"></i>
-      </a>
-      {% else %}
-      <p class="text-black-50">
-        ********
-      </p>
-      {% endif %}
-    </div>
-
-    <!--
-      부 관리자의 프로필일 때, 관리자만 보이는 메뉴
-      부 관리자 권한 편집 버튼
-    -->
-    {% if account.account_type == 'supervisor' and profile.account_type == 'subsupervisor' %}
-    <div class="mb-5">
-      <p class="text-dark m-0">
-        권한
-        <a class="text-black-50"
-        href="javascript: new bootstrap.Modal(document.getElementById('rewriteSubSupervisorPermissionsModal')).show();">
-        <i class="fi fi-rr-pen-clip"></i>
-      </a>
-      </p>
-      <p class="text-primary m-0">
-        {% if 'user' in profile.supervisor_permissions %}
-        <span class="badge bg-info">사용자 관리</span>
-        {% endif %}
-        {% if 'post' in profile.supervisor_permissions %}
-        <span class="badge bg-info">게시글 관리</span>
-        {% endif %}
-        {% if 'coupon' in profile.supervisor_permissions %}
-        <span class="badge bg-info">쿠폰 관리</span>
-        {% endif %}
-        {% if 'message' in profile.supervisor_permissions %}
-        <span class="badge bg-info">메시지 관리</span>
-        {% endif %}
-        {% if 'banner' in profile.supervisor_permissions %}
-        <span class="badge bg-info">배너 관리</span>
-        {% endif %}
-        {% if 'level' in profile.supervisor_permissions %}
-        <span class="badge bg-info">레벨 관리</span>
-        {% endif %}
-        {% if 'setting' in profile.supervisor_permissions %}
-        <span class="badge bg-info">시스템 관리</span>
-        {% endif %}
-      </p>
-    </div>
-    {% endif %}
-
-    <!-- 관리자 또는 사용자 편집 권한이 있는 부관리자만 보이는 메뉴 -->
-    {% if account.account_type == 'supervisor' or account.account_type == 'subsupervisor' and 'user' in account.subsupervisor_permissions %}
-    <div class="mb-5">
-      <p class="text-dark m-0">
-        계정 메모(관리자만 확인할 수 있습니다.)
-        {% if account.account_type == 'supervisor' or account.account_type == 'sub_supervisor' and 'user' in account.supervisor_permissions %}
-        <a class="text-black-50" href="javascript: new bootstrap.Modal(document.getElementById('changeNoteModal')).show();">
-          <i class="fi fi-rr-pen-clip"></i>
-        </a>
-        {% endif %}
-      </p>
-      <p class="text-black-50">
-        {{ profile.note }}
-      </p>
-    </div>
-    {% endif %}
-
-    <!-- partner -->
-    {% if profile.account_type == 'partner' %}
-    <div class="mt-5">
-      <p class="text-dark">
-        파트너 정보
-      </p>
-      <div class="mb-5">
-        <p class="text-dark m-0">
-          파트너 연락처
-        </p>
-        <a class="text-black-50"
-          href="javascript: new bootstrap.Modal(document.getElementById('rewritePartnerPhoneModal')).show();">
-          {{ profile.tel }} <i class="fi fi-rr-pen-clip"></i>
-        </a>
-      </div>
-      <div class="mb-5">
-        <p class="text-dark m-0">
-          파트너 이름
-        </p>
-        <p class="text-black-50">
-          {{ profile.partner_name }} 
-          <a class="text-black-50"
-            href="javascript: new bootstrap.Modal(document.getElementById('rewritePartnerNameModal')).show();">
-            <i class="fi fi-rr-pen-clip"></i>
+        <!-- 버튼 -->
+        <div class="mb-5 text-end">
+          <a class="btn btn-success btn-sm small me-2" href="#">
+            <i class="fi fi-rr-pen-clip"></i> 비밀번호 변경
           </a>
-        </p>
+          <a class="btn btn-danger btn-sm small" href="#">
+            <i class="fi fi-rr-trash"></i> 계정 삭제
+          </a>
+        </div>
+
       </div>
-    </div>
-    {% endif %}
 
-    {% if account.account_type == 'supervisor' or account.account_type == 'subsupervisor' and 'user' in account.supervisor_permissions %}
-    <div class="mb-5">
-      <a class="btn btn-danger"
-        href="javascript: deleteAccount();">
-        회원 삭제
-      </a>
     </div>
-    {% elif account.id == profile.id %}
-    <div class="mb-5">
-      <a class="btn btn-danger"
-        href="javascript: deleteAccount();">
-        회원 탈퇴
-      </a>
-    </div>
+
   </div>
-  {% endif %}
 
-</section>
-
-<!-- 오른쪽 사이드바 -->
-<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+</main>
 
 <!-- Modals -->
 <!-- 닉네임 변경 모달 -->
@@ -277,7 +131,8 @@
         <!-- name -->
         <div class="form-group">
           <label>새 닉네임</label> <small id="newNickNameConfirmText"></small>
-          <input type="text" class="form-control" placeholder="변경할 닉네임을 입력해주세요." id="newNickName" value="{{ profile.nickname }}">
+          <input type="text" class="form-control" placeholder="변경할 닉네임을 입력해주세요." id="newNickName"
+            value="{{ profile.nickname }}">
         </div>
 
       </div>
@@ -334,7 +189,8 @@
 
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-primary" onclick="rewritePartnerTel();" data-bs-dismiss="modal">변경하기</button>
+        <button type="button" class="btn btn-primary" onclick="rewritePartnerTel();"
+          data-bs-dismiss="modal">변경하기</button>
       </div>
     </div>
   </div>
@@ -357,7 +213,8 @@
 
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-primary" onclick="rewritePartnerName();" data-bs-dismiss="modal">변경하기</button>
+        <button type="button" class="btn btn-primary" onclick="rewritePartnerName();"
+          data-bs-dismiss="modal">변경하기</button>
       </div>
     </div>
   </div>
@@ -416,7 +273,8 @@
   </div>
 </div>
 <!-- 하위 관리자 권한 -->
-<div class="modal fade" id="rewriteSubSupervisorPermissionsModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+<div class="modal fade" id="rewriteSubSupervisorPermissionsModal" tabindex="-1" aria-labelledby="modalLabel"
+  aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
@@ -476,16 +334,22 @@
         </small>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-primary" onclick="rewriteSubSupervisorPermissions();" data-bs-dismiss="modal">변경하기</button>
+        <button type="button" class="btn btn-primary" onclick="rewriteSubSupervisorPermissions();"
+          data-bs-dismiss="modal">변경하기</button>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-  window.onload = () => {
-    console.log(`Window loaded at ${getNowDatetimeString()}`);
-  }
+
+  // 페이지 로드 시 탭 선택 확인
+  window.addEventListener('load', () => {
+    const tab = '{{request.GET.tab}}';
+    if (!tab) {
+      location.href = '/profile?tab=profileTab';
+    }
+  });
 
   // 닉네임 및 파트너 이름 정보 변경
   var nicknameOk = false;
@@ -503,11 +367,11 @@
 
     // 닉네임 중복 확인
     var exist = await fetch('/api/check_nickname?nickname=' + newNickName)
-    .then(response => response.json())
-    .then(data => {
-      console.log(data);
-      return data.result;
-    });
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        return data.result;
+      });
 
     // 닉네임 중복 확인 결과에 따른 처리
     if (exist == 'not_exist') {
@@ -523,7 +387,7 @@
     nicknameOk = false;
   });
   rewriteNickName = async () => {
-    if(!nicknameOk) {
+    if (!nicknameOk) {
       return;
     }
 
@@ -538,11 +402,11 @@
         'X-CSRFToken': csrftoken
       }
     })
-    .then(response => response.json())
-    .then(data => {
-      console.log(data);
-      return data.success;
-    });
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        return data.success;
+      });
 
     // 닉네임 변경 결과에 따른 처리
     if (result == 'y') {
@@ -604,11 +468,11 @@
         'X-CSRFToken': csrftoken
       }
     })
-    .then(response => response.json())
-    .then(data => {
-      console.log(data);
-      return data.success;
-    });
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        return data.success;
+      });
 
     // 비밀번호 변경 결과에 따른 처리
     if (result == 'y') {
@@ -653,11 +517,11 @@
         'X-CSRFToken': csrftoken
       }
     })
-    .then(response => response.json())
-    .then(data => {
-      console.log(data);
-      return data.success;
-    });
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        return data.success;
+      });
 
     // 연락처 변경 결과에 따른 처리
     if (result == 'y') {
@@ -702,11 +566,11 @@
         'X-CSRFToken': csrftoken
       }
     })
-    .then(response => response.json())
-    .then(data => {
-      console.log(data);
-      return data.success;
-    });
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        return data.success;
+      });
 
     // 이름 변경 결과에 따른 처리
     if (result == 'y') {
@@ -732,11 +596,11 @@
         'X-CSRFToken': csrftoken
       }
     })
-    .then(response => response.json())
-    .then(data => {
-      console.log(data);
-      return data.success;
-    });
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        return data.success;
+      });
 
     // 상태 변경 결과에 따른 처리
     if (result == 'y') {
@@ -762,11 +626,11 @@
         'X-CSRFToken': csrftoken
       }
     })
-    .then(response => response.json())
-    .then(data => {
-      console.log(data);
-      return data.success;
-    });
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        return data.success;
+      });
 
     // 계정 메모 변경 결과에 따른 처리
     if (result == 'y') {
@@ -800,12 +664,12 @@
       showCancelButton: true,
       cancelButtonText: `취소`
     })
-    .then((result) => {
-      if(result.isConfirmed) {
-        return true;
-      }
-      return false;
-    });
+      .then((result) => {
+        if (result.isConfirmed) {
+          return true;
+        }
+        return false;
+      });
     if (!isDelete) {
       return;
     }
@@ -817,11 +681,11 @@
         'X-CSRFToken': csrftoken
       }
     })
-    .then(response => response.json())
-    .then(data => {
-      console.log(data);
-      return data.success;
-    });
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        return data.success;
+      });
 
     // 회원 탈퇴 결과에 따른 처리
     if (result == 'y') {
@@ -848,11 +712,11 @@
         'X-CSRFToken': csrftoken
       }
     })
-    .then(response => response.json())
-    .then(data => {
-      console.log(data);
-      return data.success;
-    });
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        return data.success;
+      });
 
     // Exp 변경 결과에 따른 처리
     if (result == 'y') {
@@ -879,11 +743,11 @@
         'X-CSRFToken': csrftoken
       }
     })
-    .then(response => response.json())
-    .then(data => {
-      console.log(data);
-      return data.success;
-    });
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        return data.success;
+      });
 
     // 마일리지 변경 결과에 따른 처리
     if (result == 'y') {
@@ -932,11 +796,11 @@
         'X-CSRFToken': csrftoken
       }
     })
-    .then(response => response.json())
-    .then(data => {
-      console.log(data);
-      return data.success;
-    });
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        return data.success;
+      });
 
     // 권한 변경 결과에 따른 처리
     if (result == 'y') {

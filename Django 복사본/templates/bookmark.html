@@ -1,0 +1,51 @@
+{% extends 'base/main_base.html' %}
+{% block content %}
+<!-- 왼쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+
+<!-- 중앙 섹션 -->
+<section class="main-section px-5 px-lg-1" style="flex: 1; min-height: 100vh;">
+
+  <!-- 제목 -->
+  <div class="mt-4 mb-5">
+    {% include 'parts/goback.html' %}
+    <h5 class="mt-5">
+      북마크된 여행지
+    </h5>
+    <p>
+      북마크한 여행지 게시글을 확인할 수 있습니다.
+    </p>
+  </div>
+
+  <!-- 북마크한 여행지 게시글 -->
+  {% if bookmarks|length == 0 %}
+  <p>
+    북마크된 게시글이 없습니다.
+  </p>
+  {% else %}
+  {% for post in bookmarks %}
+  {% include 'parts/travel_post_card.html' %}
+  {% endfor %}
+  {% endif %}
+
+  <!-- 맨 위로 버튼 -->
+  <div class="text-end">
+    <button class="btn text-white m-0" id="topBtn" onclick="window.scrollTo({ top: 0, behavior: 'smooth' })" style="background-color: rgb(184, 184, 184);">
+      Top <i class="fi fi-rr-arrow-up"></i>
+    </button>
+  </div>
+
+</section>
+
+<!-- 오른쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+
+<script>
+
+  window.onload = () => {
+    console.log(`Window loaded at ${getNowDatetimeString()}`);
+  }
+
+</script>
+
+{% endblock %}

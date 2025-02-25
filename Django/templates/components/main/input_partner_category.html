@@ -1,0 +1,142 @@
+<div class="row">
+    <div class="form-group col-6">
+        <label>지역 카테고리 선택</label><br>
+        <div class="mb-3">
+            <!-- Level 1 -->
+            <select class="form-select mb-1" onchange="
+      document.getElementById('selectedBoard').value = this.options[this.selectedIndex].value;
+      document.querySelectorAll('.subBoard').forEach(e => e.classList.add('d-none'));
+      document.getElementById('board' + this.value).classList.toggle('d-none');">
+                <option>-선택해주세요-</option>
+                {% for travel_board in travel_boards %}
+                <option value="{{travel_board.id}}">{{travel_board.name}}</option>
+                {% endfor %}
+            </select>
+
+            {% for travel_board in travel_boards %}
+            {% if travel_board.children|length > 0 %}
+            <!-- Level 2 -->
+            <select class="subBoard form-select d-none mb-1" id="board{{travel_board.id}}" onchange="
+      document.getElementById('selectedBoard').value = this.options[this.selectedIndex].value;
+      document.querySelectorAll('.subBoard').forEach(e => e.classList.add('d-none'));
+      document.getElementById('board' + '{{travel_board.id}}').classList.toggle('d-none');
+      document.getElementById('board' + this.value).classList.toggle('d-none');">
+                <option>-선택해주세요-</option>
+                {% for child in travel_board.children %}
+                <option value="{{child.id}},{{travel_board.id}}">{{travel_board.name}} > {{child.name}}</option>
+                {% endfor %}
+            </select>
+            {% endif %}
+
+            {% for child in travel_board.children %}
+            {% if child.children|length > 0 %}
+            <!-- Level 3 -->
+            <select class="subBoard form-select d-none mb-1" id="board{{child.id}}" onchange="
+      document.getElementById('selectedBoard').value = this.options[this.selectedIndex].value;
+      document.querySelectorAll('.subBoard').forEach(e => e.classList.add('d-none'));
+      document.getElementById('board' + '{{travel_board.id}}').classList.toggle('d-none');
+      document.getElementById('board' + '{{child.id}}').classList.toggle('d-none');
+      document.getElementById('board' + this.value).classList.toggle('d-none');">
+                <option>-선택해주세요-</option>
+                {% for child2 in child.children %}
+                <option value="{{child.id}},{{travel_board.id}},{{child2.id}}">{{travel_board.name}} >
+                    {{child.name}} >
+                    {{child2.name}}</option>
+                {% endfor %}
+            </select>
+            {% endif %}
+
+            {% for child2 in child.children %}
+            {% if child2.children|length > 0 %}
+            <!-- Level 4 -->
+            <select class="subBoard form-select d-none mb-1" id="board{{child2.id}}" onchange="
+      document.getElementById('selectedBoard').value = this.options[this.selectedIndex].value;
+      document.querySelectorAll('.subBoard').forEach(e => e.classList.add('d-none'));
+      document.getElementById('board' + '{{travel_board.id}}').classList.toggle('d-none');
+      document.getElementById('board' + '{{child.id}}').classList.toggle('d-none');
+      document.getElementById('board' + '{{child2.id}}').classList.toggle('d-none');
+      document.getElementById('board' + this.value).classList.toggle('d-none');">
+                <option>-선택해주세요-</option>
+                {% for child3 in child2.children %}
+                <option value="{{child.id}},{{travel_board.id}},{{child2.id}},{{child3.id}}">{{travel_board.name}} >
+                    {{child.name}} > {{child2.name}} > {{child3.name}}</option>
+                {% endfor %}
+            </select>
+            {% endif %}
+            {% endfor %}
+            {% endfor %}
+            {% endfor %}
+
+        </div>
+        <input class="d-none" id="selectedBoard">
+    </div>
+    <div class="form-group col-6">
+        <label>업종 카테고리 선택</label><br>
+        <div class="mb-3">
+            <!-- category1 -->
+            <select class="form-select mb-1" onchange="
+      document.getElementById('serviceCategory').value = this.options[this.selectedIndex].value;
+      document.querySelectorAll('.subCategory').forEach(e => e.classList.add('d-none'));
+      document.getElementById('category' + this.value).classList.toggle('d-none');">
+                <option>-선택해주세요-</option>
+                {% for category in categories %}
+                <option value="{{category.id}}">{{category.name}}</option>
+                {% endfor %}
+            </select>
+            {% for category in categories %}
+            {% if category.children|length > 0 %}
+            <!-- category2 -->
+            <select class="subCategory form-select d-none mb-1" id="category{{category.id}}" onchange="
+      document.getElementById('serviceCategory').value = this.options[this.selectedIndex].value;
+      document.querySelectorAll('.subCategory').forEach(e => e.classList.add('d-none'));
+      document.getElementById('category' + '{{category.id}}').classList.toggle('d-none');
+      document.getElementById('category' + this.value).classList.toggle('d-none');">
+                <option>-선택해주세요-</option>
+                {% for child in category.children %}
+                <option value="{{category.id}},{{child.id}}">{{category.name}} > {{child.name}}</option>
+                {% endfor %}
+            </select>
+            {% endif %}
+
+            {% for child in category.children %}
+            {% if child.children|length > 0 %}
+            <!-- category3 -->
+            <select class="subCategory form-select d-none mb-1" id="category{{child.id}}" onchange="
+      document.getElementById('serviceCategory').value = this.options[this.selectedIndex].value;
+      document.querySelectorAll('.subCategory').forEach(e => e.classList.add('d-none'));
+      document.getElementById('category' + '{{category.id}}').classList.toggle('d-none');
+      document.getElementById('category' + '{{child.id}}').classList.toggle('d-none');
+      document.getElementById('category' + this.value).classList.toggle('d-none');">
+                <option>-선택해주세요-</option>
+                {% for child2 in child.children %}
+                <option value="{{category.id}},{{child.id}},{{child2.id}}">{{category.name}} > {{child.name}} >
+                    {{child2.name}}</option>
+                {% endfor %}
+            </select>
+            {% endif %}
+
+            {% for child2 in child.children %}
+            {% if child2.children|length > 0 %}
+            <!-- category4 -->
+            <select class="subCategory form-select d-none mb-1" id="category{{child2.id}}" onchange="
+      document.getElementById('serviceCategory').value = this.options[this.selectedIndex].value;
+      document.querySelectorAll('.subCategory').forEach(e => e.classList.add('d-none'));
+      document.getElementById('category' + '{{category.id}}').classList.toggle('d-none');
+      document.getElementById('category' + '{{child.id}}').classList.toggle('d-none');
+      document.getElementById('category' + '{{child2.id}}').classList.toggle('d-none');
+      document.getElementById('category' + this.value).classList.toggle('d-none');">
+                <option>-선택해주세요-</option>
+                {% for child3 in child2.children %}
+                <option value="{{category.id}},{{child.id}},{{child2.id}},{{child3.id}}">{{category.name}} >
+                    {{child.name}} > {{child2.name}} > {{child3.name}}</option>
+                {% endfor %}
+            </select>
+            {% endif %}
+            {% endfor %}
+            {% endfor %}
+            {% endfor %}
+
+        </div>
+        <input class="d-none" id="serviceCategory">
+    </div>
+</div>

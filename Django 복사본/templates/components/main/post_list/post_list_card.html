@@ -1,0 +1,89 @@
+<!--
+    post_list_card.html
+    이 컴포넌트는 카드형으로 여행지 게시글 목록을 표시하는 컴포넌트 입니다.
+    카드 내에서는 대표 이미지, 제목, 파트너 이름, 위치 안내 정보, 조회수, 좋아요 수, 댓글 수와 카테고리를 보여줍니다.
+
+    게시글의 요약 정보는 보통 다음과 같은 정보를 포함합니다:
+    post = {
+        'id': 'post id Integer.',
+        'boards': [{ # 게시글이 속한 게시판 리스트.
+            'id': 'board id Integer.',
+            'name': 'board name String.',
+        }],
+        'title': 'post title String.',
+        'author': { # 게시글 작성자 정보. 만약 여행지 게시글일 경우, partner_name으로 표시해야함.
+            'nickname': 'author nickname String.',
+            'partner_name': 'author partner name String.',
+        },
+        'created_at': 'post created time String(YYYY-MM-DD HH:MM).',
+        'view_count': 'post view count Integer.',
+        'like_count': 'post like count Integer.',
+        'comment_count': 'post comment count Integer.',
+        'place_info': { # 여행지 게시글일 경우, 여행지 정보를 포함. 아닐 경우 None.
+            'categories': [{ # 여행지 게시글이 속한 카테고리 리스트.
+                'id': 'category id Integer.',
+                'name': 'category name String.',
+            }],
+            'location_info': 'location info String.', # 간단한 위치 안내.
+            'status': 'place status String.', # 상태가 ad일 경우, 광고 뱃지 표시.
+        },
+    }
+-->
+
+<div class="col-6 col-lg-4 p-2">
+    <a href="{{main_url}}/post/travel_view?post_id={{ post.id }}" class="text-dark text-decoration-none">
+        <div class="card hover-scale overflow-hidden shadow-sm">
+            <div class="hover-scale-in blog-card-ratio ratio ratio-4x3">
+
+                <!-- 여행지 정보 상태가 'ad'인 경우, 베스트 업체로 표시 -->
+                <span
+                    class="bg-primary px-3 py-1 position-absolute top-0 start-0 w-auto h-auto z-1 mt-2 ms-2 text-white fs-sm text-center"
+                    style="line-height: 16px;">
+                    베스트<br>업체
+                </span>
+
+                <img class="blog-card-ratio-img card-img-top" src="/media/default.png">
+            </div>
+            <div class="card-body">
+
+                <!-- 카테고리 -->
+                <span class="text-black-50" style="font-size: 12px;">
+                    서비스 > 관광
+                </span>
+
+                <!-- 제목 -->
+                <h6 class="mb-4">
+                    등록된 여행 정보 제목
+                </h6>
+
+                <!-- 주소 -->
+                <p class="small text-black-50 mb-1">
+                    <i class="fi fi-rr-marker"></i> 위치 정보 안내
+                </p>
+
+                <!-- 오픈 정보 -->
+                <p class="small text-black-50 mb-1">
+                    <i class="fi fi-rr-info"></i> 영업 정보 안내
+                </p>
+
+            </div>
+            <div class="card-footer">
+
+                <!-- 댓글보기, 후기 검색, 정보 보기 버튼 -->
+                <a href="{{main_url}}/post/travel_view?post_id={{ post.id }}"
+                    class="btn btn-sm btn-outline-secondary small p-1 px-2">
+                    <i class="fi fi-rr-eye"></i> 상세
+                </a>
+                <a href="{{main_url}}/post/review?search={{post.title}}"
+                    class="btn btn-sm btn-outline-secondary small p-1 px-2">
+                    <i class="fi fi-rr-star"></i> 후기
+                </a>
+                <a href="{{main_url}}/post/travel_view?post_id={{ post.id }}"
+                    class="btn btn-sm btn-outline-secondary small p-1 px-2">
+                    <i class="fi fi-rr-comment"></i> 댓글
+                </a>
+
+            </div>
+        </div>
+    </a>
+</div>

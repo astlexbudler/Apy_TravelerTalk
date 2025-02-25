@@ -1,0 +1,389 @@
+{% extends 'base/partner_base.html' %}
+{% block content %}
+<!-- 왼쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+
+<!-- 중앙 섹션 -->
+<section class="main-section px-5 px-lg-1" style="flex: 1; min-height: 100vh;">
+
+  <!-- 제목 -->
+  <div class="mt-4 mb-5">
+    {% include 'parts/goback.html' %}
+    <h5 class="mt-5">
+      여행지 게시글 수정
+    </h5>
+    <p class="small">
+      {% for board in post.boards %}
+      {{ board.name }} {% if forloop.counter < post.boards|length %} &gt; {% endif %}
+      {% endfor %}
+    </p>
+  </div>
+
+  <!-- 게시글 컨테이너 -->
+  <div class='row my-5'>
+
+    <!-- 게시 상태 선택 -->
+    <div class="form-group">
+      <label>게시 상태 선택</label>
+      <select class="form-select" id="place_status">
+        <option value="writing" {% if post.place_info.status == 'writing' %}selected{% endif %}>숨김</option>
+        <option value="normal" {% if post.place_info.status == 'normal' %}selected{% endif %}>게시</option>
+        <option value="pending" {% if post.place_info.status == 'pending' %}selected{% endif %}>광고 요청</option>
+      </select>
+    </div>
+
+    <!-- 지역 카테고리 선택 (게시판) -->
+    <div class="form-group mt-5">
+      <label>지역 카테고리 선택</label><br>
+      <div class="mb-3">
+        <!-- Level 1 -->
+        <select class="form-select mb-1" onchange="
+          document.getElementById('selectedBoard').value = this.options[this.selectedIndex].value;
+          document.querySelectorAll('.subBoard').forEach(e => e.classList.add('d-none'));
+          document.getElementById('board' + this.value).classList.toggle('d-none');">
+          <option>-선택해주세요-</option>
+          {% for travel_board in boards %}
+          <option value="{{travel_board.id}}" {% if travel_board.id in post.board_ids %}selected{% endif %}
+          >{{travel_board.name}}</option>
+          {% endfor %}
+        </select>
+
+        {% for travel_board in boards %}
+        {% if travel_board.children|length > 0 %}
+        <!-- Level 2 -->
+        <select class="subBoard form-select mb-1 {% if travel_board.id not in post.board_ids %}d-none{% endif %}
+        " id="board{{travel_board.id}}" onchange="
+          document.getElementById('selectedBoard').value = this.options[this.selectedIndex].value;
+          document.querySelectorAll('.subBoard').forEach(e => e.classList.add('d-none'));
+          document.getElementById('board' + '{{travel_board.id}}').classList.toggle('d-none');
+          document.getElementById('board' + this.value).classList.toggle('d-none');">
+          <option>-선택해주세요-</option>
+          {% for child in travel_board.children %}
+          <option value="{{child.id}},{{travel_board.id}}" {% if child.id in post.board_ids %}selected{% endif %}
+          >{{travel_board.name}} > {{child.name}}</option>
+          {% endfor %}
+        </select>
+        {% endif %}
+
+        {% for child in travel_board.children %}
+        {% if child.children|length > 0 %}
+        <!-- Level 3 -->
+        <select class="subBoard form-select mb-1 {% if child.id not in post.board_ids %}d-none{% endif %}
+        " id="board{{child.id}}" onchange="
+          document.getElementById('selectedBoard').value = this.options[this.selectedIndex].value;
+          document.querySelectorAll('.subBoard').forEach(e => e.classList.add('d-none'));
+          document.getElementById('board' + '{{travel_board.id}}').classList.toggle('d-none');
+          document.getElementById('board' + '{{child.id}}').classList.toggle('d-none');
+          document.getElementById('board' + this.value).classList.toggle('d-none');">
+          <option>-선택해주세요-</option>
+          {% for child2 in child.children %}
+          <option value="{{child.id}},{{travel_board.id}},{{child2.id}}" {% if child2.id in post.board_ids %}selected{% endif %}
+          >{{travel_board.name}} > {{child.name}} > {{child2.name}}</option>
+          {% endfor %}
+        </select>
+        {% endif %}
+
+        {% for child2 in child.children %}
+        {% if child2.children|length > 0 %}
+        <!-- Level 4 -->
+        <select class="subBoard form-select mb-1 {% if child2.id not in post.board_ids %}d-none{% endif %}
+        " id="board{{child2.id}}" onchange="
+          document.getElementById('selectedBoard').value = this.options[this.selectedIndex].value;
+          document.querySelectorAll('.subBoard').forEach(e => e.classList.add('d-none'));
+          document.getElementById('board' + '{{travel_board.id}}').classList.toggle('d-none');
+          document.getElementById('board' + '{{child.id}}').classList.toggle('d-none');
+          document.getElementById('board' + '{{child2.id}}').classList.toggle('d-none');
+          document.getElementById('board' + this.value).classList.toggle('d-none');">
+          <option>-선택해주세요-</option>
+          {% for child3 in child2.children %}
+          <option value="{{child.id}},{{travel_board.id}},{{child2.id}},{{child3.id}}" {% if child3.id in post.board_ids %}selected{% endif %}
+          >{{travel_board.name}} > {{child.name}} > {{child2.name}} > {{child3.name}}</option>
+          {% endfor %}
+        </select>
+        {% endif %}
+        {% endfor %}
+        {% endfor %}
+        {% endfor %}
+
+      </div>
+      <input class="d-none" id="selectedBoard" value="{{ post.board_ids }}">
+    </div>
+
+    <!-- 서비스 카테고리 선택(카테고리) -->
+    <div class="form-group mt-2">
+      <label>업종 카테고리 선택</label><br>
+      <div class="mb-3">
+        <!-- category1 -->
+        <select class="form-select mb-1" onchange="
+          document.getElementById('serviceCategory').value = this.options[this.selectedIndex].value;
+          document.querySelectorAll('.subCategory').forEach(e => e.classList.add('d-none'));
+          document.getElementById('category' + this.value).classList.toggle('d-none');">
+          <option>-선택해주세요-</option>
+          {% for category in categories %}
+          <option value="{{category.id}}" {% if category.id in post.service_ids %}selected{% endif %}
+          >{{category.name}}</option>
+          {% endfor %}
+        </select>
+        {% for category in categories %}
+        {% if category.children|length > 0 %}
+        <!-- category2 -->
+        <select class="subCategory form-select mb-1 {% if category.id not in post.service_ids %}d-none{% endif %}
+        " id="category{{category.id}}" onchange="
+          document.getElementById('serviceCategory').value = this.options[this.selectedIndex].value;
+          document.querySelectorAll('.subCategory').forEach(e => e.classList.add('d-none'));
+          document.getElementById('category' + '{{category.id}}').classList.toggle('d-none');
+          document.getElementById('category' + this.value).classList.toggle('d-none');">
+          <option>-선택해주세요-</option>
+          {% for child in category.children %}
+          <option value="{{category.id}},{{child.id}}" {% if child.id in post.service_ids %}selected{% endif %}
+          >{{category.name}} > {{child.name}}</option>
+          {% endfor %}
+        </select>
+        {% endif %}
+
+        {% for child in category.children %}
+        {% if child.children|length > 0 %}
+        <!-- category3 -->
+        <select class="subCategory form-select d-none mb-1" id="category{{child.id}}" onchange="
+          document.getElementById('serviceCategory').value = this.options[this.selectedIndex].value;
+          document.querySelectorAll('.subCategory').forEach(e => e.classList.add('d-none'));
+          document.getElementById('category' + '{{category.id}}').classList.toggle('d-none');
+          document.getElementById('category' + '{{child.id}}').classList.toggle('d-none');
+          document.getElementById('category' + this.value).classList.toggle('d-none');">
+          <option>-선택해주세요-</option>
+          {% for child2 in child.children %}
+          <option value="{{category.id}},{{child.id}},{{child2.id}}" {% if child2.id in post.service_ids %}selected{% endif %}
+          >{{category.name}} > {{child.name}} > {{child2.name}}</option>
+          {% endfor %}
+        </select>
+        {% endif %}
+
+        {% for child2 in child.children %}
+        {% if child2.children|length > 0 %}
+        <!-- category4 -->
+        <select class="subCategory form-select mb-1 {% if child2.id not in post.service_ids %}d-none{% endif %}
+        " id="category{{child2.id}}" onchange="
+          document.getElementById('serviceCategory').value = this.options[this.selectedIndex].value;
+          document.querySelectorAll('.subCategory').forEach(e => e.classList.add('d-none'));
+          document.getElementById('category' + '{{category.id}}').classList.toggle('d-none');
+          document.getElementById('category' + '{{child.id}}').classList.toggle('d-none');
+          document.getElementById('category' + '{{child2.id}}').classList.toggle('d-none');
+          document.getElementById('category' + this.value).classList.toggle('d-none');">
+          <option>-선택해주세요-</option>
+          {% for child3 in child2.children %}
+          <option value="{{category.id}},{{child.id}},{{child2.id}},{{child3.id}}" {% if child3.id in post.service_ids %}selected{% endif %}
+          >{{category.name}} > {{child.name}} > {{child2.name}} > {{child3.name}}</option>
+          {% endfor %}
+        </select>
+        {% endif %}
+        {% endfor %}
+        {% endfor %}
+        {% endfor %}
+
+      </div>
+      <input class="d-none" id="serviceCategory" value="{{ post.service_ids }}">
+    </div>
+
+    <!-- 위치정보 및 영업정보 -->
+    <div class="row">
+      <div class="col-12 col-md-6">
+        <div class="form-group">
+          <label>위치정보</label>
+          <input type="text" class="form-control" id="location_info" value="{{ post.place_info.location_info }}">
+        </div>
+      </div>
+      <div class="col-12 col-md-6">
+        <div class="form-group">
+          <label>영업정보</label>
+          <input type="text" class="form-control" id="open_info" value="{{ post.place_info.open_info }}">
+        </div>
+      </div>
+    </div>
+
+    <!-- 주소 또는 위치 안내 -->
+    <div class="form-group mt-2 mb-5">
+      <label>주소 또는 위치 안내</label>
+      <input type="text" class="form-control" id="address" value="{{ post.place_info.address }}">
+    </div>
+
+    <hr>
+
+    <!-- 대표 이미지 -->
+    <div class="my-4">
+      <p>
+        썸네일 등록
+      </p>
+      <div id="imagePreview" class="mb-2 row">
+        {% if post.image and post.image != '/media/default.png' %}
+        <div class="mb-2 me-2 shadow-sm text-end p-2" style="min-width: 150px; width: 12vw; background: url('{{post.image}}') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw;"></div>
+        {% endif %}
+      </div>
+      <a href="javascript: document.getElementById('imageInput').click();" class="btn btn-success">
+        이미지 추가
+      </a>
+      <input type="file" class="d-none" id="imageInput" multiple>
+      <input id="imagePaths" value="{% for image in post.images %}{{ image }},{% endfor %}" class="d-none">
+    </div>
+
+    <!-- 제목 -->
+    <div class="my-4 mt-3">
+      <div class="form-group">
+        <label>제목</label>
+        <input type="text" class="form-control" value="{{ post.title }}" id="title">
+      </div>
+    </div>
+
+    <div class="form-group mt-2 mb-3">
+      <label>내용</label>
+      <div id="postContent">
+        {{ post.content|safe }}
+      </div>
+      <div class="d-none" id="viewer"></div>
+    </div>
+
+    <!-- 저장하기 -->
+    <div class="my-5">
+      <a class="btn btn-primary" href="javascript: writePost()">
+        작성하기 <i class="fi fi-rr-edit"></i>
+      </a>
+    </div>
+
+  </div>
+
+</section>
+
+<!-- 오른쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+
+<script>
+
+  window.onload = () => {
+    console.log(`Window loaded at ${getNowDatetimeString()}`);
+  }
+
+  // toastui editor
+  const editor = new toastui.Editor({
+    el: document.querySelector('#postContent'),
+    height: '500px',
+    width: '100px',
+    initialEditType: 'wysiwyg',
+    initialValue: '{{ post.content }}',
+    previewStyle: 'vertical',
+    hideModeSwitch: true,
+    language: 'ko-KR'
+  });
+
+  // 이미지 업로드 및 미리보기 생성
+  try {
+    document.getElementById('imageInput').addEventListener('change', async (e) => {
+      const files = e.target.files;
+      const imagePaths = document.getElementById('imagePaths');
+      const imagePreview = document.getElementById('imagePreview');
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const imagePath = e.target.result;
+          imagePreview.innerHTML = `
+          <div class="mb-2 me-2 shadow-sm text-end p-2" style="min-width: 150px; width: 12vw; background: url('${imagePath}') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw;"></div>
+          `;
+        }
+        reader.readAsDataURL(file);
+      }
+    });
+  } catch (e) {
+    console.error(e);
+  }
+
+  writePost = async () => {
+    var board_ids = document.getElementById('selectedBoard').value;
+    var service_ids = document.getElementById('serviceCategory').value;
+    var location_info = document.getElementById('location_info').value;
+    var open_info = document.getElementById('open_info').value;
+    var address = document.getElementById('address').value;
+    var title = document.getElementById('title').value;
+    var content = editor.getMarkdown();
+    var place_status = document.getElementById('place_status').value;
+
+    if (location_info == '' || open_info == '' || address == '' || title == '' || content == '') {
+      showAlert('작성 오류', '입력하지 않은 항목이 있습니다. 모든 항목을 입력해주세요.', 'error');
+      return;
+    }
+
+    var formData = new FormData();
+    formData.append('title', title);
+    formData.append('content', content);
+    formData.append('board_ids', board_ids);
+    formData.append('service_ids', service_ids);
+    formData.append('location_info', location_info);
+    formData.append('open_info', open_info);
+    formData.append('address', address);
+    formData.append('place_status', place_status);
+    if (document.getElementById('imageInput').files.length > 0) {
+      formData.append('image', document.getElementById('imageInput').files[0]);
+    }
+
+    await fetch('{{partner_url}}/partner/rewrite_post', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrftoken
+      },
+      body: formData,
+    })
+    .then(response => response.json())
+    .then(async (data) => {
+      if (data.result == 'success') {
+        await showAlert('게시글 수정 완료', '게시글이 성공적으로 수정되었습니다.', 'success');
+        window.location.href = '{{partner_url}}/partner';
+      } else {
+        showAlert('게시글 수정 실패', '게시글 수정에 실패했습니다. 잠시 후 다시 시도해주세요.', 'error');
+      }
+    });
+  }
+
+
+  // 게시글 수정
+  const rewritePost = async () => {
+    const title = document.getElementById('title').value;
+    const content = editor.getMarkdown();
+    const board = document.getElementById('board').value;
+    const imagePaths = document.getElementById('imagePaths').value;
+
+    // 입력값 확인
+    if (title == '' || content == '' || board == '' || imagePaths == '') {
+      showAlert('작성 오류', '입력하지 않은 항목이 있습니다. 제목과 내용, 게시판, 이미지를 모두 입력해주세요.', 'error');
+      return;
+    }
+
+    // 게시글 수정 요청 발송
+    var formData = new FormData();
+    formData.append('title', title);
+    formData.append('content', content);
+    formData.append('board_ids', board);
+    formData.append('images', imagePaths);
+    var result = await fetch('{{partner_url}}/partner/rewrite_post', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRFToken': csrftoken
+      }
+    })
+    .then(res => res.json())
+    .then(data => {
+      console.log(data);
+      return data.result;
+    });
+
+    // 결과 확인
+    if(result == 'success') {
+      await showAlert('게시글 수정', '게시글이 수정되었습니다.', 'success');
+      location.href = '{{partner_url}}';
+    } else {
+      showAlert('게시글 수정', '게시글 수정에 실패했습니다.', 'error');
+    }
+  }
+
+</script>
+
+{% endblock %}

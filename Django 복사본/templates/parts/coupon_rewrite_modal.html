@@ -1,0 +1,117 @@
+<div class="modal fade" id="rewriteCouponModal{{coupon.code}}" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          쿠폰 수정하기
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+        <form id="couponRewriteForm">
+          {% csrf_token %}
+
+          <!-- code -->
+          <div class="form-group mt-2 mb-2">
+            <label>쿠폰 코드</label>
+            <input class="form-control" placeholder="쿠폰 코드를 입력해주세요." id="rewriteCouponCode" name="code" value="{{coupon.code}}" readonly>
+            <small>
+              쿠폰 코드는 쿠폰을 사용할 때 필요한 코드입니다. 쿠폰 코드는 수정할 수 없습니다.
+            </small>
+          </div>
+
+          <!-- name -->
+          <div class="form-group mb-2">
+            <label>쿠폰 이름</label>
+            <input class="form-control" placeholder="쿠폰 이름을 입력해주세요." id="rewriteCouponName" name="name" value="{{coupon.name}}" required>
+          </div>
+
+          <!-- content -->
+          <div class="form-group mb-2">
+            <label>쿠폰 설명</label>
+            <textarea class="form-control" rows="5" placeholder="쿠폰 설명을 입력해주세요." id="rewriteCouponContent" name="content" required>{{coupon.content}}</textarea>
+          </div>
+
+          <!-- required_mileage -->
+          <div class="form-group mb-2">
+            <label>필요 포인트</label>
+            <input class="form-control" placeholder="필요 포인트를 입력해주세요." id="rewriteCouponRequireMileage" name="required_mileage" value="{{coupon.required_mileage}}">
+            <small>
+              쿠폰을 사용하기 위해 사용자가 보유해야 하는 포인트의 양입니다.
+            </small>
+          </div>
+
+          <!-- expire_at -->
+          <div class="form-group mb-2">
+            <label>만료일(선택)</label>
+            <input type="date" class="form-control" id="rewriteCouponExpireAt" name="expire_at" value="{{coupon.expire_at}}">
+            <small>
+              쿠폰의 만료일을 설정합니다. 만료일이 지나면, 해당 쿠폰은 사용할 수 없게 됩니다.
+            </small>
+          </div>
+
+          <!-- 사용자 표시(쿠폰 생성자만 확인 가능) -->
+          <div class="row mt-3">
+            <div class="col-12">
+              <p class="text-black">
+                쿠폰 소유자 수정
+              </p>
+              <div class="my-2">
+                <p class="text-black-50">
+                  쿠폰을 보유한 사용자가 없습니다.
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </form>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="rewriteCoupon();">수정하기</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+
+  rewriteCoupon = async () => {
+    var name = document.getElementById('rewriteCouponName').value;
+    var content = document.getElementById('rewriteCouponContent').value;
+    var required_mileage = document.getElementById('rewriteCouponRequireMileage').value;
+    var expire_at = document.getElementById('rewriteCouponExpireAt').value;
+
+    if (name == '' | content == '' | expire_at == '' | required_mileage == '') {
+      await showAlert('쿠폰 생성', '쿠폰 이름, 설명, 만료일, 필요 포인트는 필수 입력 사항입니다.', 'error');
+      return;
+    }
+
+    // 쿠폰 수정 요청
+    var form = document.getElementById('couponRewriteForm');
+    var formData = new FormData(form);
+
+    var result = await fetch('/api/coupon?patch=y', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrftoken
+      },
+      body: formData,
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log(data);
+      return data.result;
+    });
+
+    // 결과에 따른 처리
+    if (result == 'success') {
+      await showAlert('쿠폰 수정', '쿠폰이 수정되었습니다.', 'success');
+      location.reload();
+    } else {
+      await showAlert('쿠폰 수정 실패', '쿠폰 수정에 실패했습니다.', 'error');
+    }
+
+  }
+
+</script>

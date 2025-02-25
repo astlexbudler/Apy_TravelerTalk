@@ -1,0 +1,171 @@
+<!--
+    aside_left.html
+    이 컴포넌트는 왼쪽 사이드바를 구성합니다.
+
+    로그인 상자(로그인된 경우, 프로필 상지, 로그아웃 버튼을 포함합니다)
+    카테고리 메뉴(catrgories 컨텍스트를 받은 경우)
+    북마크된 게시글 상자, 사용자 활동 요약 상자(categoeies 컨텍스트가 없는 경우)
+
+    (로그인된 경우 account)
+    account = {
+        'account_type': 'user(사용자), dame(여성회원), partner(파트너), subsupervisor(부관리자), supervisor(관리자) 중 하나. String.',
+        'id': 'registered id String.',
+        'nickname': 'nickname String.',
+        'partner_name': 'partner name String.',
+        'partner_email': 'partner email String.',
+        'partner_tel': 'partner tel String.',
+        'exp': 'experience point Integer.',
+        'mileage': 'mileage point Integer.',
+        'level': {
+            'level': 'level Integer.',
+            'image': 'level image url String.', # 이미지가 있다면 이미지를 사용하고, 없다면 아래 내용으로 뱃지를 생성.
+            'text': 'level text String.', # 이미지가 없는 경우 사용할 뱃지 텍스트.
+            'text_color': 'level text color String.', # 이미지가 없는 경우 사용할 뱃지 텍스트 색상.
+            'background_color': 'level background color String.', # 이미지가 없는 경우 사용할 뱃지 배경 색상.
+        },
+        'subsupervisor_permissions': ['user', 'post', 'banner', 'setting', 'coupon', 'message', 'level'] # 부관리자 권한 리스트.'
+    }
+-->
+
+<aside class="d-none d-lg-block my-2" style="width: 240px;">
+
+    <!-- 로그인 -->
+    <div class="d-block">
+        <h5 class="text-black-60">
+            로그인
+        </h5>
+        <form id="loginForm" onkeyup="if(event.keyCode == 13) tryLogin();">
+            <div class="form-group">
+                <label>아이디</label>
+                <input class="form-control" placeholder="아이디를 입력해주세요" name="loginId">
+            </div>
+            <div class="form-group mt-2">
+                <label>비밀번호</label>
+                <input type="password" class="form-control" placeholder="비밀번호를 입력해주세요" name="loginPassword">
+            </div>
+            <div class="form-group mt-1">
+                <input type="checkbox" class="form-check-input" id="loginRemember" name="loginRemember">
+                <label for="loginRemember" class="small">로그인 상태 유지</label>
+            </div>
+            <div class="mt-4">
+                <a href="#" class="btn btn-primary btn-sm small me-1">로그인</a>
+                <a href="{{main_url}}/signup" class="btn btn-secondary btn-sm small">회원가입</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- 프로필 -->
+    <div class="d-none">
+
+        <!-- 계정 타입 -->
+        <a href="{{main_url}}/profile" class="text-dark">
+            <span class="text-black-50 me-1" style="font-size: 14px;">일반 회원</span> 
+            {% include 'components/other/level_badge.html' %}
+            <p>
+                사용자 닉네임
+            </p>
+        </a>
+
+        <!-- 포인트, 쿠폰, 쪽지 -->
+        <div class="border p-2">
+            <!-- 포인트 -->
+            <div>
+                <a class="text-black-60" href="{{main_url}}/activity">
+                    마일리지
+                    <span class="text-black-50">
+                        <i class="fi fi-ss-coins text-secondary"></i> <span class="numberComma">1000</span>
+                    </span>
+                </a>
+            </div>
+            <!-- 쿠폰 수 -->
+            <div>
+                <a class="text-black-60" href="{{main_url}}/coupon">
+                    내 쿠폰:
+                    <span class="text-black-50">
+                        <i class="fi fi-rr-ticket"></i> 0
+                    </span>
+                </a>
+            </div>
+            <!-- 읽지 않은 쪽지 갯수 -->
+            <div>
+                <a class="text-black-60" href="{{main_url}}/messenge">
+                    읽지 않은 쪽지:
+                    <span class="text-black-50">
+                        <i class="fi fi-rr-envelope"></i> 0
+                    </span>
+                </a>
+            </div>
+        </div>
+
+        <!-- 로그아웃 -->
+        <div class="text-end mt-3">
+            <a href="javascript: logout();" class="btn btn-secondary btn-sm small">로그아웃</a>
+        </div>
+    </div>
+
+    <div style="height: 80px;"></div>
+
+    <!-- 즐겨찾기 -->
+    <div class="pt-4">
+        <div style="border-bottom: 3px solid #ffafc8;">
+            <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+                <div style="display: inline-block; text-align: left;">
+                    <h6 class="text-black-60">
+                        즐겨찾기
+                    </h6>
+                </div>
+                <div style="display: inline-block; text-align: right;">
+                    <a href="{{main_url}}/bookmark" class="small text-black-50">더보기</a>
+                </div>
+            </div>
+        </div>
+        <div class="py-3" style="min-height: 200px;">
+            <p>
+                로그인이 필요합니다
+            </p>
+        </div>
+    </div>
+
+    <!-- 내 쿠폰들. 사용자 계정만 표시 -->
+    <div class="pt-4">
+        <div style="border-bottom: 3px solid #ffafc8;">
+            <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+                <div style="display: inline-block; text-align: left;">
+                    <h6 class="text-black-60">
+                        내 쿠폰
+                    </h6>
+                </div>
+                <div style="display: inline-block; text-align: right;">
+                    <a href="{{main_url}}/coupon" class="small text-black-50">더보기</a>
+                </div>
+            </div>
+        </div>
+        <div class="py-3" style="min-height: 200px;">
+            <p>
+                로그인이 필요합니다
+            </p>
+        </div>
+    </div>
+
+    <!-- 활동 내역 -->
+    <div class="pt-4">
+        <div style="border-bottom: 3px solid #ffafc8;">
+            <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+                <div style="display: inline-block; text-align: left;">
+                    <h6 class="text-black-60">
+                        활동 내역
+                    </h6>
+                </div>
+                <div style="display: inline-block; text-align: right;">
+                    <a href="{{main_url}}/activity" class="small text-black-50">더보기</a>
+                </div>
+            </div>
+        </div>
+        <div class="py-3" style="min-height: 200px;">
+            <p>
+                로그인이 필요합니다
+            </p>
+        </div>
+    </div>
+
+</aside>

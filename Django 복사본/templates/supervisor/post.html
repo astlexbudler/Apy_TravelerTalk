@@ -1,0 +1,1142 @@
+{% extends 'base/supervisor_base.html' %}
+{% block content %}
+<!-- 왼쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;">
+  {% include 'parts/left_aside_main.html' %}
+</aside>
+
+<!-- 중앙 섹션 -->
+<section class="main-section px-5 px-lg-1" style="flex: 1; min-height: 100vh;">
+
+  <!-- 제목 -->
+  <div class="mt-4 mb-5">
+    <h5 class="mt-5">
+      게시글 관리
+    </h5>
+    <p class="small">
+      일반 게시글 관리
+    </p>
+  </div>
+
+  <!-- 게시글 -->
+  <div class="my-5" id="user">
+
+    <!-- 버튼 -->
+    <div class="p-3 mb-5 text-end">
+
+      <a class="btn btn-success btn-sm me-2" href="javascript: new bootstrap.Modal(document.getElementById('addnewBoardModal')).show()">
+        <i class="fi fi-rr-plus"></i> 최상위 게시판 추가
+      </a>
+
+      <a class="btn btn-success btn-sm me-2" href="javascript: new bootstrap.Modal(document.getElementById('addCategoryModal')).show()">
+        <i class="fi fi-rr-plus"></i> 최상위 카테고리 추가
+      </a>
+
+    </div>
+
+    <!-- 통계 -->
+    <div class="rounded border p-3 mb-5 shadow">
+      <p>
+        <i class="fi fi-rr-stats"></i> 게시판 편집
+      </p>
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>구분</th>
+            <th>조회수</th>
+            <th>게시글 수</th>
+            <th style="width: 100px;"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for board in status %}
+          <tr>
+            <td>
+              <p>
+                {{ board.name }}<br>
+
+                <!-- 하위 게시판 추가. 트리 타입만 가능 -->
+                {% if board.board_type == 'tree' %}
+                <a href="javascript: document.getElementById('subBoardParent').value = '{{ board.id }}'; new bootstrap.Modal(document.getElementById('addnewBoardModal')).show()"
+                class="btn btn-success p-1 px-2 small">
+                  <i class="fi fi-rr-plus"></i> 하위 게시판 추가
+                </a>
+                {% endif %}
+
+              </p>
+            </td>
+            <td>{{ board.total_views }}</td>
+            <td>{{ board.total_posts }}</td>
+            <td class="text-center">
+
+              <!-- 게시판 수정 -->
+              <a href="javascript: new bootstrap.Modal(document.getElementById('{{ board.id }}EditModal')).show()">
+                <i class="fi fi-rr-edit"></i>
+              </a>
+              {% with to_modify_board=board %}
+              {% include 'parts/update_board_modal.html' %}
+              {% endwith %}
+
+            </td>
+          </tr>
+          {% if board.children|length > 0 %}
+          {% for child in board.children %}
+          <tr>
+            <td>
+              <p class="ms-2">
+                {{ child.name }}<br>
+
+                <!-- 하위 게시판 추가. 트리 타입만 가능 -->
+                {% if child.board_type == 'tree' %}
+                <a href="javascript: document.getElementById('subBoardParent').value = '{{ board.id }}'; new bootstrap.Modal(document.getElementById('addnewBoardModal')).show()"
+                class="btn btn-success p-1 px-2 small">
+                  <i class="fi fi-rr-plus"></i> 하위 게시판 추가
+                </a>
+                {% endif %}
+
+              </p>
+            </td>
+            <td>{{ child.total_views }}</td>
+            <td>{{ child.total_posts }}</td>
+            <td class="text-center">
+
+              <!-- 게시판 수정 -->
+              <a href="javascript: new bootstrap.Modal(document.getElementById('{{ child.id }}EditModal')).show()">
+                <i class="fi fi-rr-edit"></i>
+              </a>
+              {% with to_modify_board=child %}
+              {% include 'parts/update_board_modal.html' %}
+              {% endwith %}
+
+            </td>
+            {% if child.children|length > 0 %}
+            {% for grandchild in child.children %}
+            <tr>
+              <td>
+                <p class="ms-4">
+                  {{ grandchild.name }}<br>
+
+                  <!-- 하위 게시판 추가. 트리 타입만 가능 -->
+                  {% if grandchild.board_type == 'tree' %}
+                  <a href="javascript: document.getElementById('subBoardParent').value = '{{ board.id }}'; new bootstrap.Modal(document.getElementById('addnewBoardModal')).show()"
+                  class="btn btn-success p-1 px-2 small">
+                    <i class="fi fi-rr-plus"></i> 하위 게시판 추가
+                  </a>
+                  {% endif %}
+
+                </p>
+              </td>
+              <td>{{ grandchild.total_views }}</td>
+              <td>{{ grandchild.total_posts }}</td>
+              <td class="text-center">
+
+                <!-- 게시판 수정 -->
+                <a href="javascript: new bootstrap.Modal(document.getElementById('{{ grandchild.id }}EditModal')).show()">
+                  <i class="fi fi-rr-edit"></i>
+                </a>
+                {% with to_modify_board=grandchild %}
+                {% include 'parts/update_board_modal.html' %}
+                {% endwith %}
+
+              </td>
+            </tr>
+              {% if grandchild.children|length > 0 %}
+              {% for grandgrandchild in grandchild.children %}
+              <tr>
+                <td>
+                  <span class="ms-6">{{ grandgrandchild.name }}</span>
+                </td>
+                <td>{{ grandgrandchild.total_views }}</td>
+                <td>{{ grandgrandchild.total_posts }}</td>
+                <td class="text-center">
+
+                  <!-- 게시판 수정 -->
+                  <a href="javascript: new bootstrap.Modal(document.getElementById('{{ grandgrandchild.id }}EditModal')).show()">
+                    <i class="fi fi-rr-edit"></i>
+                  </a>
+                  {% with to_modify_board=grandgrandchild %}
+                  {% include 'parts/update_board_modal.html' %}
+                  {% endwith %}
+
+                </td>
+              </tr>
+              {% endfor %}
+              {% endif %}
+            {% endfor %}
+            {% endif %}
+          {% endfor %}
+          {% endif %}
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <p class="mt-4">
+        <i class="fi fi-rr-list"></i> 카테고리 편집
+      </p>
+      <table class="table table-bordered">
+        <tbody>
+          {% for category in categories %}
+          <tr>
+            <td>
+              <p>
+                {{ category.name }}<br>
+
+                <a href="javascript: document.getElementById('subCategoryParent').value = '{{ category.id }}'; new bootstrap.Modal(document.getElementById('addCategoryModal')).show()"
+                class="btn btn-success p-1 px-2 small">
+                  <i class="fi fi-rr-plus"></i> 하위 카테고리 추가
+                </a>
+
+              </p>
+            </td>
+            <td class="text-center" style="width: 100px;">
+
+              <!-- 게시판 수정 -->
+              <a href="javascript: new bootstrap.Modal(document.getElementById('{{ category.id }}CategoryEditModal')).show()">
+                <i class="fi fi-rr-edit"></i>
+              </a>
+              {% with to_modify_category=category %}
+              {% include 'parts/update_category_modal.html' %}
+              {% endwith %}
+
+            </td>
+          </tr>
+          {% if category.children|length > 0 %}
+          {% for child in category.children %}
+          <tr>
+            <td>
+              <p class="ms-2">
+                {{ child.name }}<br>
+
+                <a href="javascript: document.getElementById('subCategoryParent').value = '{{ child.id }}'; new bootstrap.Modal(document.getElementById('addCategoryModal')).show()"
+                class="btn btn-success p-1 px-2 small">
+                  <i class="fi fi-rr-plus"></i> 하위 카테고리 추가
+                </a>
+
+              </p>
+            </td>
+            <td class="text-center">
+
+              <!-- 게시판 수정 -->
+              <a href="javascript: new bootstrap.Modal(document.getElementById('{{ child.id }}CategoryEditModal')).show()">
+                <i class="fi fi-rr-edit"></i>
+              </a>
+              {% with to_modify_category=child %}
+              {% include 'parts/update_category_modal.html' %}
+              {% endwith %}
+
+            </td>
+            {% if child.children|length > 0 %}
+            {% for grandchild in child.children %}
+            <tr>
+              <td>
+                <p class="ms-4">
+                  {{ grandchild.name }}<br>
+
+                  <a href="javascript: document.getElementById('subCategoryParent').value = '{{ grandchild.id }}'; new bootstrap.Modal(document.getElementById('addCategoryModal')).show()"
+                  class="btn btn-success p-1 px-2 small">
+                    <i class="fi fi-rr-plus"></i> 하위 카테고리 추가
+                  </a>
+
+                </p>
+              </td>
+              <td class="text-center">
+
+                <!-- 게시판 수정 -->
+                <a href="javascript: new bootstrap.Modal(document.getElementById('{{ grandchild.id }}CategoryEditModal')).show()">
+                  <i class="fi fi-rr-edit"></i>
+                </a>
+                {% with to_modify_category=grandchild %}
+                {% include 'parts/update_category_modal.html' %}
+                {% endwith %}
+
+              </td>
+            </tr>
+              {% if grandchild.children|length > 0 %}
+              {% for grandgrandchild in grandchild.children %}
+              <tr>
+                <td>
+                  <span class="ms-6">{{ grandgrandchild.name }}</span>
+                </td>
+                <td class="text-center">
+
+                  <!-- 게시판 수정 -->
+                  <a href="javascript: new bootstrap.Modal(document.getElementById('{{ grandgrandchild.id }}CategoryEditModal')).show()">
+                    <i class="fi fi-rr-edit"></i>
+                  </a>
+                  {% with to_modify_category=grandgrandchild %}
+                  {% include 'parts/update_category_modal.html' %}
+                  {% endwith %}
+
+                </td>
+              </tr>
+              {% endfor %}
+              {% endif %}
+            {% endfor %}
+            {% endif %}
+          {% endfor %}
+          {% endif %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 검색 -->
+    <div class="rounded border p-3 mb-5 shadow">
+      <p>
+        <i class="fi fi-rr-search"></i> 검색
+      </p>
+      <form id="postSearchForm" method="get" action="{{supervisor_url}}/supervisor/post">
+        <div class="row">
+          <div class="form-group mt-4 col-12">
+            <label>제목</label>
+            <input class="form-control" name="post_title" placeholder="게시글 제목">
+          </div>
+          <div class="form-group mt-4 col-12">
+            <label>게시판</label>
+            <select class="form-select" name="board_id">
+              <option value="">전체</option>
+              {% for board in status %}
+              <option value="{{ board.id }}">{{ board.name }}</option>
+              {% if board.children|length > 0 %}
+              {% for child in board.children %}
+              <option value="{{ child.id }}">- {{ child.name }}</option>
+              {% if child.children|length > 0 %}
+              {% for grandchild in child.children %}
+              <option value="{{ grandchild.id }}">-- {{ grandchild.name }}</option>
+              {% if grandchild.children|length > 0 %}
+              {% for grandgrandchild in grandchild.children %}
+              <option value="{{ grandgrandchild.id }}">--- {{ grandgrandchild.name }}</option>
+              {% endfor %}
+              {% endif %}
+              {% endfor %}
+              {% endif %}
+              {% endfor %}
+              {% endif %}
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group mt-4 mb-4">
+            <label>작성자 아이디</label>
+            <input class="form-control" name="author_id" placeholder="작성자">
+          </div>
+          <div id="searchPlace" class="d-none">
+            <div class="row p-0">
+              <div class="form-group mt-2 col-6">
+                <label>여행지 카테고리</label>
+                <select class="form-select" name="category_id">
+                  <option value="">전체</option>
+                  {% for category in categories %}
+                  <option value="{{ category.id }}">{{ category.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="form-group mt-2 col-6">
+                <label>여행지 게시글 상태</label>
+                <select class="form-select" name="place_status">
+                  <option value="">전체</option>
+                  <option value="writing">작성중</option>
+                  <option value="normal">일반</option>
+                  <option value="pending">승인대기</option>
+                  <option value="ad">광고</option>
+                  <option value="blocked">차단됨</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group mt-4 col-12">
+              <label>여행지 주소</label>
+              <input class="form-control" name="address" placeholder="여행지 주소">
+            </div>
+          </div>
+          <div class="form-group mt-4 col-12">
+            <input type="checkbox" class="form-check-input me-1" name="is_place_search" value="y" {% if request.GET.is_place_search == 'y' %}checked{% endif %}
+            onchange="if(this.checked) { document.getElementById('searchPlace').classList.remove('d-none'); } else { document.getElementById('searchPlace').classList.add('d-none'); }">
+            <label>여행지 게시글 검색</label>
+          </div>
+        </div>
+      </form>
+
+      <p class="text-end mt-4">
+        <a class="btn btn-primary" href="javascript: document.getElementById('postSearchForm').submit()">
+          <i class="fi fi-rr-search"></i> 검색
+        </a>
+      </p>
+    </div>
+
+    <!-- 버튼 -->
+    <div class="p-3 mb-5 text-end">
+
+      <a href="javascript: openExportDataPage();" class="btn btn-sm btn-success">
+        <i class="fi fi-rr-file-excel"></i> 다운로드
+      </a>
+
+    </div>
+
+    <!-- 검색 결과 -->
+    {% if posts|length == 0 %}
+    <p>
+      게시글이 없습니다.
+    </p>
+    {% else %}
+
+    {% for post in posts %}
+
+    <!-- 여행지 게시글 형태 -->
+    {% if post.board.board_type == 'travel' %}
+    <div class="row">
+      <div class="col-6 col-lg-4 col-xl-3 p-2">
+        <a href="{{main_url}}/post/travel_view?post_id={{ post.id }}" class="text-dark text-decoration-none" target="_blank">
+          <div class="card hover-scale overflow-hidden shadow-sm">
+            <div class="hover-scale-in blog-card-ratio ratio ratio-4x3">
+      
+              <!-- 여행지 정보 상태가 'ad'인 경우, 베스트 업체로 표시 -->
+              {% if post.place_info.status == 'ad' %}
+              <span
+                class="bg-primary px-3 py-1 position-absolute top-0 start-0 w-auto h-auto z-1 mt-2 ms-2 text-white fs-sm text-center"
+                style="line-height: 16px;">
+                베스트<br>업체
+              </span>
+              {% endif %}
+      
+              <img class="blog-card-ratio-img card-img-top" src="{{ post.image }}">
+            </div>
+            <div class="card-body">
+      
+              <!-- 카테고리 -->
+              <span class="text-black-50" style="font-size: 12px;">
+                {% for category_name in post.place_info.categories %}
+                {{ category_name }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+              </span>
+      
+              <!-- 제목 -->
+              <h6 class="mb-4">
+                {{ post.title }}
+              </h6>
+      
+              <!-- 주소 -->
+              <p class="small text-black-50">
+                <i class="fi fi-rr-marker"></i> {{ post.place_info.address }}
+              </p>
+      
+              <!-- 오픈 정보 -->
+              <p class="small text-black-50">
+                <i class="fi fi-rr-time"></i> {{ post.place_info.open_info }}
+              </p>
+      
+            </div>
+            <div class="card-footer">
+      
+              <!-- 댓글보기, 후기 검색, 정보 보기 버튼 -->
+              <a href="{{main_url}}/post/travel_view?post_id={{ post.id }}" class="btn btn-sm btn-outline-dark small p-1 px-2">
+                <i class="fi fi-rr-eye"></i> 정보보기
+              </a>
+              <a href="{{main_url}}/post/review?search={{post.title}}" class="btn btn-sm btn-outline-dark small p-1 px-2">
+                <i class="fi fi-rr-star"></i> 후기검색
+              </a>
+              <a href="{{main_url}}/post/travel_view?post_id={{ post.id }}" class="btn btn-sm btn-outline-dark small p-1 px-2">
+                <i class="fi fi-rr-comment"></i> 댓글보기
+              </a>
+      
+            </div>
+          </div>
+        </a>
+      </div>
+      <div class="col-6 col-lg-6 col-xl-9 p-2">
+        <div class="border rounded p-3">
+          <p>
+            <span class="h5">
+              광고 설정
+            </span>
+            <a href="javascript: new bootstrap.Modal(document.getElementById('{{post.id}}Modal')).show()">
+              <i class="fi fi-rr-edit"></i>
+            </a>
+          </p>
+          <p class="text-black">
+            광고 상태: 
+            {% if post.place_info.status == 'ad' %}
+            <span class="badge bg-primary">광고중</span>
+            {% elif post.place_info.status == 'normal' %}
+            <span class="badge bg-secondary">광고 없음</span>
+            {% elif post.place_info.status == 'blocked' %}
+            <span class="badge bg-danger">숨김</span>
+            {% elif post.place_info.status == 'writing' %}
+            <span class="badge bg-warning">작성중</span>
+            {% elif post.place_info.status == 'pending' %}
+            <span class="badge bg-info">광고 승인대기</span>
+            {% endif %}
+          </p>
+          <p class="text-black">
+            가중치: {{post.search_weight}}
+          </p>
+          <p class="small text-black-50">
+            광고 시작 일시: {{post.place_info.ad_start_at}}<br>
+            광고 종료 일시: {{post.place_info.ad_end_at}}<br>
+          </p>
+          <p class="mt-3">
+            메모: {{post.place_info.note}}
+          </p>
+        </div>
+      </div>
+      <div class="modal fade" id="{{post.id}}Modal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">
+                {{ post.title }} 광고 설정
+              </h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+              <!-- 광고 상태 -->
+              <div class="form-group mb-2">
+                <label>광고 상태</label>
+                <select class="form-control" id="{{ post.id }}adStatus">
+                  <option value="normal" {% if post.place_info.status == 'normal' %}selected{% endif %}>광고 없음</option>
+                  <option value="ad" {% if post.place_info.status == 'ad' %}selected{% endif %}>광고중</option>
+                  <option value="blocked" {% if post.place_info.status == 'blocked' %}selected{% endif %}>숨김</option>
+                  <option value="writing" {% if post.place_info.status == 'writing' %}selected{% endif %}>작성중</option>
+                </select>
+              </div>
+
+              <!-- 가중치 -->
+              <div class="form-group mb-2">
+                <label>가중치</label>
+                <input type="number" class="form-control" id="{{ post.id }}adWeight" value="{{ post.search_weight }}">
+              </div>
+
+              <!-- 광고 시작 일시 -->
+              <div class="form-group mb-2">
+                <label>광고 시작 일시</label>
+                <input type="datetime-local" class="form-control" id="{{ post.id }}adStartAt" value="{{ post.place_info.ad_start_at }}">
+              </div>
+
+              <!-- 광고 종료 일시 -->
+              <div class="form-group mb-2">
+                <label>광고 종료 일시</label>
+                <input type="datetime-local" class="form-control" id="{{ post.id }}adEndAt" value="{{ post.place_info.ad_end_at }}">
+              </div>
+
+              <!-- 메모 -->
+              <div class="form-group mb-2">
+                <label>메모</label>
+                <textarea class="form-control" id="{{ post.id }}adNote">{{ post.place_info.note }}</textarea>
+              </div>
+
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" onclick="updateAd('{{ post.id }}');" data-bs-dismiss="modal">수정하기</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="col-12 col-md-6 col-lg-4 p-2 mb-2 pb-3 w-100">
+      <a href="{{main_url}}/post/post_view?post_id={{ post.id }}" class="text-dark text-decoration-none">
+        <div class="col-12 p-2 mb-2 pb-3 border-bottom">
+          <p class="mt-2">
+            {{post.board.name}}
+          </p>
+          <div class="row g-0">
+            {% if post.image and post.image != '/media/default.png' %}
+            <div class="col-2 col-md-2">
+              <img src="{{ post.image }}" class="img-fluid rounded-start img-web shadow" />
+            </div>
+            {% endif %}
+            <div class="{% if post.image and post.image != '/media/default.png' %}col-10 col-md-10 ps-3{% else %}col-12 col-md-12{% endif %}">
+              <div class="p-3 px-0">
+                <div>
+                  <span class="text-black-50" style="font-size: 12px;">
+                    {% for board in post.boards %}
+                      {{ board.name }} {% if forloop.counter < post.boards|length %} &gt; {% endif %}
+                    {% endfor %}
+                  </span>
+                </div>
+                <div class="d-flex">
+                  <div class="d-flex w-100">
+                    <h6 class="mb-2">
+                      {{ post.title }}
+                    </h6>
+                  </div>
+                  <div class="d-flex w-100 justify-content-end">
+                    <p class="m-0 text-end text-black-50" style="font-size: 12px;">
+                      <span class="me-1" style="white-space: nowrap;">
+                        <i class="fi fi-rr-eye"></i> {{ post.view_count }}
+                      </span>
+                      <span class="me-1" style="white-space: nowrap;">
+                        <i class="fi fi-rr-social-network"></i> {{ post.like_count }}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+                <div>
+                  <!-- 익명 게시판이 아닐경우, 작성자 표시 -->
+                  {% if board.board_type != 'anonymous' %}
+                  <span class="text-black-50">
+    
+                    <!-- 작성자가 파트너일 경우, 파트너 명 표시 -->
+                    {% if post.author.partner_name != '' %}
+                    <i class="fi fi-rr-heart"></i> {{ post.author.partner_name }}
+    
+                    <!-- 작성자가 파트너가 아닐 경우, 닉네임 표시 -->
+                    {% else %}
+                    <i class="fi fi-rr-user"></i> {{ post.author.nickname }} 
+    
+                    <!-- 사용자일 경우 레벨 뱃지 표시 -->
+                    {% if account.account_type == 'user' or account.account_type == 'dame' %}
+    
+                    <!-- 레벨 뱃지 -->
+                    {% with level=profile.level %}
+                    {% include 'parts/level_badge.html' %}
+                    {% endwith %}
+    
+                    {% endif %}
+    
+                    {% endif %}
+    
+                  </span>
+                  {% endif %}
+                </div>
+                <div>
+                  <small class="text-black-50 mt-1">
+                    <i class="fi fi-rr-calendar"></i> {{ post.created_at }}
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+    {% endif %}
+
+    {% endfor %}
+
+    {% endif %}
+
+    <div id="pageButton"></div>
+
+  </div>
+
+</section>
+
+<!-- 오른쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+
+<!-- Modal -->
+<!-- 게시판 추가 모달 -->
+<div class="modal fade" id="addnewBoardModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">새 게시판 추가</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+        <input type="hidden" id="subBoardParent">
+
+        <!-- 게시판 이름 -->
+        <div class="form-group mb-2">
+          <label>새 이름</label>
+          <input class="form-control" placeholder="게시판 이름" id="newBoardName">
+        </div>
+
+        <!-- 게시판 타입 -->
+        <div class="form-group mb-2">
+          <label>게시판 타입</label>
+          <select class="form-control" id="newBoardType">
+            <option value="board">게시판</option>
+            <option value="travel">여행지</option>
+            <option value="tree">폴더</option>
+            <option value="anonymous">익명</option>
+            <option value="attendance">출석</option>
+            <option value="greeting">인사</option>
+            <option value="qna">문의</option>
+            <option value="coupon">쿠폰</option>
+          </select>
+        </div>
+
+        <!-- 레벨 제한 -->
+        <div class="form-group mb-2">
+          <label>레벨 제한</label>
+          <input type="number" class="form-control" id="newBoardLevel" value="1">
+        </div>
+
+        <!-- 표시 그룹 -->
+        <div class="form-group new-board-groups">
+          <label>게시판 표시 그룹</label>
+          <p>
+            <span>
+              <input type="checkbox" class="form-check-input" onclick="toggleAll('newBoardDisplay', this.checked);">
+              <label class="form-check-label">전체</label>
+            <span>
+              <input type="checkbox" class="form-check-input" id="newBoardDisplayGuest">
+              <label class="form-check-label" for="newBoardDisplayGuest">비회원</label>
+            </span>
+            <span>
+              <input type="checkbox" class="form-check-input" id="newBoardDisplayUser">
+              <label class="form-check-label" for="newBoardDisplayUser">사용자</label>
+            </span>
+            <span>
+              <input type="checkbox" class="form-check-input" id="newBoardDisplayDame">
+              <label class="form-check-label" for="newBoardDisplayDame">여성회원</label>
+            </span>
+            <span>
+              <input type="checkbox" class="form-check-input" id="newBoardDisplayPartner">
+              <label class="form-check-label" for="newBoardDisplayPartner">파트너</label>
+            </span>
+            <span>
+              <input type="checkbox" class="form-check-input" id="newBoardDisplaySubsupervisor">
+              <label class="form-check-label" for="newBoardDisplaySubsupervisor">부관리자</label>
+            </span>
+            <span>
+              <input type="checkbox" class="form-check-input" id="newBoardDisplaySupervisor">
+              <label class="form-check-label" for="newBoardDisplaySupervisor">관리자</label>
+            </span>
+          </p>
+        </div>
+
+        <!-- 입장 그룹 -->
+        <div class="form-group new-board-groups">
+          <label>게시판 입장 그룹</label>
+          <p>
+            <span>
+              <input type="checkbox" class="form-check-input" onclick="toggleAll('newBoardEnter', this.checked);">
+              <label class="form-check-label">전체</label>
+            </span>
+            <span>
+              <input type="checkbox" class="form-check-input" id="newBoardEnterGuest">
+              <label class="form-check-label" for="newBoardEnterGuest">비회원</label>
+            </span>
+            <span>
+              <input type="checkbox" class="form-check-input" id="newBoardEnterUser">
+              <label class="form-check-label" for="newBoardEnterUser">사용자</label>
+            </span>
+            <span>
+              <input type="checkbox" class="form-check-input" id="newBoardEnterDame">
+              <label class="form-check-label" for="newBoardEnterDame">여성회원</label>
+            </span>
+            <span>
+              <input type="checkbox" class="form-check-input" id="newBoardEnterPartner">
+              <label class="form-check-label" for="newBoardEnterPartner">파트너</label>
+            </span>
+            <span>
+              <input type="checkbox" class="form-check-input" id="newBoardEnterSubsupervisor">
+              <label class="form-check-label" for="newBoardEnterSubsupervisor">부관리자</label>
+            </span>
+            <span>
+              <input type="checkbox" class="form-check-input" id="newBoardEnterSupervisor">
+              <label class="form-check-label" for="newBoardEnterSupervisor">관리자</label>
+            </span>
+          </p>
+        </div>
+
+        <!-- 작성 그룹 -->
+        <div class="form-group new-board-groups">
+          <label>게시글 작성 그룹</label>
+          <p>
+            <span>
+              <input type="checkbox" class="form-check-input" onclick="if(this.checked) { document.getElementById('newBoardWriteUser').checked = true; document.getElementById('newBoardWriteDame').checked = true; document.getElementById('newBoardWritePartner').checked = true; document.getElementById('newBoardWriteSubsupervisor').checked = true; document.getElementById('newBoardWriteSupervisor').checked = true; }">
+              <label class="form-check-label">전체</label>
+            </span>
+            <span>
+              <input type="checkbox" class="form-check-input" id="newBoardWriteUser">
+              <label class="form-check-label" for="newBoardWriteUser">사용자</label>
+            </span>
+            <span>
+              <input type="checkbox" class="form-check-input" id="newBoardWriteDame">
+              <label class="form-check-label" for="newBoardWriteDame">여성회원</label>
+            </span>
+            <span>
+              <input type="checkbox" class="form-check-input" id="newBoardWritePartner">
+              <label class="form-check-label" for="newBoardWritePartner">파트너</label>
+            </span>
+            <span>
+              <input type="checkbox" class="form-check-input" id="newBoardWriteSubsupervisor">
+              <label class="form-check-label" for="newBoardWriteSubsupervisor">부관리자</label>
+            </span>
+            <span>
+              <input type="checkbox" class="form-check-input" id="newBoardWriteSupervisor">
+              <label class="form-check-label" for="newBoardWriteSupervisor">관리자</label>
+            </span>
+          </p>
+        </div>
+
+        <!-- 댓글 그룹 -->
+        <div class="form-group new-board-groups">
+          <label>댓글 작성 그룹</label>
+          <p>
+            <span>
+              <input type="checkbox" class="form-check-input" onclick="if(this.checked) { document.getElementById('newBoardCommentUser').checked = true; document.getElementById('newBoardCommentDame').checked = true; document.getElementById('newBoardCommentPartner').checked = true; document.getElementById('newBoardCommentSubsupervisor').checked = true; document.getElementById('newBoardCommentSupervisor').checked = true; }">
+              <label class="form-check-label">전체</label>
+            </span>
+            <span>
+              <input type="checkbox" class="form-check-input" id="newBoardCommentUser">
+              <label class="form-check-label" for="newBoardCommentUser">사용자</label>
+            </span>
+            <spanp>
+              <input type="checkbox" class="form-check-input" id="newBoardCommentDame">
+              <label class="form-check-label" for="newBoardCommentDame">여성회원</label>
+            </span>
+            <span>
+              <input type="checkbox" class="form-check-input" id="newBoardCommentPartner">
+              <label class="form-check-label" for="newBoardCommentPartner">파트너</label>
+            </span>
+            <span>
+              <input type="checkbox" class="form-check-input" id="newBoardCommentSubsupervisor">
+              <label class="form-check-label" for="newBoardCommentSubsupervisor">부관리자</label>
+            </span>
+            <span>
+              <input type="checkbox" class="form-check-input" id="newBoardCommentSupervisor">
+              <label class="form-check-label" for="newBoardCommentSupervisor">관리자</label>
+            </span>
+          </p>
+        </div>
+
+        <!-- 표시 가중치 -->
+        <div class="form-group">
+          <label>표시 가중치</label>
+          <input type="number" class="form-control" id="newBoardWeight" value="0">
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="addNewBoard();" data-bs-dismiss="modal">생성하기</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- 카테고리 추가 모달 -->
+<div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">새 카테고리 추가</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+        <input type="hidden" id="subCategoryParent">
+
+        <!-- 게시판 이름 -->
+        <div class="form-group mb-2">
+          <label>새 이름</label>
+          <input class="form-control" placeholder="카테고리 이름" id="newCategoryName">
+        </div>
+
+        <!-- 표시 가중치 -->
+        <div class="form-group">
+          <label>표시 가중치</label>
+          <input type="number" class="form-control" id="newCategoryWeight" value="0">
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="addNewCategory();" data-bs-dismiss="modal">생성하기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+  window.onload = () => {
+    console.log(`Window loaded at ${getNowDatetimeString()}`);
+
+    // Page
+    var searchPostTItle = '{{request.GET.postTitle}}';
+    var searchPostBoard = '{{request.GET.postBoard}}';
+    console.log('{{request.GET.page}} | {{last_page}}');
+    makePaegeButton('{{request.GET.page}}', '{{last_page}}', `{{supervisor_url}}/supervisor/post?post_title=${searchPostTItle}&board_id=${searchPostBoard}`);
+
+    // 게시판 추가 모달
+    if ('{{request.GET.is_place_search}}' == 'y') {
+      document.getElementById('searchPlace').classList.remove('d-none');
+    }
+  }
+
+  // 토글
+  toggleAll = (name, checked) => {
+    var checkboxes = document.querySelectorAll(`input[id^='${name}']`);
+    for (var i = 0; i < checkboxes.length; i++) {
+      checkboxes[i].checked = checked;
+    }
+  }
+
+  // 최상위 게시판 추가
+  addNewBoard = async () => {
+    var subBoardParent = document.getElementById('subBoardParent').value;
+    var newBoardName = document.getElementById('newBoardName').value;
+    var newBoardType = document.getElementById('newBoardType').value;
+    var newBoardLevel = document.getElementById('newBoardLevel').value;
+    var newBoardWeight = document.getElementById('newBoardWeight').value;
+    var newBoardDisplayGuest = document.getElementById('newBoardDisplayGuest').checked;
+    var newBoardDisplayUser = document.getElementById('newBoardDisplayUser').checked;
+    var newBoardDisplayDame = document.getElementById('newBoardDisplayDame').checked;
+    var newBoardDisplayPartner = document.getElementById('newBoardDisplayPartner').checked;
+    var newBoardDisplaySubsupervisor = document.getElementById('newBoardDisplaySubsupervisor').checked;
+    var newBoardDisplaySupervisor = document.getElementById('newBoardDisplaySupervisor').checked;
+    var newBoardEnterGuest = document.getElementById('newBoardEnterGuest').checked;
+    var newBoardEnterUser = document.getElementById('newBoardEnterUser').checked;
+    var newBoardEnterDame = document.getElementById('newBoardEnterDame').checked;
+    var newBoardEnterPartner = document.getElementById('newBoardEnterPartner').checked;
+    var newBoardEnterSubsupervisor = document.getElementById('newBoardEnterSubsupervisor').checked;
+    var newBoardEnterSupervisor = document.getElementById('newBoardEnterSupervisor').checked;
+    var newBoardWriteUser = document.getElementById('newBoardWriteUser').checked;
+    var newBoardWriteDame = document.getElementById('newBoardWriteDame').checked;
+    var newBoardWritePartner = document.getElementById('newBoardWritePartner').checked;
+    var newBoardWriteSubsupervisor = document.getElementById('newBoardWriteSubsupervisor').checked;
+    var newBoardWriteSupervisor = document.getElementById('newBoardWriteSupervisor').checked;
+    var newBoardCommentUser = document.getElementById('newBoardCommentUser').checked;
+    var newBoardCommentDame = document.getElementById('newBoardCommentDame').checked;
+    var newBoardCommentPartner = document.getElementById('newBoardCommentPartner').checked;
+    var newBoardCommentSubsupervisor = document.getElementById('newBoardCommentSubsupervisor').checked;
+    var newBoardCommentSupervisor = document.getElementById('newBoardCommentSupervisor').checked;
+
+    var displayGroups = `${newBoardDisplayGuest ? 'guest' : ''},${newBoardDisplayUser ? 'user' : ''},${newBoardDisplayDame ? 'dame' : ''},${newBoardDisplayPartner ? 'partner' : ''},${newBoardDisplaySubsupervisor ? 'subsupervisor' : ''},${newBoardDisplaySupervisor ? 'supervisor' : ''}`;
+    var enterGroups = `${newBoardEnterGuest ? 'guest' : ''},${newBoardEnterUser ? 'user' : ''},${newBoardEnterDame ? 'dame' : ''},${newBoardEnterPartner ? 'partner' : ''},${newBoardEnterSubsupervisor ? 'subsupervisor' : ''},${newBoardEnterSupervisor ? 'supervisor' : ''}`;
+    var writeGroups = `${newBoardWriteUser ? 'user' : ''},${newBoardWriteDame ? 'dame' : ''},${newBoardWritePartner ? 'partner' : ''},${newBoardWriteSubsupervisor ? 'subsupervisor' : ''},${newBoardWriteSupervisor ? 'supervisor' : ''}`;
+    var commentGroups = `${newBoardCommentUser ? 'user' : ''},${newBoardCommentDame ? 'dame' : ''},${newBoardCommentPartner ? 'partner' : ''},${newBoardCommentSubsupervisor ? 'subsupervisor' : ''},${newBoardCommentSupervisor ? 'supervisor' : ''}`;
+
+    var formData = new FormData();
+    formData.append('parent_board_id', subBoardParent);
+    formData.append('board_name', newBoardName);
+    formData.append('board_type', newBoardType);
+    formData.append('level_cut', newBoardLevel);
+    formData.append('display_weight', newBoardWeight);
+    formData.append('display_groups', displayGroups);
+    formData.append('enter_groups', enterGroups);
+    formData.append('write_groups', writeGroups);
+    formData.append('comment_groups', commentGroups);
+
+    // 생성 요청
+    await fetch('{{supervisor_url}}/supervisor/post?board=y', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRFToken': csrftoken,
+      },
+    })
+    .then(response => response.json())
+    .then(async data => {
+      console.log(data);
+      if (data.result == 'success') {
+        await showAlert('생성 성공', '게시판이 생성되었습니다.', 'success');
+        location.reload();
+      } else {
+        await showAlert('생성 실패', '게시판 생성에 실패했습니다.', 'danger');
+      }
+    });
+  }
+
+  // 게시판 정보 수정
+  updateBoard = async (board_id) => {
+    var boardName = document.getElementById(board_id + 'Name').value;
+    var boardType = document.getElementById(board_id + 'Type').value;
+    var boardLevel = document.getElementById(board_id + 'Level').value;
+    var boardWeight = document.getElementById(board_id + 'Weight').value;
+    var boardDisplayGuest = document.getElementById(board_id + 'DisplayGuest').checked;
+    var boardDisplayUser = document.getElementById(board_id + 'DisplayUser').checked;
+    var boardDisplayDame = document.getElementById(board_id + 'DisplayDame').checked;
+    var boardDisplayPartner = document.getElementById(board_id + 'DisplayPartner').checked;
+    var boardDisplaySubsupervisor = document.getElementById(board_id + 'DisplaySubsupervisor').checked;
+    var boardDisplaySupervisor = document.getElementById(board_id + 'DisplaySupervisor').checked;
+    var boardEnterGuest = document.getElementById(board_id + 'EnterGuest').checked;
+    var boardEnterUser = document.getElementById(board_id + 'EnterUser').checked;
+    var boardEnterDame = document.getElementById(board_id + 'EnterDame').checked;
+    var boardEnterPartner = document.getElementById(board_id + 'EnterPartner').checked;
+    var boardEnterSubsupervisor = document.getElementById(board_id + 'EnterSubsupervisor').checked;
+    var boardEnterSupervisor = document.getElementById(board_id + 'EnterSupervisor').checked;
+    var boardWriteUser = document.getElementById(board_id + 'WriteUser').checked;
+    var boardWriteDame = document.getElementById(board_id + 'WriteDame').checked;
+    var boardWritePartner = document.getElementById(board_id + 'WritePartner').checked;
+    var boardWriteSubsupervisor = document.getElementById(board_id + 'WriteSubsupervisor').checked;
+    var boardWriteSupervisor = document.getElementById(board_id + 'WriteSupervisor').checked;
+    var boardCommentUser = document.getElementById(board_id + 'CommentUser').checked;
+    var boardCommentDame = document.getElementById(board_id + 'CommentDame').checked;
+    var boardCommentPartner = document.getElementById(board_id + 'CommentPartner').checked;
+    var boardCommentSubsupervisor = document.getElementById(board_id + 'CommentSubsupervisor').checked;
+    var boardCommentSupervisor = document.getElementById(board_id + 'CommentSupervisor').checked;
+
+    var displayGroups = `${boardDisplayGuest ? 'guest' : ''},${boardDisplayUser ? 'user' : ''},${boardDisplayDame ? 'dame' : ''},${boardDisplayPartner ? 'partner' : ''},${boardDisplaySubsupervisor ? 'subsupervisor' : ''},${boardDisplaySupervisor ? 'supervisor' : ''}`;
+    var enterGroups = `${boardEnterGuest ? 'guest' : ''},${boardEnterUser ? 'user' : ''},${boardEnterDame ? 'dame' : ''},${boardEnterPartner ? 'partner' : ''},${boardEnterSubsupervisor ? 'subsupervisor' : ''},${boardEnterSupervisor ? 'supervisor' : ''}`;
+    var writeGroups = `${boardWriteUser ? 'user' : ''},${boardWriteDame ? 'dame' : ''},${boardWritePartner ? 'partner' : ''},${boardWriteSubsupervisor ? 'subsupervisor' : ''},${boardWriteSupervisor ? 'supervisor' : ''}`;
+    var commentGroups = `${boardCommentUser ? 'user' : ''},${boardCommentDame ? 'dame' : ''},${boardCommentPartner ? 'partner' : ''},${boardCommentSubsupervisor ? 'subsupervisor' : ''},${boardCommentSupervisor ? 'supervisor' : ''}`;
+
+    var formData = new FormData();
+    formData.append('board_id', board_id);
+    formData.append('board_name', boardName);
+    formData.append('board_type', boardType);
+    formData.append('level_cut', boardLevel);
+    formData.append('display_weight', boardWeight);
+    formData.append('display_groups', displayGroups);
+    formData.append('enter_groups', enterGroups);
+    formData.append('write_groups', writeGroups);
+    formData.append('comment_groups', commentGroups);
+
+    // 수정 요청
+    await fetch('{{supervisor_url}}/supervisor/post?board=y', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRFToken': csrftoken,
+      },
+    })
+    .then(response => response.json())
+    .then(async data => {
+      console.log(data);
+      if (data.result == 'success') {
+        await showAlert('수정 성공', '게시판이 수정되었습니다.', 'success');
+        location.reload();
+      } else {
+        await showAlert('수정 실패', '게시판 수정에 실패했습니다.', 'danger');
+      }
+    });
+  }
+
+  // 게시판 삭제
+  deleteBoard = async (board_id) => {
+
+    // 삭제 요청
+    await fetch('{{supervisor_url}}/supervisor/post?board=y&board_id=' + board_id, {
+      method: 'DELETE',
+      headers: {
+        'X-CSRFToken': csrftoken,
+      },
+    })
+    .then(response => response.json())
+    .then(async data => {
+      console.log(data);
+      if (data.result == 'success') {
+        await showAlert('삭제 성공', '게시판이 삭제되었습니다.', 'success');
+        location.reload();
+      } else {
+        await showAlert('삭제 실패', '게시판 삭제에 실패했습니다.', 'danger');
+      }
+    });
+  }
+
+  // 카테고리 추가
+  addNewCategory = async () => {
+    var subCategoryParent = document.getElementById('subCategoryParent').value;
+    var newCategoryName = document.getElementById('newCategoryName').value;
+    var newCategoryWeight = document.getElementById('newCategoryWeight').value;
+    console.log(subCategoryParent, newCategoryName, newCategoryWeight);
+    var formData = new FormData();
+    formData.append('parent_category_id', subCategoryParent);
+    formData.append('category_name', newCategoryName);
+    formData.append('category_weight', newCategoryWeight);
+
+    // 생성 요청
+    await fetch('{{supervisor_url}}/supervisor/post?category=y', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRFToken': csrftoken,
+      },
+    })
+    .then(response => response.json())
+    .then(async data => {
+      console.log(data);
+      if (data.result == 'success') {
+        await showAlert('생성 성공', '카테고리가 생성되었습니다.', 'success');
+        location.reload();
+      } else {
+        await showAlert('생성 실패', '카테고리 생성에 실패했습니다.', 'danger');
+      }
+    });
+  }
+
+  // 카테고리 정보 수정
+  updateCategory = async (category_id) => {
+    var categoryName = document.getElementById(category_id + 'CategoryName').value;
+    var categoryWeight = document.getElementById(category_id + 'CategoryWeight').value;
+    console.log(category_id, categoryName, categoryWeight);
+    var formData = new FormData();
+    formData.append('category_id', category_id);
+    formData.append('category_name', categoryName);
+    formData.append('category_weight', categoryWeight);
+
+    // 수정 요청
+    await fetch('{{supervisor_url}}/supervisor/post?category=y', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRFToken': csrftoken,
+      },
+    })
+    .then(response => response.json())
+    .then(async data => {
+      console.log(data);
+      if (data.result == 'success') {
+        await showAlert('수정 성공', '카테고리가 수정되었습니다.', 'success');
+        location.reload();
+      } else {
+        await showAlert('수정 실패', '카테고리 수정에 실패했습니다.', 'danger');
+      }
+    });
+  }
+
+  // 카테고리 삭제
+  deleteCategory = async (category_id) => {
+    console.log(category_id);
+    // 삭제 요청
+    await fetch('{{supervisor_url}}/supervisor/post?category=y&category_id=' + category_id, {
+      method: 'DELETE',
+      headers: {
+        'X-CSRFToken': csrftoken,
+      },
+    })
+    .then(response => response.json())
+    .then(async data => {
+      console.log(data);
+      if (data.result == 'success') {
+        await showAlert('삭제 성공', '카테고리가 삭제되었습니다.', 'success');
+        location.reload();
+      } else {
+        await showAlert('삭제 실패', '카테고리 삭제에 실패했습니다.', 'error');
+      }
+    });
+  }
+
+  // 여행지 게시글 광고 설정
+  updateAd = async (post_id) => {
+    var adStatus = document.getElementById(post_id + 'adStatus').value;
+    var adWeight = document.getElementById(post_id + 'adWeight').value;
+    var adStartAt = document.getElementById(post_id + 'adStartAt').value;
+    var adEndAt = document.getElementById(post_id + 'adEndAt').value;
+    var adNote = document.getElementById(post_id + 'adNote').value;
+
+    var formData = new FormData();
+    formData.append('post_id', post_id);
+    formData.append('place_status', adStatus);
+    formData.append('post_search_weight', adWeight);
+    formData.append('ad_start_at', adStartAt);
+    formData.append('ad_end_at', adEndAt);
+    formData.append('place_info_note', adNote);
+
+    // 수정 요청
+    await fetch('{{supervisor_url}}/supervisor/post?modify_travel_info=true', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRFToken': csrftoken,
+      },
+    })
+    .then(response => response.json())
+    .then(async data => {
+      console.log(data);
+      if (data.result == 'success') {
+        await showAlert('수정 성공', '광고 설정이 수정되었습니다.', 'success');
+        location.reload();
+      } else {
+        await showAlert('수정 실패', '광고 설정 수정에 실패했습니다.', 'danger');
+      }
+    });
+  }
+
+</script>
+
+{% endblock %}

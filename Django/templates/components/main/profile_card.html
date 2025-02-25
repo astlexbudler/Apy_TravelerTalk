@@ -1,0 +1,44 @@
+<div class="border p-3 mb-5 shadow">
+    <a href="{{main_url}}/profile" class="text-dark text-decoration-none">
+        <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+            <div style="display: inline-block; text-align: left;">
+                <p>
+                    <span class="text-black-50 me-1" style="font-size: 14px;">일반 회원</span>
+                <p>
+                    사용자 닉네임
+                </p>
+                </p>
+            </div>
+            <div style="display: inline-block; text-align: right;">
+                <p class="m-0 text-end text-black-50">
+                    <span class="badge bg-success">정상</span>
+                </p>
+            </div>
+        </div>
+    </a>
+    <div class="row mt-4">
+        <div class="col-6">
+            <p class="text-dark">
+                경험치 <a href="#" class="text-black-50"><i class="fi fi-rr-edit"></i></a>
+            </p>
+            <p class="text-black-50">
+                <i class="fi fi-ss-coins"></i>
+                <span class="numberComma">1000</span> Exp
+                {% include 'components/other/level_badge.html' %}
+            </p>
+        </div>
+        <div class="col-6">
+            <p class="text-dark">
+                마일리지 <a href="#" class="text-black-50"><i class="fi fi-rr-edit"></i></a>
+            </p>
+            <p class="text-black-50">
+                <i class="fi fi-ss-coins text-secondary"></i>
+                <span class="numberComma">1000</span> <small class="me-2">마일리지</small>
+            </p>
+        </div>
+    </div>
+    <div class="alert alert-info small">
+        <i class="fi fi-rr-info"></i> 포인트는 게시글 또는 댓글 작성, 출석 체크 등 활동에 따라 적립되며, 사용자 등급 상승 및 쿠폰 구매에 사용됩니다.
+    </div>
+
+</div>

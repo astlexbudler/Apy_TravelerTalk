@@ -1,0 +1,171 @@
+{% extends 'base/supervisor_base.html' %}
+{% block content %}
+<!-- 왼쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;">
+  {% include 'parts/left_aside_main.html' %}
+</aside>
+
+<!-- 중앙 섹션 -->
+<section class="main-section px-5 px-lg-1" style="flex: 1; min-height: 100vh;">
+
+  <!-- 제목 -->
+  <div class="mt-4 mb-5">
+    <h5 class="mt-5">
+      시스템 설정
+    </h5>
+    <p class="small">
+      시스템 정책 설정 수정
+    </p>
+  </div>
+
+  <!-- 시스템 설정 -->
+  <div class="container">
+    <div class="form-group mb-3">
+      <label>파일 업로드</label>
+      <input class="form-control mb-1" id="path" value="/media/default.png" readonly>
+      <input type="file" class="form-control" id="uploadInput" accept="image/*">
+      <small>
+        파일을 서버에 업로드하고 경로를 반환합니다.
+      </small>
+    </div>
+
+    <form method="POST" action="{{supervisor_url}}/supervisor/setting" class="mb-5">
+      {% csrf_token %}
+
+      <!-- service_name -->
+      <div class="form-group mb-3">
+        <label for="service_name">서비스 이름</label>
+        <input type="text" class="form-control" name="service_name" value="{{settings.service_name.value}}">
+      </div>
+
+      <!-- site_logo -->
+      <div class="form-group mb-3">
+        <label for="site_logo">사이트 로고</label>
+        <input type="text" class="form-control" name="site_logo" value="{{settings.site_logo.value}}">
+        <small>
+          아이콘 및 로고로 사용될 이미지의 업로드 링크. 이미지 크기는 512x512 사이즈 권장.
+        </small>
+      </div>
+
+      <!-- site_header -->
+      <div class="form-group mb-3">
+        <label for="site_header">사이트 헤더 이미지</label>
+        <input type="text" class="form-control" name="site_header" value="{{settings.site_header.value}}">
+        <small>
+          사이트 헤더에 표시될 이미지의 업로드 링크. 이미지 크기는 1920x1080 사이즈 권장.
+        </small>
+      </div>
+
+      <!-- company_info -->
+      <div class="form-group mb-3">
+        <label for="company_info">회사 이름</label>
+        <input type="text" class="form-control" name="company_info" value="{{settings.company_info.value}}">
+        <small>
+          회사 소개 및 제휴 안내 등에 표시될 회사 이름입니다.
+        </small>
+      </div>
+
+      <!-- social_network -->
+      <div class="form-group mb-3">
+        <label for="social_network">소셜 네트워크 X</label>
+        <input type="url" class="form-control" name="social_network" value="{{settings.social_network.value}}">
+        <small>
+          소셜 네트워크 링크를 입력하세요. X(구 트위터)
+        </small>
+      </div>
+
+      <!-- terms -->
+      <div class="form-group mb-3">
+        <label for="terms">이용 약관</label>
+        <textarea class="form-control" name="terms" style="height: 500px; overflow-y: scroll;">{{settings.terms.value}}</textarea>
+        <small>
+          이용 약관을 입력하세요.
+        </small>
+      </div>
+
+      <!-- register_point -->
+      <div class="form-group mb-3">
+        <label for="register_point">가입 포인트</label>
+        <input type="number" class="form-control" name="register_point" value="{{settings.register_point.value}}">
+        <small>
+          일반 사용자가 처음 회원가입하면 지급되는 포인트입니다.
+        </small>
+      </div>
+
+      <!-- attend_point -->
+      <div class="form-group mb-3">
+        <label for="attend_point">출석 포인트</label>
+        <input type="number" class="form-control" name="attend_point" value="{{settings.attend_point.value}}">
+        <small>
+          일반 사용자가 매일 출석하면 지급되는 포인트입니다. 1등은 x2배, 2등은 x1.5배, 3등은 x1.2배 지급됩니다.
+        </small>
+      </div>
+
+      <!-- post_point -->
+      <div class="form-group mb-3">
+        <label for="post_point">게시물 포인트</label>
+        <input type="number" class="form-control" name="post_point" value="{{settings.post_point.value}}">
+        <small>
+          일반 사용자가 게시물을 작성하면 지급되는 포인트입니다.
+        </small>
+      </div>
+
+      <!-- review_point -->
+      <div class="form-group mb-3">
+        <label for="review_point">리뷰 포인트</label>
+        <input type="number" class="form-control" name="review_point" value="{{settings.review_point.value}}">
+        <small>
+          일반 사용자가 리뷰를 작성하면 지급되는 포인트입니다.
+        </small>
+      </div>
+
+      <!-- comment_point -->
+      <div class="form-group mb-3">
+        <label for="comment_point">댓글 포인트</label>
+        <input type="number" class="form-control" name="comment_point" value="{{settings.comment_point.value}}">
+        <small>
+          일반 사용자가 댓글을 작성하면 지급되는 포인트입니다.
+        </small>
+      </div>
+
+      <button type="submit" class="btn btn-primary mt-2">수정</button>
+
+    </form>
+  </div>
+
+</section>
+
+<!-- 오른쪽 사이드바 -->
+<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+
+<script>
+
+  window.onload = () => {
+    console.log(`Window loaded at ${getNowDatetimeString()}`);
+  }
+
+  // 파일 업로드
+  document.getElementById('uploadInput').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRFToken': csrftoken
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log(data);
+      return data['path'];
+    });
+
+    document.getElementById('path').value = response;
+  });
+
+</script>
+
+{% endblock %}

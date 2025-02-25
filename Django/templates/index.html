@@ -7,7 +7,7 @@
 
   <div class="main-section px-5" style="flex: 1;">
 
-    <div style="min-height: calc(100vh - 160px);">
+    <div style="min-height: 300px;">
 
       <!-- 상단 배너 영역 -->
       {% include 'components/main/banner.html' %}
@@ -23,10 +23,17 @@
     </div>
 
     <!-- 검색 영역 -->
-    {% include 'components/main/search_bar.html' %}
+    <div class="pt-3 mt-3 border-top">
+      {% include 'components/main/search_bar.html' %}
+    </div>
 
     <!-- 페이지네이션 영역 -->
     {% include 'components/main/pagination.html' %}
+
+    <!-- 맨 위로 가기 버튼 -->
+    <div class="text-end">
+      {% include 'components/main/top_button.html' %}
+    </div>
 
     <!-- 하단 배너 영역 -->
     {% include 'components/main/banner.html' %}
@@ -49,7 +56,7 @@
       makePaegeButton('{{request.GET.page}}', '{{last_page}}', `/post?search=${search}`);
     }
 
-    // 에러 메세지 관리
+    // 에러 메세지 처리
     const redirect_message = '{{request.GET.redirect_message}}';
     if (redirect_message) {
       handleRedirectMessage();
