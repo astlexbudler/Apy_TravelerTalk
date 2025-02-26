@@ -54,7 +54,7 @@ urlpatterns = [
   path('api/', include('app_api.urls')),
   re_path('^static/(?P<path>.*)$', serve,{'document_root': settings.STATIC_ROOT}),
   re_path('^media/(?P<path>.*)$', serve,{'document_root': settings.MEDIA_ROOT}),
-  path('favicon.ico', serve, {'document_root': settings.STATIC_ROOT, 'path': 'travelertalk/img/favicon.png'}),
+  path('favicon.ico', serve, {'document_root': settings.STATIC_ROOT, 'path': '/travelertalk/img/icon.png'}),
   path('robots.txt', robots_txt, name='robots_txt'),
   path('sitemap.xml', sitemap, {'sitemaps': {'applify_sitemap': ApplifySitemapClass}}, name='django.contrib.sitemaps.views.sitemap'),
 ]

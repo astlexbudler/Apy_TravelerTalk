@@ -51,9 +51,15 @@
             </div>
         </div>
         <div class="py-3" style="min-height: 200px;">
+            {% if best_reviews|length > 0 %}
             <p>
                 리뷰 게시글이 없습니다.
             </p>
+            {% else %}
+            {% for review in best_reviews %}
+            {{ review }}
+            {% endfor %}
+            {% endif %}
         </div>
     </div>
 

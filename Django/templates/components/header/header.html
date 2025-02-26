@@ -18,15 +18,15 @@
                     <a class="text-black-50 small me-3" style="white-space: nowrap;" href="#">
                         <i class="fi fi-rr-calendar-check"></i> 출석체크
                     </a>
-                    <a class="text-black-50 small me-3" style="white-space: nowrap;" href="#">
+                    <a class="text-black-50 small me-3" style="white-space: nowrap;" href="{{main_url}}/bookmark">
                         <i class="fi fi-rr-bookmark"></i> 즐겨찾기
                     </a>
-                    <a class="text-black-50 small" style="white-space: nowrap;" href="#">
+                    <a class="text-black-50 small" style="white-space: nowrap;" href="{{main_url}}/coupon">
                         <i class="fi fi-rr-ticket"></i> 쿠폰함
                     </a>
                 </div>
                 <div style="display: inline-block; text-align: right;">
-                    <a class="text-black-50 small me-3" style="white-space: nowrap;" href="#">
+                    <a class="text-black-50 small me-3" style="white-space: nowrap;" href="{{main_url}}/profile">
                         <i class="fi fi-rr-user"></i> 프로필
                     </a>
                     <div class="h-col h-switch dropdown me-3" style="display: inline-block;">
@@ -39,23 +39,31 @@
                         <ul class="dropdown-menu dropdown-menu-end p-0" aria-labelledby="bd-theme">
                             <li>
                                 <div style="width: 240px;" class="pt-3">
+                                    {% if messages|length > 0 %}
                                     <p class="p-2">
                                         새로운 쪽지가 없습니다.
                                     </p>
+                                    {% else %}
+                                    {% for message in messages %}
+                                    {{ message }}
+                                    {% endfor %}
+                                    {% endif %}
                                 </div>
                             </li>
                             <li class="text-end p-2 border-top">
                                 <div style="display: flex; justify-content: space-between; white-space: nowrap;">
-                                    <a class="text-black-50" href="/message">
+                                    <a class="text-black-50" href="{{main_url}}/message">
                                         <i class="fi fi-rr-envelope"></i> 쪽지함
                                     </a>
                                 </div>
                             </li>
                         </ul>
                     </div>
-                    <a class="text-black-50 small" href="#">
+                    {% if account.account_type != 'guest' %}
+                    <a class="text-black-50 small" href="javascript: logout();" style="white-space: nowrap;">
                         <i class="fi fi-rr-exit"></i> 로그아웃
                     </a>
+                    {% endif %}
                 </div>
             </div>
 
@@ -65,7 +73,7 @@
                     <div style="width: 80px; height: 80px;">
 
                         <!-- 로고 -->
-                        <a href="/">
+                        <a href="{{main_url}}/">
                             <img class="logo-dark" src="/static/travelertalk/img/icon.png">
                             <img class="logo-light" src="/static/travelertalk/img/icon.png">
                         </a>
@@ -84,43 +92,42 @@
                                             style="display: flex; justify-content: space-between; white-space: nowrap;">
                                             <div style="display: inline-block; text-align: left;">
                                                 <h6 class="text-black-60 pt-1 m-0">
-                                                    여행자들의 대화
+                                                    {{server_settings.service_name}}
                                                 </h6>
                                             </div>
                                             <div style="display: inline-block; text-align: right;">
-                                                <button class="btn-close" data-bs-dismiss="offcanvas"
-                                                    data-bs-target="#offcanvas_Header_01" aria-label="Close"></button>
+                                                <button class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#offcanvas_Header_01" aria-label="Close"></button>
                                             </div>
                                         </div>
                                     </div>
 
                                     <!-- 모바일 로그인 -->
                                     <div class="my-5 p-3">
+                                        {% if account.account_type == 'guest' %}
                                         <h5 class="text-black-60">
                                             로그인
                                         </h5>
-                                        <form id="loginForm" onkeyup="if(event.keyCode == 13) tryLogin();">
+                                        <form onkeyup="if(event.keyCode == 13) tryLogin(this);" id="mobileLoginForm">
                                             <div class="form-group">
                                                 <label>아이디</label>
-                                                <input class="form-control" placeholder="아이디를 입력해주세요" name="loginId">
+                                                <input class="form-control" placeholder="아이디를 입력해주세요" name="id">
                                             </div>
                                             <div class="form-group mt-2">
                                                 <label>비밀번호</label>
-                                                <input type="password" class="form-control" placeholder="비밀번호를 입력해주세요"
-                                                    name="loginPassword">
+                                                <input type="password" class="form-control" placeholder="비밀번호를 입력해주세요" name="password">
                                             </div>
                                             <div class="form-group mt-1">
-                                                <input type="checkbox" class="form-check-input" id="loginRemember"
-                                                    name="loginRemember">
-                                                <label for="loginRemember" class="small">로그인 상태 유지</label>
+                                                <input type="checkbox" class="form-check-input" name="remember" disabled>
+                                                <label class="small">로그인 상태 유지</label>
                                             </div>
                                             <div class="mt-4">
-                                                <a href="#"
-                                                    class="btn btn-primary btn-sm small me-1">로그인</a>
-                                                <a href="{{main_url}}/signup"
-                                                    class="btn btn-secondary btn-sm small">회원가입</a>
+                                                <a href="javascript: tryLogin(document.getElementById('mobileLoginForm'));" class="btn btn-primary btn-sm small me-1">로그인</a>
+                                                <a href="{{main_url}}/signup" class="btn btn-secondary btn-sm small">회원가입</a>
                                             </div>
                                         </form>
+                                        {% else %}
+                                        {% include 'components/other/side_profile_box.html' %}
+                                        {% endif %}
                                     </div>
 
                                     <!-- 모바일 게시판 타이틀 -->
@@ -133,31 +140,21 @@
                                 </div>
                                 <div class="offcanvas-body">
                                     <ul class="navbar-nav mx-auto">
+
+                                        {% for board in boards %}
                                         <li class="nav-item">
-                                            <a class="nav-link" href="#">
-                                                여행
+                                            {% if board.board_type == 'tree' %}
+                                            <a class="nav-link px-3" href="#">
+                                                {{ board.name }}
                                             </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="#">
-                                                이벤트
+                                            {% else %}
+                                            <a class="nav-link px-3" href="{{main_url}}/post?board_ids={{board.id}}">
+                                                {{ board.name }}
                                             </a>
+                                            {% endif %}
                                         </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="#">
-                                                커뮤니티
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="#">
-                                                후기
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="#">
-                                                쿠폰
-                                            </a>
-                                        </li>
+                                        {% endfor %}
+
                                     </ul>
                                 </div>
                             </div>

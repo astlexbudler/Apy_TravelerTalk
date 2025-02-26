@@ -43,10 +43,6 @@ class AppCoreConfig(AppConfig):
           value='<p>관리자 페이지에서 회사 정보를 입력해주세요.</p>'
         )
         models.SERVER_SETTING.objects.create(
-          name='social_network', # X 주소
-          value='https://www.x.com'
-        )
-        models.SERVER_SETTING.objects.create(
           name='terms', # 이용약관
           value='관리자 페이지에서 이용약관을 입력해주세요.'
         )
@@ -78,20 +74,6 @@ class AppCoreConfig(AppConfig):
           text_color='#000000', # 레벨 텍스트 색상
           background_color='#cd7f32', # 레벨 배경 색상
           required_exp=0 # 레벨업 포인트
-        )
-        models.LEVEL_RULE.objects.create(
-          level=2, # 레벨
-          text='2레벨', # 레벨 이름
-          text_color='#000000', # 레벨 텍스트 색상
-          background_color='#cd7f32', # 레벨 배경 색상
-          required_exp=100 # 레벨업 포인트
-        )
-        models.LEVEL_RULE.objects.create(
-          level=3, # 레벨
-          text='3레벨', # 레벨 이름
-          text_color='#000000', # 레벨 텍스트 색상
-          background_color='#cd7f32', # 레벨 배경 색상
-          required_exp=200 # 레벨업 포인트
         )
 
         # GROUP: 그룹 테이블
@@ -126,6 +108,8 @@ class AppCoreConfig(AppConfig):
           status = 'active', # 계정 상태
           note='',
           tel='', # 연락처
+          is_staff=True,
+          is_superuser=True,
           subsupervisor_permissions='', # 부관리자 권한
         )
         supervisor.set_password('supervisor1!')

@@ -64,6 +64,9 @@ MIDDLEWARE = [
   'corsheaders.middleware.CorsMiddleware',
 ]
 
+# 브라우저가 닫히면 세션 쿠키가 삭제되도록 설정
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
 # scheduler 설정
 APSCHEDULER_DATETIME_FORMAT = "N J, Y, f:s a"
 SCHEDULER_DEFAULT = True

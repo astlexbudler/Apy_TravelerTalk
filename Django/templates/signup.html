@@ -66,7 +66,7 @@
                 <label for="password">비밀번호</label> <small id='passwordConfirmText'></small>
               </p>
               <div class="form-group position-relative col-12" style="display: inline-block;">
-                <input class="form-control pe-6" placeholder="비밀번호를 입력해주세요." id="password">
+                <input type="password" class="form-control pe-6" placeholder="비밀번호를 입력해주세요." id="password">
                 <div class="position-absolute" style="right: 15px; top: 50%; transform: translateY(-50%);">
                   <i class="fi fi-rr-lock text-success"></i>
                 </div>
@@ -80,7 +80,7 @@
                 <label for="passwordCheck">비밀번호 확인</label> <small id='passwordCheckConfirmText'></small>
               </p>
               <div class="form-group position-relative col-12" style="display: inline-block;">
-                <input class="form-control pe-6" placeholder="비밀번호를 다시 입력해주세요." id="passwordCheck">
+                <input type="password" class="form-control pe-6" placeholder="비밀번호를 다시 입력해주세요." id="passwordCheck">
                 <div class="position-absolute" style="right: 15px; top: 50%; transform: translateY(-50%);">
                   <i class="fi fi-rr-lock text-success"></i>
                 </div>
@@ -168,7 +168,9 @@
             <a href="javascript: window.open('/terms');" target="_blank" class="text-black-50 small">약관확인</a>
           </label>
         </div>
-        <button class="btn mt-5 btn-primary" onclick="">회원가입</button>
+        <button class="btn mt-5 btn-primary" onclick="tryRegister()">
+          <i class="fi fi-rr-user-pen"></i> 회원가입
+        </button>
       </div>
 
     </div>
@@ -204,44 +206,52 @@
   var emailOk = false;
   var nowRegisterType = '{{request.GET.tab}}';
 
-
   // 아이디 중복 검사
+  const idConfirmText = document.getElementById('idConfirmText');
   document.querySelector('#accountId').addEventListener('input', async () => {
     var accountId = document.getElementById('accountId').value;
     if (accountId.length < 4) { // 아이디가 4자 미만인 경우는 중복검사를 하지 않음
-      document.getElementById('idConfirmText').innerText = '아이디는 4자 이상이어야 합니다.';
+      idConfirmText.classList.add('text-danger');
+      idConfirmText.classList.remove('text-success');
+      idConfirmText.innerText = '아이디는 4자 이상이어야 합니다.';
       return
     }
 
     // 중복검사
-    var exist = await fetch(`/api/check_id?id=${accountId}`)
+    var accounts = await fetch(`/api/account?id=${accountId}`)
       .then(res => res.json())
       .then(data => {
         console.log(data);
-        return data.result;
+        return data.data;
       });
 
     // 중복검사 결과에 따른 메시지 출력
-    var idConfirmText = document.getElementById('idConfirmText');
-    if (exist === 'not_exist') {
+    if (accounts.length == 0) {
       idConfirmText.innerText = '사용 가능한 아이디입니다.';
       idConfirmText.classList.add('text-success');
       idConfirmText.classList.remove('text-danger');
       idOk = true; // 아이디 중복검사 통과. 사용 가능
       return
     }
-    idConfirmText.innerText = '이미 사용중인 아이디입니다.';
-    idConfirmText.classList.remove('text-success');
-    idConfirmText.classList.add('text-danger');
-    idOk = false; // 아이디 중복검사 실패. 사용 불가
+    if (accounts[0]['username'] == accountId) {
+      idConfirmText.innerText = '이미 사용중인 아이디입니다.';
+      idConfirmText.classList.remove('text-success');
+      idConfirmText.classList.add('text-danger');
+      idOk = false; // 아이디 중복검사 실패. 사용 불가
+      return
+    }
+    idConfirmText.innerText = '사용 가능한 아이디입니다.';
+    idConfirmText.classList.add('text-success');
+    idConfirmText.classList.remove('text-danger');
+    idOk = true; // 아이디 중복검사 통과. 사용 가능
   });
 
   // 비밀번호, 비밀번호 확인 일치 여부 확인
   const passwordRegex = /^(?=.*[a-zA-Z])(?=.*[0-9]).{5,}$/; // 영문, 숫자 포함 5자 이상
+  const passwordConfirmText = document.getElementById('passwordConfirmText');
   document.querySelector('#password').addEventListener('input', () => {
 
     // 비밀번호 형식 확인에 따른 메시지 출력
-    var passwordConfirmText = document.getElementById('passwordConfirmText');
     if (!passwordRegex.test(document.getElementById('password').value)) {
       passwordConfirmText.innerText = '비밀번호는 5자 이상, 영문, 숫자 포함해야 합니다.';
       passwordConfirmText.classList.remove('text-success');
@@ -273,11 +283,11 @@
 
   // 닉네임 중복 검사
   checkNickname = async (nickname) => {
-    return await fetch(`/api/check_nickname?nickname=${nickname}`)
+    return await fetch(`/api/account?nickname=${nickname}`)
       .then(res => res.json())
       .then(data => {
         console.log(data);
-        return data.result;
+        return data.data;
       });
   }
 
@@ -295,23 +305,30 @@
     }
 
     // 닉네임 중복 검사
-    var exist = await checkNickname(name);
+    var accounts = await checkNickname(name);
 
     // 닉네임 중복 검사 결과에 따른 메시지 출력
-    if (exist === 'not_exist') {
+    if (accounts.length == 0) {
       nameConfirmText.innerText = '사용 가능한 닉네임입니다.';
       nameConfirmText.classList.add('text-success');
       nameConfirmText.classList.remove('text-danger');
       nicknameOk = true; // 닉네임 중복검사 통과. 사용 가능
       return
     }
-    nameConfirmText.innerText = '이미 사용중인 닉네임입니다.';
-    nameConfirmText.classList.remove('text-success');
-    nameConfirmText.classList.add('text-danger');
-    nicknameOk = false; // 닉네임 중복검사 실패. 사용 불가
+    if (accounts[0]['nickname'] === name) {
+      nameConfirmText.innerText = '이미 사용중인 닉네임입니다.';
+      nameConfirmText.classList.remove('text-success');
+      nameConfirmText.classList.add('text-danger');
+      nicknameOk = false; // 닉네임 중복검사 실패. 사용 불가
+      return
+    }
+    nameConfirmText.innerText = '사용 가능한 닉네임입니다.';
+    nameConfirmText.classList.add('text-success');
+    nameConfirmText.classList.remove('text-danger');
+    nicknameOk = true; // 닉네임 중복검사 통과. 사용 가능
   });
 
-  // 업체명 중복 검사(닉네임과 동일하게 처리)
+  // 업체명 검사
   document.querySelector('#partnerName').addEventListener('input', async () => {
     var partnerName = document.getElementById('partnerName').value;
     var partnerNameConfirmText = document.getElementById('partnerNameConfirmText');
@@ -327,7 +344,7 @@
     partnerNameConfirmText.innerText = '사용 가능한 업체명입니다.';
     partnerNameConfirmText.classList.add('text-success');
     partnerNameConfirmText.classList.remove('text-danger');
-    partnerNameOk = true; // 업체명 중복검사 통과. 사용 가능
+    partnerNameOk = true; // 업체명 통과. 사용 가능
   });
 
   // 위치 카테고리 선택 확인. 카테고리를 선택했는지만 확인
@@ -394,31 +411,33 @@
 
     // 회원가입 정보 확인
     // 일반회원, 여성회원의 경우
-    if (nowRegisterType === 'user' || nowRegisterType === 'dame') {
+    if (nowRegisterType === 'userTab' || nowRegisterType === 'dameTab') {
       if (!idOk || !passwordOk || !passwordCheckOk || !nicknameOk) { // 필수 정보 확인
         await showAlert('회원가입 정보 확인', '회원가입 정보를 확인해주세요.', 'error');
+        console.log(idOk, passwordOk, passwordCheckOk, nicknameOk);
         return;
       }
     } else { // 파트너 업체의 경우
       if (!idOk || !passwordOk || !passwordCheckOk || !partnerNameOk || !locationCategoryOk || !serviceCategoryOk || !telOk || !addressOk) {
         await showAlert('회원가입 정보 확인', '회원가입 정보를 확인해주세요.', 'error');
+        console.log(idOk, passwordOk, passwordCheckOk, partnerNameOk, locationCategoryOk, serviceCategoryOk, telOk, addressOk);
         return;
       }
     }
 
     // 회원가입 요청
     var formData = new FormData();
-    formData.append('account_type', nowRegisterType);
+    formData.append('account_type', nowRegisterType.replace('Tab', ''));
     formData.append('id', document.getElementById('accountId').value);
     formData.append('password', document.getElementById('password').value);
     formData.append('nickname', document.getElementById('nickname').value);
     formData.append('partner_name', document.getElementById('partnerName').value);
     formData.append('email', document.getElementById('email').value);
-    formData.append('location_category', document.getElementById('selectedBoard').value);
-    formData.append('service_category', document.getElementById('serviceCategory').value);
+    formData.append('board_ids', document.getElementById('selectedBoard').value);
+    formData.append('category_ids', document.getElementById('serviceCategory').value);
     formData.append('tel', document.getElementById('tel').value);
     formData.append('address', document.getElementById('address').value + ' ' + document.getElementById('addressDetail').value);
-    var result = await fetch('/api/account?create=y', {
+    var result = await fetch('/api/account', {
       method: 'POST',
       body: formData,
       headers: {
@@ -428,7 +447,11 @@
       .then(res => res.json())
       .then(data => {
         console.log(data);
-        return data.result;
+        if(data.success) {
+          return data.data;
+        } else {
+          return 'fail';
+        }
       });
 
     // 회원가입 결과에 따른 메시지 출력
@@ -440,9 +463,6 @@
       await showAlert('회원가입 대기', '관리자 승인 후 모든 서비스를 이용할 수 있습니다.<br>승인 전까지는 일부 서비스만 이용 가능합니다.', 'success');
       location.href = '/';
       return;
-    } else if (result === 'exist') {
-      await showAlert('중복 요청', '이미 가입된 아이디입니다. 중복 가입할 수 없습니다.', 'error');
-      location.href = '/';
     }
     await showAlert('회원가입 실패', '회원가입에 실패했습니다. 다시 시도해주세요.', 'error');
   }

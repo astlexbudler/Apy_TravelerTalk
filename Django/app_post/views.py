@@ -17,10 +17,8 @@ from app_core import daos
 # 2. 전체 글 검색을 하는 경우(board_id 가 없음) => 전체 게시글 검색
 # 3. 사전 정의되지 않은 기타 게시판의 경우 => 해당 게시글 검색
 def index(request):
-  return redirect(request, '/post/board.html', {'last_page': 3})
-  # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
-  boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보
+  boards = daos.make_board_tree(contexts['account']['account_type']) # 게시판 정보
 
   # 데이터 가져오기
   board_ids = request.GET.get('board_ids') # 게시판 아이디
@@ -31,7 +29,9 @@ def index(request):
   if not board_ids: # 게시판 아이디가 없는 경우
     return redirect('/?redirect_message=not_found_board') # 게시판이 없는 경우, 메인 페이지로 이동
   board_ids = board_ids.split(',') # 게시판 아이디를 리스트로 변환
+  board = daos.select_board(board_ids[-1]) # 마지막 게시판 정보 가져오기
 
+  '''
   # 게시판 접근 권한 확인
   selected_boards = daos.get_selected_board_info(board_ids) # 선택된 게시판 정보
   writable = False
@@ -60,20 +60,19 @@ def index(request):
 
   # 게시글 가져오기
   posts, last_page = daos.get_board_posts(board_ids, page, search)
+  '''
 
   return render(request, 'post/index.html', {
     **contexts,
     'boards': boards, # 게시판 정보
     'board': board, # 게시판 정보
-    'writable': writable, # 게시글 작성 가능 여부
-    'posts': posts, # 게시글 정보
-    'last_page': last_page, # 마지막 페이지, page 처리에 사용
+    #'writable': writable, # 게시글 작성 가능 여부
+    #'posts': posts, # 게시글 정보
+    'last_page': 3, # 마지막 페이지, page 처리에 사용
   })
 
 # 게시글 작성 페이지
 def write_post(request):
-  return render(request, 'post/write_post.html', {'board_ids': '1'})
-  # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
   boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보
 
@@ -85,6 +84,7 @@ def write_post(request):
   if not board_ids and not review_post_id:
     return redirect('/?redirect_message=not_found_board')
   board_ids = str(board_ids).split(',') # 게시판 아이디를 리스트로 변환
+  board = models.BOARD.objects.filter(id=board_ids[-1]).first() # 마지막 게시판 정보 가져오기
 
   # 게시판 접근 권한 확인
   if review_post_id: # 후기 게시글 작성인 경우
@@ -320,10 +320,8 @@ def post_view(request):
 
 # 출석체크 게시판
 def attendance(request):
-  return render(request, 'post/attendance.html')
-  # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
-  boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보
+  boards = daos.make_board_tree(contexts['account']['account_type']) # 게시판 정보
 
   # 권한 확인
   if not request.user.is_authenticated:
@@ -337,6 +335,7 @@ def attendance(request):
     'name': b.name,
   }
 
+  '''
   # 출석 체크 게시플 가져오기
   # 춣석체크는 오늘 날짜의 출석체크 게시글에 댓글을 다는걸로 구현됨.
   today = datetime.datetime.now().strftime('%Y-%m-%d')
@@ -369,23 +368,22 @@ def attendance(request):
       attend_days.append(int(post.title.split('-')[-1])) # 출석 체크한 날짜 추가
       if today in post.title: # 오늘 출석체크를 했는지 확인
         is_attended = True
+  '''
 
   return render(request, 'post/attendance.html', {
     **contexts, # 기본 컨텍스트 정보
     'boards': boards, # 게시판 정보
-    'comments': comments, # 출석 체크 글
-    'post': post, # 출석체크 게시글
+    #'comments': comments, # 출석 체크 글
+    #'post': post, # 출석체크 게시글
     'board': board, # 출석체크 게시판
-    'attend_days': attend_days, # 이번달에 출석체크한 날짜
-    'is_attended': is_attended, # 오늘 출석체크를 했는지 여부
+    #'attend_days': attend_days, # 이번달에 출석체크한 날짜
+    #'is_attended': is_attended, # 오늘 출석체크를 했는지 여부
   })
 
 # 가입인사 게시판
 def greeting(request):
-  return render(request, 'post/greeting.html', {'last_page': 3})
-  # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
-  boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보
+  boards = daos.make_board_tree(contexts['account']['account_type']) # 게시판 정보
 
   # 권한 확인
   if not request.user.is_authenticated:
@@ -401,6 +399,7 @@ def greeting(request):
     'name': b.name,
   }
 
+  '''
   # 가입인사 게시글 가져오기
   post = models.POST.objects.filter(
     boards__id__in=[str(b.id)],
@@ -422,14 +421,16 @@ def greeting(request):
       break
   last_page = len(comments) // 20 + 1
   comments = comments[(page - 1) * 20:page * 20]
+  '''
 
   return render(request, 'post/greeting.html', {
     **contexts,
     'boards': boards, # 게시판 정보
-    'last_page': last_page, # 마지막 페이지, page 처리에 사용
-    'comments': comments, # 가입인사 댓글
-    'post': post, # 가입인사 게시글
-    'is_greeted': is_greeted, # 가입인사를 했는지 여부
+    'board': board, # 가입인사 게시판
+    #'last_page': last_page, # 마지막 페이지, page 처리에 사용
+    #'comments': comments, # 가입인사 댓글
+    #'post': post, # 가입인사 게시글
+    #'is_greeted': is_greeted, # 가입인사를 했는지 여부
   })
 
 # 후기 게시판
@@ -438,10 +439,8 @@ def greeting(request):
 # 후기 게시글은 target_post가 존재.
 # 후기 게시글의 순위를 나타내는 weight는 스케줄러에서 관리함.
 def review(request):
-  return render(request, 'post/review.html', {'last_page': 3})
-  # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
-  boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보
+  boards = daos.make_board_tree(contexts['account']['account_type']) # 게시판 정보
 
   # 후기 게시판
   b = models.BOARD.objects.filter(board_type='review').first()
@@ -450,6 +449,7 @@ def review(request):
     'name': b.name,
   }
 
+  '''
   # 데이터 가져오기
   page = int(request.GET.get('page', '1'))
   search = request.GET.get('search', '')
@@ -545,16 +545,17 @@ def review(request):
         'view_count': mbr.view_count,
         'created_at': mbr.created_at,
       })
+    '''
 
   return render(request, 'post/review.html', {
     **contexts,
     'boards': boards, # 게시판 정보
     'board': board, # 후기 게시판
-    'posts': posts, # 후기 게시글
-    'last_page': last_page, # 마지막 페이지, page 처리에 사용
-    'today_reviews': today_best_reviews, # 오늘의 베스트 후기
-    'weekly_reviews': weekly_best_reviews, # 주간 베스트 후기
-    'monthly_reviews': monthly_best_reviews, # 월간 베스트 후기
+    #'posts': posts, # 후기 게시글
+    'last_page': 3, # 마지막 페이지, page 처리에 사용
+    #'today_reviews': today_best_reviews, # 오늘의 베스트 후기
+    #'weekly_reviews': weekly_best_reviews, # 주간 베스트 후기
+    #'monthly_reviews': monthly_best_reviews, # 월간 베스트 후기
   })
 
 # 후기 게시글 상세
@@ -598,9 +599,8 @@ def review_view(request):
 
 # 여행 게시판
 def travel(request):
-  # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
-  boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보
+  boards = daos.make_board_tree(contexts['account']['account_type']) # 게시판 정보
 
   # 데이터 가져오기
   board_ids = request.GET.get('board_ids')
@@ -610,6 +610,8 @@ def travel(request):
 
   # 게시글 가져오기
   last_board = str(board_ids).split(',')[-1]
+
+  '''
   posts = []
   ps = models.POST.objects.select_related('place_info').prefetch_related('place_info__categories').exclude(
     Q(place_info__status='writing') | Q(place_info__status='blocked')
@@ -647,6 +649,7 @@ def travel(request):
         'status': p.place_info.status,
       }
     })
+  '''
 
   # 게시판 정보 가져오기(마지막 게시판 정보)
   board = models.BOARD.objects.filter(id=board_ids[-1]).first()
@@ -658,8 +661,8 @@ def travel(request):
     **contexts,
     'boards': boards, # 게시판 정보
     'board': board, # 게시판 정보
-    'posts': posts, # 게시글 정보
-    'last_page': last_page, # 마지막 페이지
+    #'posts': posts, # 게시글 정보
+    'last_page': 3, # 마지막 페이지
     'categories': categories, # 카테고리 정보
   })
 
@@ -712,4 +715,19 @@ def travel_view(request):
 
 # 쿠폰 게시판
 def coupon(request):
-  return render(request, 'post/coupon.html', {'last_page': 3})
+  contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
+  boards = daos.make_board_tree(contexts['account']['account_type']) # 게시판 정보
+
+  # 쿠폰 게시판
+  b = models.BOARD.objects.filter(board_type='coupon').first()
+  board = {
+    'id': b.id,
+    'name': b.name,
+  }
+
+  return render(request, 'post/coupon.html', {
+    **contexts,
+    'boards': boards, # 게시판 정보
+    'board': board, # 쿠폰 게시판
+    'last_page': 3, # 마지막 페이지, page 처리에 사용
+  })

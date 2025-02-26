@@ -1,0 +1,63 @@
+<div>
+
+    <!-- 계정 타입 -->
+    <a href="{{main_url}}/profile" class="text-dark">
+
+        {% if account.account_type == 'partner' %}
+        <span class="text-black-50 me-1" style="font-size: 14px;">파트너</span>
+        {% elif account.account_type == 'supervisor' %}
+        <span class="text-black-50 me-1" style="font-size: 14px;">관리자</span>
+        {% elif account.account_type == 'subsupervisor' %}
+        <span class="text-black-50 me-1" style="font-size: 14px;">부관리자</span>
+        {% else %}
+        <span class="text-black-50 me-1" style="font-size: 14px;">
+            {% if account.account_type == 'user' %}
+            일반 회원
+            {% elif account.account_type == 'dame' %}
+            여성 회원
+            {% endif %}
+        </span> 
+        {% include 'components/other/level_badge.html' with level=account.level %}
+        {% endif %}
+        <p>
+            {{account.nickname}}
+        </p>
+    </a>
+
+    <!-- 포인트, 쿠폰, 쪽지 -->
+    <div class="border p-2">
+        <!-- 포인트 -->
+        <div>
+            <a class="text-black-60" href="{{main_url}}/activity">
+                마일리지
+                <span class="text-black-50">
+                    <i class="fi fi-ss-coins text-secondary"></i> <span class="numberComma">{{account.mileage}}</span>
+                </span>
+            </a>
+        </div>
+        <!-- 쿠폰 수 -->
+        <div>
+            <a class="text-black-60" href="{{main_url}}/coupon">
+                내 쿠폰:
+                <span class="text-black-50">
+                    <i class="fi fi-rr-ticket"></i> {{coupons_preview|length}}
+                </span>
+            </a>
+        </div>
+        <!-- 읽지 않은 쪽지 갯수 -->
+        <div>
+            <a class="text-black-60" href="{{main_url}}/messenge">
+                읽지 않은 쪽지:
+                <span class="text-black-50">
+                    <i class="fi fi-rr-envelope"></i> {{unread_messages|length}}
+                </span>
+            </a>
+        </div>
+    </div>
+
+    <!-- 로그아웃 -->
+    <div class="text-end mt-3">
+        <a href="javascript: logout();" class="btn btn-secondary btn-sm small">로그아웃</a>
+    </div>
+
+</div>

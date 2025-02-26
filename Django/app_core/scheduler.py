@@ -5,12 +5,12 @@ import datetime
 
 def startScheduler():
     scheduler = BackgroundScheduler()
-    scheduler.add_job(empty_schedule_job, 'interval', hours=2) # 2시간마다 실행
-    scheduler.add_job(review_search_weight, 'interval', hours=6) # 6시간마다 실행
-    scheduler.add_job(coupon_expire, 'cron', hour=0, minute=0) # 매일 0시 0분에 실행
-    scheduler.add_job(place_ad_manage, 'cron', hour=0, minute=30) # 매일 0시 30분에 실행
-    scheduler.add_job(delete_account, 'cron', hour=1, minute=0) # 매일 1시 0분에 실행
-    scheduler.add_job(place_info_status_statictic, 'cron', hour=1, minute=30) # 매일 1시 30분에 실행
+    #scheduler.add_job(empty_schedule_job, 'interval', hours=2) # 2시간마다 실행
+    #scheduler.add_job(review_search_weight, 'interval', hours=6) # 6시간마다 실행
+    #scheduler.add_job(coupon_expire, 'cron', hour=0, minute=0) # 매일 0시 0분에 실행
+    #scheduler.add_job(place_ad_manage, 'cron', hour=0, minute=30) # 매일 0시 30분에 실행
+    #scheduler.add_job(delete_account, 'cron', hour=1, minute=0) # 매일 1시 0분에 실행
+    #scheduler.add_job(place_info_status_statictic, 'cron', hour=1, minute=30) # 매일 1시 30분에 실행
     scheduler.start()
 
 def empty_schedule_job():

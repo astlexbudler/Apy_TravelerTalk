@@ -4,9 +4,9 @@
 {% csrf_token %}
 
 <!--
-  ==================================================
-  * Template Name: main_base.html
-  * 이 페이지는 기본적인 페이지들의 기본 레이아웃을 정의합니다.
+    ==================================================
+    * Template Name: main_base.html
+    * 이 페이지는 기본적인 페이지들의 기본 레이아웃을 정의합니다.
 -->
 
 <head>
@@ -22,7 +22,8 @@
 
     <!-- FAVICON
     ================================================== -->
-    <link rel="icon" type="image/png" href="/static/travelertalk/images/icon.png">
+    <link rel="icon" type="image/png" href="/static/travelertalk/img/icon.png">
+    <link rel="favicon" type="image/png" href="/static/travelertalk/img/icon.png">
 
     <!-- CSS
     ================================================== -->
@@ -53,7 +54,7 @@
 
 </head>
 
-<body style="word-break: keep-all;" class="theme-light bg-white">
+<body style="word-break: keep-all;" class="theme-light bg-light">
 
     <!-- PAGE LOADING -->
     {% include 'components/other/loading.html' %}

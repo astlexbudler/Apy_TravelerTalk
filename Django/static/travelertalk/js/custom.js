@@ -99,64 +99,51 @@ showConfirm = async(title, message, icon, confirmButtonText, cancelButtonText) =
 }
 
 // 로그인 버튼 클릭 시 로그인 시도
-tryLogin = async () => {
+tryLogin = async (form) => {
 
-  // 로그인 폼이 2개로 나뉘어져 있으므로, 각각의 값을 가져옴
-  var loginId = '';
-  document.querySelectorAll('.accountLoginId').forEach(element => {
-    if (element.value !== '') { // 값이 비어있지 않은 경우에만 값을 가져옴
-      loginId = element.value;
-    }
-  });
-  var loginPassword = '';
-  document.querySelectorAll('.accountLoginPassword').forEach(element => {
-    if (element.value !== '') { // 값이 비어있지 않은 경우에만 값을 가져옴
-      loginPassword = element.value;
-    }
-  });
+  const formData = new FormData(form);
 
   // 아이디 또는 비밀번호가 비어있는 경우
-  if (loginId === '' || loginPassword === '') {
+  if (formData.get('id') === '' || formData.get('password') === '') {
     await showAlert('로그인 실패', '아이디 또는 비밀번호를 입력해주세요.', 'error');
     return;
   }
 
   // 로그인 시도
-  var formdata = new FormData();
-  formdata.append('id', loginId);
-  formdata.append('password', loginPassword);
-  var result = await fetch('/api/login', {
+  var data = await fetch('/api/login', {
     method: 'POST',
     headers: {
       'X-CSRFToken': csrftoken
     },
-    body: formdata
+    body: formData
   })
   .then((response) => response.json())
   .then(async (data) => {
     console.log(data); // fetch 요청 결과 출력
-    return data.result;
+    return data;
   });
 
   // 로그인 결과에 따른 분기 처리
-  if (result === 'success' || result === 'active') { // 로그인 성공
-    location.reload();
-    return;
-  } else if (result.indexOf('pending') != -1) {
-    // 심사 대기중 안내 및 로그인 성공
-    await showAlert('계정 확인중', '아직 계정 승인 대기 중입니다. 확인이 완료될 때까지 일부 기능이 제한됩니다.', 'warning');
-    location.reload();
-    return;
-  } else if (result.indexOf('banned') != -1) {
-    // 계정 정지 안내 및 로그인 실패
-    await showAlert('계정 정지', '활동이 정지된 계정입니다. 관리자에게 문의하세요.', 'error');
-    location.reload();
-    return;
+  if (data.success) { // 로그인 성공
+    if (data.data == 'active') {
+      await showAlert('로그인 성공', '로그인에 성공했습니다. 메인 페이지로 이동합니다.', 'success');
+      location.href = '/'; // 메인 페이지로 이동
+      return;
+    } else if (data.data == 'pending') {
+      await showAlert('계정 확인중', '아직 계정 승인 대기 중입니다. 확인이 완료될 때까지 일부 기능이 제한됩니다.', 'warning');
+      location.reload();
+      return;
+    } else if (data.data == 'block') {
+      await showAlert('계정 정지', '활동이 정지된 계정입니다. 관리자에게 문의하세요.', 'error');
+      location.reload();
+      return;
+    }
   }
 
   // 로그인 실패
   await showAlert('로그인 실패', '아이디 또는 비밀번호가 일치하지 않습니다.', 'error');
-  location.reload();
+  form.reset(); // 입력창 초기화
+  return;
 }
 
 // 로그아웃 버튼 클릭 시

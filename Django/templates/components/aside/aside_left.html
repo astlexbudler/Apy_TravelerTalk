@@ -30,78 +30,34 @@
 <aside class="d-none d-lg-block my-2" style="width: 240px;">
 
     <!-- 로그인 -->
-    <div class="d-block">
+    {% if account.account_type == 'guest' %}
+    <div>
         <h5 class="text-black-60">
             로그인
         </h5>
-        <form id="loginForm" onkeyup="if(event.keyCode == 13) tryLogin();">
+        <form onkeyup="if(event.keyCode == 13) tryLogin(this);" id="asideLoginForm">
             <div class="form-group">
                 <label>아이디</label>
-                <input class="form-control" placeholder="아이디를 입력해주세요" name="loginId">
+                <input class="form-control" placeholder="아이디를 입력해주세요" name="id">
             </div>
             <div class="form-group mt-2">
                 <label>비밀번호</label>
-                <input type="password" class="form-control" placeholder="비밀번호를 입력해주세요" name="loginPassword">
+                <input type="password" class="form-control" placeholder="비밀번호를 입력해주세요" name="password">
             </div>
             <div class="form-group mt-1">
-                <input type="checkbox" class="form-check-input" id="loginRemember" name="loginRemember">
-                <label for="loginRemember" class="small">로그인 상태 유지</label>
+                <input type="checkbox" class="form-check-input" name="remember" disabled>
+                <label class="small">로그인 상태 유지</label>
             </div>
             <div class="mt-4">
-                <a href="#" class="btn btn-primary btn-sm small me-1">로그인</a>
+                <a href="javascript: tryLogin(document.getElementById('asideLoginForm'));" class="btn btn-primary btn-sm small me-1">로그인</a>
                 <a href="{{main_url}}/signup" class="btn btn-secondary btn-sm small">회원가입</a>
             </div>
         </form>
     </div>
-
     <!-- 프로필 -->
-    <div class="d-none">
-
-        <!-- 계정 타입 -->
-        <a href="{{main_url}}/profile" class="text-dark">
-            <span class="text-black-50 me-1" style="font-size: 14px;">일반 회원</span> 
-            {% include 'components/other/level_badge.html' %}
-            <p>
-                사용자 닉네임
-            </p>
-        </a>
-
-        <!-- 포인트, 쿠폰, 쪽지 -->
-        <div class="border p-2">
-            <!-- 포인트 -->
-            <div>
-                <a class="text-black-60" href="{{main_url}}/activity">
-                    마일리지
-                    <span class="text-black-50">
-                        <i class="fi fi-ss-coins text-secondary"></i> <span class="numberComma">1000</span>
-                    </span>
-                </a>
-            </div>
-            <!-- 쿠폰 수 -->
-            <div>
-                <a class="text-black-60" href="{{main_url}}/coupon">
-                    내 쿠폰:
-                    <span class="text-black-50">
-                        <i class="fi fi-rr-ticket"></i> 0
-                    </span>
-                </a>
-            </div>
-            <!-- 읽지 않은 쪽지 갯수 -->
-            <div>
-                <a class="text-black-60" href="{{main_url}}/messenge">
-                    읽지 않은 쪽지:
-                    <span class="text-black-50">
-                        <i class="fi fi-rr-envelope"></i> 0
-                    </span>
-                </a>
-            </div>
-        </div>
-
-        <!-- 로그아웃 -->
-        <div class="text-end mt-3">
-            <a href="javascript: logout();" class="btn btn-secondary btn-sm small">로그아웃</a>
-        </div>
-    </div>
+    {% else %}
+    {% include 'components/other/side_profile_box.html' %}
+    {% endif %}
 
     <div style="height: 80px;"></div>
 
@@ -120,9 +76,18 @@
             </div>
         </div>
         <div class="py-3" style="min-height: 200px;">
+            {% if account.account_type == 'guest' %}
             <p>
                 로그인이 필요합니다
             </p>
+            {% elif bookmarks|length == 0 %}
+            <p>
+                즐겨찾기한 게시글이 없습니다
+            </p>
+            {% for bookmark in bookmarks %}
+            {{ bookmark }}
+            {% endfor %}
+            {% endif %}
         </div>
     </div>
 
@@ -141,9 +106,18 @@
             </div>
         </div>
         <div class="py-3" style="min-height: 200px;">
+            {% if account.account_type == 'guest' %}
             <p>
                 로그인이 필요합니다
             </p>
+            {% elif coupons|length == 0 %}
+            <p>
+                사용 가능한 쿠폰이 없습니다
+            </p>
+            {% for coupon in coupons %}
+            {{ coupon }}
+            {% endfor %}
+            {% endif %}
         </div>
     </div>
 
@@ -162,9 +136,18 @@
             </div>
         </div>
         <div class="py-3" style="min-height: 200px;">
+            {% if account.account_type == 'guest' %}
             <p>
                 로그인이 필요합니다
             </p>
+            {% elif activities|length == 0 %}
+            <p>
+                활동 내역이 없습니다
+            </p>
+            {% for activity in activities %}
+            {{ activity }}
+            {% endfor %}
+            {% endif %}
         </div>
     </div>
 
