@@ -246,6 +246,7 @@ def get_default_contexts(request):
         'site_logo': select_server_setting('site_logo'),
         'service_name': select_server_setting('service_name'),
         'site_header': select_server_setting('site_header'),
+        'background': select_server_setting('background'),
         'company_info': select_server_setting('company_info'),
     }
 

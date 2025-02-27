@@ -168,7 +168,7 @@
                                 <!-- 하위 네비게이션(1차) -->
                                 {% for board in boards %}
                                 {% if board.children|length > 0 %}
-                                <div class="offcanvas-body d-none sub_board bg-white rounded" id="sub_board_{{ board.id }}">
+                                <div class="offcanvas-body d-none sub_board rounded" id="sub_board_{{ board.id }}" style="background-color: rgba(255, 255, 255, 0.5);">
                                     <ul class="navbar-nav mx-auto">
 
                                         {% for sub1_board in board.children %}
@@ -200,7 +200,7 @@
                                 {% if board.children|length > 0 %}
                                 {% for sub1_board in board.children %}
                                 {% if sub1_board.children|length > 0 %}
-                                <div class="offcanvas-body d-none sub_board bg-white rounded" id="sub_board_{{ sub1_board.id }}">
+                                <div class="offcanvas-body d-none sub_board rounded" id="sub_board_{{ sub1_board.id }}" style="background-color: rgba(255, 255, 255, 0.5);">
                                     <ul class="navbar-nav mx-auto">
 
                                     {% for sub2_board in sub1_board.children %}
@@ -236,7 +236,7 @@
                                 {% if sub1_board.children|length > 0 %}
                                 {% for sub2_board in sub1_board.children %}
                                 {% if sub2_board.children|length > 0 %}
-                                <div class="offcanvas-body d-none sub_board bg-white rounded" id="sub_board_{{ sub2_board.id }}">
+                                <div class="offcanvas-body d-none sub_board rounded" id="sub_board_{{ sub2_board.id }}" style="background-color: rgba(255, 255, 255, 0.5);">
                                     <ul class="navbar-nav mx-auto">
 
                                         {% for sub3_board in sub2_board.children %}
@@ -302,7 +302,7 @@
         style="box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
         <!-- 이미지 헤더 -->
         <div class="w-100"
-            style="height: 150px; background: url('/static/travelertalk/img/0.jpg') center top no-repeat; background-size: cover;">
+            style="height: 150px; background: url('{{server_settings.site_header}}') center top no-repeat; background-size: cover;">
         </div>
     </div>
 </header>

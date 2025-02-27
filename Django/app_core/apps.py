@@ -32,11 +32,15 @@ class AppCoreConfig(AppConfig):
         )
         models.SERVER_SETTING.objects.create(
           name='site_logo', # 로고
-          value='/media/icon.png'
+          value='/static/travelertalk/img/icon.png'
         )
         models.SERVER_SETTING.objects.create(
-          name='site_header', # 로고
-          value='/media/header-image.jpg'
+          name='site_header', # 헤더 이미지
+          value='/static/travelertalk/img/header.jpg'
+        )
+        models.SERVER_SETTING.objects.create(
+          name='background', # 배경 이미지
+          value='/static/travelertalk/img/background.png'
         )
         models.SERVER_SETTING.objects.create(
           name='company_info', # 회사 정보

@@ -51,7 +51,7 @@ def index(request):
   elif board.board_type == 'travel':
     return redirect('/post/travel?board_ids=' + request.GET.get('board_ids') + '&page=' + str(page) + '&search=' + search)
   # 레벨 제한 확인
-  if contexts['account']['account_type'] in ['user', 'dame']:
+  if contexts['account']['account_type'] in ['user', 'dame', 'guest']:
     if board.level_cut > int(contexts['account']['level']['level']):
       return redirect('/?redirect_message=not_allowed_board')
 
