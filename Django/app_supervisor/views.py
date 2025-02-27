@@ -13,9 +13,6 @@ from app_core import models
 from app_core import daos
 
 def to_login_page():
-  if settings.DEBUG: # 디버그 모드일 경우,
-    return redirect('/supervisor/') # 관리자 메인 페이지로 리다이렉트
-  else:
     return redirect('/') # 관리자 메인 페이지로 리다이렉트
 
 
@@ -32,10 +29,7 @@ def login(request):
   if account['account_type'] not in ['supervisor', 'subsupervisor']:
     return render(request, 'login.html')
   else:
-    if settings.DEBUG: # 디버그 모드일 경우,
-      return redirect('/supervisor/supervisor') # 관리자 메인 페이지로 리다이렉트
-    else:
-      return redirect('/supervisor') # 관리자 메인 페이지로 리다이렉트
+    return redirect('/supervisor/supervisor') # 관리자 메인 페이지로 리다이렉트
 
 # 관리자 메인 페이지
 def index(request):
