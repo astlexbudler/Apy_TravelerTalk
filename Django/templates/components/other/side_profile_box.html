@@ -25,7 +25,10 @@
     </a>
 
     <!-- 포인트, 쿠폰, 쪽지 -->
+    {% if account.account_type not in 'supervisor,subsupervisor' %}
     <div class="border p-2">
+
+        {% if account.account_type in 'user,dame' %}
         <!-- 포인트 -->
         <div>
             <a class="text-black-60" href="{{main_url}}/activity">
@@ -44,6 +47,8 @@
                 </span>
             </a>
         </div>
+        {% endif %}
+
         <!-- 읽지 않은 쪽지 갯수 -->
         <div>
             <a class="text-black-60" href="{{main_url}}/messenge">
@@ -54,10 +59,24 @@
             </a>
         </div>
     </div>
+    {% endif %}
 
     <!-- 로그아웃 -->
     <div class="text-end mt-3">
-        <a href="javascript: logout();" class="btn btn-secondary btn-sm small">로그아웃</a>
+
+        <a href="javascript: logout();" class="btn btn-secondary btn-sm small">
+            <i class="fi fi-rr-exit"></i> 로그아웃
+        </a>
+
+        {% if account.account_type == 'partner' %}
+        <a href="{{partner_url}}/partner" class="btn btn-success btn-sm small ms-1" target="_blank">
+            <i class="fi fi-rr-settings"></i>
+        </a>
+        {% elif account.account_type in 'supervisor,subsupervisor' %}
+        <a href="{{supervisor_url}}/supervisor" class="btn btn-success btn-sm small ms-1" target="_blank">
+            <i class="fi fi-rr-settings"></i>
+        </a>
+        {% endif %}
     </div>
 
 </div>

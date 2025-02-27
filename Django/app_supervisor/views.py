@@ -18,7 +18,7 @@ def login(request):
 
   # 이미 로그인한 경우, 메인 페이지로 리다이렉트
   if contexts['account']['account_type'] in  ['supervisor', 'subsupervisor']:
-    return redirect('/supervisor') # 관리자 메인 페이지로 리다이렉트
+    return redirect('/supervisor/supervisor') # 관리자 메인 페이지로 리다이렉트
   return render(request, 'login.html')
 
 # 관리자 메인 페이지

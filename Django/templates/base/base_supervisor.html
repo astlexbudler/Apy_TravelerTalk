@@ -17,7 +17,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
     <title>
-        {{server.server_name}}
+        {{server.server_name}} 관리자
     </title>
 
     <!-- FAVICON
@@ -64,17 +64,13 @@
     <div class="wrapper">
 
         <!-- HEADER -->
-        {% include 'components/header/header.html' %}
+        {% include 'components/header/header_supervisor.html' %}
 
         <!-- MAIN SECTION
         ================================================== -->
         <!-- 아래 부분은 각 페이지에서 오버라이딩 됩니다. -->
         {% block content %}{% endblock %}
 
-        <!-- FOOTER -->
-        {% include 'components/footer/footer.html' %}
-
-        <div class="d-none d-lg-block" style="background: url('{{server_settings.background}}') center center; background-size: contain; position: absolute; bottom: 200px; right: -120px; width: 800px; height: 800px; z-index: -1; background-repeat: no-repeat;"></div>
     </div>
     <script>
         window.addEventListener('load', (event) => {

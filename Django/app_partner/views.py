@@ -16,7 +16,7 @@ def login(request):
 
   # 파트너 계정인 경우, 파트너 관리 페이지로 이동
   if contexts['account']['account_type'] == 'partner':
-    return redirect('/partner')
+    return redirect('/partner/partner')
 
   return render(request, 'login.html')
 

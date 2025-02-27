@@ -1,0 +1,207 @@
+<!--
+    header.html
+    이 컴포넌트는 사이트의 헤더와 네비게이션을 구성합니다.
+
+    네비게이션은 사용자, 파트너, 관리자 페이지별로 다르게 구성됩니다.
+
+    로고, 출석체크, 즐겨찾기, 쿠폰함, 프로필, 쪽지, 로그아웃(로그인) 버튼이 포함됩니다.
+-->
+
+<!-- header -->
+<header class="header-main header-option-01">
+    <div class="header-top bg-light">
+        <div class="container">
+
+            <!-- 헤더 상단 메뉴 -->
+            <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+                <div style="display: inline-block; text-align: left;">
+                    <a class="text-black-50 small me-3" style="white-space: nowrap;" href="{{supervisor_url}}/supervisor">
+                        <i class="fi fi-rr-home"></i> 관리자 메인
+                    </a>
+                </div>
+                <div style="display: inline-block; text-align: right;">
+                    <a class="text-black-50 small" href="javascript: logout();" style="white-space: nowrap;">
+                        <i class="fi fi-rr-exit"></i> 로그아웃
+                    </a>
+                </div>
+            </div>
+
+            <!-- 헤더 메인 -->
+            <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+                <div style="display: inline-block; text-align: left;">
+                    <div style="width: 80px; height: 80px;">
+
+                        <!-- 로고 -->
+                        <a href="{{main_url}}/">
+                            <img class="logo-dark" src="/static/travelertalk/img/icon.png">
+                            <img class="logo-light" src="/static/travelertalk/img/icon.png">
+                        </a>
+
+                        <!-- 메뉴(오프캔버스) -->
+                        <nav class="navbar navbar-expand-lg" style="display: inline-block;">
+                            <div class="offcanvas nav-offcanvas offcanvas-start" tabindex="-1" id="offcanvas_Header_01"
+                                aria-labelledby="offcanvas_Header_01">
+
+                                <!-- 아래 메뉴는 모바일에서만 보입니다. -->
+                                <div class="offcanvas-header border-bottom border-gray-200 p-0">
+
+                                    <!-- 모바일 오프 캔버스 타이틀 -->
+                                    <div class="pastel-pink-background shadow w-100 p-3">
+                                        <div
+                                            style="display: flex; justify-content: space-between; white-space: nowrap;">
+                                            <div style="display: inline-block; text-align: left;">
+                                                <h6 class="text-black-60 pt-1 m-0">
+                                                    {{server_settings.service_name}}
+                                                </h6>
+                                            </div>
+                                            <div style="display: inline-block; text-align: right;">
+                                                <button class="btn-close" data-bs-dismiss="offcanvas"
+                                                    data-bs-target="#offcanvas_Header_01" aria-label="Close"></button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 모바일 게시판 타이틀 -->
+                                    <div class="px-3 mb-4">
+                                        <h6 class="text-black-60">
+                                            메뉴
+                                        </h6>
+                                    </div>
+
+                                </div>
+                                <div class="offcanvas-body">
+                                    <ul class="navbar-nav mx-auto">
+
+                                        <!-- 사용자 관리 -->
+                                        <li class="nav-item">
+                                            <a class="nav-link px-3" href="#">
+                                                사용자 관리
+                                            </a>
+                                        </li>
+
+                                        <!-- 게시글 관리 -->
+                                        <li class="nav-item">
+                                            <a class="nav-link px-3" href="#">
+                                                게시글 관리
+                                            </a>
+                                        </li>
+
+                                        <!-- 여행지 관리 -->
+                                        <li class="nav-item">
+                                            <a class="nav-link px-3" href="#">
+                                                여행지 관리
+                                            </a>
+                                        </li>
+
+                                        <!-- 쿠폰 관리 -->
+                                        <li class="nav-item">
+                                            <a class="nav-link px-3" href="#">
+                                                쿠폰 관리
+                                            </a>
+                                        </li>
+
+                                        <!-- 쪽지 관리 -->
+                                        <li class="nav-item">
+                                            <a class="nav-link px-3" href="#">
+                                                쪽지 관리
+                                            </a>
+                                        </li>
+
+                                        <!-- 배너 관리 -->
+                                        <li class="nav-item">
+                                            <a class="nav-link px-3" href="#">
+                                                배너 관리
+                                            </a>
+                                        </li>
+
+                                        <!-- 레벨 정책 관리 -->
+                                        <li class="nav-item">
+                                            <a class="nav-link px-3" href="#">
+                                                레벨 정책 관리
+                                            </a>
+                                        </li>
+
+                                        <!-- 설정 -->
+                                        <li class="nav-item">
+                                            <a class="nav-link px-3" href="#">
+                                                설정
+                                            </a>
+                                        </li>
+
+                                    </ul>
+                                </div>
+
+                            </div>
+                        </nav>
+
+                    </div>
+                </div>
+                <div style="display: inline-block; text-align: right;">
+
+                    <!-- 모바일 오프캔버스 버튼 -->
+                    <div class="header-icons d-lg-none" style="padding-top: 16px;">
+                        <div class="h-col h-toggler d-lg-none">
+                            <button class="navbar-toggler h-burgur-icon" type="button" data-bs-toggle="offcanvas"
+                                data-bs-target="#offcanvas_Header_01" aria-controls="offcanvas_Header_01">
+                                <span></span>
+                            </button>
+                        </div>
+                        <div class="h-col h-extra-menu-toggle d-none d-lg-block">
+                            <a class="h-burgur-icon h-icon" data-bs-toggle="offcanvas" href="#header_extra_menu"
+                                role="button" aria-controls="header_extra_menuLabel">
+                                <span></span>
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</header>
+
+<div class="d-none">
+    <button class="theme-switch h-icon dropdown-toggle" id="bd-theme" type="button" aria-expanded="false"
+        data-bs-toggle="dropdown" data-bs-display="static">
+        <span class="bi my-1 theme-icon-active">
+            <i class="bi-circle-half"></i>
+        </span>
+        <span class="d-none">Toggle theme</span>
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="bd-theme">
+        <li>
+            <button type="button" class="dropdown-item" data-bs-theme-value="light">
+                <span class="bi me-2 opacity-50 theme-icon">
+                    <i class="bi-sun-fill"></i>
+                </span>
+                Light
+                <span class="bi ms-auto d-none">
+                    <i class="bi-check2"></i>
+                </span>
+            </button>
+        </li>
+        <li>
+            <button type="button" class="dropdown-item" data-bs-theme-value="dark">
+                <span class="bi me-2 opacity-50 theme-icon">
+                    <i class="bi-moon-stars-fill"></i>
+                </span>
+                Dark
+                <span class="bi ms-auto d-none">
+                    <i class="bi-check2"></i>
+                </span>
+            </button>
+        </li>
+        <li>
+            <button type="button" class="dropdown-item active" data-bs-theme-value="auto">
+                <span class="bi me-2 opacity-50 theme-icon">
+                    <i class="bi-circle-half"></i>
+                </span>
+                Auto
+                <span class="bi ms-auto d-none">
+                    <i class="bi-check2"></i>
+                </span>
+            </button>
+        </li>
+    </ul>
+</div>

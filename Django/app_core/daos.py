@@ -476,7 +476,6 @@ def search_accounts(username=None, nickname=None, any=None, status=None, account
         'exp': account.exp,
         'mileage': account.mileage,
     } for account in accounts]
-    print(accounts_data)
 
     return accounts_data, last_page
 
