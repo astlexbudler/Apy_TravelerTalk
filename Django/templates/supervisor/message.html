@@ -1,301 +1,292 @@
-{% extends 'base/supervisor_base.html' %}
+{% extends 'base/base_supervisor.html' %}
 {% block content %}
-<!-- 왼쪽 사이드바 -->
-<aside class="d-none d-lg-block" style="width: 320px;">
-  {% include 'parts/left_aside_main.html' %}
-</aside>
+<main class="container">
 
-<!-- 중앙 섹션 -->
-<section class="main-section px-5 px-lg-1" style="flex: 1; min-height: 100vh;">
+  <div class="main-section">
 
-  <!-- 제목 -->
-  <div class="mt-4 mb-5">
-    <h5 class="mt-5">
-      메세지 관리
-    </h5>
-    <p>
-      관리자 문의 메세지 관리
-    </p>
-  </div>
+      <!-- 페이지 타이틀 -->
+      {% with title='메세지 관리' subtitle='관리자 문의 메세지 관리' %}
+      {% include 'components/main/title_section.html' %}
+      {% endwith %}
 
-  <!-- 선택지 버튼 그룹 -->
-  <div class="btn-group w-100 d-flex">
-    <div class="w-100 d-flex justify-content-center rounded-2">
-      <a class="w-100 btn" href="{{supervisor_url}}/supervisor/message?tab=inbox" id="inboxTab">
-        받은 쪽지함
-      </a>
-    </div>
-    <span class="divider"></span>
-    <div class="w-100 d-flex justify-content-center rounded-2">
-      <a class="w-100 btn" href="{{supervisor_url}}/supervisor/message?tab=outbox" id="outboxTab">
-        보낸 쪽지함
-      </a>
-    </div>
-  </div>
 
-  <!-- 받은 쪽지 리스트 -->
-  <div class="my-5" id="inbox">
-
-    <!-- 통계 -->
-    <div class="rounded border p-3 mb-5 shadow">
-      <p>
-        <i class="fi fi-rr-stats"></i> 통계
-      </p>
-      <table class="table table-bordered">
-        <thead>
-          <tr>
-            <th>구분</th>
-            <th>읽은 쪽지 수</th>
-            <th>읽지 않은 쪽지 수</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>
-              전체
-            </td>
-            <td>
-              {{status.read}}
-            </td>
-            <td>
-              {{status.unread}}
-            </td>
-        </tbody>
-      </table>
+    <!-- 선택지 버튼 그룹 -->
+    <div class="btn-group w-100 d-flex">
+      {% include 'components/main/page_tab.html' with tab_name='받은 쪽지함' tab_id='inboxTab' tab_link='/supervisor/message?tab=inboxTab' %}
+      <span class="divider"></span>
+      {% include 'components/main/page_tab.html' with tab_name='보낸 쪽지함' tab_id='outboxTab' tab_link='/supervisor/message?tab=outboxTab' %}
     </div>
 
-    <!-- 검색 -->
-    <div class="rounded border p-3 mb-5 shadow">
-      <p>
-        <i class="fi fi-rr-search"></i> 검색
-      </p>
-      <form id="inboxSearchForm" method="get" action="{{supervisor_url}}/supervisor/message">
-        <input type="hidden" name="tab" value="inbox">
-        <div class="row">
-          <div class="form-group mt-4 col-12">
-            <label>제목</label>
-            <input class="form-control" name="messageTitle" placeholder="쪽지 제목">
-          </div>
-          <div class="form-group mt-4 col-12">
-            <label>받는 사람</label>
-            <input class="form-control" name="messageReceiverId" placeholder="받는 사람 아이디">
-          </div>
+      <!-- 받은 쪽지 리스트 -->
+      <div class="my-5" id="inbox">
+
+        <!-- 통계 -->
+        <div class="rounded border p-3 mb-5 shadow">
+          <p>
+            <i class="fi fi-rr-stats"></i> 통계
+          </p>
+          <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th>구분</th>
+                <th>읽은 쪽지 수</th>
+                <th>읽지 않은 쪽지 수</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  전체
+                </td>
+                <td>
+                  {{status.read}}
+                </td>
+                <td>
+                  {{status.unread}}
+                </td>
+            </tbody>
+          </table>
         </div>
-      </form>
 
-      <p class="text-end mt-4">
-        <a class="btn btn-success" href="javascript: document.getElementById('inboxSearchForm').submit()">
-          <i class="fi fi-rr-search"></i> 검색
-        </a>
-      </p>
-    </div>
+        <!-- 검색 -->
+        <div class="rounded border p-3 mb-5 shadow">
+          <p>
+            <i class="fi fi-rr-search"></i> 검색
+          </p>
+          <form id="inboxSearchForm" method="get" action="{{supervisor_url}}/supervisor/message">
+            <input type="hidden" name="tab" value="inbox">
+            <div class="row">
+              <div class="form-group mt-4 col-12">
+                <label>제목</label>
+                <input class="form-control" name="messageTitle" placeholder="쪽지 제목">
+              </div>
+              <div class="form-group mt-4 col-12">
+                <label>받는 사람</label>
+                <input class="form-control" name="messageReceiverId" placeholder="받는 사람 아이디">
+              </div>
+            </div>
+          </form>
 
-    <!-- 버튼 -->
-    <div class="p-3 mb-5 text-end">
+          <p class="text-end mt-4">
+            <a class="btn btn-success" href="javascript: document.getElementById('inboxSearchForm').submit()">
+              <i class="fi fi-rr-search"></i> 검색
+            </a>
+          </p>
+        </div>
 
-      <a class="btn btn-success btn-sm" href="javascript: new bootstrap.Modal(document.getElementById('newMessageModal')).show();">
-        <i class="fi fi-rr-envelope"></i> 쪽지 보내기
-      </a>
+        <!-- 버튼 -->
+        <div class="p-3 mb-5 text-end">
 
-      <a href="javascript: openExportDataPage();" class="btn btn-sm btn-success">
-        <i class="fi fi-rr-file-excel"></i> 다운로드
-      </a>
+          <a class="btn btn-success btn-sm"
+            href="javascript: new bootstrap.Modal(document.getElementById('newMessageModal')).show();">
+            <i class="fi fi-rr-envelope"></i> 쪽지 보내기
+          </a>
 
-    </div>
+          <a href="javascript: openExportDataPage();" class="btn btn-sm btn-success">
+            <i class="fi fi-rr-file-excel"></i> 다운로드
+          </a>
 
-    <!-- 검색 결과 -->
-    <p class="text-black-50 small">
-      <i class="fi fi-rr-info"></i> 쿠폰은 쪽지 내용 확인 후 <span class="text-primary">쿠폰 받기</span> 버튼을 클릭하여 받을 수
-      있습니다.
-    </p>
-    <table class="table table-border small border shadow text-center">
-      <tbody>
-        <tr>
-          <th>
-            읽음 여부
-          </th>
-          <th>
-            보낸 사람
-          </th>
-          <th>
-            제목
-          </th>
-          <th>
-            수신 날짜
-          </th>
-        </tr>
-        {% if messages|length < 1 %}
-        <tr>
-          <td colspan="4">
-            <p class="text-black">받은 쪽지가 없습니다.</p>
-          </td>
-        </tr>
-        {% else %}
-        {% for message in messages %}
-        <tr style="cursor: pointer;" 
-          onclick="
+        </div>
+
+        <!-- 검색 결과 -->
+        <p class="text-black-50 small">
+          <i class="fi fi-rr-info"></i> 쿠폰은 쪽지 내용 확인 후 <span class="text-primary">쿠폰 받기</span> 버튼을 클릭하여 받을 수
+          있습니다.
+        </p>
+        <table class="table table-border small border shadow text-center">
+          <tbody>
+            <tr>
+              <th>
+                읽음 여부
+              </th>
+              <th>
+                보낸 사람
+              </th>
+              <th>
+                제목
+              </th>
+              <th>
+                수신 날짜
+              </th>
+            </tr>
+            {% if messages|length < 1 %} <tr>
+              <td colspan="4">
+                <p class="text-black">받은 쪽지가 없습니다.</p>
+              </td>
+              </tr>
+              {% else %}
+              {% for message in messages %}
+              <tr style="cursor: pointer;" onclick="
             new bootstrap.Modal(document.getElementById('messageModal{{message.id}}')).show();
             {% if not message.is_read %}setReadDatetime('{{message.id}}');{% endif %}
           ">
-          <td>
-            {% if not message.is_read %}
-            <i class="fi fi-rr-eye"></i> 읽지 않음
-            {% else %}
-            <i class="fi fi-rr-eye"></i> 읽음
-            {% endif %}
-          </td>
-          <td>
-            <span class="text-dark">
-              {% if message.sender.partner_name %}
-              {{ message.sender.partner_name }}
-              {% elif message.sender.nickname %}
-              {{ message.sender.nickname }}
-              {% else %}
-              비회원 {{message.sender.id}}
+                <td>
+                  {% if not message.is_read %}
+                  <i class="fi fi-rr-eye"></i> 읽지 않음
+                  {% else %}
+                  <i class="fi fi-rr-eye"></i> 읽음
+                  {% endif %}
+                </td>
+                <td>
+                  <span class="text-dark">
+                    {% if message.sender.partner_name %}
+                    {{ message.sender.partner_name }}
+                    {% elif message.sender.nickname %}
+                    {{ message.sender.nickname }}
+                    {% else %}
+                    비회원 {{message.sender.id}}
+                    {% endif %}
+                  </span>
+                </td>
+                <td>
+                  {{ message.title }}
+                </td>
+                <td>
+                  {{ message.created_at }}
+                </td>
+              </tr>
+              {% endfor %}
               {% endif %}
-            </span>
-          </td>
-          <td>
-            {{ message.title }}
-          </td>
-          <td>
-            {{ message.created_at }}
-          </td>
-        </tr>
-        {% endfor %}
-        {% endif %}
-      </tbody>
-    </table>
+          </tbody>
+        </table>
 
-  </div>
+      </div>
 
-  <!-- 보낸 쪽지 리스트 -->
-  <div class="my-5 d-none" id="outbox">
+      <!-- 보낸 쪽지 리스트 -->
+      <div class="my-5 d-none" id="outbox">
 
-    <!-- 통계 -->
-    <div class="rounded border p-3 mb-5">
-      <p>
-        <i class="fi fi-rr-stats"></i> 통계
-      </p>
-      <table class="table table-bordered">
-        <thead>
-          <tr>
-            <th>구분</th>
-            <th>받은 쪽지 수</th>
-            <th>읽지 않은 쪽지 수</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>
-              전체
-            </td>
-            <td>
-              {{status.outbox.count}}
-            </td>
-            <td>
-              {{status.outbox.unread}}
-            </td>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- 검색 -->
-    <div class="rounded border p-3 mb-5">
-      <p>
-        <i class="fi fi-rr-search"></i> 검색
-      </p>
-
-      <form id="outboxSearchForm" method="get" action="{{supervisor_url}}/supervisor/message">
-        <input type="hidden" name="tab" value="outbox">
-        <div class="row">
-          <div class="form-group mt-4 col-12">
-            <label>제목</label>
-            <input class="form-control" name="messageTitle" placeholder="쪽지 제목">
-          </div>
-          <div class="form-group mt-4 col-12">
-            <label>받는 사람</label>
-            <input class="form-control" name="messageReceiverId" placeholder="받는 사람 아이디">
-          </div>
+        <!-- 통계 -->
+        <div class="rounded border p-3 mb-5">
+          <p>
+            <i class="fi fi-rr-stats"></i> 통계
+          </p>
+          <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th>구분</th>
+                <th>받은 쪽지 수</th>
+                <th>읽지 않은 쪽지 수</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  전체
+                </td>
+                <td>
+                  {{status.outbox.count}}
+                </td>
+                <td>
+                  {{status.outbox.unread}}
+                </td>
+            </tbody>
+          </table>
         </div>
-      </form>
 
-      <p class="text-end mt-4">
-        <a class="btn btn-success" href="javascript: document.getElementById('outboxSearchForm').submit()">
-          <i class="fi fi-rr-search"></i> 검색
-        </a>
-      </p>
-    </div>
+        <!-- 검색 -->
+        <div class="rounded border p-3 mb-5">
+          <p>
+            <i class="fi fi-rr-search"></i> 검색
+          </p>
 
-  <!-- 버튼 -->
-  <div class="text-end">
-    <a href="javascript: openExportDataPage();" class="btn btn-sm btn-success">
-      <i class="fi fi-rr-file-excel"></i> 다운로드
-    </a>
-  </div>
+          <form id="outboxSearchForm" method="get" action="{{supervisor_url}}/supervisor/message">
+            <input type="hidden" name="tab" value="outbox">
+            <div class="row">
+              <div class="form-group mt-4 col-12">
+                <label>제목</label>
+                <input class="form-control" name="messageTitle" placeholder="쪽지 제목">
+              </div>
+              <div class="form-group mt-4 col-12">
+                <label>받는 사람</label>
+                <input class="form-control" name="messageReceiverId" placeholder="받는 사람 아이디">
+              </div>
+            </div>
+          </form>
 
-    <!-- 검색 결과 -->
-    <p class="text-black-50 small">
-      <i class="fi fi-rr-info"></i> 내가 보낸 쪽지 및 읽음 여부를 확인할 수 있습니다.
-    </p>
-    <table class="table table-border small border shadow text-center">
-      <tbody>
-        <tr>
-          <th>
-            받는 사람
-          </th>
-          <th>
-            제목
-          </th>
-          <th>
-            보낸 날짜
-          </th>
-          <th>
-            읽음 여부
-          </th>
-        </tr>
-        {% if messages|length < 1 %}
-        <tr>
-          <td colspan="4">
-            <p class="text-black">보낸 쪽지가 없습니다.</p>
-          </td>
-        </tr>
-        {% else %}
-        {% for message in messages %}
-        <tr style="cursor: pointer;" onclick="new bootstrap.Modal(document.getElementById('messageModal{{message.id}}')).show();">
-          <td>
-            <span class="text-dark">
-              {% if message.to.partner_name%}
-              {{ message.to.partner_name }}
-              {% elif message.to.nickname %}
-              {{ message.to.nickname }}
+          <p class="text-end mt-4">
+            <a class="btn btn-success" href="javascript: document.getElementById('outboxSearchForm').submit()">
+              <i class="fi fi-rr-search"></i> 검색
+            </a>
+          </p>
+        </div>
+
+        <!-- 버튼 -->
+        <div class="text-end">
+          <a href="javascript: openExportDataPage();" class="btn btn-sm btn-success">
+            <i class="fi fi-rr-file-excel"></i> 다운로드
+          </a>
+        </div>
+
+        <!-- 검색 결과 -->
+        <p class="text-black-50 small">
+          <i class="fi fi-rr-info"></i> 내가 보낸 쪽지 및 읽음 여부를 확인할 수 있습니다.
+        </p>
+        <table class="table table-border small border shadow text-center">
+          <tbody>
+            <tr>
+              <th>
+                받는 사람
+              </th>
+              <th>
+                제목
+              </th>
+              <th>
+                보낸 날짜
+              </th>
+              <th>
+                읽음 여부
+              </th>
+            </tr>
+            {% if messages|length < 1 %} <tr>
+              <td colspan="4">
+                <p class="text-black">보낸 쪽지가 없습니다.</p>
+              </td>
+              </tr>
               {% else %}
-              비회원 {{message.to.id}}
+              {% for message in messages %}
+              <tr style="cursor: pointer;"
+                onclick="new bootstrap.Modal(document.getElementById('messageModal{{message.id}}')).show();">
+                <td>
+                  <span class="text-dark">
+                    {% if message.to.partner_name%}
+                    {{ message.to.partner_name }}
+                    {% elif message.to.nickname %}
+                    {{ message.to.nickname }}
+                    {% else %}
+                    비회원 {{message.to.id}}
+                    {% endif %}
+                  </span>
+                </td>
+                <td>
+                  {{ message.title }}
+                </td>
+                <td>
+                  {{ message.created_at }}
+                </td>
+                <td>
+                  {% if message.read == 'y' %}
+                  <i class="fi fi-rr-eye"></i> 읽음
+                  {% else %}
+                  <i class="fi fi-rr-eye"></i> 읽지 않음
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
               {% endif %}
-            </span>
-          </td>
-          <td>
-            {{ message.title }}
-          </td>
-          <td>
-            {{ message.created_at }}
-          </td>
-          <td>
-            {% if message.read == 'y' %}
-            <i class="fi fi-rr-eye"></i> 읽음
-            {% else %}
-            <i class="fi fi-rr-eye"></i> 읽지 않음
-            {% endif %}
-          </td>
-        </tr>
-        {% endfor %}
-        {% endif %}
-      </tbody>
-    </table>
+          </tbody>
+        </table>
+      </div>
+
+      <div id="pageButton"></div>
+    <!-- 맨 위로 가기 버튼 -->
+    <div class="text-end mb-5">
+      {% include 'components/main/top_button.html' %}
+    </div>
   </div>
 
-  <div id="pageButton"></div>
+</main>
 
+<!-- 중앙 섹션 -->
 <!--
   Modals
   - 쪽지 상세보기 모달
@@ -308,11 +299,6 @@
 <!-- 쪽지 작성 및 답변 모달 -->
 {% include 'parts/message_write_modal.html' %}
 
-</section>
-
-<!-- 오른쪽 사이드바 -->
-<aside class="d-none d-lg-block" style="width: 320px;"></aside>
-
 <script>
 
   window.onload = () => {
@@ -320,8 +306,8 @@
 
     // Tab
     tab = '{{request.GET.tab}}';
-    if(tab == '') {
-      location.href='{{supervisor_url}}/supervisor/message?tab=inbox';
+    if (tab == '') {
+      location.href = '{{supervisor_url}}/supervisor/message?tab=inboxTab';
     }
 
     var inboxTab = document.getElementById('inboxTab');
@@ -376,11 +362,11 @@
 
     // 사용자 검색
     var users = await fetch(`/api/account?id_or_nickname=${receiver}`)
-    .then(res => res.json())
-    .then(data => {
-      console.log(data);
-      return data.users;
-    });
+      .then(res => res.json())
+      .then(data => {
+        console.log(data);
+        return data.users;
+      });
 
     // 사용자 검색 결과 확인
     if (users.length != 1) {
@@ -406,11 +392,11 @@
 
     // 쿠폰 검색
     var data = await fetch(`/api/coupon?code=${couponCode}`)
-    .then(res => res.json())
-    .then(data => {
-      console.log(data);
-      return data
-    });
+      .then(res => res.json())
+      .then(data => {
+        console.log(data);
+        return data
+      });
 
     // 쿠폰 검색 결과 확인
     var couponConfirmMessage = document.querySelector('#couponConfirmMessage');

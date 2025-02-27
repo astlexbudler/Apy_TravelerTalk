@@ -4,8 +4,10 @@
 
   <div class="main-section">
 
+    <div style="min-height: 300px;">
+
       <!-- 페이지 타이틀 -->
-      {% with title='게시글 관리' subtitle='일반 게시글 관리' %}
+      {% with title='여행지 관리' subtitle='여행지 게시글과 광고 관리' %}
       {% include 'components/main/title_section.html' %}
       {% endwith %}
 
@@ -16,84 +18,68 @@
         <div class="p-3 mb-5 text-end">
 
           <a class="btn btn-success btn-sm me-2"
-            href="javascript: new bootstrap.Modal(document.getElementById('addnewBoardModal')).show()">
-            <i class="fi fi-rr-plus"></i> 최상위 게시판 추가
+            href="javascript: new bootstrap.Modal(document.getElementById('addCategoryModal')).show()">
+            <i class="fi fi-rr-plus"></i> 최상위 카테고리 추가
           </a>
 
         </div>
 
         <!-- 통계 -->
         <div class="rounded border p-3 mb-5 shadow">
-          <p>
-            <i class="fi fi-rr-stats"></i> 게시판 편집
+          <p class="mt-4">
+            <i class="fi fi-rr-list"></i> 카테고리 편집
           </p>
           <table class="table table-bordered">
-            <thead>
-              <tr>
-                <th>구분</th>
-                <th>조회수</th>
-                <th>게시글 수</th>
-                <th style="width: 100px;"></th>
-              </tr>
-            </thead>
             <tbody>
-              {% for board in status %}
+              {% for category in categories %}
               <tr>
                 <td>
                   <p>
-                    {{ board.name }}<br>
+                    {{ category.name }}<br>
 
-                    <!-- 하위 게시판 추가. 트리 타입만 가능 -->
-                    {% if board.board_type == 'tree' %}
-                    <a href="javascript: document.getElementById('subBoardParent').value = '{{ board.id }}'; new bootstrap.Modal(document.getElementById('addnewBoardModal')).show()"
+                    <a href="javascript: document.getElementById('subCategoryParent').value = '{{ category.id }}'; new bootstrap.Modal(document.getElementById('addCategoryModal')).show()"
                       class="btn btn-success p-1 px-2 small">
-                      <i class="fi fi-rr-plus"></i> 하위 게시판 추가
+                      <i class="fi fi-rr-plus"></i> 하위 카테고리 추가
                     </a>
-                    {% endif %}
 
                   </p>
                 </td>
-                <td>{{ board.total_views }}</td>
-                <td>{{ board.total_posts }}</td>
-                <td class="text-center">
+                <td class="text-center" style="width: 100px;">
 
                   <!-- 게시판 수정 -->
-                  <a href="javascript: new bootstrap.Modal(document.getElementById('{{ board.id }}EditModal')).show()">
+                  <a
+                    href="javascript: new bootstrap.Modal(document.getElementById('{{ category.id }}CategoryEditModal')).show()">
                     <i class="fi fi-rr-edit"></i>
                   </a>
-                  {% with to_modify_board=board %}
-                  {% include 'parts/update_board_modal.html' %}
+                  {% with to_modify_category=category %}
+                  {% include 'parts/update_category_modal.html' %}
                   {% endwith %}
 
                 </td>
               </tr>
-              {% if board.children|length > 0 %}
-              {% for child in board.children %}
+              {% if category.children|length > 0 %}
+              {% for child in category.children %}
               <tr>
                 <td>
                   <p class="ms-2">
                     {{ child.name }}<br>
 
-                    <!-- 하위 게시판 추가. 트리 타입만 가능 -->
-                    {% if child.board_type == 'tree' %}
-                    <a href="javascript: document.getElementById('subBoardParent').value = '{{ board.id }}'; new bootstrap.Modal(document.getElementById('addnewBoardModal')).show()"
+                    <a href="javascript: document.getElementById('subCategoryParent').value = '{{ child.id }}'; new bootstrap.Modal(document.getElementById('addCategoryModal')).show()"
                       class="btn btn-success p-1 px-2 small">
-                      <i class="fi fi-rr-plus"></i> 하위 게시판 추가
+                      <i class="fi fi-rr-plus"></i> 하위 카테고리 추가
                     </a>
-                    {% endif %}
 
                   </p>
                 </td>
-                <td>{{ child.total_views }}</td>
-                <td>{{ child.total_posts }}</td>
                 <td class="text-center">
 
                   <!-- 게시판 수정 -->
-                  <a href="javascript: new bootstrap.Modal(document.getElementById('{{ child.id }}EditModal')).show()">
+                  <a
+                    href="javascript: new bootstrap.Modal(document.getElementById('{{ child.id }}CategoryEditModal')).show()">
                     <i class="fi fi-rr-edit"></i>
                   </a>
-                  {% with to_modify_board=child %}
-                  {% include 'parts/update_board_modal.html' %}
+                  {% with to_modify_category=child %}
+                  {% include 'parts/update_category_modal.html' %}
                   {% endwith %}
 
                 </td>
@@ -104,27 +90,22 @@
                   <p class="ms-4">
                     {{ grandchild.name }}<br>
 
-                    <!-- 하위 게시판 추가. 트리 타입만 가능 -->
-                    {% if grandchild.board_type == 'tree' %}
-                    <a href="javascript: document.getElementById('subBoardParent').value = '{{ board.id }}'; new bootstrap.Modal(document.getElementById('addnewBoardModal')).show()"
+                    <a href="javascript: document.getElementById('subCategoryParent').value = '{{ grandchild.id }}'; new bootstrap.Modal(document.getElementById('addCategoryModal')).show()"
                       class="btn btn-success p-1 px-2 small">
-                      <i class="fi fi-rr-plus"></i> 하위 게시판 추가
+                      <i class="fi fi-rr-plus"></i> 하위 카테고리 추가
                     </a>
-                    {% endif %}
 
                   </p>
                 </td>
-                <td>{{ grandchild.total_views }}</td>
-                <td>{{ grandchild.total_posts }}</td>
                 <td class="text-center">
 
                   <!-- 게시판 수정 -->
                   <a
-                    href="javascript: new bootstrap.Modal(document.getElementById('{{ grandchild.id }}EditModal')).show()">
+                    href="javascript: new bootstrap.Modal(document.getElementById('{{ grandchild.id }}CategoryEditModal')).show()">
                     <i class="fi fi-rr-edit"></i>
                   </a>
-                  {% with to_modify_board=grandchild %}
-                  {% include 'parts/update_board_modal.html' %}
+                  {% with to_modify_category=grandchild %}
+                  {% include 'parts/update_category_modal.html' %}
                   {% endwith %}
 
                 </td>
@@ -135,17 +116,15 @@
                 <td>
                   <span class="ms-6">{{ grandgrandchild.name }}</span>
                 </td>
-                <td>{{ grandgrandchild.total_views }}</td>
-                <td>{{ grandgrandchild.total_posts }}</td>
                 <td class="text-center">
 
                   <!-- 게시판 수정 -->
                   <a
-                    href="javascript: new bootstrap.Modal(document.getElementById('{{ grandgrandchild.id }}EditModal')).show()">
+                    href="javascript: new bootstrap.Modal(document.getElementById('{{ grandgrandchild.id }}CategoryEditModal')).show()">
                     <i class="fi fi-rr-edit"></i>
                   </a>
-                  {% with to_modify_board=grandgrandchild %}
-                  {% include 'parts/update_board_modal.html' %}
+                  {% with to_modify_category=grandgrandchild %}
+                  {% include 'parts/update_category_modal.html' %}
                   {% endwith %}
 
                 </td>
@@ -159,7 +138,6 @@
               {% endfor %}
             </tbody>
           </table>
-
         </div>
 
         <!-- 검색 -->
@@ -509,11 +487,12 @@
 
       </div>
 
+    </div>
+
     <!-- 맨 위로 가기 버튼 -->
     <div class="text-end mb-5">
       {% include 'components/main/top_button.html' %}
     </div>
-
   </div>
 
 </main>

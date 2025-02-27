@@ -1,85 +1,79 @@
-{% extends 'base/supervisor_base.html' %}
+{% extends 'base/base_supervisor.html' %}
 {% block content %}
-<!-- 왼쪽 사이드바 -->
-<aside class="d-none d-lg-block" style="width: 320px;">
-  {% include 'parts/left_aside_main.html' %}
-</aside>
+<main class="container">
 
-<!-- 중앙 섹션 -->
-<section class="main-section" style="flex: 1;">
+  <div class="main-section">
+      <!-- 페이지 타이틀 -->
+      {% with title='레벨 관리' subtitle='사용자 레벨 정책 관리' %}
+      {% include 'components/main/title_section.html' %}
+      {% endwith %}
 
-  <!-- 제목 -->
-  <div class="mt-4 mb-5">
-    <h5 class="mt-5">
-      레벨 관리
-    </h5>
-    <p class="small">
-      사용자 레벨 정책 관리
-    </p>
+      <div class="text-end p-3 mb-5">
+        <a href="javascript: $('#addNewLevel').modal('show');" class="btn btn-success btn-sm">
+          <i class="fi fi-rr-plus"></i> 레벨 정책 추가
+        </a>
+      </div>
+
+      <table class="table table-border small border shadow text-center">
+        <tbody>
+          <tr>
+            <th>
+              레벨
+            </th>
+            <th>
+              이미지
+            </th>
+            <th>
+              레벨 텍스트
+            </th>
+            <th></th>
+          </tr>
+          {% if levels|length < 1 %} <tr>
+            <td colspan="5">
+              등록된 레벨 정책이 없습니다.
+            </td>
+            </tr>
+            {% else %}
+            {% for level in levels %}
+            <tr>
+              <td>
+                {{ level.level }}
+              </td>
+              <td>
+                {% if level.image %}
+                <img src="{{ level.image }}" alt="레벨 이미지" style="height: 20px;">
+                {% else %}
+                <span>설정된 이미지 없음</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if not level.image %}
+                <span class="badge" style="color: {{level.text_color}}; background-color: {{level.background_color}};">
+                  {{ level.text }}
+                </span>
+                {% endif %}
+              </td>
+              <td>
+                <a href="javascript: new bootstrap.Modal(document.getElementById('editLevel{{level.level}}')).show();"
+                  class="text-primary">
+                  <i class="fi fi-rr-edit"></i>
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+            {% endif %}
+        </tbody>
+      </table>
+
+
+    <!-- 맨 위로 가기 버튼 -->
+    <div class="text-end mb-5">
+      {% include 'components/main/top_button.html' %}
+    </div>
   </div>
 
-  <div class="text-end p-3 mb-5">
-    <a href="javascript: $('#addNewLevel').modal('show');"
-    class="btn btn-success btn-sm">
-      <i class="fi fi-rr-plus"></i> 레벨 정책 추가
-    </a>
-  </div>
+</main>
 
-  <table class="table table-border small border shadow text-center">
-    <tbody>
-      <tr>
-        <th>
-          레벨
-        </th>
-        <th>
-          이미지
-        </th>
-        <th>
-          레벨 텍스트
-        </th>
-        <th></th>
-      </tr>
-      {% if levels|length < 1 %}
-      <tr>
-        <td colspan="5">
-          등록된 레벨 정책이 없습니다.
-        </td>
-      </tr>
-      {% else %}
-      {% for level in levels %}
-      <tr>
-        <td>
-          {{ level.level }}
-        </td>
-        <td>
-          {% if level.image %}
-          <img src="{{ level.image }}" alt="레벨 이미지" style="height: 20px;">
-          {% else %}
-          <span>설정된 이미지 없음</span>
-          {% endif %}
-        </td>
-        <td>
-          {% if not level.image %}
-          <span class="badge" style="color: {{level.text_color}}; background-color: {{level.background_color}};">
-            {{ level.text }}
-          </span>
-          {% endif %}
-        </td>
-        <td>
-          <a href="javascript: new bootstrap.Modal(document.getElementById('editLevel{{level.level}}')).show();" class="text-primary">
-            <i class="fi fi-rr-edit"></i>
-          </a>
-        </td>
-      </tr>
-      {% endfor %}
-      {% endif %}
-    </tbody>
-  </table>
-
-</section>
-
-<!-- 오른쪽 사이드바 -->
-<aside class="d-none d-lg-block" style="width: 320px;"></aside>
 <!--
   Modals
 -->
@@ -126,7 +120,8 @@
           <!-- 레벨 배경 색상 -->
           <div class="form-group mb-2">
             <label>레벨 배경 색상</label>
-            <input class="form-control" placeholder="레벨 배경 색상을 입력하세요." id="levelBackgroundColor" name="background_color">
+            <input class="form-control" placeholder="레벨 배경 색상을 입력하세요." id="levelBackgroundColor"
+              name="background_color">
           </div>
 
           <!-- 필요 경험치 -->
@@ -134,7 +129,7 @@
             <label>필요 경험치</label>
             <input type="number" class="form-control" placeholder="필요 경험치를 입력하세요." id="levelExp" name="exp">
           </div>
-        
+
         </form>
 
       </div>
@@ -180,25 +175,29 @@
           <!-- 레벨 텍스트 -->
           <div class="form-group mt-4 mb-2">
             <label>레벨 텍스트</label>
-            <input class="form-control" placeholder="레벨 텍스트를 입력하세요." id="levelText{{level.level}}" name="text" value="{{ level.text }}">
+            <input class="form-control" placeholder="레벨 텍스트를 입력하세요." id="levelText{{level.level}}" name="text"
+              value="{{ level.text }}">
           </div>
 
           <!-- 레벨 텍스트 색상 -->
           <div class="form-group mb-2">
             <label>레벨 텍스트 색상</label>
-            <input class="form-control" placeholder="레벨 텍스트 색상을 입력하세요." id="levelTextColor{{level.level}}" name="text_color" value="{{ level.text_color }}">
+            <input class="form-control" placeholder="레벨 텍스트 색상을 입력하세요." id="levelTextColor{{level.level}}"
+              name="text_color" value="{{ level.text_color }}">
           </div>
 
           <!-- 레벨 배경 색상 -->
           <div class="form-group mb-2">
             <label>레벨 배경 색상</label>
-            <input class="form-control" placeholder="레벨 배경 색상을 입력하세요." id="levelBackgroundColor{{level.level}}" name="background_color" value="{{ level.background_color }}">
+            <input class="form-control" placeholder="레벨 배경 색상을 입력하세요." id="levelBackgroundColor{{level.level}}"
+              name="background_color" value="{{ level.background_color }}">
           </div>
 
           <!-- 필요 경험치 -->
           <div class="form-group mb-2">
             <label>필요 경험치</label>
-            <input type="number" class="form-control" placeholder="필요 경험치를 입력하세요." id="levelExp{{level.level}}" name="exp" value="{{ level.required_exp }}">
+            <input type="number" class="form-control" placeholder="필요 경험치를 입력하세요." id="levelExp{{level.level}}"
+              name="exp" value="{{ level.required_exp }}">
           </div>
 
         </form>
@@ -263,11 +262,11 @@
         'X-CSRFToken': csrftoken
       }
     })
-    .then(response => response.json())
-    .then(data => {
-      console.log(data);
-      return data.result;
-    });
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        return data.result;
+      });
 
     if (response == 'success') {
       await showAlert('레벨 정책 추가', '레벨 정책이 추가되었습니다.', 'success');
@@ -299,11 +298,11 @@
         'X-CSRFToken': csrftoken
       }
     })
-    .then(response => response.json())
-    .then(data => {
-      console.log(data);
-      return data.result;
-    });
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        return data.result;
+      });
 
     if (response == 'success') {
       await showAlert('레벨 정책 수정', '레벨 정책이 수정되었습니다.', 'success');

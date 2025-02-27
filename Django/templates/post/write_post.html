@@ -18,21 +18,7 @@
 
         <!-- 대표 이미지 -->
         <div class="my-4">
-          <label>썸네일 이미지</label>
-          <div id="imagePreview" class="mb-3">
-            <!--
-            <div class="text-end p-2 shadow"
-              style="min-width: 150px; width: 12vw; background: url('/media/default.png') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw;">
-              <a href="#" class="text-danger">
-                <i class="fi fi-rr-trash"></i>
-              </a>
-            </div>-->
-          </div>
-          <a href="javascript: document.getElementById('imageInput').click();" class="btn btn-success btn-sm small">
-            <i class="fi fi-rr-picture"></i> 이미지 등록
-          </a>
-          <input type="file" class="d-none" id="imageInput" multiple>
-          <input id="imagePaths" value="{% for image in travel_post.images %}{{ image }},{% endfor %}" class="d-none">
+          {% include 'components/other/upload_image.html' with label='썸네일 이미지' id='imageInput' %}
         </div>
 
         <!-- 제목 -->

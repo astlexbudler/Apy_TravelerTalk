@@ -362,7 +362,6 @@ def create_account(username, password, first_name, last_name, email, tel, accoun
     default_level = models.LEVEL_RULE.objects.get(level=1)
     account.level = default_level
     account.save()
-    print(account.groups.all())
 
     return {
         'success': True,
@@ -375,17 +374,18 @@ def create_account(username, password, first_name, last_name, email, tel, accoun
 def update_account(account_id, password=None, first_name=None, last_name=None, email=None, status=None, note=None, subsupervisor_permissions=None, exp=None, mileage=None):
 
     # 사용자 정보 확인
-    account = models.ACCOUNT.objects.filter(
+    account = models.ACCOUNT.objects.select_related(
+        'level'
+    ).filter(
         id=account_id
-    )
-    if not account.exists():
+    ).first()
+    if not account:
         return {
             'success': False,
             'message': '사용자 정보가 존재하지 않습니다.',
         }
 
     # 사용자 정보 업데이트
-    account = account.first()
     if password: # 비밀번호 업데이트
         account.set_password(password)
     if first_name: # 닉네임 업데이트
@@ -402,6 +402,20 @@ def update_account(account_id, password=None, first_name=None, last_name=None, e
         account.subsupervisor_permissions = subsupervisor_permissions
     if exp: # 경험치 업데이트
         account.exp = exp
+
+        # 레벨업 확인
+        level = models.LEVEL_RULE.objects.filter(
+            required_exp__lte=exp
+        ).order_by('-level').first()
+        if level and level.level > account.level.level:
+            account.level = level
+
+            # 레벨업 활동 생성
+            create_account_activity(
+                account_id=account_id,
+                message=f'[레벨업] {level.text} 레벨을 달성하였습니다.'
+            )
+
     if mileage: # 마일리지 업데이트
         account.mileage = mileage
     account.save()
@@ -1608,7 +1622,7 @@ def select_message(message_id):
             'name': message.include_coupon.name,
         } if message.include_coupon else None,
         'is_read': message.is_read,
-        'created_at': message.created_at,
+        'created_at': datetime.datetime.strftime(message.created_at, '%Y-%m-%d %H:%M'),
     }
 
     return message_data
@@ -1677,7 +1691,7 @@ def select_received_messages(account_id, page=1):
                 'name': message.include_coupon.name,
             } if message.include_coupon else None,
             'is_read': message.is_read,
-            'created_at': message.created_at,
+            'created_at': datetime.datetime.strftime(message.created_at, '%Y-%m-%d %H:%M'),
         })
 
     return messages_data, last_page
@@ -1713,41 +1727,45 @@ def select_sent_messages(account_id, page=1):
     # 메세지 정보 포멧
     for message in messages:
 
-        # 받는 사람 정보
-        to_account = models.ACCOUNT.objects.filter(
-            id=message.to_account
-        ).first()
-        if not to_account: # supervisor or guest_id
-            if message.to_account == 'supervisor':
-                to_account = {
-                    'id': 'supervisor',
-                    'nickname': '관리자',
-                }
+        try:
+            # 받는 사람 정보
+            to_account = models.ACCOUNT.objects.filter(
+                id=message.to_account
+            ).first()
+            if not to_account: # supervisor or guest_id
+                if message.to_account == 'supervisor':
+                    to_account = {
+                        'id': 'supervisor',
+                        'nickname': '관리자',
+                    }
+                else:
+                    to_account = {
+                        'id': 'guest',
+                        'nickname': f'손님({message.to_account})',
+                    }
             else:
                 to_account = {
-                    'id': 'guest',
-                    'nickname': f'손님({message.to_account})',
+                    'id': to_account.id,
+                    'nickname': to_account.first_name,
                 }
-        else:
-            to_account = {
-                'id': to_account.id,
-                'nickname': to_account.first_name,
-            }
 
-        # 메세지 포멧
-        messages_data.append({
-            'id': message.id,
-            'to_account': to_account,
-            'title': message.title,
-            'content': message.content,
-            'image': message.image,
-            'include_coupon': {
-                'code': message.include_coupon_code,
-                'name': message.include_coupon.name,
-            } if message.include_coupon else None,
-            'is_read': message.is_read,
-            'created_at': message.created_at,
-        })
+            # 메세지 포멧
+            messages_data.append({
+                'id': message.id,
+                'to_account': to_account,
+                'title': message.title,
+                'content': message.content,
+                'image': message.image,
+                'include_coupon': {
+                    'code': message.include_coupon_code,
+                    'name': message.include_coupon.name,
+                } if message.include_coupon else None,
+                'is_read': message.is_read,
+                'created_at': datetime.datetime.strftime(message.created_at, '%Y-%m-%d %H:%M'),
+            })
+        except Exception as e:
+            print(e)
+            message.delete()
 
     return messages_data, last_page
 
@@ -2378,30 +2396,14 @@ def create_board(name, board_type, display_groups, enter_groups, write_groups, c
         board_type=board_type,
         level_cut=level_cut,
     )
-    for display_group in str(display_groups).split(','):
-        group = Group.objects.filter(
-            name=display_group
-        ).first()
-        if group:
-            board.display_groups.add(group)
-    for enter_group in str(enter_groups).split(','):
-        group = Group.objects.filter(
-            name=enter_group
-        ).first()
-        if group:
-            board.enter_groups.add(group)
-    for write_group in str(write_groups).split(','):
-        group = Group.objects.filter(
-            name=write_group
-        ).first()
-        if group:
-            board.write_groups.add(group)
-    for comment_group in str(comment_groups).split(','):
-        group = Group.objects.filter(
-            name=comment_group
-        ).first()
-        if group:
-            board.comment_groups.add(group)
+    for display_group in display_groups:
+        board.display_groups.add(display_group)
+    for enter_group in enter_groups:
+        board.enter_groups.add(enter_group)
+    for write_group in write_groups:
+        board.write_groups.add(write_group)
+    for comment_group in comment_groups:
+        board.comment_groups.add(comment_group)
 
     return {
         'success': True,
@@ -2410,7 +2412,7 @@ def create_board(name, board_type, display_groups, enter_groups, write_groups, c
     }
 
 # 게시판 정보 업데이트
-def update_board(board_id, parent_board_id=None, name=None, board_type=None, display_groups=None, enter_groups=None, write_groups=None, comment_groups=None, level_cut=None):
+def update_board(board_id, parent_board_id=None, name=None, board_type=None, display_groups=None, enter_groups=None, write_groups=None, comment_groups=None, level_cut=None, display_weight=None):
 
     # 게시판 확인
     board = models.BOARD.objects.prefetch_related(
@@ -2432,6 +2434,8 @@ def update_board(board_id, parent_board_id=None, name=None, board_type=None, dis
         board.name = name
     if board_type: # 게시판 타입 업데이트
         board.board_type = board_type
+    if display_weight: # 노출 가중치 업데이트
+        board.display_weight = display_weight
     if display_groups: # 조회 그룹 업데이트
         board.display_groups.clear()
         for display_group in board.display_groups.all():

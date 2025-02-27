@@ -1,88 +1,79 @@
-{% extends 'base/supervisor_base.html' %}
+{% extends 'base/base_supervisor.html' %}
 {% block content %}
-<!-- 왼쪽 사이드바 -->
-<aside class="d-none d-lg-block" style="width: 320px;">
-  {% include 'parts/left_aside_main.html' %}
-</aside>
+<main class="container">
 
-<!-- 중앙 섹션 -->
-<section class="main-section px-5 px-lg-1" style="flex: 1; min-height: 100vh;">
+  <div class="main-section">
 
-  <!-- 제목 -->
-  <div class="mt-4 mb-5">
-    <h5 class="mt-5">
-      배너 관리
-    </h5>
-    <p class="small">
-      광고 배너 관리
-    </p>
-  </div>
+      <!-- 페이지 타이틀 -->
+      {% with title='배너 관리' subtitle='광고 배너 관리' %}
+      {% include 'components/main/title_section.html' %}
+      {% endwith %}
 
-  <!-- 선택지 버튼 그룹 -->
-  <div class="btn-group w-100 d-flex">
-    <div class="w-100 d-flex justify-content-center rounded-2">
-      <a class="w-100 btn" href="{{supervisor_url}}/supervisor/banner?tab=top" id="topTab">
-        상단 배너
-      </a>
-    </div>
-    <span class="divider"></span>
-    <div class="w-100 d-flex justify-content-center rounded-2">
-      <a class="w-100 btn" href="{{supervisor_url}}/supervisor/banner?tab=side" id="sideTab">
-        측/하단 배너
-      </a>
-    </div>
-  </div>
-
-  <div class="my-5">
-
-    <!-- 버튼 -->
-    <div class="p-3 mb-5 text-end">
-
-      <a class="btn btn-success btn-sm" href="javascript: new bootstrap.Modal(document.getElementById('addBannerModal')).show();">
-        <i class="fi fi-rr-plus"></i> 배너 생성
-      </a>
-
+    <!-- 선택지 버튼 그룹 -->
+    <div class="btn-group w-100 d-flex">
+      {% include 'components/main/page_tab.html' with tab_name='상단 배너' tab_id='topTab' tab_link='/supervisor/banner?tab=topTab' %}
+      <span class="divider"></span>
+      {% include 'components/main/page_tab.html' with tab_name='측/하단 배너' tab_id='sideTab' tab_link='/supervisor/banner?tab=sideTab' %}
     </div>
 
-    <!-- 검색 결과 -->
-    {% if banners|length < 1 %}
-    <p>
-      배너가 없습니다.
-    </p>
-    {% endif %}
-    <div class="row">
-      {% if request.GET.tab == 'top' %}
-      {% for banner in banners.top %}
-      <div class="col-12 col-md-6 p-1">
-        <span>
-          BANNER {{ banner.location }} {{forloop.counter}} 
-          <a href="javascript: new bootstrap.Modal(document.getElementById('editBannerModal{{ banner.id }}')).show();">
-            <i class="fi fi-rr-edit"></i>
+      <div class="my-5">
+
+        <!-- 버튼 -->
+        <div class="p-3 mb-5 text-end">
+
+          <a class="btn btn-success btn-sm"
+            href="javascript: new bootstrap.Modal(document.getElementById('addBannerModal')).show();">
+            <i class="fi fi-rr-plus"></i> 배너 생성
           </a>
-        </span>
-        <div class="w-100 shadow-sm" style="height: 200px; background: black url('{{ banner.image }}') center/cover no-repeat;"></div>
+
+        </div>
+
+        <!-- 검색 결과 -->
+        {% if banners|length < 1 %} <p>
+          배너가 없습니다.
+          </p>
+          {% endif %}
+          <div class="row">
+            {% if request.GET.tab == 'top' %}
+            {% for banner in banners.top %}
+            <div class="col-12 col-md-6 p-1">
+              <span>
+                BANNER {{ banner.location }} {{forloop.counter}}
+                <a
+                  href="javascript: new bootstrap.Modal(document.getElementById('editBannerModal{{ banner.id }}')).show();">
+                  <i class="fi fi-rr-edit"></i>
+                </a>
+              </span>
+              <div class="w-100 shadow-sm"
+                style="height: 200px; background: black url('{{ banner.image }}') center/cover no-repeat;"></div>
+            </div>
+            {% endfor %}
+            {% else %}
+            {% for banner in banners.side %}
+            <div class="col-12 col-md-6 p-1">
+              <span>
+                BANNER {{ banner.location }} {{forloop.counter}}
+                <a
+                  href="javascript: new bootstrap.Modal(document.getElementById('editBannerModal{{ banner.id }}')).show();">
+                  <i class="fi fi-rr-edit"></i>
+                </a>
+              </span>
+              <div class="w-100 shadow-sm"
+                style="height: 200px; background: black url('{{ banner.image }}') center/cover no-repeat;"></div>
+            </div>
+            {% endfor %}
+            {% endif %}
+          </div>
+
       </div>
-      {% endfor %}
-      {% else %}
-      {% for banner in banners.side %}
-      <div class="col-12 col-md-6 p-1">
-        <span>
-          BANNER {{ banner.location }} {{forloop.counter}} 
-          <a href="javascript: new bootstrap.Modal(document.getElementById('editBannerModal{{ banner.id }}')).show();">
-            <i class="fi fi-rr-edit"></i>
-          </a>
-        </span>
-        <div class="w-100 shadow-sm" style="height: 200px; background: black url('{{ banner.image }}') center/cover no-repeat;"></div>
-      </div>
-      {% endfor %}
-      {% endif %}
+
+    <!-- 맨 위로 가기 버튼 -->
+    <div class="text-end mb-5">
+      {% include 'components/main/top_button.html' %}
     </div>
-
   </div>
-</section>
 
-<!-- 오른쪽 사이드바 -->
-<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+</main>
 
 <!-- Modals -->
 <!-- 배너 생성 모달 -->
@@ -135,7 +126,8 @@
 </div>
 {% for banner in banners.side %}
 <!-- 배너 수정 모달 -->
-<div class="modal fade" id="editBannerModal{{ banner.id }}" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+<div class="modal fade" id="editBannerModal{{ banner.id }}" tabindex="-1" aria-labelledby="modalLabel"
+  aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
@@ -185,7 +177,8 @@
 {% endfor %}
 {% for banner in banners.top %}
 <!-- 배너 수정 모달 -->
-<div class="modal fade" id="editBannerModal{{ banner.id }}" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+<div class="modal fade" id="editBannerModal{{ banner.id }}" tabindex="-1" aria-labelledby="modalLabel"
+  aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
@@ -220,7 +213,8 @@
         <!-- display weight -->
         <div class="form-group mb-2">
           <label>노출 가중치</label>
-          <input class="form-control" placeholder="노출 우선순위를 입력하세요." id="bannerDisplayWeight{{ banner.id }}" value="{{ banner.display_weight }}">
+          <input class="form-control" placeholder="노출 우선순위를 입력하세요." id="bannerDisplayWeight{{ banner.id }}"
+            value="{{ banner.display_weight }}">
         </div>
 
       </div>
@@ -241,8 +235,8 @@
 
     // Tab
     tab = '{{request.GET.tab}}';
-    if(tab == '') {
-      location.href='{{supervisor_url}}/supervisor/banner?tab=top';
+    if (tab == '') {
+      location.href = '{{supervisor_url}}/supervisor/banner?tab=topTab';
     }
 
     var topTab = document.getElementById('topTab');
@@ -289,11 +283,11 @@
         'X-CSRFToken': csrftoken
       }
     })
-    .then(response => response.json())
-    .then(data => {
-      console.log(data);
-      return data.result;
-    });
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        return data.result;
+      });
 
 
     if (response == 'success') {
@@ -331,11 +325,11 @@
         'X-CSRFToken': csrftoken
       }
     })
-    .then(response => response.json())
-    .then(data => {
-      console.log(data);
-      return data.result;
-    });
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        return data.result;
+      });
 
     if (response == 'success') {
       await showAlert('배너 수정', '배너가 수정되었습니다.', 'success');

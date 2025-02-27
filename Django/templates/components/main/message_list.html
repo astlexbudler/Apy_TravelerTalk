@@ -8,9 +8,9 @@
                     <i class="fi fi-rr-ticket text-success"></i>
                     {% endif %}
                 </h6>
-                {% if message.sender %}
+                {% if message.sender_account %}
                 <p class="text-black-50 small m-0">
-                    보낸이: {{message.sender.nickname}}
+                    보낸이: {{message.sender_account.nickname}}
                 </p>
                 {% else %}
                 <p class="text-black-50 small m-0">

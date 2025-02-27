@@ -368,7 +368,12 @@ class api_message(APIView):
     def post(self, request, *args, **kwargs):
 
         # 메세지 생성
-        sender_id = request.data.get('sender_id')
+        if not request.user.is_authenticated:
+            guest_id = request.session.get('guest_id', ''.join(random.choices(string.ascii_uppercase + string.digits, k=10)))
+            request.session['guest_id'] = guest_id
+            sender_id = guest_id
+        else:
+            sender_id = request.user.id
         receiver_id = request.data.get('receiver_id')
 
         # 계정 확인

@@ -12,3 +12,280 @@
     /api/message POST 요청을 보내어 메시지를 생성합니다.
     /api/account GET 요청을 보내어 유저 아이디를 검색합니다.
 -->
+<div class="modal fade" id="newMessageModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    쪽지 작성
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <form id="newMessageForm">
+                    {% csrf_token %}
+
+                    <!-- 대표 이미지 -->
+                    <div class="mb-4">
+                        {% include 'components/other/upload_image.html' with label='이미지 첨부' id='imageInput' %}
+                    </div>
+
+                    <!-- 쪽지 발송 대상 검색 -->
+                    <div class="form-group mt-2 mb-2">
+                        <label>받는 사람</label> <small id="receiverConfirmMessage"></small>
+                        <div class="form-group position-relative w-100" style="display: inline-block;" onkeyup="if(event.keyCode == 13) { addUser(); }">
+                            <input class="form-control" placeholder="사용자 아이디 또는 닉네임을 입력해주세요." id="accountSearchInput">
+                            <a href="javascript: addUser();" class="position-absolute text-black-50"
+                                style="right: 15px; top: 50%; transform: translateY(-50%); font-size: 14px;">
+                                <i class="fi fi-rs-paper-plane-top text-success"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="mb-4 px-2">
+                        <div class="form-group mb-2">
+                            <input type="checkbox" id="messageToAdmin">
+                            <label for="messageToAdmin">관리자 문의 메세지로 보내기</label>
+                        </div>
+                        <input id="receiverId" class="d-none">
+                        <div id="receiverList"></div>
+                    </div>
+
+                    <!-- 쪽지 제목 -->
+                    <div class="form-group mb-3">
+                        <label>제목</label>
+                        <input class="form-control" placeholder="쪽지 제목을 입력하세요." id="messageTitle" name="title">
+                    </div>
+
+                    <!-- 쪽지 내용 -->
+                    <div class="form-group mb-2">
+                        <label>내용</label>
+                        <textarea class="form-control" placeholder="쪽지 내용을 입력하세요." id="messageContent" rows="5"
+                            name="content"></textarea>
+                    </div>
+
+                    <!-- 쿠폰 -->
+                    {% if account.account_type == 'partner' or account.account_type == 'supervisor' or account.account_type == 'sub_supervisor' %}
+                    <div class="form-group mb-2">
+                        <label>쿠폰 보내기</label> <small id="couponConfirmMessage"></small>
+                        <input id="couponCode" class="form-control" placeholder="보낼 쿠폰 코드를 입력하세요." name="coupon_code"
+                            oninput="couponCodeCheck(this);">
+                        <small>
+                            전달하고자하는 쿠폰의 쿠폰 코드를 입력하세요.
+                        </small>
+                    </div>
+                    {% endif %}
+                </form>
+
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary me-2" onclick="sendMessage();">
+                    <i class="fi fi-rr-paper-plane"></i> 보내기
+                </button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal">
+                    취소
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+
+    // 쪽지 수신자 검색 및 확인
+    var accountSearchInput = document.querySelector('#accountSearchInput');
+    var receiverConfirmMessage = document.querySelector('#receiverConfirmMessage');
+    var receiverList = document.querySelector('#receiverList');
+    var nowAccountId = '';
+    var nowAccountNickname = '';
+    var accountOk = false;
+    accountSearchInput.addEventListener('keyup', async () => {
+        var receiver = accountSearchInput.value;
+        if (receiver.length < 2) {
+            receiverConfirmMessage.innerHTML = '아이디 또는 닉네임을 2글자 이상 입력해주세요.';
+            receiverConfirmMessage.classList.add('text-danger');
+            receiverConfirmMessage.classList.remove('text-success');
+            return;
+        }
+
+        // 사용자 검색
+        var accounts = await fetch(`/api/account?any=${receiver}`)
+        .then(res => res.json())
+        .then(data => {
+            console.log(data);
+            return data.data;
+        });
+
+        // 사용자 검색 결과 확인
+        if (accounts.length == 0) {
+            receiverConfirmMessage.innerHTML = '정확한 사용자 아이디 또는 닉네임을 입력해주세요.';
+            receiverConfirmMessage.classList.add('text-danger');
+            receiverConfirmMessage.classList.remove('text-success');
+            accountOk = false;
+            return
+        }
+        if (accounts[0]['nickname'] === receiver || accounts[0]['id'] === receiver) {
+            receiverConfirmMessage.innerHTML = '사용자 확인';
+            receiverConfirmMessage.classList.add('text-success');
+            receiverConfirmMessage.classList.remove('text-danger');
+            nowAccountId = accounts[0]['id'];
+            nowAccountNickname = accounts[0]['nickname'];
+            accountOk = true;
+            return
+        }
+        receiverConfirmMessage.innerHTML = '정확한 사용자 아이디 또는 닉네임을 입력해주세요.';
+        receiverConfirmMessage.classList.add('text-danger');
+        receiverConfirmMessage.classList.remove('text-success');
+        accountOk = false;
+    });
+
+    // 사용자 추가
+    var receiverId = document.querySelector('#receiverId');
+    addUser = () => {
+        if (!accountOk) {
+            return;
+        }
+        var html = `
+            <div style="display: flex; justify-content: space-between; white-space: nowrap;" id="${nowAccountId}">
+                <div style="display: inline-block; text-align: left;">
+                    <p class="text-black-60 mb-1">
+                        ${nowAccountNickname}
+                    </p>
+                </div>
+                <div style="display: inline-block; text-align: right;">
+                    <a href="javascript: deleteUser('${nowAccountId}');" class="small text-danger">
+                        삭제
+                    </a>
+                </div>
+            </div>
+        `;
+        receiverList.innerHTML += html;
+        receiverConfirmMessage.innerHTML = '사용자를 추가했습니다.';
+        receiverConfirmMessage.classList.add('text-success');
+        receiverConfirmMessage.classList.remove('text-danger');
+        accountSearchInput.value = '';
+        receiverId.value = nowAccountId + ',';
+    }
+
+    // 사용자 삭제
+    deleteUser = (id) => {
+        var user = document.getElementById(id);
+        user.remove();
+        receiverConfirmMessage.innerHTML = '사용자를 삭제했습니다.';
+        receiverConfirmMessage.classList.add('text-success');
+        receiverConfirmMessage.classList.remove('text-danger');
+        receiverId.value = receiverId.value.replace(id + ',', '');
+    }
+
+    // 관리자에게 보내기 체크박스를 체크한 경우
+    var messageToAdminCheckbox = document.querySelector('#messageToAdmin');
+    messageToAdminCheckbox.addEventListener('change', () => {
+        if (messageToAdminCheckbox.checked) { // 체크한 경우
+            var html = `
+                <div style="display: flex; justify-content: space-between; white-space: nowrap;" id="admin">
+                    <div style="display: inline-block; text-align: left;">
+                        <p class="text-black-60 mb-1">
+                            관리자 <small class="text-black-50">(admin)</small>
+                        </p>
+                    </div>
+                    <div style="display: inline-block; text-align: right;">
+                        <a href="javascript: deleteUser('admin');" class="small text-danger">
+                            삭제
+                        </a>
+                    </div>
+                </div>
+            `;
+            receiverList.innerHTML = html;
+            receiverConfirmMessage.innerHTML = '관리자에게 쪽지를 보냅니다.';
+            receiverConfirmMessage.classList.add('text-success');
+            receiverConfirmMessage.classList.remove('text-danger');
+            accountSearchInput.setAttribute('readonly', 'readonly');
+            receiverId.value = 'supervisor,';
+            return
+        }
+        receiverList.innerHTML = '';
+        accountSearchInput.removeAttribute('readonly');
+        receiverId.value = '';
+    });
+
+
+    // 쿠폰 코드를 입력한 경우, 유효한 쿠폰 코드인지 확인
+    var couponValid = true;
+    couponCodeCheck = async (e) => {
+        var couponCode = e.value;
+        if (couponCode.length < 6) {
+            return;
+        }
+
+        // 쿠폰 검색
+        var data = await fetch(`/api/coupon?code=${couponCode}`)
+            .then(res => res.json())
+            .then(data => {
+                console.log(data);
+                return data
+            });
+
+        // 쿠폰 검색 결과 확인
+        var couponConfirmMessage = document.querySelector('#couponConfirmMessage');
+        var exist = data.result == 'success'; // true or false
+        var coupon = data.coupon;
+        if (!exist) {
+            couponConfirmMessage.innerHTML = '존재하지 않는 쿠폰 코드입니다.';
+            couponConfirmMessage.classList.add('text-danger');
+            couponConfirmMessage.classList.remove('text-primary');
+            couponValid = false;
+            return;
+        }
+        couponConfirmMessage.innerHTML = '유효한 쿠폰 코드입니다.';
+        couponConfirmMessage.classList.add('text-primary');
+        couponConfirmMessage.classList.remove('text-danger');
+        couponValid = true;
+    }
+
+    // 쪽지 보내기
+    sendMessage = async () => {
+
+        // couponValid 확인
+        if (!couponValid) {
+            var isContinue = showConfirm('쿠폰 코드 확인', '쿠폰 코드가 유효하지 않습니다. 그래도 계속하시겠습니까?', 'warning', '쪽지 보내기', '취소');
+            if (!isContinue) {
+                return;
+            }
+        }
+
+        var receiverIds = document.getElementById('receiverId').value;
+        var messageTitle = document.getElementById('messageTitle').value;
+        var messageContent = document.getElementById('messageContent').value;
+        if (receiverIds == '' || messageTitle == '' || messageContent == '') {
+            await showAlert('쪽지 보내기', '모든 항목을 입력해주세요.', 'error');
+            return;
+        }
+
+        // 메세지 전송 요청
+        for (var i = 0; i < receiverIds.split(',').length; i++) {
+            if (receiverIds.split(',')[i] == '') {
+                continue;
+            }
+            var formData = new FormData();
+            formData.append('receiver_id', receiverIds.split(',')[i]);
+            formData.append('title', messageTitle);
+            formData.append('content', messageContent);
+            if (document.getElementById('imageInput').files.length > 0) {
+                formData.append('image', document.getElementById('imageInput').files[0]);
+            }
+            if (document.getElementById('couponCode')) {
+                formData.append('coupon_code', document.getElementById('couponCode').value);
+            }
+            await fetch('/api/message', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken
+                },
+                body: formData
+            });
+        }
+
+        // 메세지 전송 결과에 따른 알림창
+        await showAlert('쪽지 보내기', '쪽지를 성공적으로 전송했습니다.', 'success');
+        location.reload();
+    }
+</script>

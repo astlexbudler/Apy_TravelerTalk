@@ -14,7 +14,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-ysfp9p2+rl$28l!t*7mlg=y7@h6a!^j^xmv69t75o(e@=!p=o9'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -77,7 +77,7 @@ SITE_DOMAIN = 'kibang01.com'
 CSRF_TRUSTED_ORIGINS=[
     'http://kibang01.com', 'http://ptn.kibang01.com', 'http://spv.kibang01.com',
     'http://kibang02.com', 'http://ptn.kibang02.com', 'http://spv.kibang02.com',
-    #'http://127.0.0.1:8000', '
+    'http://127.0.0.1:8000',
 ]
 
 MAIN_URL = os.getenv('MAIN_URL', 'http://kibang01.com') # 메인 도메인
