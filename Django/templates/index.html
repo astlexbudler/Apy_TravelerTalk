@@ -10,14 +10,21 @@
     <div style="min-height: 300px;">
 
       <!-- 상단 배너 영역 -->
-      {% include 'components/main/banner.html' %}
+      {% include 'components/main/banner.html' with banners=banners.top %}
 
       <!-- 페이지 타이틀 -->
       {% include 'components/main/title_section.html' with title='여행' subtitle='여행 정보를 확인해보세요.' %}
 
       <!-- 여행지 게시글 목록 -->
       <div class="row">
+        {% if posts|length == 0 %}
+        <p>
+          게시글이 없습니다.
+        </p>
+        {% endif %}
+        {% for post in posts %}
         {% include 'components/main/post_list/post_list_card.html' %}
+        {% endfor %}
       </div>
 
     </div>
@@ -35,8 +42,10 @@
       {% include 'components/main/top_button.html' %}
     </div>
 
-    <!-- 하단 배너 영역 -->
-    {% include 'components/main/banner.html' %}
+    <!-- 상단 배너 영역 -->
+    <div class="d-lg-none">
+      {% include 'components/main/banner.html' with banners=banners.side %}
+    </div>
 
   </div>
 

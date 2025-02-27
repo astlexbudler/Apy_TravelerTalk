@@ -12,11 +12,18 @@
       <!-- 페이지 타이틀 -->
       {% include 'components/main/breadcrumbs.html' %}
       {% include 'components/main/title_section.html' with title='쿠폰' subtitle='쿠폰 받기 게시판에서 쿠폰을 받아보세요.' %}
-      <!-- 후기 게시글 목록 -->
+
+      <!-- 게시글 목록 -->
       <div class="row">
 
+        {% if posts|length == 0 %}
+        <p>
+          아직 게시글이 없습니다.
+        </p>
+        {% endif %}
+        {% for post in posts %}
         {% include 'components/main/post_list/post_list_normal.html' %}
-        {% include 'components/main/post_list/post_list_normal.html' %}
+        {% endfor %}
 
       </div>
 
@@ -28,9 +35,11 @@
         {% include 'components/main/search_bar.html' %}
       </div>
       <div style="display: inline-block; text-align: right;">
+        {% if writable %}
         <a href="/post/write_post" class="btn btn-primary">
           <i class="fi fi-rr-edit"></i> 글 작성
         </a>
+        {% endif %}
       </div>
     </div>
 

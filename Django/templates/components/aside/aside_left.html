@@ -27,7 +27,7 @@
     }
 -->
 
-<aside class="d-none d-lg-block my-2" style="width: 240px;">
+<aside class="d-none d-lg-block my-2 px-2" style="width: 240px;">
 
     <!-- 로그인 -->
     {% if account.account_type == 'guest' %}
@@ -49,7 +49,8 @@
                 <label class="small">로그인 상태 유지</label>
             </div>
             <div class="mt-4">
-                <a href="javascript: tryLogin(document.getElementById('asideLoginForm'));" class="btn btn-primary btn-sm small me-1">로그인</a>
+                <a href="javascript: tryLogin(document.getElementById('asideLoginForm'));"
+                    class="btn btn-primary btn-sm small me-1">로그인</a>
                 <a href="{{main_url}}/signup" class="btn btn-secondary btn-sm small">회원가입</a>
             </div>
         </form>
@@ -60,6 +61,8 @@
     {% endif %}
 
     <div style="height: 80px;"></div>
+
+    {% if not categories %}
 
     <!-- 즐겨찾기 -->
     <div class="pt-4">
@@ -140,15 +143,127 @@
             <p>
                 로그인이 필요합니다
             </p>
-            {% elif activities|length == 0 %}
+            {% elif activities_preview|length == 0 %}
             <p>
                 활동 내역이 없습니다
             </p>
-            {% for activity in activities %}
-            {{ activity }}
-            {% endfor %}
             {% endif %}
+            {% for activity in activities_preview %}
+            <div class="p-1 mb-2 pb-2 border-bottom">
+                <p class="text-black m-0 small">
+                    {{activity.message}}
+                </p>
+                <p class="text-black-50" style="font-size: 12px;">
+                    {{activity.created_at}}
+                </p>
+            </div>
+            {% endfor %}
         </div>
     </div>
+
+    {% else %}
+
+    <!-- 카테고리 선택 박스 -->
+    <div>
+        <div style="border-bottom: 3px solid #ffafc8;">
+            <h6 class="text-black-60">
+                <i class="fi fi-rr-list"></i> 여행 카테고리
+            </h6>
+        </div>
+
+        <!-- 카테고리 선택 박스 -->
+        <div class="py-3">
+
+            <!-- 1차 카테고리 -->
+            {% for category in categories %}
+            <div class="pt-2 pb-3 mb-2 border-bottom">
+                {% if category.children|length > 0 %}
+                <a class="nav-link dropdown-toggle" href="javascript: document.querySelectorAll('.category_{{category.id}}').forEach((el) => el.classList.toggle('d-none'));">
+                    {{ category.name }} ({{ category.post_count }})
+                </a>
+                {% elif category.id == request.GET.category %}
+                <a class="nav-link" href="#" style="color: rgb(184, 184, 184);">
+                    {{ category.name }} ({{ category.post_count }})
+                </a>
+                {% else %}
+                <a class="nav-link"
+                    href="{{main_url}}/post/travel?board_ids={{request.GET.board_ids}}&category={{category.id}}">
+                    {{ category.name }} ({{ category.post_count }})
+                </a>
+                {% endif %}
+            </div>
+
+            <!-- 2차 카테고리 -->
+            {% if category.children|length > 0 %}
+            {% for child in category.children %}
+            <div class="ps-2 pt-2 pb-3 mb-2  border-bottom d-none category_{{category.id}}">
+                {% if child.children|length > 0 %}
+                <a class="nav-link dropdown-toggle" href="javascript: document.querySelectorAll('.category_{{child.id}}').forEach((el) => el.classList.toggle('d-none'));">
+                    {{ child.name }} ({{ child.post_count }})
+                </a>
+                {% elif child.id in request.GET.category %}
+                <a class="nav-link" href="#" style="color: rgb(184, 184, 184);">
+                    {{ child.name }} ({{ child.post_count }})
+                </a>
+                {% else %}
+                <a class="nav-link"
+                    href="{{main_url}}/post/travel?board_ids={{request.GET.board_ids}}&category={{ child.id }}">
+                    {{ child.name }} ({{ child.post_count }})
+                </a>
+                {% endif %}
+            </div>
+
+            <!-- 3차 카테고리 -->
+            {% if child.children|length > 0 %}
+            {% for child2 in child.children %}
+            <div
+                class="ps-4 pt-2 pb-3 mb-2 border-bottom d-none category_{{child1.id}}">
+                {% if child2.children|length > 0 %}
+                <a class="nav-link dropdown-toggle" href="javascript: document.querySelectorAll('.category_{{child2.id}}').forEach((el) => el.classList.toggle('d-none'));">
+                    {{ child2.name }} ({{ child2.post_count }})
+                </a>
+                {% elif child2.id in request.GET.category %}
+                <a class="nav-link" href="#" style="color: rgb(184, 184, 184);">
+                    {{ child2.name }} ({{ child2.post_count }})
+                </a>
+                {% else %}
+                <a class="nav-link"
+                    href="{{main_url}}/post/travel?board_ids={{request.GET.board_ids}}&category={{ child2.id }}">
+                    {{ child2.name }} ({{ child2.post_count }})
+                </a>
+                {% endif %}
+            </div>
+
+            <!-- 4차 카테고리 -->
+            {% if child2.children|length > 0 %}
+            {% for child3 in child2.children %}
+            <div
+                class="ps-6 pt-2 pb-3 mb-2 border-bottom d-none category_{{child2.id}}">
+                {% if child3.id in request.GET.category %}
+                <a class="nav-link" href="#" style="color: rgb(184, 184, 184);">
+                    {{ child3.name }} ({{ child3.post_count }})
+                </a>
+                {% else %}
+                <a class="nav-link"
+                    href="javascript:location.href=location.origin + location.pathname + '?board_ids={{request.GET.board_ids}}&category={{ child3.id }}'">
+                    {{ child3.name }} ({{ child3.post_count }})
+                </a>
+                {% endif %}
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            {% endfor %}
+            {% endif %}
+
+            {% endfor %}
+            {% endif %}
+
+            {% endfor %}
+        </div>
+    </div>
+
+
+    {% endif %}
 
 </aside>

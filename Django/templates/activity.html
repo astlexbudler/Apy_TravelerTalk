@@ -49,16 +49,24 @@
             <tbody>
               <tr>
                 <td>
-                  <span class="numberComma">1000</span> 회
+                  <span class="numberComma">
+                    {{status.check_count}}
+                  </span> 회
                 </td>
                 <td>
-                  <span class="numberComma">1000</span> 회
+                  <span class="numberComma">
+                    {{status.review_count}}
+                  </span> 회
                 </td>
                 <td>
-                  <span class="numberComma">1000</span> 회
+                  <span class="numberComma">
+                    {{status.post_count}}
+                  </span> 회
                 </td>
                 <td>
-                  <span class="numberComma">1000</span> 회
+                  <span class="numberComma">
+                    {{status.comment_count}}
+                  </span> 회
                 </td>
               </tr>
             </tbody>
@@ -70,23 +78,9 @@
           <h6 class="text-black-60 mb-3 pb-3 border-bottom">
             사용자 활동
           </h6>
-          <div class="p-2 mb-2 pb-3 border-bottom">
-            <div style="display: flex; justify-content: space-between; white-space: nowrap;">
-              <div style="display: inline-block; text-align: left;">
-                <span class="text-black-50 me-2">
-                  2021-10-10 12:00
-                </span>
-                <span class="text-black">
-                  사용자 활동 메세지입니다. 사용자 활동에 대한 요약 내용을 표시합니다.
-                </span>
-              </div>
-              <div style="display: inline-block; text-align: right;">
-                <i class="fi fi-ss-coins"></i> <span class="numberComma">1000</span> 마일리지
-                <span class="me-2"></span>
-                <i class="fi fi-ss-coins text-secondary"></i> <span class="numberComma">1000</span> Exp
-              </div>
-            </div>
-          </div>
+          {% for activity in activities %}
+          {% include 'components/main/account_activity.html' %}
+          {% endfor %}
         </div>
 
         <!-- 페이지네이션 영역 -->

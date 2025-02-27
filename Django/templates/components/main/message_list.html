@@ -1,0 +1,37 @@
+<div class="p-2 mb-2 pb-3 border-bottom">
+    <a href="#" class="text-dark">
+        <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+            <div style="display: inline-block; text-align: left;">
+                <h6 class="text-black-60 mb-4">
+                    {{ message.title }} 
+                    {% if message.include_coupon %}
+                    <i class="fi fi-rr-ticket text-success"></i>
+                    {% endif %}
+                </h6>
+                {% if message.sender %}
+                <p class="text-black-50 small m-0">
+                    보낸이: {{message.sender.nickname}}
+                </p>
+                {% else %}
+                <p class="text-black-50 small m-0">
+                    보낸이: {{message.receiver.nickname}}
+                </p>
+                {% endif %}
+                <p class="text-black-50 small m-0">
+                    보낸시간: {{message.created_at}}
+                </p>
+            </div>
+            <div style="display: inline-block; text-align: right;">
+                {% if not message.is_read %}
+                <p class="text-success small">
+                    읽지 않음
+                </p>
+                {% else %}
+                <p class="text-black-50 small">
+                    읽음
+                </p>
+                {% endif %}
+            </div>
+        </div>
+    </a>
+</div>

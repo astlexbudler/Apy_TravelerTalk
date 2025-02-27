@@ -1,0 +1,32 @@
+<script>
+      // Exp 변경
+  updateExp = async () => {
+    newExp = document.getElementById('exp').value;
+
+    // Exp 변경 요청
+    var formData = new FormData();
+    formData.append('exp', newExp);
+    formData.append('edit_account_id', '{{ profile.id }}');
+
+    var result = await fetch('/api/account?update=y', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRFToken': csrftoken
+      }
+    })
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        return data.success;
+      });
+
+    // Exp 변경 결과에 따른 처리
+    if (result == 'y') {
+      await showAlert('Exp 변경 완료', 'Exp가 성공적으로 변경되었습니다.', 'success');
+      location.reload();
+      return
+    }
+    await showAlert('Exp 변경 실패', 'Exp 변경 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error');
+  }
+</script>

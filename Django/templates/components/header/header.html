@@ -8,14 +8,14 @@
 -->
 
 <!-- header -->
-<header class="header-main header-option-01 mb-5">
-    <div class="header-top">
+<header class="header-main header-option-01">
+    <div class="header-top bg-light">
         <div class="container">
 
             <!-- 헤더 상단 메뉴 -->
             <div style="display: flex; justify-content: space-between; white-space: nowrap;">
                 <div style="display: inline-block; text-align: left;">
-                    <a class="text-black-50 small me-3" style="white-space: nowrap;" href="#">
+                    <a class="text-black-50 small me-3" style="white-space: nowrap;" href="{{main_url}}/post/attendance">
                         <i class="fi fi-rr-calendar-check"></i> 출석체크
                     </a>
                     <a class="text-black-50 small me-3" style="white-space: nowrap;" href="{{main_url}}/bookmark">
@@ -39,7 +39,7 @@
                         <ul class="dropdown-menu dropdown-menu-end p-0" aria-labelledby="bd-theme">
                             <li>
                                 <div style="width: 240px;" class="pt-3">
-                                    {% if messages|length > 0 %}
+                                    {% if messages|length == 0 %}
                                     <p class="p-2">
                                         새로운 쪽지가 없습니다.
                                     </p>
@@ -96,7 +96,8 @@
                                                 </h6>
                                             </div>
                                             <div style="display: inline-block; text-align: right;">
-                                                <button class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#offcanvas_Header_01" aria-label="Close"></button>
+                                                <button class="btn-close" data-bs-dismiss="offcanvas"
+                                                    data-bs-target="#offcanvas_Header_01" aria-label="Close"></button>
                                             </div>
                                         </div>
                                     </div>
@@ -114,15 +115,19 @@
                                             </div>
                                             <div class="form-group mt-2">
                                                 <label>비밀번호</label>
-                                                <input type="password" class="form-control" placeholder="비밀번호를 입력해주세요" name="password">
+                                                <input type="password" class="form-control" placeholder="비밀번호를 입력해주세요"
+                                                    name="password">
                                             </div>
                                             <div class="form-group mt-1">
-                                                <input type="checkbox" class="form-check-input" name="remember" disabled>
+                                                <input type="checkbox" class="form-check-input" name="remember"
+                                                    disabled>
                                                 <label class="small">로그인 상태 유지</label>
                                             </div>
                                             <div class="mt-4">
-                                                <a href="javascript: tryLogin(document.getElementById('mobileLoginForm'));" class="btn btn-primary btn-sm small me-1">로그인</a>
-                                                <a href="{{main_url}}/signup" class="btn btn-secondary btn-sm small">회원가입</a>
+                                                <a href="javascript: tryLogin(document.getElementById('mobileLoginForm'));"
+                                                    class="btn btn-primary btn-sm small me-1">로그인</a>
+                                                <a href="{{main_url}}/signup"
+                                                    class="btn btn-secondary btn-sm small">회원가입</a>
                                             </div>
                                         </form>
                                         {% else %}
@@ -144,7 +149,9 @@
                                         {% for board in boards %}
                                         <li class="nav-item">
                                             {% if board.board_type == 'tree' %}
-                                            <a class="nav-link px-3" href="#">
+                                            <a class="nav-link px-3" href="javascript:
+                                            document.querySelectorAll('.sub_board').forEach(function(e){e.classList.add('d-none');});
+                                            document.getElementById('sub_board_{{ board.id }}').classList.toggle('d-none');">
                                                 {{ board.name }}
                                             </a>
                                             {% else %}
@@ -157,6 +164,111 @@
 
                                     </ul>
                                 </div>
+
+                                <!-- 하위 네비게이션(1차) -->
+                                {% for board in boards %}
+                                {% if board.children|length > 0 %}
+                                <div class="offcanvas-body d-none sub_board bg-white rounded" id="sub_board_{{ board.id }}">
+                                    <ul class="navbar-nav mx-auto">
+
+                                        {% for sub1_board in board.children %}
+                                        <li class="nav-item">
+                                            {% if sub1_board.board_type == 'tree' %}
+                                            <a class="nav-link px-3" href="javascript: 
+                                            document.querySelectorAll('.sub_board').forEach(function(e){e.classList.add('d-none');}); 
+                                            document.getElementById('sub_board_{{ board.id }}').classList.toggle('d-none'); 
+                                            document.getElementById('sub_board_{{ sub1_board.id }}').classList.toggle('d-none');"
+                                                class="text-decoration-none text-black small">
+                                                {{ sub1_board.name }}
+                                            </a>
+                                            {% else %}
+                                            <a class="nav-link px-3" href="/post?board_ids={{board.id}},{{ sub1_board.id }}"
+                                                class="text-decoration-none text-black small">
+                                                {{ sub1_board.name }}
+                                            </a>
+                                            {% endif %}
+                                        </li>
+                                        {% endfor %}
+
+                                    </ul>
+                                </div>
+                                {% endif %}
+                                {% endfor %}
+
+                                <!-- 하위 네비게이션(2차) -->
+                                {% for board in boards %}
+                                {% if board.children|length > 0 %}
+                                {% for sub1_board in board.children %}
+                                {% if sub1_board.children|length > 0 %}
+                                <div class="offcanvas-body d-none sub_board bg-white rounded" id="sub_board_{{ sub1_board.id }}">
+                                    <ul class="navbar-nav mx-auto">
+
+                                    {% for sub2_board in sub1_board.children %}
+                                        <li class="nav-item">
+                                            {% if sub2_board.board_type == 'tree' %}
+                                            <a class="nav-link px-3" href="javascript: 
+                                            document.querySelectorAll('.sub_board').forEach(function(e){e.classList.add('d-none');}); 
+                                            document.getElementById('sub_board_{{ sub1_board.id }}').classList.toggle('d-none');
+                                            document.getElementById('sub_board_{{ sub2_board.id }}').classList.toggle('d-none');
+                                            document.getElementById('sub_board_{{ board.id }}').classList.toggle('d-none');"
+                                                class="text-decoration-none text-black small">
+                                                {{ sub2_board.name }}
+                                            </a>
+                                            {% else %}
+                                            <a class="nav-link px-3" href="/post?board_ids={{board.id}},{{ sub1_board.id }},{{ sub2_board.id }}"
+                                                class="text-decoration-none text-black small">
+                                                {{ sub2_board.name }}
+                                            </a>
+                                            {% endif %}
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                {% endif %}
+                                {% endfor %}
+                                {% endif %}
+                                {% endfor %}
+
+                                <!-- 하위 네비게이션(3차) -->
+                                {% for board in boards %}
+                                {% if board.children|length > 0 %}
+                                {% for sub1_board in board.children %}
+                                {% if sub1_board.children|length > 0 %}
+                                {% for sub2_board in sub1_board.children %}
+                                {% if sub2_board.children|length > 0 %}
+                                <div class="offcanvas-body d-none sub_board bg-white rounded" id="sub_board_{{ sub2_board.id }}">
+                                    <ul class="navbar-nav mx-auto">
+
+                                        {% for sub3_board in sub2_board.children %}
+                                        <li class="nav-item">
+                                            {% if sub3_board.board_type == 'tree' %}
+                                            <a class="nav-link px-3" href="javascript: 
+                                            document.querySelectorAll('.sub_board').forEach(function(e){e.classList.add('d-none');}); 
+                                            document.getElementById('sub_board_{{ sub3_board.id }}').classList.toggle('d-none');
+                                            document.getElementById('sub_board_{{ sub2_board.id }}').classList.toggle('d-none');
+                                            document.getElementById('sub_board_{{ sub1_board.id }}').classList.toggle('d-none');
+                                            document.getElementById('sub_board_{{ board.id }}').classList.toggle('d-none');"
+                                                class="text-decoration-none text-black small">
+                                                {{ sub3_board.name }}
+                                            </a>
+                                            {% else %}
+                                            <a class="nav-link px-3"
+                                                href="/post?board_ids={{board.id}},{{ sub1_board.id }},{{ sub2_board.id }},{{ sub3_board.id }}"
+                                                class="text-decoration-none text-black small">
+                                                {{ sub3_board.name }}
+                                            </a>
+                                            {% endif %}
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                {% endif %}
+                                {% endfor %}
+                                {% endif %}
+                                {% endfor %}
+                                {% endif %}
+                                {% endfor %}
+
                             </div>
                         </nav>
 
@@ -186,12 +298,13 @@
     </div>
 
     <!-- 헤더 이미지 -->
-    <div class="header-bottom border-bottom border-gray-200" style="box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); padding-bottom: 1px;">
+    <div class="header-bottom"
+        style="box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
         <!-- 이미지 헤더 -->
-        <div class="w-100" style="height: 120px; background: url('/media/default.png') center center no-repeat; background-size: cover;">
+        <div class="w-100"
+            style="height: 150px; background: url('/static/travelertalk/img/0.jpg') center top no-repeat; background-size: cover;">
         </div>
     </div>
-
 </header>
 
 <div class="d-none">

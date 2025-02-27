@@ -14,11 +14,18 @@
       {% with title=board.name %}
       {% include 'components/main/title_section.html' %}
       {% endwith %}
-      <!-- 후기 게시글 목록 -->
+
+      <!-- 게시글 목록 -->
       <div class="row">
 
+        {% if posts|length == 0 %}
+        <p>
+          아직 게시글이 없습니다.
+        </p>
+        {% endif %}
+        {% for post in posts %}
         {% include 'components/main/post_list/post_list_normal.html' %}
-        {% include 'components/main/post_list/post_list_normal.html' %}
+        {% endfor %}
 
       </div>
 
@@ -30,7 +37,7 @@
         {% include 'components/main/search_bar.html' %}
       </div>
       <div style="display: inline-block; text-align: right;">
-        <a href="/post/write_post" class="btn btn-primary">
+        <a class="btn btn-primary" href="/post/write_post?board_ids={{request.GET.board_ids}}">
           <i class="fi fi-rr-edit"></i> 글 작성
         </a>
       </div>

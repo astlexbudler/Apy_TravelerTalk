@@ -13,11 +13,65 @@
       {% include 'components/main/breadcrumbs.html' %}
       {% include 'components/main/title_section.html' with title='후기' subtitle='여행 후기를 작성해보세요.' %}
 
-      <!-- 후기 게시글 목록 -->
+
+      <!-- best reviews -->
+      <div class="row mb-5 border rounded p-3">
+        <div class="col-4 col-lg-4">
+          <div style="border-bottom: 1px solid gainsboro;" class="mb-3">
+            <h6 class="text-black-60">
+              오늘의 베스트 후기
+            </h6>
+          </div>
+          <h6 class="mb-3 text-black-60"></h6>
+          {% if today_reviews|length == 0 %}
+          <p>오늘의 추천 후기가 없습니다.</p>
+          {% else %}
+          {% for post in today_reviews %}
+          {% include 'parts/simplified_board_type.html' %}
+          {% endfor %}
+          {% endif %}
+        </div>
+        <div class="col-12 col-lg-4">
+          <div style="border-bottom: 1px solid gainsboro;" class="mb-3">
+            <h6 class="text-black-60">
+              이번주 베스트 후기
+            </h6>
+          </div>
+          {% if weekly_reviews|length == 0 %}
+          <p>오늘의 추천 후기가 없습니다.</p>
+          {% else %}
+          {% for post in weekly_reviews %}
+          {% include 'parts/simplified_board_type.html' %}
+          {% endfor %}
+          {% endif %}
+        </div>
+        <div class="col-12 col-lg-4">
+          <div style="border-bottom: 1px solid gainsboro;" class="mb-3">
+            <h6 class="text-black-60">
+              이번달 베스트 후기
+            </h6>
+          </div>
+          {% if monthly_reviews|length == 0 %}
+          <p>오늘의 추천 후기가 없습니다.</p>
+          {% else %}
+          {% for post in monthly_reviews %}
+          {% include 'parts/simplified_board_type.html' %}
+          {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- 게시글 목록 -->
       <div class="row">
 
+        {% if posts|length == 0 %}
+        <p>
+          아직 게시글이 없습니다.
+        </p>
+        {% endif %}
+        {% for post in posts %}
         {% include 'components/main/post_list/post_list_normal.html' %}
-        {% include 'components/main/post_list/post_list_normal.html' %}
+        {% endfor %}
 
       </div>
 

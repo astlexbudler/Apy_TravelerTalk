@@ -1,0 +1,22 @@
+<a href="#" class="text-dark">
+    <div class="p-2 mb-2 pb-3 border-bottom">
+        <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+            <div style="display: inline-block; text-align: left;">
+                <h6 class="text-black-60 mb-4">
+                    {{coupon.name}}
+                </h6>
+                <p class="text-black-50 small m-0">
+                    여행지: {{coupon.related_post.title}}
+                </p>
+                <p class="text-black-50 small">
+                    사용기간: {{coupon.expire_at}}까지
+                </p>
+            </div>
+            <div style="display: inline-block; text-align: right;">
+                <p class="text-black-50">
+                    <i class="fi fi-ss-coins"></i> <span class="numberComma">1000</span> 마일리지 필요
+                </p>
+            </div>
+        </div>
+    </div>
+</a>

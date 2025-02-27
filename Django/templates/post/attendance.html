@@ -41,56 +41,53 @@
       </div>
 
       <!-- 댓글 작성 폼 -->
-      {% include 'components/main/post_view/comment/comment_form.html' with commentable=true comment_form_title='출석 한마디' placeholder='출석체크 한마디를 작성해주세요.' button_text='출석체크' %}
+      {% with commentable=true comment_form_title='출석 한마디' placeholder='출석체크 한마디를 작성해주세요.' button_text='<i class="fi fi-rr-edit"></i> 출석체크' commentable=commentable %}
+      {% include 'components/main/post_view/comment/comment_form.html' %}
+      {% endwith %}
 
       <!-- 댓글 목록 -->
       <ul class="list-unstyled mt-3">
+        {% for comment in comments %}
         <li class="border-bottom pb-3 mb-3">
           <div style="display: flex; justify-content: space-between; white-space: nowrap;">
             <div style="display: inline-block; text-align: left;">
               <p class="text-black mb-1">
-                사용자 닉네임 1 {% include 'components/other/level_badge.html' %}
+                <span class="me-2">{{comment.author.nickname}}</span>{% include 'components/other/level_badge.html' with level=comment.author.level %}
               </p>
             </div>
             <div style="display: inline-block; text-align: right;">
-              <span class="me-1" style="white-space: nowrap;">
+              {% if forloop.counter == 1 %}
+              <span class="me-1 small" style="white-space: nowrap;">
                 <span class="me-2">
                   <i class="fi fi-rr-ranking-podium text-secondary"></i> 1등
                 </span>
-                <i class="fi fi-ss-coins text-secondary"></i> 100
+                <i class="fi fi-ss-coins text-secondary"></i> {{ attend_point.first }}
               </span>
-            </div>
-          </div>
-          <p>
-            출석체크 한마디 내용 1
-          </p>
-          <p class="text-black-50 small m-0">
-            2021-01-01 00:00
-          </p>
-        </li>
-        <li class="border-bottom pb-3 mb-3">
-          <div style="display: flex; justify-content: space-between; white-space: nowrap;">
-            <div style="display: inline-block; text-align: left;">
-              <p class="text-black mb-1">
-                사용자 닉네임 2 {% include 'components/other/level_badge.html' %}
-              </p>
-            </div>
-            <div style="display: inline-block; text-align: right;">
-              <span class="me-1" style="white-space: nowrap;">
+              {% elif forloop.counter == 2 %}
+              <span class="me-1 small" style="white-space: nowrap;">
                 <span class="me-2">
                   <i class="fi fi-rr-ranking-podium text-black-50"></i> 2등
                 </span>
-                <i class="fi fi-ss-coins text-secondary"></i> 75
+                <i class="fi fi-ss-coins text-secondary"></i> {{ attend_point.second }}
               </span>
+              {% elif forloop.counter == 3 %}
+              <span class="me-1 small" style="white-space: nowrap;">
+                <span class="me-2">
+                  <i class="fi fi-rr-ranking-podium text-warning"></i> 3등
+                </span>
+                <i class="fi fi-ss-coins text-secondary"></i> {{ attend_point.third }}
+              </span>
+              {% endif %}
             </div>
           </div>
-          <p>
-            출석체크 한마디 내용 2
+          <p class="small">
+            {{ comment.content }}
           </p>
-          <p class="text-black-50 small m-0">
-            2021-01-01 00:00
+          <p class="text-black-50 m-0" style="font-size: 12px;">
+            {{ comment.created_at }}
           </p>
         </li>
+        {% endfor %}
       </ul>
 
     </div>

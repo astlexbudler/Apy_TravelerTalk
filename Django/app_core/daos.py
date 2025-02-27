@@ -168,7 +168,6 @@ delete_category(category_id): 카테고리 삭제
 
 
 
-
 ##### [ACCOUNT]
 # 기본 컨텍스트 정보 가져오기
 def get_default_contexts(request):
@@ -180,6 +179,9 @@ def get_default_contexts(request):
         account = {
             'id': guest_id,
             'account_type': 'guest',
+            'level': {
+                'level': 0
+            }
         }
         activities_preview = []
         unread_messages = []
@@ -190,7 +192,7 @@ def get_default_contexts(request):
         account = select_account(request.user.id)
 
         # 사용자 활동 내역 확인
-        activities_preview = select_account_activities(account['id'], page=1)[:5]
+        activities_preview = select_account_activities(account['id'], page=1)[0][:5]
 
         # 받은 메세지 확인
         messages = models.MESSAGE.objects.filter(
@@ -231,7 +233,10 @@ def get_default_contexts(request):
         ).order_by('-created_at')[:5]
 
         # 베스트 리뷰 확인
-        best_reviews = search_posts(order='best', page=1)[:5]
+        review_board = models.BOARD.objects.filter(
+            board_type='review'
+        ).first()
+        best_reviews = search_posts(order='best', page=1, board_id=review_board.id)[0][:5]
 
         # 즐겨찾기
         bookmarks = select_account_bookmarked_posts(account['id'])[:5]
@@ -311,6 +316,8 @@ def select_account_detail(account_id):
             'exp': account.exp,
             'mileage': account.mileage,
             'note': account.note,
+            'created_at': datetime.datetime.strftime(account.date_joined, '%Y-%m-%d %H:%M'),
+            'last_login': datetime.datetime.strftime(account.last_login, '%Y-%m-%d %H:%M') if account.last_login else None,
         }
     else: # 사용자 정보가 없는 경우
         return None
@@ -520,7 +527,7 @@ def select_account_activities(account_id, page=1):
         'account'
     ).filter(
         account__id=account_id
-    )
+    ).order_by('-created_at')
 
     # 페이지네이션
     last_page = (activities.count() // 20) + 1
@@ -532,13 +539,13 @@ def select_account_activities(account_id, page=1):
         'message': activity.message,
         'exp_change': activity.exp_change,
         'mileage_change': activity.mileage_change,
-        'created_at': activity.created_at,
+        'created_at': datetime.datetime.strftime(activity.created_at, '%Y-%m-%d %H:%M'),
     } for activity in activities]
 
     return activities_data, last_page
 
 # 사용자 활동 생성
-def create_account_activity(account_id, message, exp_change, mileage_change):
+def create_account_activity(account_id, message, exp_change=0, mileage_change=0):
 
     # 사용자 정보 확인
     account = models.ACCOUNT.objects.filter(
@@ -600,6 +607,7 @@ def select_all_levels():
         'text': level.text,
         'text_color': level.text_color,
         'background_color': level.background_color,
+        'required_exp': level.required_exp,
     } for level in levels]
 
     return levels_data
@@ -670,7 +678,9 @@ def update_level(level, image=None, text=None, text_color=None, background_color
 def search_posts(title=None, category_id=None, board_id=None, related_post_id=None, order='default', page=1, post_type='default'):
 
     # 게시글 정보 확인
-    posts = models.POST.objects.select_related(
+    posts = models.POST.objects.exclude(
+        author__isnull=True
+    ).select_related(
         'author', 'related_post', 'place_info'
     ).prefetch_related(
         'boards', 'place_info__categories'
@@ -712,8 +722,10 @@ def search_posts(title=None, category_id=None, board_id=None, related_post_id=No
     posts_data = [{
         'id': post.id,
         'author': {
-            'nickname': post.author.last_name,
-            'partner_name': post.author.first_name,
+            'id': post.author.id,
+            'nickname': post.author.first_name,
+            'partner_name': post.author.last_name,
+            'level': select_level(post.author.level.level),
         },
         'related_post': {
             'id': post.related_post.id,
@@ -807,7 +819,7 @@ def select_post(post_id):
     post = models.POST.objects.select_related(
         'author', 'related_post', 'place_info'
     ).prefetch_related(
-        'boards', 'place_info__categories'
+        'boards', 'place_info__categories', 'boards__comment_groups'
     ).filter(
         id=post_id
     ).first()
@@ -821,6 +833,7 @@ def select_post(post_id):
     post_data = {
         'id': post.id,
         'author': {
+            'id': post.author.id,
             'nickname': post.author.last_name,
             'partner_name': post.author.first_name,
         },
@@ -841,6 +854,8 @@ def select_post(post_id):
         'boards': [{
             'id': board.id,
             'name': board.name,
+            'comment_groups': [group.name for group in board.comment_groups.all()],
+            'level_cut': board.level_cut,
         } for board in post.boards.all()],
         'board_ids': [board.id for board in post.boards.all()],
         'title': post.title,
@@ -1101,7 +1116,7 @@ def select_comments(post_id):
 
     # 게시글 댓글 확인
     comments = models.COMMENT.objects.select_related(
-        'author'
+        'author', 'author__level'
     ).filter(
         post=post.first()
     )
@@ -1110,11 +1125,13 @@ def select_comments(post_id):
     comments_data = [{
         'id': comment.id,
         'author': {
-            'nickname': comment.author.last_name,
-            'partner_name': comment.author.first_name,
+            'id': comment.author.id,
+            'nickname': comment.author.first_name,
+            'partner_name': comment.author.last_name,
+            'level': select_level(comment.author.level.level),
         },
         'content': comment.content,
-        'created_at': comment.created_at,
+        'created_at': datetime.datetime.strftime(comment.created_at, '%Y-%m-%d %H:%M'),
     } for comment in comments]
 
     return comments_data
@@ -1125,8 +1142,8 @@ def create_comment(post_id, account_id, content):
     # 게시글 확인
     post = models.POST.objects.filter(
         id=post_id
-    )
-    if not post.exists():
+    ).first()
+    if not post:
         return {
             'success': False,
             'message': '게시글 정보가 존재하지 않습니다.',
@@ -1135,8 +1152,8 @@ def create_comment(post_id, account_id, content):
     # 사용자 확인
     account = models.ACCOUNT.objects.filter(
         id=account_id
-    )
-    if not account.exists():
+    ).first()
+    if not account:
         return {
             'success': False,
             'message': '사용자 정보가 존재하지 않습니다.',
@@ -1144,14 +1161,61 @@ def create_comment(post_id, account_id, content):
 
     # 댓글 생성
     comment = models.COMMENT.objects.create(
-        post=post.first(),
-        author=account.first(),
+        post=post,
+        author=account,
         content=content,
     )
+
+    # 출석체크, 가입 인사 확인 및 포인트 지급
+    if post.title.startswith('attendance:'):
+        point = int(select_server_setting('attendance_point'))
+        account.mileage += point
+        account.exp += point
+        account.save()
+
+        return {
+            'success': True,
+            'message': '출석체크가 완료되었습니다.',
+            'type': 'attendance',
+            'point': point,
+            'pk': comment.id,
+        }
+    elif post.title.startswith('greeting:'):
+        point = int(select_server_setting('comment_point'))
+        account.mileage += point
+        account.exp += point
+        account.save()
+
+        return {
+            'success': True,
+            'message': '가입 인사가 완료되었습니다.',
+            'type': 'greeting',
+            'pk': comment.id,
+        }
+    elif post.title.startswith('talk:'):
+        point = int(select_server_setting('comment_point'))
+        account.mileage += point
+        account.exp += point
+        account.save()
+
+        return {
+            'success': True,
+            'message': '대화가 생성되었습니다.',
+            'type': 'talk',
+            'point': point,
+            'pk': comment.id,
+        }
+
+    point = int(select_server_setting('comment_point'))
+    account.mileage += point
+    account.exp += point
+    account.save()
 
     return {
         'success': True,
         'message': '댓글이 생성되었습니다.',
+        'type': 'comment',
+        'point': point,
         'pk': comment.id,
     }
 
@@ -1304,13 +1368,13 @@ def select_created_coupons(account_id, status=None):
     return coupons_data
 
 # 사용자가 소유한 쿠폰 정보 가져오기
-def select_owned_coupons(account_id, status=None):
+def select_owned_coupons(account_id, status=None, page=1):
 
     # 사용자 확인
     account = models.ACCOUNT.objects.filter(
         id=account_id
-    )
-    if not account.exists():
+    ).first()
+    if not account:
         return {
             'success': False,
             'message': '사용자 정보가 존재하지 않습니다.',
@@ -1318,16 +1382,29 @@ def select_owned_coupons(account_id, status=None):
 
     # 사용자가 소유한 쿠폰 정보 확인
     coupons = models.COUPON.objects.select_related(
-        'own_account', 'related_post', 'created_account', 'own_account__level',
+        'own_account', 'related_post', 'create_account', 'own_account__level',
     ).prefetch_related(
         'created_account__group'
-    ).filter(
-        own_account=account.first(),
-        status=status
     )
+
+    if status == 'active':
+        coupons.filter(
+            own_account=account,
+            status='active'
+        )
+    else:
+        coupons.exclude(
+            status='active'
+        ).filter(
+            own_account=account
+        )
 
     # 정렬
     coupons = coupons.order_by('-created_at')
+
+    # 페이지네이션
+    last_page = (coupons.count() // 20) + 1
+    coupons = coupons[(page-1)*20:page*20]
 
     # 쿠폰 정보 포멧
     coupons_data = [{
@@ -1356,7 +1433,7 @@ def select_owned_coupons(account_id, status=None):
         'note': coupon.note,
     } for coupon in coupons]
 
-    return coupons_data
+    return coupons_data, last_page
 
 # 쿠폰 생성
 def create_coupon(account_id, code, related_post_id, name, content, image, expire_at, required_mileage):
@@ -1944,9 +2021,7 @@ def select_blocked_ips():
     # 차단된 IP 정보 포멧
     blocked_ips_data = []
     for blocked_ip in blocked_ips:
-        blocked_ips_data.append({
-            'ip': blocked_ip.ip
-        })
+        blocked_ips_data.append(blocked_ip.ip)
 
     return blocked_ips_data
 
@@ -2021,7 +2096,7 @@ def make_board_tree(group_name):
     ).filter(
         Q(display_groups__name__in=[group_name]) | Q(enter_groups__name__in=[group_name]) | Q(write_groups__name__in=[group_name]) | Q(comment_groups__name__in=[group_name])
     ).order_by('-display_weight')
-    board_dict = {
+    board_dict = { # 부모 게시판이 없는 게시판(최상위 게시판)을 먼저 생성
         board.name: {
             'id': board.id,
             'name': board.name,
@@ -2030,40 +2105,51 @@ def make_board_tree(group_name):
         } for board in boards if not board.parent_board
     }
     for board in boards:
-        if board.parent_board:
-            if board_dict.get(board.parent_board.name):
-                board_dict[board.parent_board.name]['children'].append({
+        if board.parent_board: # 부모 게시판이 존재할 경우,
+            if board_dict.get(board.parent_board.name): # 부모 게시판의 자식으로 추가
+                children = {
                     'id': board.id,
                     'name': board.name,
                     'board_type': board.board_type,
                     'children': [],
-                })
-            else:
+                }
+                if children not in board_dict[board.parent_board.name]['children']:
+                    board_dict[board.parent_board.name]['children'].append(children)
+            else: # 부모 게시판이 없을 경우, 3차 이상의 노드들
                 loop = True
-                for key in board_dict.keys():
+                for key in board_dict.keys(): # 부모 게시판의 자식의 자식 확인...
                     for child in board_dict[key]['children']:
                         if not loop:
                             break
                         if str(child['name']) == str(board.parent_board.name):
-                            child['children'].append({
+                            children = {
                                 'id': board.id,
                                 'name': board.name,
                                 'board_type': board.board_type,
                                 'children': [],
-                            })
-                            loop = False
+                            }
+                            if children not in child['children']:
+                                child['children'].append(children)
+                                loop = False
                         if loop:
                             for grandchild in child['children']:
                                 if not loop:
                                     break
                                 if str(grandchild['name']) == str(board.parent_board.name):
-                                    grandchild['children'].append({
+                                    children = {
                                         'id': board.id,
                                         'name': board.name,
                                         'board_type': board.board_type,
                                         'children': [],
-                                    })
-                                    loop = False
+                                    }
+                                    if children not in grandchild['children']:
+                                        grandchild['children'].append({
+                                            'id': board.id,
+                                            'name': board.name,
+                                            'board_type': board.board_type,
+                                            'children': [],
+                                        })
+                                        loop = False
     boards = []
     for child in board_dict.keys():
         boards.append(board_dict[child])
@@ -2227,25 +2313,60 @@ def make_travel_board_tree():
 def select_board(board_id):
 
     # 게시판 확인
-    board = models.BOARD.objects.prefetch_related(
+    board = models.BOARD.objects.select_related(
+        'parent_board'
+    ).prefetch_related(
         'display_groups', 'enter_groups', 'write_groups', 'comment_groups'
     ).filter(
         id=board_id
-    )
+    ).first()
+    if not board:
+        return {
+            'success': False,
+            'message': '게시판 정보가 존재하지 않습니다.',
+        }
+
+    # 만약 상위 노드가 있는지 확인
+    ids = [board.id]
+    if board.parent_board:
+        parent_board = models.BOARD.objects.select_related(
+            'parent_board'
+        ).filter(
+            id=board.parent_board.id
+        ).first()
+        if parent_board:
+            ids.append(parent_board.id)
+            if parent_board.parent_board:
+                grandparent_board = models.BOARD.objects.select_related(
+                    'parent_board'
+                ).filter(
+                    id=parent_board.parent_board.id
+                ).first()
+                if grandparent_board:
+                    ids.append(grandparent_board.id)
+                    if grandparent_board.parent_board:
+                        great_grandparent_board = models.BOARD.objects.select_related(
+                            'parent_board'
+                        ).filter(
+                            id=grandparent_board.parent_board.id
+                        ).first()
+                        if great_grandparent_board:
+                            ids.append(great_grandparent_board.id)
 
     # 게시판 정보 포멧
-    board_date = {
-        'id': board.first().id,
-        'name': board.first().name,
-        'board_type': board.first().board_type,
-        'display_groups': [group.name for group in board.first().display_groups.all()],
-        'enter_groups': [group.name for group in board.first().enter_groups.all()],
-        'write_groups': [group.name for group in board.first().write_groups.all()],
-        'comment_groups': [group.name for group in board.first().comment_groups.all()],
-        'level_cut': board.first().level_cut,
+    board_data = {
+        'id': board.id,
+        'name': board.name,
+        'board_type': board.board_type,
+        'display_groups': [group.name for group in board.display_groups.all()],
+        'enter_groups': [group.name for group in board.enter_groups.all()],
+        'write_groups': [group.name for group in board.write_groups.all()],
+        'comment_groups': [group.name for group in board.comment_groups.all()],
+        'level_cut': board.level_cut,
+        'ids': ids,
     }
 
-    return board_date
+    return board_data
 
 # 게시판 생성
 def create_board(name, board_type, display_groups, enter_groups, write_groups, comment_groups, level_cut, parent_board_id=None):
@@ -2379,7 +2500,7 @@ def make_category_tree():
     categories = models.CATEGORY.objects.select_related('parent_category').all().order_by('-display_weight')
     category_dict = {
         category.name: {
-        'id': category.id,
+        'id': str(category.id),
         'name': category.name,
         'display_weight': category.display_weight,
         'children': [],
@@ -2390,7 +2511,7 @@ def make_category_tree():
         if category.parent_category:
             if category_dict.get(category.parent_category.name):
                 category_dict[category.parent_category.name]['children'].append({
-                'id': category.id,
+                'id': str(category.id),
                 'name': category.name,
                 'display_weight': category.display_weight,
                 'children': [],
@@ -2404,7 +2525,7 @@ def make_category_tree():
                         break
                     if str(child['name']) == str(category.parent_category.name):
                         child['children'].append({
-                            'id': category.id,
+                            'id': str(category.id),
                             'name': category.name,
                             'display_weight': category.display_weight,
                             'children': [],
@@ -2417,7 +2538,7 @@ def make_category_tree():
                                 break
                             if str(grandchild['name']) == str(category.parent_category.name):
                                 grandchild['children'].append({
-                                    'id': category.id,
+                                    'id': str(category.id),
                                     'name': category.name,
                                     'display_weight': category.display_weight,
                                     'children': [],
@@ -2434,19 +2555,44 @@ def make_category_tree():
 def select_category(category_id):
 
     # 카테고리 확인
-    category = models.CATEGORY.objects.filter(
+    category = models.CATEGORY.objects.select_related(
+        'parent_category'
+    ).filter(
         id=category_id
-    )
-    if not category.exists():
+    ).first()
+    if not category:
         return {
             'success': False,
             'message': '카테고리 정보가 존재하지 않습니다.',
         }
 
+    # 부모 카테고리 정보
+    ids = [category.id]
+    if category.parent_category:
+        parent_category = models.CATEGORY.objects.filter(
+            id=category.parent_category.id
+        ).first()
+        if parent_category:
+            ids.append(parent_category.id)
+            if parent_category.parent_category:
+                grandparent_category = models.CATEGORY.objects.filter(
+                    id=parent_category.parent_category.id
+                ).first()
+                if grandparent_category:
+                    ids.append(grandparent_category.id)
+                    if grandparent_category.parent_category:
+                        great_grandparent_category = models.CATEGORY.objects.filter(
+                            id=grandparent_category.parent_category.id
+                        ).first()
+                        if great_grandparent_category:
+                            ids.append(great_grandparent_category.id)
+
     # 카테고리 정보 포멧
     category_data = {
-        'id': category.first().id,
-        'name': category.first().name,
+        'id': category.id,
+        'name': category.name,
+        'display_weight': category.display_weight,
+        'ids': ids,
     }
 
     return category_data

@@ -34,7 +34,7 @@
         }
     }
 -->
-<a href="#" class="text-dark text-decoration-none">
+<a class="text-dark text-decoration-none" href="/post/post_view?post_id={{post.id}}&board_ids={{request.GET.board_ids}}">
     <div style="display: flex; white-space: nowrap;" class="mb-3 pb-3 border-bottom">
         <div style="display: inline-block; text-align: left;">
             <img src="/media/default.png" class="img-fluid rounded img-web shadow m-1"
@@ -45,27 +45,29 @@
                 <div style="display: inline-block; text-align: left;">
                     <div class="ps-3">
                         <p class="text-black-50 small mb-1">
-                            <span class="me-2">글 작성자 닉네임</span>
-                            {% include 'components/other/level_badge.html' %}
+                            <span class="me-1">
+                                {{post.author.nickname}}
+                            </span>
+                            {% include 'components/other/level_badge.html' with level=post.author.level %}
                         </p>
                         <p>
-                            게시글 제목
+                            {{post.title}}
                         </p>
                         <p class="text-black-50 small m-0">
-                            2021-01-01 12:00
+                            {{post.created_at}}
                         </p>
                     </div>
                 </div>
                 <div style="display: inline-block; text-align: right;">
                     <p class="m-0 text-end text-black-50" style="font-size: 12px;">
                         <span class="me-1" style="white-space: nowrap;">
-                            <i class="fi fi-rr-eye"></i> 100
+                            <i class="fi fi-rr-eye"></i> {{post.view_count}}
                         </span>
                         <span class="me-1" style="white-space: nowrap;">
-                            <i class="fi fi-rr-social-network"></i> 100
+                            <i class="fi fi-rr-social-network"></i> {{post.like_count}}
                         </span>
                         <span style="white-space: nowrap;">
-                            <i class="fi fi-rr-comment-dots"></i> 100
+                            <i class="fi fi-rr-comment-dots"></i> {{post.comment_count}}
                         </span>
                     </p>
                 </div>

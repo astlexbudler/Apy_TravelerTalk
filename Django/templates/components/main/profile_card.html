@@ -4,12 +4,20 @@
             <div style="display: inline-block; text-align: left;">
                 <span class="text-black-50 me-1" style="font-size: 14px;">일반 회원</span>
                 <p>
-                    사용자 닉네임
+                    {{account.nickname}}
                 </p>
             </div>
             <div style="display: inline-block; text-align: right;">
                 <p class="m-0 text-end text-black-50">
+                    {% if account.status == 'active' %}
                     <span class="badge bg-success">정상</span>
+                    {% elif account.status == 'pending' %}
+                    <span class="badge bg-warning">대기</span>
+                    {% elif account.status == 'blocked' %}
+                    <span class="badge bg-danger">정지</span>
+                    {% elif account.status == 'deleted' %}
+                    <span class="badge bg-secondary">탈퇴</span>
+                    {% endif %}
                 </p>
             </div>
         </div>
@@ -17,21 +25,31 @@
     <div class="row mt-4">
         <div class="col-6">
             <p class="text-dark">
-                경험치 <a href="#" class="text-black-50"><i class="fi fi-rr-edit"></i></a>
+                경험치 
+                {% if 'user' in  account.subsupervisor_permission %}
+                <a href="#" class="text-black-50"><i class="fi fi-rr-edit"></i></a>
+                {% endif %}
             </p>
             <p class="text-black-50">
                 <i class="fi fi-ss-coins"></i>
-                <span class="numberComma">1000</span> Exp
+                <span class="numberComma">
+                    {{account.exp}}
+                </span> Exp
                 {% include 'components/other/level_badge.html' %}
             </p>
         </div>
         <div class="col-6">
             <p class="text-dark">
-                마일리지 <a href="#" class="text-black-50"><i class="fi fi-rr-edit"></i></a>
+                마일리지 
+                {% if 'user' in  account.subsupervisor_permission %}
+                <a href="#" class="text-black-50"><i class="fi fi-rr-edit"></i></a>
+                {% endif %}
             </p>
             <p class="text-black-50">
                 <i class="fi fi-ss-coins text-secondary"></i>
-                <span class="numberComma">1000</span> <small class="me-2">마일리지</small>
+                <span class="numberComma">
+                    {{account.mileage}}
+                </span> <small class="me-2">마일리지</small>
             </p>
         </div>
     </div>

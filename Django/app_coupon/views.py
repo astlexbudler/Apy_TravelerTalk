@@ -9,10 +9,9 @@ from app_core import daos
 
 # 쿠폰 조회 페이지(사용자 및 여성회원 전용)
 def index(request):
-  return render(request, 'coupon/coupon.html', {'last_page': 3})
   # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
-  boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보
+  boards = daos.make_board_tree(contexts['account']['account_type']) # 게시판 정보
 
   # 로그인 여부 확인
   if contexts['account']['account_type'] == 'guest': # 비회원인 경우
@@ -28,18 +27,14 @@ def index(request):
   tab = request.GET.get('tab', 'coupon') # coupon 또는 history
   page = int(request.GET.get('page', '1')) # 페이지 번호
 
-  # 사용자 프로필
-  profile = daos.get_user_profile_by_id(request.user.username)
+  if tab == 'couponTab': # 사용 가능한 쿠폰 정보 가져오기
+    coupons, last_page = daos.select_owned_coupons(status='active', account_id=contexts['account']['id'], page=page)
+  else: # 사용했거나 만료된 쿠폰 정보 가져오기
+    coupons, last_page = daos.select_owned_coupons(status='used', account_id=contexts['account']['id'], page=page)
 
-  if tab == 'coupon': # 사용 가능한 쿠폰 정보 가져오기
-    coupons, last_page = daos.get_all_user_coupons(contexts['account']['id'], page)
-  elif tab == 'history': # 사용했거나 만료된 쿠폰 정보 가져오기
-    coupons, last_page = daos.get_all_coupon_histories(contexts['account']['id'], page)
-
-  return render(request, 'coupon/index.html', {
+  return render(request, 'coupon/coupon.html', {
     **contexts,
     'boards': boards, # 게시판 정보
-    'profile': profile, # 사용자 프로필 정보
     'coupons': coupons, # 쿠폰 정보
     'last_page': last_page, # page 처리 작업에 사용(반드시 필요)
   })

@@ -14,10 +14,21 @@
       {% include 'components/main/title_section.html' with title='가입인사' subtitle='가입인사를 남겨주세요.' %}
 
       <!-- 댓글 작성 폼 -->
-      {% include 'components/main/post_view/comment/comment_form.html' with commentable=true comment_form_title='가입인사' placeholder='가입인사 한마디를 작성해주세요.' button_text='가입인사 작성' %}
+      {% with commentable=true comment_form_title='가입인사' placeholder='가입인사 한마디를 작성해주세요.' button_text='<i class="fi fi-rr-edit"></i> 가입인사' commentable=commentable %}
+      {% include 'components/main/post_view/comment/comment_form.html' %}
+      {% endwith %}
 
       <!-- 댓글 목록 -->
-      {% include 'components/main/post_view/comment/comment_list.html' %}
+      {% if comments|length == 0 %}
+      <p>
+        아직 가입인사가 없습니다.
+      </p>
+      {% endif %}
+      <ul class="list-unstyled mt-3">
+        {% for comment in comments %}
+        {% include 'components/main/post_view/comment/comment_list.html' %}
+        {% endfor %}
+      </ul>
 
     </div>
 
@@ -47,38 +58,6 @@
     }
 
   });
-
-  writeComment = async () => {
-    const comment = document.getElementById('commentInput').value;
-    if (comment == '') {
-      await showAlert('메세지 작성', '출석체크 메세지를 작성해주세요.', 'error');
-      return;
-    }
-
-    // 댓글 작성 요청
-    var formdata = new FormData();
-    formdata.append('post_id', '{{ post.id }}');
-    formdata.append('content', comment);
-    var result = await fetch('/api/comment', {
-      method: 'POST',
-      headers: {
-        'X-CSRFToken': csrftoken
-      },
-      body: formdata
-    })
-      .then(response => response.json())
-      .then(data => {
-        console.log(data);
-        return data.result;
-      });
-
-    if (result == 'success') {
-      await showAlert('가입인사', '가입인사를 작성했습니다.', 'success');
-      location.reload();
-    } else {
-      await showAlert('가입인사', '가입인사 작성에 실패했습니다.', 'error');
-    }
-  }
 
 </script>
 

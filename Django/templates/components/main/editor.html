@@ -1,10 +1,10 @@
 
-<textarea id="content"></textarea>
+<textarea id="{{id}}"></textarea>
 <script>
     // 아래 기능만 메뉴에 활성화
     // 폰트 사이즈, 볼드, 이탤릭, 밑줄, 정렬, 테이블, 이미지, 구분선
     $(document).ready(function () {
-        $('#content').summernote({
+        $('#{{id}}').summernote({
             tabsize: 2,
             height: parseInt('{{ height }}'),
             toolbar: [

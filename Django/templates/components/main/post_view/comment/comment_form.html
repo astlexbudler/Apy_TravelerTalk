@@ -12,10 +12,12 @@
     <h6 class="text-black-60">
         {{ comment_form_title }}
     </h6>
-    {% if not commentable %}
-    <textarea id="commentInput" class="form-control" rows="2" onkeyup="event.keyCode == 13 ? writeComment() : null"
+    {% if commentable %}
+    <textarea id="commentInput" class="form-control" rows="2"
+        onkeyup="event.keyCode == 13 ? writeComment('{{post.id}}', document.getElementById('commentInput').value) : null"
         placeholder="{{placeholder}}"></textarea>
-    <button class="btn btn-primary mt-4" onclick="writeComment()">
+    <button class="btn btn-primary mt-4"
+        onclick="writeComment('{{post.id}}', document.getElementById('commentInput').value)">
         {{ button_text }}
     </button>
     {% else %}
@@ -25,3 +27,110 @@
     </button>
     {% endif %}
 </div>
+<script>
+    // 댓글 작성 함수
+    writeComment = async (post_id, content) => {
+
+        // 사용자 확인. 로그인 여부만 확인
+        // 그 외 권한이나 계정 상태는 서버에서 확인
+        var account_type = '{{ request.account.account_type }}';
+        if (account_type == 'guest') {
+            await showAlert('작성 실패', '댓글 작성을 위해 로그인이 필요합니다.', 'error');
+            return;
+        }
+
+        // 댓글 내용 확인
+        if (content === '') {
+            await showAlert('작성 실패', '댓글 내용을 입력해주세요.', 'error');
+            return;
+        }
+
+        // 댓글 작성 요청
+        var formdata = new FormData();
+        formdata.append('post_id', post_id);
+        formdata.append('content', content);
+        var success = await fetch('/api/comment', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken
+            },
+            body: formdata
+        })
+            .then((response) => response.json())
+            .then(async (data) => {
+                console.log(data); // fetch 요청 결과 출력
+                return data.success;
+            });
+
+        // 댓글 작성 결과에 따른 분기 처리
+        if (success) { // 댓글 작성 성공
+            await showAlert('작성 성공', '댓글 작성이 완료되었습니다.', 'success');
+            location.reload();
+            return;
+        } else {
+            await showAlert('작성 실패', '댓글을 작성할 수 없는 게시글이거나, 댓글 작성 권한이 없습니다.', 'error');
+            return;
+        }
+    }
+
+    // 댓글 삭제 함수
+    deleteComment = async (comment_id) => {
+
+        // 댓글 삭제 확인
+        var isDelete = await Swal.fire({
+            html: `
+            <div>
+                <div class="text-center py-4">
+                    <h1 class="text-dark">
+                        댓글 삭제
+                    </h1>
+                </div>
+                <diV class="text-center">
+                    <p class="text-black-50">
+                        댓글을 삭제하시겠습니까?
+                    </p>
+                </div>
+            </div>`,
+            icon: `warning`,
+            showConfirmButton: true,
+            confirmButtonText: `삭제하기`,
+            confirmButtonColor: `#f25767`,
+            showCancelButton: true,
+            cancelButtonText: `취소`,
+            cancelButtonColor: `#929ea8`
+        })
+        .then((result) => {
+            if (result.isConfirmed) {
+                return true;
+            }
+            return false;
+        });
+        if (!isDelete) {
+            return;
+        }
+
+        // 댓글 삭제 요청
+        var sucess = await fetch('/api/comment?comment_id=' + comment_id, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': csrftoken
+            },
+        })
+            .then((response) => response.json())
+            .then(async (data) => {
+                console.log(data); // fetch 요청 결과 출력
+                return data['success'];
+            });
+
+        // 댓글 삭제 결과에 따른 분기 처리
+        console.log(sucess);
+        if (sucess) { // 댓글 삭제 성공
+            await showAlert('삭제 성공', '댓글 삭제가 완료되었습니다.', 'success');
+            location.reload();
+            return;
+        } else {
+            await showAlert('삭제 실패', '댓글 삭제 권한이 없습니다.', 'error');
+            return;
+        }
+    }
+</script>

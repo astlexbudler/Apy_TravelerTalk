@@ -26,49 +26,36 @@
 
         <!-- 쿠폰 목록 -->
         <div class="mb-5" style="min-height: 300px;">
-          <a href="#" class="text-dark">
-            <h6 class="text-black-60 mb-3 pb-3 border-bottom">
-              쿠폰
-            </h6>
-            <div class="p-2 mb-2 pb-3 border-bottom">
-              <div style="display: flex; justify-content: space-between; white-space: nowrap;">
-                <div style="display: inline-block; text-align: left;">
-                  <h6 class="text-black-60 mb-4">
-                    10% 할인 쿠폰
-                  </h6>
-                  <p class="text-black-50 small m-0">
-                    여행지: 파트너 여행지 이름
-                  </p>
-                  <p class="text-black-50 small">
-                    사용기간: 2021-01-01까지
-                  </p>
-                </div>
-                <div style="display: inline-block; text-align: right;">
-                  <p class="text-black-50">
-                    <i class="fi fi-ss-coins"></i> <span class="numberComma">1000</span> 마일리지 필요
-                  </p>
-                </div>
-              </div>
-            </div>
-          </a>
+          <h6 class="text-black-60 mb-3 pb-3 border-bottom">
+            쿠폰
+          </h6>
+          {% if coupons|length == 0 %}
+          <p>
+            보유한 쿠폰이 없습니다.
+          </p>
+          {% endif %}
+          {% for coupon in coupons %}
+          {% include 'components/main/coupon_list.html' %}
+          {% endfor %}
         </div>
+      </div>
 
-        <!-- 안내 메세지 -->
-        <div class="alert alert-info small">
-          <i class="fi fi-rr-info"></i> 쿠폰은 상세보기를 통해 쿠폰 코드를 확인하고 사용할 수 있습니다. 사용 기간이 있는 경우, 기간 내에 사용해주세요.
-        </div>
-
+      <!-- 안내 메세지 -->
+      <div class="alert alert-info small">
+        <i class="fi fi-rr-info"></i> 쿠폰은 상세보기를 통해 쿠폰 코드를 확인하고 사용할 수 있습니다. 사용 기간이 있는 경우, 기간 내에 사용해주세요.
       </div>
 
     </div>
 
-    <!-- 페이지네이션 영역 -->
-    {% include 'components/main/pagination.html' %}
+  </div>
 
-    <!-- 맨 위로 가기 버튼 -->
-    <div class="text-end">
-      {% include 'components/main/top_button.html' %}
-    </div>
+  <!-- 페이지네이션 영역 -->
+  {% include 'components/main/pagination.html' %}
+
+  <!-- 맨 위로 가기 버튼 -->
+  <div class="text-end">
+    {% include 'components/main/top_button.html' %}
+  </div>
 
   </div>
 

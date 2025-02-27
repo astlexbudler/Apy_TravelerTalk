@@ -68,7 +68,7 @@ class AppCoreConfig(AppConfig):
         )
 
         # LEVEL_RULE: 레벨 규칙 테이블
-        models.LEVEL_RULE.objects.create(
+        level = models.LEVEL_RULE.objects.create(
           level=1, # 레벨
           text='1레벨', # 레벨 이름
           text_color='#000000', # 레벨 텍스트 색상
@@ -95,9 +95,6 @@ class AppCoreConfig(AppConfig):
         supervisor_group = Group.objects.create(
           name='supervisor' # 사이트 관리자 그룹
         )
-        admin_group = Group.objects.create(
-          name='admin' # 데이터베이스 관리자 그룹
-        )
 
         # ACCOUNT: 계정 테이블
         supervisor = models.ACCOUNT(
@@ -110,23 +107,13 @@ class AppCoreConfig(AppConfig):
           tel='', # 연락처
           is_staff=True,
           is_superuser=True,
-          subsupervisor_permissions='', # 부관리자 권한
+          subsupervisor_permissions='user,post,coupon,message,banner,setting,ad', # 부관리자 권한
+          level=level, # 레벨
         )
         supervisor.set_password('supervisor1!')
         supervisor.save()
         supervisor.groups.add(supervisor_group)
         supervisor.save()
-
-        admin = models.ACCOUNT(
-          username='admin', # 관리자 아이디
-          email='applify.kr@gmail.com',
-          is_staff=True,
-          is_superuser=True,
-        )
-        admin.set_password('admin1!')
-        admin.save()
-        admin.groups.add(admin_group)
-        admin.save()
 
         # CATEGORY: 카테고리 테이블
         # 골프, 숙박, 스파, 맛집, 유직지, 술집, 마사지, 헤어살롱, 축제, 피부샵
@@ -680,11 +667,13 @@ class AppCoreConfig(AppConfig):
           location='top',
           image='/media/default.png',
           link='https://naver.com',
+          size='full'
         )
         side_banner = models.BANNER.objects.create(
           location='side',
           image='/media/default.png',
           link='https://naver.com',
+          size='full'
         )
 
         print('데이터베이스 기본 데이터 생성 완료')

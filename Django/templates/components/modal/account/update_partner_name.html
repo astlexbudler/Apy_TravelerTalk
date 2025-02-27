@@ -1,0 +1,77 @@
+<div class="modal fade" id="rewritePartnerNameModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">파트너 이름 변경</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+        <!-- partner name -->
+        <div class="form-group">
+          <label>새 이름</label> <small id="newPartnerNameConfirmText"></small>
+          <input type="text" class="form-control" placeholder="변경할 이름을 입력해주세요." id="newPartnerName">
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="rewritePartnerName();"
+          data-bs-dismiss="modal">변경하기</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+
+
+
+
+  // 파트너 이름 변경
+  var partnerNameOk = false;
+  var newPartnerNameInput = document.getElementById('newPartnerName');
+  var newPartnerNameConfirmText = document.getElementById('newPartnerNameConfirmText');
+  newPartnerNameInput.addEventListener('input', () => {
+    var partnerName = newPartnerNameInput.value;
+    if (partnerName.length < 2) {
+      newPartnerNameConfirmText.innerHTML = '이름은 2글자 이상이어야 합니다.';
+      newPartnerNameConfirmText.classList.remove('text-success');
+      newPartnerNameConfirmText.classList.add('text-danger');
+      partnerNameOk = false;
+      return
+    }
+    newPartnerNameConfirmText.innerHTML = '사용 가능한 이름입니다.';
+    newPartnerNameConfirmText.classList.remove('text-danger');
+    newPartnerNameConfirmText.classList.add('text-success');
+    partnerNameOk = true;
+  });
+  rewritePartnerName = async () => {
+    if (!partnerNameOk) {
+      return;
+    }
+
+    // 이름 변경 요청
+    var formData = new FormData();
+    formData.append('partner_name', newPartnerNameInput.value);
+    formData.append('edit_account_id', '{{ profile.id }}');
+    var result = await fetch('/api/account?update=y', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRFToken': csrftoken
+      }
+    })
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        return data.success;
+      });
+
+    // 이름 변경 결과에 따른 처리
+    if (result == 'y') {
+      await showAlert('이름 변경 완료', '이름이 성공적으로 변경되었습니다.', 'success');
+      location.reload();
+      return
+    }
+    await showAlert('이름 변경 실패', '이름 변경 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error');
+  }
+</script>

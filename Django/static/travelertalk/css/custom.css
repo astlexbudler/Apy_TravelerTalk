@@ -25,3 +25,17 @@
     border-radius: 0px;
     background-color: white;
 }
+/* note-modal 안에 type=file 인 input 태그의 스타일 변경 */
+.note-modal input[type=file] {
+    border: 1px solid #e3e9ef;
+    padding: 10px;
+    width: 100%;
+    margin-bottom: 15px;
+    border-radius: 5px;
+}
+
+main {
+    background-color: white;
+    padding-top: 30px;
+    padding-bottom: 80px;
+}

@@ -19,6 +19,7 @@ import string
 # def api_file_upload(request): 파일 업로드 api
 # def api_receive_coupon(request): 쿠폰 받기 api
 # def api_like_post(request): 게시글 좋아요 토글 api
+# def api_delete_post(request): 게시글 삭제 api
 # class api_account(APIView): 사용자 REST API
 # - GET: search 사용자. id, nickname, any로 검색 가능. (id, nickname, status 반환)
 # - POST: create 사용자. id, password, nickname, partner_name, email(선택), account_type(user, dame, partner, subsupervisor)를 받아 사용자 생성.
@@ -42,7 +43,6 @@ def api_login(request):
     id = request.POST.get('id')
     password = request.POST.get('password')
     remember = request.POST.get('remember')
-    print('id:', id, 'password:', password, 'remember:', remember)
 
     # 로그인 처리
     user = authenticate(username=id, password=password)
@@ -50,7 +50,21 @@ def api_login(request):
     if user is None: # 로그인 실패
         return JsonResponse({"success": False, 'status': 400, "message": "아이디 또는 비밀번호가 일치하지 않습니다."})
     else: # 로그인 성공
+
+        # 아이피 차단 여부 확인
+        blocked_ips = daos.select_blocked_ips()
+        user_ip = request.META.get('REMOTE_ADDR')
+        if user_ip in blocked_ips:
+            return JsonResponse({"success": False, 'status': 400, "message": "아이디 또는 비밀번호가 일치하지 않습니다."})
+
+        # 로그인 처리
         login(request, user)
+
+        # 사용자 활동 기록 생성
+        daos.create_account_activity(
+            account_id=user.id,
+            message=f'[로그인] {user.username}님이 로그인하였습니다. IP: {user_ip}'
+        )
 
     return JsonResponse({"success": True, 'status': 200, "message": "로그인 성공", "data": user.status})
 
@@ -105,6 +119,12 @@ def api_receive_coupon(request):
     # 메세지에 담긴 쿠폰 삭제
     daos.update_message(message_id)
 
+    # 사용자 활동 기록 생성
+    daos.create_account_activity(
+        account_id=account_id,
+        message=f'[쿠폰받기] {message["from_account"]["username"]}님으로부터 쿠폰을 받았습니다.'
+    )
+
     return JsonResponse({"success": True, 'status': 200, "message": "쿠폰 받기 성공"})
 
 # 게시글 좋아요 토글 api
@@ -144,8 +164,21 @@ def api_like_post(request):
     # 게시글 업데이트
     if is_liked:
         like_count = int(post['like_count']) + 1
+
+        # 사용자 활동 기록 생성
+        daos.create_account_activity(
+            account_id=account_id,
+            message=f'[좋아요] {post["author"]["username"]}님의 게시글에 좋아요를 눌렀습니다.'
+        )
+
     else: # 좋아요 취소
         like_count = int(post['like_count']) - 1
+
+        # 사용자 활동 기록 생성
+        daos.create_account_activity(
+            account_id=account_id,
+            message=f'[좋아요] {post["author"]["username"]}님의 게시글에 좋아요를 취소하였습니다.'
+        )
 
     daos.update_post(
         post_id=post_id,
@@ -158,6 +191,32 @@ def api_like_post(request):
     }
 
     return JsonResponse({"success": True, 'status': 200, "message": "게시글 좋아요 토글 성공", 'data': response})
+
+# 게시글 삭제 api
+def api_delete_post(request):
+
+    # 게시글 아이디 확인
+    post_id = request.GET.get('post_id')
+
+    # 로그인 여부 확인
+    if not request.user.is_authenticated:
+        return JsonResponse({"success": False, 'status': 401, "message": "로그인이 필요합니다."})
+
+    # 게시글 확인
+    post = daos.select_post(post_id)
+    if post['author']['id'] != request.user.id and 'post' not in request.user.subsupervisor_permissions:
+        return JsonResponse({"success": False, 'status': 400, "message": "권한이 없습니다."})
+
+    # 게시글 삭제
+    daos.delete_post(post_id)
+
+    # 사용자 활동 기록 생성
+    daos.create_account_activity(
+        account_id=request.user.id,
+        message=f'[게시글삭제] {post["author"]["nickname"]}님의 게시글이 삭제되었습니다.'
+    )
+
+    return JsonResponse({"success": True, 'status': 200, "message": "게시글 삭제 성공"})
 
 # 사용자 REST API
 class api_account(APIView):
@@ -219,19 +278,35 @@ class api_account(APIView):
                 status='writing'
             )
 
+        # 기본 포인트 지급
+        register_point = daos.select_server_setting('register_point')
+        daos.update_account(
+            account_id=account['pk'],
+            mileage=register_point,
+            exp=register_point
+        )
+
+        # 활동 기록 생성
+        daos.create_account_activity(
+            account_id=account['pk'],
+            message=f'[가입] {nickname}님이 가입하였습니다.',
+            exp_change=register_point,
+            mileage_change=register_point
+        )
+
         return JsonResponse({"success": True, 'status': 200, "message": "사용자 생성 성공", 'data': account['status']})
 
     # 사용자 수정 api(PATCH)
     def patch(self, request, *args, **kwargs):
 
         # 사용자 수정
-        id = request.data.get('id')
+        id = int(request.data.get('id', 0))
 
         # 계정 확인
         if not request.user.is_authenticated:
             return JsonResponse({"success": False, 'status': 401, "message": "로그인이 필요합니다."})
         account = daos.select_account(request.user.id)
-        if request.user.username != id:
+        if request.user.id != id:
             if 'user' not in account['subsupervisor_permissions']:
                 return JsonResponse({"success": False, 'status': 403, "message": "권한이 없습니다."})
 
@@ -240,6 +315,10 @@ class api_account(APIView):
         nickname = request.data.get('nickname')
         partner_name = request.data.get('partner_name')
         email = request.data.get('email')
+        exp = None
+        mileage = None
+        status = None
+        subsupervisor_permissions = None
         if 'user' in account['subsupervisor_permissions']: # 사용자 수정 권한이 있는 경우
             exp = request.data.get('exp')
             mileage = request.data.get('mileage')
@@ -248,7 +327,7 @@ class api_account(APIView):
             subsupervisor_permissions = request.data.get('subsupervisor_permissions') # ,로 구분된 문자열(user,post,coupon,setting..)
 
         daos.update_account(
-            id=id,
+            account_id=id,
             password=password,
             first_name=nickname,
             last_name=partner_name,
@@ -258,6 +337,17 @@ class api_account(APIView):
             status=status,
             subsupervisor_permissions=subsupervisor_permissions
         )
+
+        # 활동 기록 생성
+        daos.create_account_activity(
+            account_id=id,
+            message=f'[수정] {account["username"]}님의 정보가 수정되었습니다.'
+        )
+
+        # 로그인 유지
+        if request.user.id == id:
+            user = authenticate(username=account['username'], password=password)
+            login(request, user)
 
         return JsonResponse({"success": True, 'status': 200, "message": "사용자 수정 성공"})
 
@@ -300,6 +390,12 @@ class api_message(APIView):
             include_coupon_code=include_coupon_code
         )
 
+        # 활동 기록 생성
+        daos.create_account_activity(
+            account_id=sender_id,
+            message=f'[메세지] {receiver_id}님에게 메세지를 보냈습니다.'
+        )
+
         if response['success']:
             return JsonResponse({"success": True, 'status': 200, "message": "메세지 생성 성공", 'pk': response['pk']})
         else:
@@ -315,11 +411,43 @@ class api_comment(APIView):
         content = request.data.get('content')
 
         response = daos.create_comment(
+            account_id=request.user.id,
             post_id=post_id,
             content=content
         )
 
         if response['success']:
+
+            # 활동 기록 생성
+            if response['type'] == 'attendance':
+                daos.create_account_activity(
+                    account_id=request.user.id,
+                    message=f'[출석] {request.user.username}님이 출석하였습니다.',
+                    exp_change=response['point'],
+                    mileage_change=response['point']
+                )
+            elif response['type'] == 'greeting':
+                daos.create_account_activity(
+                    account_id=request.user.id,
+                    message=f'[인사] {request.user.username}님이 가입 인사를 하였습니다.',
+                    exp_change=response['point'],
+                    mileage_change=response['point']
+                )
+            elif response['type'] == 'talk':
+                daos.create_account_activity(
+                    account_id=request.user.id,
+                    message=f'[대화] {request.user.username}님이 대화 메세지를 남겼습니다.',
+                    exp_change=response['point'],
+                    mileage_change=response['point']
+                )
+            else:
+                daos.create_account_activity(
+                    account_id=request.user.id,
+                    message=f'[댓글] {request.user.username}님이 댓글을 작성하였습니다.',
+                    exp_change=response['point'],
+                    mileage_change=response['point']
+                )
+
             return JsonResponse({"success": True, 'status': 200, "message": "댓글 생성 성공"})
         else:
             return JsonResponse({"success": False, 'status': 400, "message": "댓글 생성 실패", "errors": response['message']})
@@ -355,6 +483,12 @@ class api_comment(APIView):
         # 댓글 삭제
         response = daos.delete_comment(
             comment_id=comment_id
+        )
+
+        # 활동 기록 생성
+        daos.create_account_activity(
+            account_id=request.user.id,
+            message=f'[댓글삭제] {request.user.username}님의 댓글이 삭제되었습니다.'
         )
 
         if response['success']:
@@ -404,6 +538,12 @@ class api_coupon(APIView):
             image=image,
             expire_at=expire_at,
             required_mileage=required_mileage
+        )
+
+        # 활동 기록 생성
+        daos.create_account_activity(
+            account_id=create_account_id,
+            message=f'[쿠폰생성] {request.user.username}님이 쿠폰을 생성하였습니다.'
         )
 
         if response['success']:

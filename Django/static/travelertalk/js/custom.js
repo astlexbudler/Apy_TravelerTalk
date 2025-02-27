@@ -59,7 +59,7 @@ showAlert = async(title, message, icon) => {
       <div class="text-center py-4">
         <h1 class="text-dark">${title}</h1>
       </div>
-      <div class="text-start">
+      <div class="text-center">
         <p class="text-black-50">
           ${message}
         </p>
@@ -81,7 +81,7 @@ showConfirm = async(title, message, icon, confirmButtonText, cancelButtonText) =
       <div class="text-center py-4">
         <h1 class="text-dark">${title}</h1>
       </div>
-      <div class="text-start">
+      <div class="text-center">
         <p class="text-black-50">
           ${message}
         </p>
@@ -169,136 +169,6 @@ searchBoard = async (board_ids) => {
   // 현재 게시판 정보 확인
   var searchInputValue = document.getElementById('searchInput').value; // 검색어 가져오기 1
   location.href = `/post?search=${searchInputValue}&board_ids=${board_ids}`;
-}
-
-// 댓글 삭제 함수
-deleteComment = async (comment_id) => {
-  // 댓글 삭제 확인
-  var isConfirmed = await showConfirm('댓글 삭제', '정말로 댓글을 삭제하시겠습니까?', 'warning', '삭제', '취소');
-  if (!isConfirmed) {
-    return;
-  }
-
-  // 댓글 삭제 요청
-  var formdata = new FormData();
-  formdata.append('comment_id', comment_id);
-  var result = await fetch('/api/delete_comment', {
-    method: 'POST',
-    headers: {
-      'X-CSRFToken': csrftoken
-    },
-    body: formdata
-  })
-  .then((response) => response.json())
-  .then(async (data) => {
-    console.log(data); // fetch 요청 결과 출력
-    return data.result;
-  });
-
-  // 댓글 삭제 결과에 따른 분기 처리
-  if (result === 'success') { // 댓글 삭제 성공
-    await showAlert('삭제 성공', '댓글 삭제가 완료되었습니다.', 'success');
-    location.reload();
-    return;
-  } else {
-    await showAlert('삭제 실패', '댓글 삭제 권한이 없습니다.', 'error');
-    return;
-  }
-}
-
-// 댓글 작성 함수
-writeComment = async (post_id, content) => {
-
-  // 사용자 확인. 로그인 여부만 확인
-  // 그 외 권한이나 계정 상태는 서버에서 확인
-  var account_type = '{{ request.account.account_type }}';
-  if (account_type == 'guest') {
-    await showAlert('작성 실패', '댓글 작성을 위해 로그인이 필요합니다.', 'error');
-    return;
-  }
-
-  // 댓글 내용 확인
-  if (content === '') {
-    await showAlert('작성 실패', '댓글 내용을 입력해주세요.', 'error');
-    return;
-  }
-
-  // 댓글 작성 요청
-  var formdata = new FormData();
-  formdata.append('post_id', post_id);
-  formdata.append('content', content);
-  var result = await fetch('/api/comment', {
-    method: 'POST',
-    headers: {
-      'X-CSRFToken': csrftoken
-    },
-    body: formdata
-  })
-  .then((response) => response.json())
-  .then(async (data) => {
-    console.log(data); // fetch 요청 결과 출력
-    return data.result;
-  });
-
-  // 댓글 작성 결과에 따른 분기 처리
-  if (result === 'success') { // 댓글 작성 성공
-    await showAlert('작성 성공', '댓글 작성이 완료되었습니다.', 'success');
-    location.reload();
-    return;
-  } else {
-    await showAlert('작성 실패', '댓글을 작성할 수 없는 게시글이거나, 댓글 작성 권한이 없습니다.', 'error');
-    return;
-  }
-}
-
-// 페이지 버튼 생성(pagenation)
-// 페이지네이션이 필요한 페이지에서 사용
-makePaegeButton = (page, lastPage, url) => {
-  if(page == '') {
-    page = 1;
-  } else {
-    page = parseInt(page);
-  }
-  nowPage = page;
-  lastPage = parseInt(lastPage);
-
-  pageButtonsBox = document.getElementById('pageButton');
-  html = '';
-  pages = [
-    page - 2,
-    page - 1,
-    page,
-    page + 1,
-    page + 2
-  ];
-  html += '<ul class="pagination mt-6 justify-content-center">';
-  if (pages[0] > 1) {
-    html += `<li class="page-item">
-      <a class="page-link" href="${url}&page=1">처음</a>
-    </li>`;
-  }
-  for (var i = 0; i < pages.length; i++) {
-    page = pages[i];
-    if (page < 1 || page > lastPage) {
-      continue;
-    } else if (nowPage == page) {
-      html += `<li class="page-item active">
-        <a class="page-link" href="#">${page}</a>
-      </li>`;
-    } else {
-      html += `<li class="page-item">
-        <a class="page-link" href="${url}&page=${page}">${page}</a>
-      </li>`;
-    }
-  }
-  if (page < lastPage) {
-    html += `<li class="page-item">
-      <a class="page-link" href="${url}&page=${lastPage}">마지막</a>
-    </li>`;
-  }
-  html += '</ul>';
-
-  pageButtonsBox.innerHTML = html;
 }
 
 needLogin = () => {

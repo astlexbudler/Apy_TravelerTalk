@@ -390,7 +390,7 @@
 
   // 주소 확인. 10자리 이상 입력되었는지 확인
   document.querySelector('#address').addEventListener('input', () => {
-    if (document.getElementById('address').value.length < 10) {
+    if (document.getElementById('address').value.length < 3) {
       addressOk = false;
     }
     addressOk = true;
@@ -402,6 +402,7 @@
     // 위치 카테고리와 서비스 카테고리에 input 이벤트 발생시키기
     document.getElementById('selectedBoard').dispatchEvent(new Event('input'));
     document.getElementById('serviceCategory').dispatchEvent(new Event('input'));
+    document.getElementById('address').dispatchEvent(new Event('input'));
 
     // 약관 동의 확인
     if (!document.getElementById('termsAgree').checked) {

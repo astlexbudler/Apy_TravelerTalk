@@ -1,0 +1,77 @@
+<div class="modal fade" id="rewritePartnerPhoneModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">파트너 연락처 변경</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <!-- partner tel -->
+                <div class="form-group">
+                    <label>새 연락처</label> <small id="newPartnerTelConfirmText"></small>
+                    <input type="text" class="form-control" placeholder="변경할 연락처를 입력해주세요." id="newPartnerTel">
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary me-2" onclick="rewritePartnerTel();" data-bs-dismiss="modal"><i
+                        class="fi fi-rr-edit"></i> 변경하기</button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal">
+                    취소
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    // 파트너 연락처 변경
+    var telOk = false;
+    var newPartnerTelInput = document.getElementById('newPartnerTel');
+    var newPartnerTelConfirmText = document.getElementById('newPartnerTelConfirmText');
+    newPartnerTelInput.addEventListener('input', () => {
+        var tel = newPartnerTelInput.value;
+        if (tel.length < 6) {
+            newPartnerTelConfirmText.innerHTML = '연락처는 6자리 이상이어야 합니다.';
+            newPartnerTelConfirmText.classList.remove('text-success');
+            newPartnerTelConfirmText.classList.add('text-danger');
+            telOk = false;
+            return
+        }
+        newPartnerTelConfirmText.innerHTML = '사용 가능한 연락처입니다.';
+        newPartnerTelConfirmText.classList.remove('text-danger');
+        newPartnerTelConfirmText.classList.add('text-success');
+        telOk = true;
+    });
+    rewritePartnerTel = async () => {
+        if (!telOk) {
+            return;
+        }
+
+        // 연락처 변경 요청
+        var formData = new FormData();
+        formData.append('partner_tel', newPartnerTelInput.value);
+        formData.append('edit_account_id', '{{ profile.id }}');
+        var result = await fetch('/api/account?update=y', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': csrftoken
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                return data.success;
+            });
+
+        // 연락처 변경 결과에 따른 처리
+        if (result == 'y') {
+            await showAlert('연락처 변경 완료', '연락처가 성공적으로 변경되었습니다.', 'success');
+            location.reload();
+            return
+        }
+        await showAlert('연락처 변경 실패', '연락처 변경 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error');
+    }
+
+</script>

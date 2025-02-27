@@ -15,7 +15,9 @@
 
       <!-- 여행지 게시글 목록 -->
       <div class="row">
+        {% for post in bookmarks %}
         {% include 'components/main/post_list/post_list_card.html' %}
+        {% endfor %}
       </div>
 
     </div>

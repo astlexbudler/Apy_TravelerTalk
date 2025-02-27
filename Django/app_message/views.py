@@ -10,10 +10,8 @@ from app_core import daos
 
 # 메세지 페이지
 def index(request):
-  return render(request, 'message/message.html', {'last_page': 3})
-  # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
-  boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보
+  boards = daos.make_board_tree(contexts['account']['account_type']) # 게시판 정보
 
   # 관리자의 경우, 관리자 페이지로 리다이렉트
   if contexts['account']['account_type'] in ['supervisor', 'subsupervisor']:
@@ -24,11 +22,12 @@ def index(request):
   page = int(request.GET.get('page', '1'))
 
   # 탭 확인
-  if tab == 'inbox': # 받은 메세지함
-    messages, last_page = daos.get_user_inbox_messages(contexts['account']['id'], page)
-  elif tab == 'outbox': # 보낸 메세지함
-    messages, last_page = daos.get_user_outbox_messages(contexts['account']['id'], page)
-  return render(request, 'message/index.html', {
+  if tab == 'inboxTab': # 받은 메세지함
+    messages, last_page = daos.select_received_messages(contexts['account']['id'], page)
+  else: # 보낸 메세지함
+    messages, last_page = daos.select_sent_messages(contexts['account']['id'], page)
+
+  return render(request, 'message/message.html', {
     **contexts,
     'boards': boards, # 게시판 정보
     'messages': messages, # 받은 메세지 또는 보낸 메세지 목록

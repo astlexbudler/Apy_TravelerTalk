@@ -9,24 +9,27 @@
 
       <!-- 페이지 타이틀 -->
       {% include 'components/main/breadcrumbs.html' %}
-      {% include 'components/main/title_section.html' with title='게시글 작성' subtitle='쿠폰 게시판' %}
+      {% with subtitle=board.name %}
+      {% include 'components/main/title_section.html' with title='게시글 작성' %}
+      {% endwith %}
 
       <!-- 게시글 작성 폼 -->
       <div class="mt-4">
 
         <!-- 대표 이미지 -->
         <div class="my-4">
-          <label>대표 이미지</label>
+          <label>썸네일 이미지</label>
           <div id="imagePreview" class="mb-3">
+            <!--
             <div class="text-end p-2 shadow"
               style="min-width: 150px; width: 12vw; background: url('/media/default.png') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw;">
               <a href="#" class="text-danger">
                 <i class="fi fi-rr-trash"></i>
               </a>
-            </div>
+            </div>-->
           </div>
           <a href="javascript: document.getElementById('imageInput').click();" class="btn btn-success btn-sm small">
-            <i class="fi fi-rr-picture"></i> 이미지 추가
+            <i class="fi fi-rr-picture"></i> 이미지 등록
           </a>
           <input type="file" class="d-none" id="imageInput" multiple>
           <input id="imagePaths" value="{% for image in travel_post.images %}{{ image }},{% endfor %}" class="d-none">
@@ -41,18 +44,18 @@
         </div>
 
         <!-- wysiwig 에디터 -->
-        {% include 'components/main/editor.html' with id='content' height='500' %}
+        <div class="my-4">
+          <div class="form-group">
+            <label>내용 편집기</label>
+            {% include 'components/main/editor.html' with id='content' height='500' %}
+          </div>
+        </div>
 
         <!-- 작성하기 -->
-        <div class="my-5">
+        <div class="my-5 text-end">
           <a class="btn btn-primary" href="javascript: writePost()">
             <i class="fi fi-rr-edit"></i> 글 작성
           </a>
-        </div>
-
-        <!-- 맨 위로 가기 버튼 -->
-        <div class="text-end">
-          {% include 'components/main/top_button.html' %}
         </div>
 
       </div>
@@ -81,9 +84,10 @@
     }
   });
 
+  // 게시글 작성
   writePost = async () => {
-    const title = document.querySelector('#postTitle').value;
-    const content = editor.getMarkdown();
+    const title = document.querySelector('#title').value;
+    const content = $('#content').summernote('code');
 
     if (title.length < 2) {
       showAlert('제목 오류', '제목이 너무 짧습니다. 2자 이상 작성해주세요.', 'error');
@@ -102,7 +106,7 @@
       formData.append('image', document.getElementById('imageInput').files[0]); // 대표 이미지
     }
 
-    await fetch('/post/write_post?board_ids={{board_ids}}', {
+    await fetch('/post/write_post?board_ids={{request.GET.board_ids}}', {
       method: 'POST',
       headers: {
         'X-CSRFToken': csrftoken
@@ -113,7 +117,7 @@
       .then(async (data) => {
         if (data.result == 'success') {
           await showAlert('게시글 작성 완료', '게시글이 성공적으로 작성되었습니다.', 'success');
-          window.location.href = '/post/post_view?post_id=' + data.post_id;
+          window.location.href = '/post/post_view?post_id=' + data.post_id + '&board_ids={{request.GET.board_ids}}';
         } else {
           showAlert('게시글 작성 실패', '게시글 작성에 실패했습니다. 잠시 후 다시 시도해주세요.', 'error');
         }

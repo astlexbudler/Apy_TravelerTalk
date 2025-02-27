@@ -22,58 +22,21 @@
       <div class="mt-4">
 
         <!-- 프로필 카드 -->
-        {% include 'components/main/profile_card.html' %}
+        {% include 'components/main/profile_card.html' with profile=account %}
 
         <!-- 쪽지 목록 -->
         <div class="mb-5" style="min-height: 300px;">
           <h6 class="text-black-60 mb-3 pb-3 border-bottom">
             쪽지
           </h6>
-          <div class="p-2 mb-2 pb-3 border-bottom">
-            <a href="#" class="text-dark">
-              <div style="display: flex; justify-content: space-between; white-space: nowrap;">
-                <div style="display: inline-block; text-align: left;">
-                  <h6 class="text-black-60 mb-4">
-                    쪽지 제목 2 <i class="fi fi-rr-ticket text-success"></i>
-                  </h6>
-                  <p class="text-black-50 small m-0">
-                    보낸이: 관리자
-                  </p>
-                  <p class="text-black-50 small m-0">
-                    보낸시간: 2021-01-01 12:00
-                  </p>
-                </div>
-                <div style="display: inline-block; text-align: right;">
-                  <p class="text-success small">
-                    읽지 않음
-                  </p>
-                </div>
-              </div>
-            </a>
-          </div>
-          <div class="p-2 mb-2 pb-3 border-bottom">
-            <a href="#" class="text-dark">
-              <div style="display: flex; justify-content: space-between; white-space: nowrap;">
-                <div style="display: inline-block; text-align: left;">
-                  <h6 class="text-black-60 mb-4">
-                    쪽지 제목 2
-                  </h6>
-                  <p class="text-black-50 small m-0">
-                    보낸이: 관리자
-                  </p>
-                  <p class="text-black-50 small m-0">
-                    보낸시간: 2021-01-01 12:00
-                  </p>
-                </div>
-                <div style="display: inline-block; text-align: right;">
-                  <p class="text-black-50 small">
-                    읽음
-                  </p>
-                </div>
-              </div>
-            </a>
-          </div>
-
+          {% if messages|length == 0 %}
+          <p>
+            쪽지가 없습니다.
+          </p>
+          {% endif %}
+          {% for message in messages %}
+          {% include 'components/main/message_list.html' %}
+          {% endfor %}
         </div>
 
         <!-- 안내 메세지 -->

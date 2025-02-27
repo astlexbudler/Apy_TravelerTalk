@@ -6555,18 +6555,18 @@ textarea.form-control-lg {
 .modal {
     --bs-modal-zindex: 1055;
     --bs-modal-width: 500px;
-    --bs-modal-padding: 1rem;
+    --bs-modal-padding: 1.8rem;
     --bs-modal-margin: 0.5rem;
     --bs-modal-color: ;
   --bs-modal-bg: var(--bs-body-bg);
     --bs-modal-border-color: var(--bs-border-color-translucent);
     --bs-modal-border-width: var(--bs-border-width);
-    --bs-modal-border-radius: var(--bs-border-radius-lg);
+    --bs-modal-border-radius: 30px;
     --bs-modal-box-shadow: 0px 1px 3px rgba(var(--bs-dark-rgb), 0.1), 0px 1px 2px rgba(var(--bs-dark-rgb), 0.06);
     --bs-modal-inner-border-radius: calc(var(--bs-border-radius-lg) - (var(--bs-border-width)));
-    --bs-modal-header-padding-x: 1rem;
-    --bs-modal-header-padding-y: 1rem;
-    --bs-modal-header-padding: 1rem 1rem;
+    --bs-modal-header-padding-x: 1.8rem;
+    --bs-modal-header-padding-y: 1.8rem;
+    --bs-modal-header-padding: 1.8rem 1.8rem;
     --bs-modal-header-border-color: var(--bs-border-color);
     --bs-modal-header-border-width: var(--bs-border-width);
     --bs-modal-title-line-height: 1.5;
@@ -6591,6 +6591,7 @@ textarea.form-control-lg {
     width: auto;
     margin: var(--bs-modal-margin);
     pointer-events: none;
+    border-radius: var(--bs-modal-border-radius);
 }
 
 .modal.fade .modal-dialog {

@@ -10,6 +10,7 @@ from . import apis as a
 # def api_file_upload(request): 파일 업로드 api
 # def api_receive_coupon(request): 쿠폰 받기 api
 # def api_like_post(request): 게시글 좋아요 토글 api
+# def api_delete_post(request): 게시글 삭제 api
 # class api_account(APIView): 사용자 REST API
 # - GET: search 사용자. id, nickname, any로 검색 가능. (id, nickname, status 반환)
 # - POST: create 사용자. id, password, nickname, partner_name, email(선택), account_type(user, dame, partner, subsupervisor)를 받아 사용자 생성.
@@ -49,6 +50,10 @@ urlpatterns = [
   # 게시글 좋아요 토글 api
   # 게시글 id를 받아 좋아요 토글
   path('like_post', a.api_like_post, name='like_post'),
+
+  # 게시글 삭제 api
+  # 게시글 id를 받아 게시글 삭제
+  path('delete_post', a.api_delete_post, name='delete_post'),
 
   # 사용자 API
   # POST-create: 사용자 정보 생성

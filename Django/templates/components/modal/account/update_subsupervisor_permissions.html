@@ -13,3 +13,129 @@
 
     권한 변경 버튼을 누르면 권한이 변경됩니다.
 -->
+<div class="modal fade" id="rewriteSubSupervisorPermissionsModal" tabindex="-1" aria-labelledby="modalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">권한 변경</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <!-- permissions -->
+                <div class="form-group">
+                    <label>변경할 권한</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="user" id="subSupervisorPermissionsUser">
+                        <label class="form-check-label" for="subSupervisorPermissionsUser">
+                            사용자 관리
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="post" id="subSupervisorPermissionsPost">
+                        <label class="form-check-label" for="subSupervisorPermissionsPost">
+                            게시글 관리
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="coupon"
+                            id="subSupervisorPermissionsCoupon">
+                        <label class="form-check-label" for="subSupervisorPermissionsCoupon">
+                            쿠폰 관리
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="message"
+                            id="subSupervisorPermissionsMessage">
+                        <label class="form-check-label" for="subSupervisorPermissionsMessage">
+                            메시지 관리
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="banner"
+                            id="subSupervisorPermissionsBanner">
+                        <label class="form-check-label" for="subSupervisorPermissionsBanner">
+                            배너 관리
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="level"
+                            id="subSupervisorPermissionsLevel">
+                        <label class="form-check-label" for="subSupervisorPermissionsLevel">
+                            레벨 관리
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="setting"
+                            id="subSupervisorPermissionsSetting">
+                        <label class="form-check-label" for="subSupervisorPermissionsSetting">
+                            시스템 관리
+                        </label>
+                    </div>
+                </div>
+                <small class="text-black-50">
+                    권한 변경 시, 해당 사용자의 권한이 변경됩니다.
+                </small>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="rewriteSubSupervisorPermissions();"
+                    data-bs-dismiss="modal">변경하기</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    // 하위 관리자 권한 변경
+    rewriteSubSupervisorPermissions = async () => {
+        var permissions = '';
+        if (document.getElementById('subSupervisorPermissionsUser').checked) {
+            permissions += 'user,';
+        }
+        if (document.getElementById('subSupervisorPermissionsPost').checked) {
+            permissions += 'post,';
+        }
+        if (document.getElementById('subSupervisorPermissionsCoupon').checked) {
+            permissions += 'coupon,';
+        }
+        if (document.getElementById('subSupervisorPermissionsMessage').checked) {
+            permissions += 'message,';
+        }
+        if (document.getElementById('subSupervisorPermissionsBanner').checked) {
+            permissions += 'banner,';
+        }
+        if (document.getElementById('subSupervisorPermissionsLevel').checked) {
+            permissions += 'level,';
+        }
+        if (document.getElementById('subSupervisorPermissionsSetting').checked) {
+            permissions += 'setting,';
+        }
+        permissions = permissions.slice(0, -1);
+
+        // 권한 변경 요청
+        var formData = new FormData();
+        formData.append('subsupervisor_permissions', permissions);
+        formData.append('edit_account_id', '{{ profile.id }}');
+
+        var result = await fetch('/api/account?update=y', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': csrftoken
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                return data.success;
+            });
+
+        // 권한 변경 결과에 따른 처리
+        if (result == 'y') {
+            await showAlert('권한 변경 완료', '권한이 성공적으로 변경되었습니다.', 'success');
+            location.reload();
+            return
+        }
+        await showAlert('권한 변경 실패', '권한 변경 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error');
+    }
+</script>

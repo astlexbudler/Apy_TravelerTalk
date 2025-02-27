@@ -1,0 +1,25 @@
+<div class="p-2 mb-2 pb-3 border-bottom">
+    <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+        <div style="display: inline-block; text-align: left;">
+            <span class="text-black-50 me-2">
+                {{activity.created_at}}
+            </span>
+            <span class="text-black">
+                {{activity.message}}
+            </span>
+        </div>
+        <div style="display: inline-block; text-align: right;">
+            {% if activity.exp_change > 0 %}
+            <i class="fi fi-ss-coins"></i> <span class="numberComma">
+                {{activity.mileage_change}}
+            </span> 마일리지
+            <span class="me-2"></span>
+            {% endif %}
+            {% if activity.mileage_change > 0 %}
+            <i class="fi fi-ss-coins text-secondary"></i> <span class="numberComma">
+                {{activity.exp_change}}
+            </span> Exp
+            {% endif %}
+        </div>
+    </div>
+</div>

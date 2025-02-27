@@ -34,7 +34,7 @@
     }
 -->
 
-<aside class="d-none d-lg-block my-2" style="width: 240px;">
+<aside class="d-none d-lg-block my-2 px-2" style="width: 240px;">
 
     <!-- 베스트 리뷰 -->
     <div>
@@ -51,16 +51,20 @@
             </div>
         </div>
         <div class="py-3" style="min-height: 200px;">
-            {% if best_reviews|length > 0 %}
+            {% if best_reviews|length == 0 %}
             <p>
                 리뷰 게시글이 없습니다.
             </p>
             {% else %}
+            {{ best_reviews }}
             {% for review in best_reviews %}
             {{ review }}
             {% endfor %}
             {% endif %}
         </div>
     </div>
+
+    <!-- 배너 영역 -->
+    {% include 'components/main/banner.html' with banners=banners.side %}
 
 </aside>
