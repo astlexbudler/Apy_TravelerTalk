@@ -15,7 +15,6 @@ urlpatterns = [
 
   # 관리자 메인 페이지
   # 계정 관리, 게시글 관리, 쿠폰 관리, 메세지 관리, 배너 관리, 설정 메뉴 제공
-  path('supervisor', v.index, name='index'),
   path('supervisor/supervisor', v.index, name='index'),
 
   # 계정 관리 페이지
@@ -67,7 +66,7 @@ urlpatterns = [
   # 시스템 설정 정보 및 이용약관 본문 수정 가능.
   path('supervisor/setting', v.setting, name='setting'),
 
-  path('supervisor/api/', include('app_api.urls')),
+  path('api', include('app_api.urls')),
   re_path('^static/(?P<path>.*)$', serve,{'document_root': settings.STATIC_ROOT}),
   re_path('^media/(?P<path>.*)$', serve,{'document_root': settings.MEDIA_ROOT}),
 

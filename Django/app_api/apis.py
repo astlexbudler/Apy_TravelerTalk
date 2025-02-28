@@ -65,6 +65,10 @@ def api_login(request):
             account_id=user.id,
             message=f'[로그인] {user.username}님이 로그인하였습니다. IP: {user_ip}'
         )
+        daos.update_account(
+            account_id=user.id,
+            recent_ip=user_ip
+        )
 
     return JsonResponse({"success": True, 'status': 200, "message": "로그인 성공", "data": user.status})
 
@@ -243,9 +247,9 @@ class api_account(APIView):
         id = request.data.get('id')
         password = request.data.get('password')
         nickname = request.data.get('nickname')
-        partner_name = request.data.get('partner_name')
-        email = request.data.get('email')
-        tel = request.data.get('tel')
+        partner_name = request.data.get('partner_name', '')
+        email = request.data.get('email', '')
+        tel = request.data.get('tel', '')
         account_type = request.data.get('account_type')
 
         account = daos.create_account(
@@ -269,13 +273,17 @@ class api_account(APIView):
                 content='여행지 내용을 입력해주세요.',
                 board_ids=board_ids,
             )
-            daos.create_post_place_info(
+            place_info = daos.create_post_place_info(
                 post_id=post['pk'],
                 category_ids=category_ids,
                 location_info='위치 안내 메세지를 입력해주세요.',
                 open_info='영업 정보를 입력해주세요.',
                 address=address,
                 status='writing'
+            )
+            daos.update_post(
+                post_id=post['pk'],
+                place_info_id=place_info['pk']
             )
 
         # 기본 포인트 지급

@@ -256,6 +256,7 @@
         var messageTitle = document.getElementById('messageTitle').value;
         var messageContent = document.getElementById('messageContent').value;
         if (receiverIds == '' || messageTitle == '' || messageContent == '') {
+            console.log('receiverIds', receiverIds, 'messageTitle', messageTitle, 'messageContent', messageContent);
             await showAlert('쪽지 보내기', '모든 항목을 입력해주세요.', 'error');
             return;
         }

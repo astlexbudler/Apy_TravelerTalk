@@ -1,0 +1,220 @@
+<div class="modal fade" id="{{ to_modify_board.id }}EditModal" tabindex="-1" aria-labelledby="modalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ to_modify_board.name }} 수정</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-start">
+
+                <!-- 게시판 이름 -->
+                <div class="form-group mb-2">
+                    <label>새 이름</label>
+                    <input class="form-control" id="{{ to_modify_board.id }}Name" value="{{ to_modify_board.name }}">
+                </div>
+
+                <div class="row mb-2">
+                    <!-- 게시판 타입 -->
+                    <div class="form-group col-8">
+                        <label>게시판 타입</label>
+                        <select class="form-select" id="{{ to_modify_board.id }}Type">
+                            <option value="board" {% if to_modify_board.board_type == "board" %} selected {% endif %}>게시판</option>
+                            <option value="travel" {% if to_modify_board.board_type == "travel" %} selected {% endif %}>여행</option>
+                            <option value="tree" {% if to_modify_board.board_type == "tree" %} selected {% endif %}>폴더</option>
+                            <option value="anonymous" {% if to_modify_board.board_type == "anonymous" %} selected {% endif %}>익명</option>
+                            <option value="attendance" {% if to_modify_board.board_type == "attendance" %} selected {% endif%}>출석</option>
+                            <option value="greeting" {% if to_modify_board.board_type == "greeting" %} selected {% endif %}>인사</option>
+                            <option value="qna" {% if to_modify_board.board_type == "qna" %} selected {% endif %}>문의</option>
+                            <option value="coupon" {% if to_modify_board.board_type == "coupon" %} selected {% endif %}>쿠폰
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- 레벨 제한 -->
+                    <div class="form-group col-4">
+                        <label>레벨 제한</label>
+                        <input type="number" class="form-control" id="{{ to_modify_board.id }}Level"
+                            value="{{ to_modify_board.level_cut }}">
+                    </div>
+                </div>
+
+                <!-- 표시 그룹 -->
+                <div class="form-group {{ to_modify_board.id }}-groups mb-2 small">
+                    <label>게시판 표시 그룹</label>
+                    <p>
+                        <span>
+                            <input type="checkbox" class="form-check-input"
+                                onclick="toggleAll('{{ to_modify_board.id }}Display', this.checked);">
+                            <label class="form-check-label">전체</label>
+                        </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input" id="{{ to_modify_board.id }}DisplayGuest" {%if 'guest' in to_modify_board.display %} checked {% endif %}>
+                            <label class="form-check-label" for="{{ to_modify_board.id }}DisplayGuest">비회원</label>
+                        </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input" id="{{ to_modify_board.id }}DisplayUser" {%if 'user' in to_modify_board.display %} checked {% endif %}>
+                            <label class="form-check-label" for="{{ to_modify_board.id }}DisplayUser">사용자</label>
+                        </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input" id="{{ to_modify_board.id }}DisplayDame" {%if 'dame' in to_modify_board.display %} checked {% endif %}>
+                            <label class="form-check-label" for="{{ to_modify_board.id }}DisplayDame">여성회원</label>
+                        </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input" id="{{ to_modify_board.id }}DisplayPartner" {% if 'partner' in to_modify_board.display %} checked {% endif %}>
+                            <label class="form-check-label" for="{{ to_modify_board.id }}DisplayPartner">파트너</label>
+                        </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input"
+                                id="{{ to_modify_board.id }}DisplaySubsupervisor" {% if 'subsupervisor' in to_modify_board.display %} checked {% endif %}>
+                            <label class="form-check-label"
+                                for="{{ to_modify_board.id }}DisplaySubsupervisor">부관리자</label>
+                        </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input"
+                                id="{{ to_modify_board.id }}DisplaySupervisor" {% if 'supervisor' in to_modify_board.display %} checked {% endif %}>
+                            <label class="form-check-label" for="{{ to_modify_board.id }}DisplaySupervisor">관리자</label>
+                        </span>
+                    </p>
+                </div>
+
+                <!-- 입장 그룹 -->
+                <div class="form-group {{ to_modify_board.id }}-groups mb-2 small">
+                    <label>게시판 입장 그룹</label>
+                    <p>
+                        <span>
+                            <input type="checkbox" class="form-check-input"
+                                onclick="toggleAll('{{ to_modify_board.id }}Enter', this.checked);">
+                            <label class="form-check-label">전체</label>
+                        </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input" id="{{ to_modify_board.id }}EnterGuest" {%if 'guest' in to_modify_board.enter %} checked {% endif %}>
+                            <label class="form-check-label" for="{{ to_modify_board.id }}EnterGuest">비회원</label>
+                        </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input" id="{{ to_modify_board.id }}EnterUser" {%if 'user' in to_modify_board.enter %} checked {% endif %}>
+                            <label class="form-check-label" for="{{ to_modify_board.id }}EnterUser">사용자</label>
+                        </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input" id="{{ to_modify_board.id }}EnterDame" {%if 'dame' in to_modify_board.enter %} checked {% endif %}>
+                            <label class="form-check-label" for="{{ to_modify_board.id }}EnterDame">여성회원</label>
+                        </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input" id="{{ to_modify_board.id }}EnterPartner" {%if 'partner' in to_modify_board.enter %} checked {% endif %}>
+                            <label class="form-check-label" for="{{ to_modify_board.id }}EnterPartner">파트너</label>
+                        </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input"
+                                id="{{ to_modify_board.id }}EnterSubsupervisor" {% if 'subsupervisor' in to_modify_board.enter %} checked {% endif %}>
+                            <label class="form-check-label"
+                                for="{{ to_modify_board.id }}EnterSubsupervisor">부관리자</label>
+                        </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input" id="{{ to_modify_board.id }}EnterSupervisor"
+                                {% if 'supervisor' in to_modify_board.enter %} checked {% endif %}>
+                            <label class="form-check-label" for="{{ to_modify_board.id }}EnterSupervisor">관리자</label>
+                        </span>
+                    </p>
+                </div>
+
+                <!-- 작성 그룹 -->
+                <div class="form-group {{ to_modify_board.id }}-groups mb-2 small">
+                    <label>게시글 작성 그룹</label>
+                    <p>
+                        <span>
+                            <input type="checkbox" class="form-check-input"
+                                onclick="toggleAll('{{ to_modify_board.id }}Write', this.checked);">
+                            <label class="form-check-label">전체</label>
+                            <span>
+                                <span>
+                                    <input type="checkbox" class="form-check-input"
+                                        id="{{ to_modify_board.id }}WriteUser" {% if 'user' in to_modify_board.write %}
+                                        checked {% endif %}>
+                                    <label class="form-check-label" for="{{ to_modify_board.id }}WriteUser">사용자</label>
+                                </span>
+                                <span>
+                                    <input type="checkbox" class="form-check-input"
+                                        id="{{ to_modify_board.id }}WriteDame" {% if 'dame' in to_modify_board.write %}checked {% endif %}>
+                                    <label class="form-check-label" for="{{ to_modify_board.id }}WriteDame">여성회원</label>
+                                </span>
+                                <span>
+                                    <input type="checkbox" class="form-check-input"
+                                        id="{{ to_modify_board.id }}WritePartner" {% if 'partner' in to_modify_board.write %} checked {% endif %}>
+                                    <label class="form-check-label"
+                                        for="{{ to_modify_board.id }}WritePartner">파트너</label>
+                                </span>
+                                <span>
+                                    <input type="checkbox" class="form-check-input"
+                                        id="{{ to_modify_board.id }}WriteSubsupervisor" {% if 'subsupervisor' in to_modify_board.write %} checked {% endif %}>
+                                    <label class="form-check-label"
+                                        for="{{ to_modify_board.id }}WriteSubsupervisor">부관리자</label>
+                                </span>
+                                <span>
+                                    <input type="checkbox" class="form-check-input"
+                                        id="{{ to_modify_board.id }}WriteSupervisor" {% if 'supervisor' in to_modify_board.write %} checked {% endif %}>
+                                    <label class="form-check-label"
+                                        for="{{ to_modify_board.id }}WriteSupervisor">관리자</label>
+                                </span>
+                    </p>
+                </div>
+
+                <!-- 댓글 그룹 -->
+                <div class="form-group {{ to_modify_board.id }}-groups mb-2 small">
+                    <label>댓글 작성 그룹</label>
+                    <p>
+                        <span>
+                            <input type="checkbox" class="form-check-input"
+                                onclick="toggleAll('{{ to_modify_board.id }}Comment', this.checked);">
+                            <label class="form-check-label">전체</label>
+                        </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input" id="{{ to_modify_board.id }}CommentUser" {% if 'user' in to_modify_board.comment %} checked {% endif %}>
+                            <label class="form-check-label" for="{{ to_modify_board.id }}CommentUser">사용자</label>
+                        </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input" id="{{ to_modify_board.id }}CommentDame" {% if 'dame' in to_modify_board.comment %} checked {% endif %}>
+                            <label class="form-check-label" for="{{ to_modify_board.id }}CommentDame">여성회원</label>
+                        </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input" id="{{ to_modify_board.id }}CommentPartner"
+                                {% if 'partner' in to_modify_board.comment %} checked {% endif %}>
+                            <label class="form-check-label" for="{{ to_modify_board.id }}CommentPartner">파트너</label>
+                        </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input"
+                                id="{{ to_modify_board.id }}CommentSubsupervisor" {% if 'subsupervisor' in to_modify_board.comment %} checked {% endif %}>
+                            <label class="form-check-label"
+                                for="{{ to_modify_board.id }}CommentSubsupervisor">부관리자</label>
+                        </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input"
+                                id="{{ to_modify_board.id }}CommentSupervisor" {% if 'supervisor' in to_modify_board.comment %} checked {% endif %}>
+                            <label class="form-check-label" for="{{ to_modify_board.id }}CommentSupervisor">관리자</label>
+                        </span>
+                    </p>
+                </div>
+
+                <!-- 표시 가중치 -->
+                <div class="form-group">
+                    <label>표시 가중치</label>
+                    <input type="number" class="form-control" id="{{ to_modify_board.id }}Weight"
+                        value="{{ to_modify_board.display_weight }}">
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary me-2" onclick="updateBoard('{{ to_modify_board.id }}');"
+                    data-bs-dismiss="modal">
+                    <i class="fi fi-rr-edit"></i> 수정하기
+                </button>
+                <button class="btn btn-danger me-2" onclick="deleteBoard('{{ board.id }}');"
+                    data-bs-dismiss="modal">
+                    <i class="fi fi-rr-trash"></i> 삭제하기
+                </button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal">
+                    취소
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

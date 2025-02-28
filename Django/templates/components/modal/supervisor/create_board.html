@@ -1,0 +1,285 @@
+<div class="modal fade" id="addnewBoardModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">새 게시판 추가</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <input type="hidden" id="subBoardParent">
+
+                <!-- 게시판 이름 -->
+                <div class="form-group mb-4">
+                    <label>새 이름</label>
+                    <input class="form-control" placeholder="게시판 이름" id="newBoardName">
+                </div>
+
+                <!-- 게시판 타입 및 레벨 제한 -->
+                <div class="row mb-4">
+
+                    <div class="form-group col-8">
+                        <label>게시판 타입</label>
+                        <select class="form-select" id="newBoardType">
+                            <option value="board">게시판</option>
+                            <option value="travel">여행지</option>
+                            <option value="tree">폴더</option>
+                            <option value="anonymous">익명</option>
+                            <option value="attendance">출석</option>
+                            <option value="greeting">인사</option>
+                            <option value="qna">문의</option>
+                            <option value="coupon">쿠폰</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group col-4">
+                        <label>레벨 제한</label>
+                        <input type="number" class="form-control" id="newBoardLevel" value="1">
+                    </div>
+
+                </div>
+
+                <!-- 표시 그룹 -->
+                <div class="form-group new-board-groups mb-2 small">
+                    <label>게시판 표시 그룹</label>
+                    <p>
+                        <span>
+                            <input type="checkbox" class="form-check-input"
+                                onclick="toggleAll('newBoardDisplay', this.checked);">
+                            <label class="form-check-label">전체</label>
+                            <span>
+                                <input type="checkbox" class="form-check-input" id="newBoardDisplayGuest">
+                                <label class="form-check-label" for="newBoardDisplayGuest">비회원</label>
+                            </span>
+                            <span>
+                                <input type="checkbox" class="form-check-input" id="newBoardDisplayUser">
+                                <label class="form-check-label" for="newBoardDisplayUser">사용자</label>
+                            </span>
+                            <span>
+                                <input type="checkbox" class="form-check-input" id="newBoardDisplayDame">
+                                <label class="form-check-label" for="newBoardDisplayDame">여성회원</label>
+                            </span>
+                            <span>
+                                <input type="checkbox" class="form-check-input" id="newBoardDisplayPartner">
+                                <label class="form-check-label" for="newBoardDisplayPartner">파트너</label>
+                            </span>
+                            <span>
+                                <input type="checkbox" class="form-check-input" id="newBoardDisplaySubsupervisor">
+                                <label class="form-check-label" for="newBoardDisplaySubsupervisor">부관리자</label>
+                            </span>
+                            <span>
+                                <input type="checkbox" class="form-check-input" id="newBoardDisplaySupervisor">
+                                <label class="form-check-label" for="newBoardDisplaySupervisor">관리자</label>
+                            </span>
+                    </p>
+                </div>
+
+                <!-- 입장 그룹 -->
+                <div class="form-group new-board-groups mb-2 small">
+                    <label>게시판 입장 그룹</label>
+                    <p>
+                        <span>
+                            <input type="checkbox" class="form-check-input"
+                                onclick="toggleAll('newBoardEnter', this.checked);">
+                            <label class="form-check-label">전체</label>
+                        </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input" id="newBoardEnterGuest">
+                            <label class="form-check-label" for="newBoardEnterGuest">비회원</label>
+                        </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input" id="newBoardEnterUser">
+                            <label class="form-check-label" for="newBoardEnterUser">사용자</label>
+                        </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input" id="newBoardEnterDame">
+                            <label class="form-check-label" for="newBoardEnterDame">여성회원</label>
+                        </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input" id="newBoardEnterPartner">
+                            <label class="form-check-label" for="newBoardEnterPartner">파트너</label>
+                        </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input" id="newBoardEnterSubsupervisor">
+                            <label class="form-check-label" for="newBoardEnterSubsupervisor">부관리자</label>
+                        </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input" id="newBoardEnterSupervisor">
+                            <label class="form-check-label" for="newBoardEnterSupervisor">관리자</label>
+                        </span>
+                    </p>
+                </div>
+
+                <!-- 작성 그룹 -->
+                <div class="form-group new-board-groups mb-2 small">
+                    <label>게시글 작성 그룹</label>
+                    <p>
+                        <span>
+                            <input type="checkbox" class="form-check-input"
+                                onclick="if(this.checked) { document.getElementById('newBoardWriteUser').checked = true; document.getElementById('newBoardWriteDame').checked = true; document.getElementById('newBoardWritePartner').checked = true; document.getElementById('newBoardWriteSubsupervisor').checked = true; document.getElementById('newBoardWriteSupervisor').checked = true; }">
+                            <label class="form-check-label">전체</label>
+                        </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input" id="newBoardWriteUser">
+                            <label class="form-check-label" for="newBoardWriteUser">사용자</label>
+                        </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input" id="newBoardWriteDame">
+                            <label class="form-check-label" for="newBoardWriteDame">여성회원</label>
+                        </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input" id="newBoardWritePartner">
+                            <label class="form-check-label" for="newBoardWritePartner">파트너</label>
+                        </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input" id="newBoardWriteSubsupervisor">
+                            <label class="form-check-label" for="newBoardWriteSubsupervisor">부관리자</label>
+                        </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input" id="newBoardWriteSupervisor">
+                            <label class="form-check-label" for="newBoardWriteSupervisor">관리자</label>
+                        </span>
+                    </p>
+                </div>
+
+                <!-- 댓글 그룹 -->
+                <div class="form-group new-board-groups mb-2 small">
+                    <label>댓글 작성 그룹</label>
+                    <p>
+                        <span>
+                            <input type="checkbox" class="form-check-input"
+                                onclick="if(this.checked) { document.getElementById('newBoardCommentUser').checked = true; document.getElementById('newBoardCommentDame').checked = true; document.getElementById('newBoardCommentPartner').checked = true; document.getElementById('newBoardCommentSubsupervisor').checked = true; document.getElementById('newBoardCommentSupervisor').checked = true; }">
+                            <label class="form-check-label">전체</label>
+                        </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input" id="newBoardCommentUser">
+                            <label class="form-check-label" for="newBoardCommentUser">사용자</label>
+                        </span>
+                        <spanp>
+                            <input type="checkbox" class="form-check-input" id="newBoardCommentDame">
+                            <label class="form-check-label" for="newBoardCommentDame">여성회원</label>
+                            </span>
+                            <span>
+                                <input type="checkbox" class="form-check-input" id="newBoardCommentPartner">
+                                <label class="form-check-label" for="newBoardCommentPartner">파트너</label>
+                            </span>
+                            <span>
+                                <input type="checkbox" class="form-check-input" id="newBoardCommentSubsupervisor">
+                                <label class="form-check-label" for="newBoardCommentSubsupervisor">부관리자</label>
+                            </span>
+                            <span>
+                                <input type="checkbox" class="form-check-input" id="newBoardCommentSupervisor">
+                                <label class="form-check-label" for="newBoardCommentSupervisor">관리자</label>
+                            </span>
+                    </p>
+                </div>
+
+                <!-- 표시 가중치 -->
+                <div class="form-group">
+                    <label>표시 가중치</label>
+                    <input type="number" class="form-control" id="newBoardWeight" value="0">
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary me-2" onclick="addNewBoard();" data-bs-dismiss="modal">
+                    <i class="fi fi-rr-edit"></i> 생성하기
+                </button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal">
+                    취소
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+
+    // 최상위 게시판 추가
+    addNewBoard = async () => {
+        var subBoardParent = document.getElementById('subBoardParent').value;
+        var newBoardName = document.getElementById('newBoardName').value;
+        var newBoardType = document.getElementById('newBoardType').value;
+        var newBoardLevel = document.getElementById('newBoardLevel').value;
+        var newBoardWeight = document.getElementById('newBoardWeight').value;
+        var newBoardDisplayGuest = document.getElementById('newBoardDisplayGuest').checked;
+        var newBoardDisplayUser = document.getElementById('newBoardDisplayUser').checked;
+        var newBoardDisplayDame = document.getElementById('newBoardDisplayDame').checked;
+        var newBoardDisplayPartner = document.getElementById('newBoardDisplayPartner').checked;
+        var newBoardDisplaySubsupervisor = document.getElementById('newBoardDisplaySubsupervisor').checked;
+        var newBoardDisplaySupervisor = document.getElementById('newBoardDisplaySupervisor').checked;
+        var newBoardEnterGuest = document.getElementById('newBoardEnterGuest').checked;
+        var newBoardEnterUser = document.getElementById('newBoardEnterUser').checked;
+        var newBoardEnterDame = document.getElementById('newBoardEnterDame').checked;
+        var newBoardEnterPartner = document.getElementById('newBoardEnterPartner').checked;
+        var newBoardEnterSubsupervisor = document.getElementById('newBoardEnterSubsupervisor').checked;
+        var newBoardEnterSupervisor = document.getElementById('newBoardEnterSupervisor').checked;
+        var newBoardWriteUser = document.getElementById('newBoardWriteUser').checked;
+        var newBoardWriteDame = document.getElementById('newBoardWriteDame').checked;
+        var newBoardWritePartner = document.getElementById('newBoardWritePartner').checked;
+        var newBoardWriteSubsupervisor = document.getElementById('newBoardWriteSubsupervisor').checked;
+        var newBoardWriteSupervisor = document.getElementById('newBoardWriteSupervisor').checked;
+        var newBoardCommentUser = document.getElementById('newBoardCommentUser').checked;
+        var newBoardCommentDame = document.getElementById('newBoardCommentDame').checked;
+        var newBoardCommentPartner = document.getElementById('newBoardCommentPartner').checked;
+        var newBoardCommentSubsupervisor = document.getElementById('newBoardCommentSubsupervisor').checked;
+        var newBoardCommentSupervisor = document.getElementById('newBoardCommentSupervisor').checked;
+
+        var displayGroups = `${newBoardDisplayGuest ? 'guest' : ''},${newBoardDisplayUser ? 'user' : ''},${newBoardDisplayDame ? 'dame' : ''},${newBoardDisplayPartner ? 'partner' : ''},${newBoardDisplaySubsupervisor ? 'subsupervisor' : ''},${newBoardDisplaySupervisor ? 'supervisor' : ''}`;
+        var enterGroups = `${newBoardEnterGuest ? 'guest' : ''},${newBoardEnterUser ? 'user' : ''},${newBoardEnterDame ? 'dame' : ''},${newBoardEnterPartner ? 'partner' : ''},${newBoardEnterSubsupervisor ? 'subsupervisor' : ''},${newBoardEnterSupervisor ? 'supervisor' : ''}`;
+        var writeGroups = `${newBoardWriteUser ? 'user' : ''},${newBoardWriteDame ? 'dame' : ''},${newBoardWritePartner ? 'partner' : ''},${newBoardWriteSubsupervisor ? 'subsupervisor' : ''},${newBoardWriteSupervisor ? 'supervisor' : ''}`;
+        var commentGroups = `${newBoardCommentUser ? 'user' : ''},${newBoardCommentDame ? 'dame' : ''},${newBoardCommentPartner ? 'partner' : ''},${newBoardCommentSubsupervisor ? 'subsupervisor' : ''},${newBoardCommentSupervisor ? 'supervisor' : ''}`;
+
+        var formData = new FormData();
+        formData.append('parent_board_id', subBoardParent);
+        formData.append('board_name', newBoardName);
+        formData.append('board_type', newBoardType);
+        formData.append('level_cut', newBoardLevel);
+        formData.append('display_weight', newBoardWeight);
+        formData.append('display_groups', displayGroups);
+        formData.append('enter_groups', enterGroups);
+        formData.append('write_groups', writeGroups);
+        formData.append('comment_groups', commentGroups);
+
+        // 생성 요청
+        await fetch('{{supervisor_url}}/supervisor/post?board=y', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': csrftoken,
+            },
+        })
+            .then(response => response.json())
+            .then(async data => {
+                console.log(data);
+                if (data.result == 'success') {
+                    await showAlert('생성 성공', '게시판이 생성되었습니다.', 'success');
+                    location.reload();
+                } else {
+                    await showAlert('생성 실패', '게시판 생성에 실패했습니다.', 'danger');
+                }
+            });
+    }
+
+    // 게시판 삭제
+    deleteBoard = async (board_id) => {
+
+        // 삭제 요청
+        await fetch('{{supervisor_url}}/supervisor/post?board=y&board_id=' + board_id, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': csrftoken,
+            },
+        })
+            .then(response => response.json())
+            .then(async data => {
+                console.log(data);
+                if (data.result == 'success') {
+                    await showAlert('삭제 성공', '게시판이 삭제되었습니다.', 'success');
+                    location.reload();
+                } else {
+                    await showAlert('삭제 실패', '게시판 삭제에 실패했습니다.', 'danger');
+                }
+            });
+    }
+
+</script>

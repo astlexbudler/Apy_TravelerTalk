@@ -15,7 +15,6 @@ from app_core import daos
 def to_login_page():
     return redirect('/') # 관리자 메인 페이지로 리다이렉트
 
-
 # 관리자 로그인
 def login(request):
 
@@ -412,11 +411,13 @@ def index(request):
     ]
     table_data = list(zip(*values))
     return render(request, 'export.html', {
+      **daos.get_urls(),
       'headers': headers,
       'table_data': table_data,
     })
 
   return render(request, 'supervisor/index.html', {
+    **daos.get_urls(),
     'account': account,
     'server_settings': server_settings,
 
@@ -673,6 +674,7 @@ def account(request):
   # 만약 출력 요청일 경우, 모든 줄 출력
   if request.GET.get('print'):
     return render(request, 'supervisor/account_print.html', {
+      **daos.get_urls(),
       'accounts': sats,
     })
 
@@ -698,6 +700,7 @@ def account(request):
     ]
     table_data = list(zip(*values))
     return render(request, 'export.html', {
+      **daos.get_urls(),
       'headers': headers,
       'table_data': table_data,
     })
@@ -737,6 +740,7 @@ def account(request):
   } for blocked_ip in models.BLOCKED_IP.objects.all()]
 
   return render(request, 'supervisor/account.html', {
+    **daos.get_urls(),
     'account': account,
     'server_settings': server_settings,
 
@@ -763,27 +767,6 @@ def post(request):
   if account['account_type'] not in ['supervisor', 'subsupervisor']:
     return to_login_page()
 
-  # 여행지 정보 수정 요청 처리
-  if request.method == 'POST' and request.GET.get('modify_travel_info'):
-    post_id = request.POST.get('post_id', '')
-    place_status = request.POST.get('place_status')
-    post_search_weight = request.POST.get('post_search_weight')
-    ad_start_at = request.POST.get('ad_start_at')
-    ad_end_at = request.POST.get('ad_end_at')
-    place_info_note = request.POST.get('place_info_note')
-    daos.update_post(
-      post_id=post_id,
-      search_weight=post_search_weight,
-    )
-    daos.update_place_info(
-      post_id=post_id,
-      status=place_status,
-      ad_start_at=ad_start_at,
-      ad_end_at=ad_end_at,
-      note=place_info_note,
-    )
-    return JsonResponse({'result': 'success'})
-
   # 새 게시판 생성 요청 또는 게시판 수정 요청 처리
   if request.method == 'POST' and request.GET.get('board'):
     board_id = request.POST.get('board_id')
@@ -830,33 +813,6 @@ def post(request):
     daos.delete_board(board_id)
     return JsonResponse({'result': 'success'})
 
-  # 새 카테고리 생성 요청 또는 카테고리 수정 요청 처리
-  if request.method == 'POST' and request.GET.get('category'):
-    category_id = request.POST.get('category_id')
-    category_name = request.POST.get('category_name')
-    parent_category_id = request.POST.get('parent_category_id')
-    display_weight = request.POST.get('category_weight')
-    if category_id:
-      daos.update_category(
-        category_id=category_id,
-        parent_category_id=parent_category_id,
-        name=category_name,
-        display_weight=display_weight,
-      )
-    else:
-      daos.create_category(
-        parent_category_id=parent_category_id,
-        name=category_name,
-        display_weight=display_weight,
-      )
-    return JsonResponse({'result': 'success'})
-
-  # 카테고리 삭제 요청 처리
-  if request.method == 'DELETE' and request.GET.get('category'):
-    category_id = request.GET.get('category_id')
-    daos.delete_category(category_id)
-    return JsonResponse({'result': 'success'})
-
   # data
   page = int(request.GET.get('page', '1'))
   search_post_title = request.GET.get('post_title', '')
@@ -869,7 +825,15 @@ def post(request):
 
   # status
   # 각 게시판 별 게시글 수와 댓글 수, 조회수, 좋아요 수 통계 제공
-  all_post = models.POST.objects.prefetch_related('boards').select_related('author', 'place_info', 'related_post').prefetch_related('place_info__categories').all()
+  all_post = models.POST.objects.exclude(
+    author__isnull=True
+  ).prefetch_related(
+    'boards'
+  ).select_related(
+    'author', 'place_info', 'related_post'
+  ).prefetch_related(
+    'place_info__categories'
+  ).all()
   boards = models.BOARD.objects.exclude(
     Q(board_type='greeting') | Q(board_type='attendance')
   ).prefetch_related('display_groups', 'enter_groups', 'write_groups', 'comment_groups').all().order_by('-display_weight')
@@ -953,21 +917,11 @@ def post(request):
     boards.append(board_dict[child])
 
   # 게시글 검색
-  if is_place_search == 'y':
-    sps = all_post.filter(
-      Q(place_info__isnull=False), # 여행지 정보가 있는 게시글만 검색
-      Q(title__contains=search_post_title),
-      Q(author__username__contains=search_author_id),
-      Q(place_info__categories__id__contains=search_category_id),
-      Q(place_info__address__contains=search_address),
-      Q(place_info__status__contains=place_status),
-    )
-  else:
-    sps = all_post.filter(
-      place_info__isnull=True,
-      title__contains=search_post_title,
-      author__username__contains=search_author_id,
-    )
+  sps = all_post.filter(
+    place_info__isnull=True,
+    title__contains=search_post_title,
+    author__username__contains=search_author_id,
+  )
 
   if search_board_id: # 게시판 필터링
     sps = sps.filter(boards__id__contains=search_board_id)
@@ -993,6 +947,7 @@ def post(request):
     table_data = list(zip(*values))
 
     return render(request, 'export.html', {
+      **daos.get_urls(),
         'headers': headers,
         'table_data': table_data,
     })
@@ -1018,16 +973,6 @@ def post(request):
           'nickname': post.author.first_name, # 작성자 닉네임
           'partner_name': post.author.last_name, # 작성자 파트너 이름
         },
-        'place_info': { # 여행지 게시글인 경우, 여행지 정보
-          'categories': [c.name for c in post.place_info.categories.all()],
-          'address': post.place_info.address,
-          'location_info': post.place_info.location_info,
-          'open_info': post.place_info.open_info,
-          'ad_start_at': post.place_info.ad_start_at,
-          'ad_end_at': post.place_info.ad_end_at,
-          'status': post.place_info.status,
-          'note': post.place_info.note,
-        } if post.place_info else None,
         'related_post': { # 리뷰 게시글인 경우, 리뷰 대상 게시글 정보
           'id': post.related_post.id,
           'title': post.related_post.title,
@@ -1040,6 +985,7 @@ def post(request):
   categories = daos.make_category_tree()
 
   return render(request, 'supervisor/post.html', {
+    **daos.get_urls(),
     'account': account,
     'server_settings': server_settings,
 
@@ -1051,7 +997,6 @@ def post(request):
 
 # 여행지 게시글 관리 페이지
 def travel(request):
-  
   # 로그인 여부 확인
   if not request.user.is_authenticated:
     return to_login_page()
@@ -1068,6 +1013,7 @@ def travel(request):
 
   # 여행지 정보 수정 요청 처리
   if request.method == 'POST' and request.GET.get('modify_travel_info'):
+    print(request.POST.dict())
     post_id = request.POST.get('post_id', '')
     place_status = request.POST.get('place_status')
     post_search_weight = request.POST.get('post_search_weight')
@@ -1087,52 +1033,6 @@ def travel(request):
     )
     return JsonResponse({'result': 'success'})
 
-  # 새 게시판 생성 요청 또는 게시판 수정 요청 처리
-  if request.method == 'POST' and request.GET.get('board'):
-    board_id = request.POST.get('board_id')
-    board_name = request.POST.get('board_name')
-    board_type = request.POST.get('board_type')
-    parent_board_id = request.POST.get('parent_board_id')
-    display_weight = request.POST.get('display_weight')
-    level_cut = request.POST.get('level_cut')
-    display_groups = str(request.POST.get('display_groups', '')).split(',')
-    enter_groups = str(request.POST.get('enter_groups', '')).split(',')
-    write_groups = str(request.POST.get('write_groups', '')).split(',')
-    comment_groups = str(request.POST.get('comment_groups', '')).split(',')
-
-    if board_id:
-      daos.update_board(
-        board_id=board_id,
-        parent_board_id=parent_board_id,
-        name=board_name,
-        board_type=board_type,
-        display_groups=Group.objects.filter(name__in=display_groups),
-        enter_groups=Group.objects.filter(name__in=enter_groups),
-        write_groups=Group.objects.filter(name__in=write_groups),
-        comment_groups=Group.objects.filter(name__in=comment_groups),
-        display_weight=display_weight,
-        level_cut=level_cut,
-      )
-    else:
-      daos.create_board(
-        parent_board_id=parent_board_id,
-        name=board_name,
-        board_type=board_type,
-        display_groups=Group.objects.filter(name__in=display_groups),
-        enter_groups=Group.objects.filter(name__in=enter_groups),
-        write_groups=Group.objects.filter(name__in=write_groups),
-        comment_groups=Group.objects.filter(name__in=comment_groups),
-        display_weight=display_weight,
-        level_cut=level_cut,
-      )
-    return JsonResponse({'result': 'success'})
-  
-  # 게시판 삭제 요청 처리
-  if request.method == 'DELETE' and request.GET.get('board'):
-    board_id = request.GET.get('board_id', '')
-    daos.delete_board(board_id)
-    return JsonResponse({'result': 'success'})
-  
   # 새 카테고리 생성 요청 또는 카테고리 수정 요청 처리
   if request.method == 'POST' and request.GET.get('category'):
     category_id = request.POST.get('category_id')
@@ -1153,13 +1053,13 @@ def travel(request):
         display_weight=display_weight,
       )
     return JsonResponse({'result': 'success'})
-  
+
   # 카테고리 삭제 요청 처리
   if request.method == 'DELETE' and request.GET.get('category'):
     category_id = request.GET.get('category_id')
     daos.delete_category(category_id)
     return JsonResponse({'result': 'success'})
-  
+
   # data
   page = int(request.GET.get('page', '1'))
   search_post_title = request.GET.get('post_title', '')
@@ -1206,52 +1106,6 @@ def travel(request):
       ad_end_at=ad_end_at,
       note=place_info_note,
     )
-    return JsonResponse({'result': 'success'})
-
-  # 새 게시판 생성 요청 또는 게시판 수정 요청 처리
-  if request.method == 'POST' and request.GET.get('board'):
-    board_id = request.POST.get('board_id')
-    board_name = request.POST.get('board_name')
-    board_type = request.POST.get('board_type')
-    parent_board_id = request.POST.get('parent_board_id')
-    display_weight = request.POST.get('display_weight')
-    level_cut = request.POST.get('level_cut')
-    display_groups = str(request.POST.get('display_groups', '')).split(',')
-    enter_groups = str(request.POST.get('enter_groups', '')).split(',')
-    write_groups = str(request.POST.get('write_groups', '')).split(',')
-    comment_groups = str(request.POST.get('comment_groups', '')).split(',')
-
-    if board_id:
-      daos.update_board(
-        board_id=board_id,
-        parent_board_id=parent_board_id,
-        name=board_name,
-        board_type=board_type,
-        display_groups=Group.objects.filter(name__in=display_groups),
-        enter_groups=Group.objects.filter(name__in=enter_groups),
-        write_groups=Group.objects.filter(name__in=write_groups),
-        comment_groups=Group.objects.filter(name__in=comment_groups),
-        display_weight=display_weight,
-        level_cut=level_cut,
-      )
-    else:
-      daos.create_board(
-        parent_board_id=parent_board_id,
-        name=board_name,
-        board_type=board_type,
-        display_groups=Group.objects.filter(name__in=display_groups),
-        enter_groups=Group.objects.filter(name__in=enter_groups),
-        write_groups=Group.objects.filter(name__in=write_groups),
-        comment_groups=Group.objects.filter(name__in=comment_groups),
-        display_weight=display_weight,
-        level_cut=level_cut,
-      )
-    return JsonResponse({'result': 'success'})
-
-  # 게시판 삭제 요청 처리
-  if request.method == 'DELETE' and request.GET.get('board'):
-    board_id = request.GET.get('board_id', '')
-    daos.delete_board(board_id)
     return JsonResponse({'result': 'success'})
 
   # 새 카테고리 생성 요청 또는 카테고리 수정 요청 처리
@@ -1377,21 +1231,14 @@ def travel(request):
     boards.append(board_dict[child])
 
   # 게시글 검색
-  if is_place_search == 'y':
-    sps = all_post.filter(
-      Q(place_info__isnull=False), # 여행지 정보가 있는 게시글만 검색
-      Q(title__contains=search_post_title),
-      Q(author__username__contains=search_author_id),
-      Q(place_info__categories__id__contains=search_category_id),
-      Q(place_info__address__contains=search_address),
-      Q(place_info__status__contains=place_status),
-    )
-  else:
-    sps = all_post.filter(
-      place_info__isnull=True,
-      title__contains=search_post_title,
-      author__username__contains=search_author_id,
-    )
+  sps = all_post.filter(
+    Q(place_info__isnull=False), # 여행지 정보가 있는 게시글만 검색
+    Q(title__contains=search_post_title),
+    Q(author__username__contains=search_author_id),
+    Q(place_info__categories__id__contains=search_category_id),
+    Q(place_info__address__contains=search_address),
+    Q(place_info__status__contains=place_status),
+  )
 
   if search_board_id: # 게시판 필터링
     sps = sps.filter(boards__id__contains=search_board_id)
@@ -1417,6 +1264,7 @@ def travel(request):
     table_data = list(zip(*values))
 
     return render(request, 'export.html', {
+        **daos.get_urls(),
         'headers': headers,
         'table_data': table_data,
     })
@@ -1431,7 +1279,7 @@ def travel(request):
         'image': '/media/' + str(post.image) if post.image else '/media/default.png',
         'view_count': post.view_count,
         'like_count': post.like_count,
-        'created_at': post.created_at,
+        'created_at': datetime.datetime.strftime(post.created_at, '%Y-%m-%d'),
         'search_weight': post.search_weight,
         'board': {
           'name': post.boards.all().last().name,
@@ -1447,15 +1295,11 @@ def travel(request):
           'address': post.place_info.address,
           'location_info': post.place_info.location_info,
           'open_info': post.place_info.open_info,
-          'ad_start_at': post.place_info.ad_start_at,
-          'ad_end_at': post.place_info.ad_end_at,
+          'ad_start_at': datetime.datetime.strftime(post.place_info.ad_start_at, '%Y-%m-%d'),
+          'ad_end_at': datetime.datetime.strftime(post.place_info.ad_end_at, '%Y-%m-%d'),
           'status': post.place_info.status,
           'note': post.place_info.note,
         } if post.place_info else None,
-        'related_post': { # 리뷰 게시글인 경우, 리뷰 대상 게시글 정보
-          'id': post.related_post.id,
-          'title': post.related_post.title,
-        } if post.related_post else None,
       })
     except Exception as e:
       print(e)
@@ -1464,6 +1308,7 @@ def travel(request):
   categories = daos.make_category_tree()
 
   return render(request, 'supervisor/travel.html', {
+    **daos.get_urls(),
     'account': account,
     'server_settings': server_settings,
 
@@ -1538,6 +1383,7 @@ def coupon(request):
     table_data = list(zip(*values))
 
     return render(request, 'export.html', {
+        **daos.get_urls(),
         'headers': headers,
         'table_data': table_data,
     })
@@ -1564,6 +1410,7 @@ def coupon(request):
     })
 
   return render(request, 'supervisor/coupon.html', {
+    **daos.get_urls(),
     'account': account,
     'server_settings': server_settings,
 
@@ -1625,6 +1472,7 @@ def message(request):
       table_data = list(zip(*values))
 
       return render(request, 'export.html', {
+        **daos.get_urls(),
         'headers': headers,
         'table_data': table_data
       })
@@ -1657,6 +1505,7 @@ def message(request):
     } for m in msgs[(page - 1) * 20:page * 20]]
 
     return render(request, 'supervisor/message.html', {
+      **daos.get_urls(),
       'account': account,
       'server_settings': server_settings,
 
@@ -1688,6 +1537,7 @@ def message(request):
       table_data = list(zip(*values))
 
       return render(request, 'export.html', {
+        **daos.get_urls(),
         'headers': headers,
         'table_data': table_data
       })
@@ -1720,6 +1570,7 @@ def message(request):
     } for m in msgs[(page - 1) * 20:page * 20]]
 
     return render(request, 'supervisor/message.html', {
+      **daos.get_urls(),
       'account': account,
       'server_settings': server_settings,
 
@@ -1795,6 +1646,7 @@ def banner(request):
       })
 
   return render(request, 'supervisor/banner.html', {
+    **daos.get_urls(),
     'account': account,
     'server_settings': server_settings,
 
@@ -1853,6 +1705,7 @@ def level(request):
   } for lv in lvs]
 
   return render(request, 'supervisor/level.html', {
+    **daos.get_urls(),
     'account': account,
     'server_settings': server_settings,
     'levels': levels,
@@ -1985,6 +1838,7 @@ def setting(request):
   }
 
   return render(request, 'supervisor/setting.html', {
+    **daos.get_urls(),
     'account': account,
     'server_settings': server_settings,
 

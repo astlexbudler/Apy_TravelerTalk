@@ -77,7 +77,7 @@
         <!-- 버튼 -->
         <div class="p-3 mb-5 text-end">
 
-          <a class="btn btn-success btn-sm"
+          <a class="btn btn-primary btn-sm me-2"
             href="javascript: new bootstrap.Modal(document.getElementById('newMessageModal')).show();">
             <i class="fi fi-rr-envelope"></i> 쪽지 보내기
           </a>
@@ -277,7 +277,9 @@
         </table>
       </div>
 
-      <div id="pageButton"></div>
+      <!-- 페이지네이션 영역 -->
+      {% include 'components/main/pagination.html' %}
+
     <!-- 맨 위로 가기 버튼 -->
     <div class="text-end mb-5">
       {% include 'components/main/top_button.html' %}
@@ -297,39 +299,16 @@
 {% include 'parts/message_read_modal.html' %}
 {% endfor %}
 <!-- 쪽지 작성 및 답변 모달 -->
-{% include 'parts/message_write_modal.html' %}
+{% include 'components/modal/message/create_message.html' %}
 
 <script>
 
-  window.onload = () => {
-    console.log(`Window loaded at ${getNowDatetimeString()}`);
+  window.addEventListener('load', () => {
 
     // Tab
     tab = '{{request.GET.tab}}';
     if (tab == '') {
       location.href = '{{supervisor_url}}/supervisor/message?tab=inboxTab';
-    }
-
-    var inboxTab = document.getElementById('inboxTab');
-    var outboxTab = document.getElementById('outboxTab');
-    var inbox = document.getElementById('inbox');
-    var outbox = document.getElementById('outbox');
-    if (tab == 'inbox') {
-      inboxTab.classList.add('pastel-pink-background');
-      inboxTab.classList.add('text-dark');
-      inboxTab.style.fontWeight = 'semibold';
-      outboxTab.classList.add('pastel-beige-background');
-      outboxTab.classList.remove('text-dark');
-      inbox.classList.remove('d-none');
-      outbox.classList.add('d-none');
-    } else if (tab == 'outbox') {
-      inboxTab.classList.add('pastel-beige-background');
-      inboxTab.classList.remove('text-dark');
-      outboxTab.classList.add('pastel-pink-background');
-      outboxTab.classList.add('text-dark');
-      outboxTab.style.fontWeight = 'semibold';
-      inbox.classList.add('d-none');
-      outbox.classList.remove('d-none');
     }
 
     // Page
@@ -342,107 +321,53 @@
     var to = '{{request.GET.to}}';
     if (to != '') {
       new bootstrap.Modal(document.getElementById('newMessageModal')).show();
-      document.getElementById('messageReceiver').value = to;
+      var html = `
+            <div style="display: flex; justify-content: space-between; white-space: nowrap;" id="${nowAccountId}">
+                <div style="display: inline-block; text-align: left;">
+                    <p class="text-black-60 mb-1">
+                        ${to}
+                    </p>
+                </div>
+                <div style="display: inline-block; text-align: right;">
+                    <a href="javascript: deleteUser('${to}');" class="small text-danger">
+                        삭제
+                    </a>
+                </div>
+            </div>
+        `;
+        receiverList.innerHTML += html;
+        receiverConfirmMessage.innerHTML = '사용자를 추가했습니다.';
+        receiverConfirmMessage.classList.add('text-success');
+        receiverConfirmMessage.classList.remove('text-danger');
+        receiverId.value = nowAccountId + ',';
     }
-  }
-
-  // 쪽지 수신자 검색 및 확인
-  var messageReceiverInput = document.querySelector('#messageReceiver');
-  var receiverConfirmMessage = document.querySelector('#receiverConfirmMessage');
-  var receiverId = document.querySelector('#receiverId');
-  messageReceiverInput.addEventListener('keyup', async () => {
-    var receiver = messageReceiverInput.value;
-    if (receiver.length < 2) {
-      receiverConfirmMessage.innerHTML = '아이디 또는 닉네임을 2글자 이상 입력해주세요.';
-      receiverConfirmMessage.classList.add('text-danger');
-      receiverConfirmMessage.classList.remove('text-primary');
-      receiverId.value = '';
-      return;
-    }
-
-    // 사용자 검색
-    var users = await fetch(`/api/account?id_or_nickname=${receiver}`)
-      .then(res => res.json())
-      .then(data => {
-        console.log(data);
-        return data.users;
-      });
-
-    // 사용자 검색 결과 확인
-    if (users.length != 1) {
-      receiverConfirmMessage.innerHTML = '정확한 사용자 아이디 또는 닉네임을 입력해주세요.';
-      receiverConfirmMessage.classList.add('text-danger');
-      receiverConfirmMessage.classList.remove('text-primary');
-      receiverId.value = '';
-      return;
-    }
-    receiverConfirmMessage.innerHTML = '사용자 확인';
-    receiverConfirmMessage.classList.add('text-primary');
-    receiverConfirmMessage.classList.remove('text-danger');
-    receiverId.value = users[0].id;
-  });
-
-  // 쿠폰 코드를 입력한 경우, 유효한 쿠폰 코드인지 확인
-  var couponValid = true;
-  couponCodeCheck = async (e) => {
-    var couponCode = e.value;
-    if (couponCode.length < 6) {
-      return;
-    }
-
-    // 쿠폰 검색
-    var data = await fetch(`/api/coupon?code=${couponCode}`)
-      .then(res => res.json())
-      .then(data => {
-        console.log(data);
-        return data
-      });
-
-    // 쿠폰 검색 결과 확인
-    var couponConfirmMessage = document.querySelector('#couponConfirmMessage');
-    var exist = data.result == 'success'; // true or false
-    var coupon = data.coupon;
-    if (!exist) {
-      couponConfirmMessage.innerHTML = '존재하지 않는 쿠폰 코드입니다.';
-      couponConfirmMessage.classList.add('text-danger');
-      couponConfirmMessage.classList.remove('text-primary');
-      couponValid = false;
-      return;
-    }
-    couponConfirmMessage.innerHTML = '유효한 쿠폰 코드입니다.';
-    couponConfirmMessage.classList.add('text-primary');
-    couponConfirmMessage.classList.remove('text-danger');
-    couponValid = true;
-  }
-
-  // 관리자에게 보내기 체크박스를 체크한 경우
-  var messageToAdminCheckbox = document.querySelector('#messageToAdmin');
-  messageToAdminCheckbox.addEventListener('change', () => {
-    if (messageToAdminCheckbox.checked) { // 체크한 경우
-      messageReceiverInput.value = 'supervisor'; // 수신자 = supervisor
-      messageReceiverInput.setAttribute('readonly', true);
-      receiverConfirmMessage.innerHTML = '관리자에게 쪽지를 보냅니다.';
-      receiverConfirmMessage.classList.add('text-primary');
-      receiverConfirmMessage.classList.remove('text-danger');
-      return
-    }
-    messageReceiverInput.value = '';
-    receiverConfirmMessage.innerHTML = '';
-    messageReceiverInput.removeAttribute('readonly');
-  });
+  })
 
   // 쪽지 답장
   replyMessage = (receiverId, messageTitle) => {
-    document.getElementById('messageReceiver').value = receiverId;
-    document.getElementById('receiverId').value = receiverId;
     document.getElementById('messageTitle').value = '답장: ' + document.getElementById('messageTitle').value;
     document.getElementById('messageContent').value = `[${messageTitle}]\n답장: `;
     new bootstrap.Modal(document.getElementById('newMessageModal')).show();
-  }
 
-  // 쪽지 읽음 처리
-  setReadDatetime = (messageId) => {
-    fetch(`/api/message?message_id=${messageId}`);
+    var html = `
+            <div style="display: flex; justify-content: space-between; white-space: nowrap;" id="${receiverId}">
+                <div style="display: inline-block; text-align: left;">
+                    <p class="text-black-60 mb-1">
+                        ${receiverId}
+                    </p>
+                </div>
+                <div style="display: inline-block; text-align: right;">
+                    <a href="javascript: deleteUser('${receiverId}');" class="small text-danger">
+                        삭제
+                    </a>
+                </div>
+            </div>
+        `;
+    receiverList.innerHTML += html;
+    receiverConfirmMessage.innerHTML = '사용자를 추가했습니다.';
+    receiverConfirmMessage.classList.add('text-success');
+    receiverConfirmMessage.classList.remove('text-danger');
+    receiverId.value = receiverId + ',';
   }
 
 </script>

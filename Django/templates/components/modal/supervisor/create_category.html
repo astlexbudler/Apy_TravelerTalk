@@ -1,0 +1,92 @@
+<div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">새 카테고리 추가</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <input type="hidden" id="subCategoryParent">
+
+                <!-- 게시판 이름 -->
+                <div class="form-group mb-4">
+                    <label>새 이름</label>
+                    <input class="form-control" placeholder="카테고리 이름" id="newCategoryName">
+                </div>
+
+                <!-- 표시 가중치 -->
+                <div class="form-group mb-2">
+                    <label>표시 가중치</label>
+                    <input type="number" class="form-control" id="newCategoryWeight" value="0">
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary me-2" onclick="addNewCategory();"
+                    data-bs-dismiss="modal">
+                    <i class="fi fi-rr-edit"></i> 생성하기
+                </button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal">
+                    취소
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+
+    // 카테고리 추가
+    addNewCategory = async () => {
+        var subCategoryParent = document.getElementById('subCategoryParent').value;
+        var newCategoryName = document.getElementById('newCategoryName').value;
+        var newCategoryWeight = document.getElementById('newCategoryWeight').value;
+        console.log(subCategoryParent, newCategoryName, newCategoryWeight);
+        var formData = new FormData();
+        formData.append('parent_category_id', subCategoryParent);
+        formData.append('category_name', newCategoryName);
+        formData.append('category_weight', newCategoryWeight);
+
+        // 생성 요청
+        await fetch('{{supervisor_url}}/supervisor/post?category=y', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': csrftoken,
+            },
+        })
+            .then(response => response.json())
+            .then(async data => {
+                console.log(data);
+                if (data.result == 'success') {
+                    await showAlert('생성 성공', '카테고리가 생성되었습니다.', 'success');
+                    location.reload();
+                } else {
+                    await showAlert('생성 실패', '카테고리 생성에 실패했습니다.', 'danger');
+                }
+            });
+    }
+
+    // 카테고리 삭제
+    deleteCategory = async (category_id) => {
+        console.log(category_id);
+        // 삭제 요청
+        await fetch('{{supervisor_url}}/supervisor/post?category=y&category_id=' + category_id, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': csrftoken,
+            },
+        })
+            .then(response => response.json())
+            .then(async data => {
+                console.log(data);
+                if (data.result == 'success') {
+                    await showAlert('삭제 성공', '카테고리가 삭제되었습니다.', 'success');
+                    location.reload();
+                } else {
+                    await showAlert('삭제 실패', '카테고리 삭제에 실패했습니다.', 'error');
+                }
+            });
+    }
+
+</script>

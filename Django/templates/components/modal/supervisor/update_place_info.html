@@ -1,0 +1,64 @@
+<div class="modal fade" id="{{post.id}}Modal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    {{ post.title }} 광고 설정
+                </h5>
+                <button  class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <!-- 광고 상태 -->
+                <div class="form-group mb-4">
+                    <label>광고 상태</label>
+                    <select class="form-control" id="{{ post.id }}adStatus">
+                        <option value="active" {% if post.place_info.status == 'active' %}selected{% endif %}>광고 없음
+                        </option>
+                        <option value="ad" {% if post.place_info.status == 'ad' %}selected{% endif %}>광고중</option>
+                        <option value="blocked" {% if post.place_info.status == 'blocked' %}selected{% endif %}>숨김
+                        </option>
+                        <option value="writing" {% if post.place_info.status == 'writing' %}selected{% endif %}>작성중
+                        </option>
+                    </select>
+                </div>
+
+                <!-- 가중치 -->
+                <div class="form-group mb-4">
+                    <label>가중치</label>
+                    <input type="number" class="form-control" id="{{ post.id }}adWeight"
+                        value="{{ post.search_weight }}">
+                </div>
+
+                <!-- 광고 시작 일시 및 종료 일시 -->
+                <div class="row mb-4">
+                    <div class="col">
+                        <label>광고 시작 일시</label>
+                        <input type="date" class="form-control" id="{{ post.id }}adStart"
+                            value="{{ post.place_info.ad_start }}">
+                    </div>
+                    <div class="col">
+                        <label>광고 종료 일시</label>
+                        <input type="date" class="form-control" id="{{ post.id }}adEnd"
+                            value="{{ post.place_info.ad_end }}">
+                    </div>
+                </div>
+
+                <!-- 메모 -->
+                <div class="form-group mb-2">
+                    <label>메모</label>
+                    <textarea class="form-control" id="{{ post.id }}adNote">{{ post.place_info.note }}</textarea>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary me-2" onclick="updateAd('{{ post.id }}');"
+                    data-bs-dismiss="modal">
+                    <i class="fi fi-rr-edit"></i> 수정하기</button>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">
+                        취소
+                    </button>
+            </div>
+        </div>
+    </div>
+</div>

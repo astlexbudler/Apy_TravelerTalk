@@ -1,0 +1,81 @@
+<div class="modal fade" id="blockIpModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">아이피 차단</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group mb-4">
+                    <label>아이피</label>
+                    <input class="form-control" placeholder="아이피를 입력해주세요." id="blockIp">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary me-2" onclick="blockIp()">
+                    <i class="fi fi-rr-lock"></i> 차단하기
+                </button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal">
+                    취소
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    // 아이피 차단
+    blockIp = async () => {
+        var blockIp = document.getElementById('blockIp').value;
+        if (blockIp.length < 7) {
+            showAlert('아이피 차단', '아이피를 확인해주세요.', 'error');
+            return
+        }
+
+        // 아이피 차단
+        var formData = new FormData();
+        formData.append('ip', blockIp);
+        await fetch('{{supervisor_url}}/supervisor/account?block_ip=y', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': csrftoken
+            }
+        })
+            .then(res => res.json())
+            .then(async data => {
+                console.log(data);
+                if (data.result === 'success') {
+                    await showAlert('아이피 차단', '아이피가 차단되었습니다.', 'success');
+                    location.reload();
+                } else {
+                    showAlert('아이피 차단', '아이피 차단에 실패했습니다.', 'error');
+                }
+            });
+    }
+
+    // 아이피 차단 해제
+    unblockIp = async (ip) => {
+        // 아이피 차단 해제
+
+        var formData = new FormData();
+        formData.append('ip', ip);
+        await fetch('{{supervisor_url}}/supervisor/account?unblock_ip=y', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': csrftoken
+            }
+        })
+            .then(res => res.json())
+            .then(async data => {
+                console.log(data);
+                if (data.result === 'success') {
+                    await showAlert('아이피 차단 해제', '아이피 차단이 해제되었습니다.', 'success');
+                    location.reload();
+                } else {
+                    showAlert('아이피 차단 해제', '아이피 차단 해제에 실패했습니다.', 'error');
+                }
+            });
+    }
+
+</script>

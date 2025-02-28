@@ -20,6 +20,8 @@ get_default_contexts(request): 기본 컨텍스트 정보 가져오기
     - account, activities_preview, unread_messages, coupons_preview, best_reviews, server_settings 정보를 가져옴.
     - 각 항목은 사용자 정보, 사용자 활동 내역, 받은 메세지, 내 쿠폰, 베스트 리뷰, 서버 설정 정보로 구성됨.
 
+get_urls(): URL 정보 가져오기
+
 select_account(account_id): 사용자 정보 가져오기
     - username(로그인 아이디), nickname(first_name 닉네임), partner_name(last_name 파트너 이름), email, group(그룹), status(상태), subsupervisor_permissions(부관리자 권한), level(레벨), exp(경험치), mileage(마일리지) 반환.
     - level 정보에는 level(레벨), image(레벨 이미지), text(레벨 텍스트), text_color(텍스트 색상), background_color(배경 색상) 포함.
@@ -251,6 +253,7 @@ def get_default_contexts(request):
     }
 
     return {
+        **get_urls(),
         'account': account,
         'activities_preview': activities_preview,
         'unread_messages': unread_messages,
@@ -258,6 +261,14 @@ def get_default_contexts(request):
         'best_reviews': best_reviews,
         'server_settings': server_settings,
         'bookmarks': bookmarks,
+    }
+
+# URL 정보 가져오기
+def get_urls():
+    return {
+        'main_url': settings.MAIN_URL,
+        'supervisor_url': settings.SUPERVISOR_URL,
+        'partner_url': settings.PARTNER_URL,
     }
 
 # 사용자 정보 가져오기
@@ -371,7 +382,7 @@ def create_account(username, password, first_name, last_name, email, tel, accoun
     }
 
 # 사용자 정보 업데이트
-def update_account(account_id, password=None, first_name=None, last_name=None, email=None, status=None, note=None, subsupervisor_permissions=None, exp=None, mileage=None):
+def update_account(account_id, password=None, first_name=None, last_name=None, email=None, status=None, note=None, subsupervisor_permissions=None, exp=None, mileage=None, recent_ip=None):
 
     # 사용자 정보 확인
     account = models.ACCOUNT.objects.select_related(
@@ -400,6 +411,8 @@ def update_account(account_id, password=None, first_name=None, last_name=None, e
         account.note = note
     if subsupervisor_permissions: # 부관리자 권한 업데이트
         account.subsupervisor_permissions = subsupervisor_permissions
+    if recent_ip: # 최근 접속 IP 업데이트
+        account.recent_ip = recent_ip
     if exp: # 경험치 업데이트
         account.exp = exp
 
@@ -984,7 +997,7 @@ def create_post_place_info(post_id, category_ids, location_info, open_info, stat
     }
 
 # 게시글 정보 업데이트
-def update_post(post_id, title=None, content=None, image=None, board_ids=None, search_weight=None, view_count=None, like_count=None):
+def update_post(post_id, title=None, content=None, image=None, board_ids=None, search_weight=None, view_count=None, like_count=None, place_info_id=None):
 
     # 게시글 확인
     post = models.POST.objects.filter(
@@ -1028,6 +1041,12 @@ def update_post(post_id, title=None, content=None, image=None, board_ids=None, s
         post.view_count = view_count
     if like_count: # 좋아요 수 업데이트
         post.like_count = like_count
+    if place_info_id:
+        place_info = models.PLACE_INFO.objects.filter(
+            id=place_info_id
+        ).first()
+        if place_info:
+            post.place_info = place_info
     post.save()
 
     return {
@@ -2387,7 +2406,7 @@ def select_board(board_id):
     return board_data
 
 # 게시판 생성
-def create_board(name, board_type, display_groups, enter_groups, write_groups, comment_groups, level_cut, parent_board_id=None):
+def create_board(name, board_type, display_groups, enter_groups, write_groups, comment_groups, level_cut, display_weight, parent_board_id=None):
 
     # 게시판 생성
     board = models.BOARD.objects.create(
@@ -2395,6 +2414,7 @@ def create_board(name, board_type, display_groups, enter_groups, write_groups, c
         name=name,
         board_type=board_type,
         level_cut=level_cut,
+        display_weight=display_weight,
     )
     for display_group in display_groups:
         board.display_groups.add(display_group)
