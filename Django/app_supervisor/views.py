@@ -12,40 +12,33 @@ from django.conf import settings
 from app_core import models
 from app_core import daos
 
-def to_login_page():
-    return redirect('/') # 관리자 메인 페이지로 리다이렉트
-
 # 관리자 로그인
 def login(request):
 
-  # 로그인 여부 확인
+  # 권한 확인
   if request.user.is_authenticated:
     account = daos.select_account_detail(request.user.id)
   else:
     return render(request, 'login.html')
-
-  # 권한 확인
   if account['account_type'] not in ['supervisor', 'subsupervisor']:
     return render(request, 'login.html')
-  else:
-    return redirect('/supervisor/supervisor') # 관리자 메인 페이지로 리다이렉트
+
+  return redirect('/supervisor/supervisor')
 
 # 관리자 메인 페이지
 def index(request):
 
-  # 로그인 여부 확인
+  # 권한 확인
   if not request.user.is_authenticated:
-    return to_login_page()
+    return redirect('/')
   else:
     account = daos.select_account_detail(request.user.id)
     server_settings = {
         'site_logo': daos.select_server_setting('site_logo'),
         'service_name': daos.select_server_setting('service_name'),
     }
-
-  # 권한 확인
   if account['account_type'] not in ['supervisor', 'subsupervisor']:
-    return to_login_page()
+    return redirect('/')
 
   # 파트너 가입 및 파트너 가입 대기중인 사용자 수
   all_partner = models.ACCOUNT.objects.prefetch_related('groups').filter(
@@ -481,23 +474,19 @@ def index(request):
   })
 
 # 계정 관리 페이지
-# 계정별 마지막 로그인 시간 및 회원가입일, 관리자 노트 등 포함
-# 관리자 생성 및 사용자 정보 수정 기능 포함(삭제도 사용자 정보 수정으로 가능)
 def account(request):
 
-  # 로그인 여부 확인
+  # 권한 확인
   if not request.user.is_authenticated:
-    return to_login_page()
+    return redirect('/')
   else:
     account = daos.select_account_detail(request.user.id)
     server_settings = {
         'site_logo': daos.select_server_setting('site_logo'),
         'service_name': daos.select_server_setting('service_name'),
     }
-
-  # 권한 확인
-  if account['account_type'] not in ['supervisor', 'subsupervisor']:
-    return to_login_page()
+  if 'user' not in account['subsupervisor_permissions']:
+    return redirect('/')
 
   # 아이피 차단
   if request.method == 'POST' and request.GET.get('block_ip'):
@@ -511,7 +500,7 @@ def account(request):
     daos.delete_blocked_ip(ip_address)
     return JsonResponse({'result': 'success'})
 
-  # 사용자 계정 생성
+  '''
   if request.method == 'POST' and request.GET.get('create_user'):
     id = request.POST['id']
     password = request.POST['password']
@@ -557,6 +546,7 @@ def account(request):
         account.save()
 
     return JsonResponse({'result': 'success'})
+  '''
 
   # 부관리자 신규 생성 처리
   if request.method == 'POST' and request.GET.get('create_subsupervisor'):
@@ -711,14 +701,15 @@ def account(request):
 
     # 계정 정보
     search_accounts.append({
-      'id': account.username,
+      'id': account.id,
+      'username': account.username,
       'nickname': account.first_name,
       'partner_name': account.last_name,
       'email': account.email,
       'tel': account.tel,
       'account_type': [group.name for group in account.groups.all()],
-      'date_joined': account.date_joined,
-      'last_login': account.last_login,
+      'date_joined': datetime.datetime.strftime(account.date_joined, '%Y-%m-%d %H:%M:%S'),
+      'last_login': datetime.datetime.strftime(account.last_login, '%Y-%m-%d %H:%M:%S') if account.last_login else '',
       'status': account.status,
       'note': account.note,
       'mileage': account.mileage,
@@ -750,22 +741,106 @@ def account(request):
     'blocked_ips': blocked_ips, # 차단 IP 목록
   })
 
-# 게시글 관리 페이지
-def post(request):
+# 프로필
+def profile(request):
 
-  # 로그인 여부 확인
+  # 권한 확인
   if not request.user.is_authenticated:
-    return to_login_page()
+    return redirect('/')
   else:
     account = daos.select_account_detail(request.user.id)
     server_settings = {
         'site_logo': daos.select_server_setting('site_logo'),
         'service_name': daos.select_server_setting('service_name'),
     }
+  if 'user' not in account['subsupervisor_permissions']:
+    return redirect('/')
+
+  # 프로필 수정
+  if request.method == 'POST':
+    nickname = request.POST.get('nickname', '')
+    email = request.POST.get('email', '')
+    tel = request.POST.get('tel', '')
+    password = request.POST.get('password', '')
+    new_password = request.POST.get('new_password', '')
+    new_password_confirm = request.POST.get('new_password_confirm', '')
+    if password and new_password and new_password_confirm:
+      if not request.user.check_password(password):
+        return JsonResponse({'result': 'fail', 'message': '비밀번호가 일치하지 않습니다.'})
+      if new_password != new_password_confirm:
+        return JsonResponse({'result': 'fail', 'message': '새로운 비밀번호가 일치하지 않습니다.'})
+      request.user.set_password(new_password)
+      request.user.save()
+    if nickname:
+      request.user.first_name = nickname
+    if email:
+      request.user.email = email
+    if tel:
+      request.user.tel = tel
+    request.user.save()
+    return JsonResponse({'result': 'success'})
+
+  # data
+  account_id = request.GET.get('account_id', '')
+
+  # 계정 정보
+  profile = daos.select_account_detail(account_id)
+
+  return render(request, 'supervisor/profile.html', {
+    **daos.get_urls(),
+    'account': account,
+    'server_settings': server_settings,
+
+    'profile': profile,
+  })
+
+# 활동
+def activity(request):
 
   # 권한 확인
-  if account['account_type'] not in ['supervisor', 'subsupervisor']:
-    return to_login_page()
+  if not request.user.is_authenticated:
+    return redirect('/')
+  else:
+    account = daos.select_account_detail(request.user.id)
+    server_settings = {
+        'site_logo': daos.select_server_setting('site_logo'),
+        'service_name': daos.select_server_setting('service_name'),
+    }
+  if 'user' not in account['subsupervisor_permissions']:
+    return redirect('/')
+
+  # data
+  page = int(request.GET.get('page', '1'))
+  profile_id = request.GET.get('account_id', '')
+
+  # 활동 정보
+  activities, last_page = daos.select_account_activities(profile_id, page)
+  status = daos.get_account_activity_stats(profile_id)
+
+  return render(request, 'supervisor/activity.html', {
+    **daos.get_urls(),
+    'account': account,
+    'server_settings': server_settings,
+
+    'activities': activities,
+    'status': status,
+    'last_page': last_page, # 페이지 처리를 위해 필요한 정보
+  })
+
+# 게시글 관리 페이지
+def post(request):
+
+  # 권한 확인
+  if not request.user.is_authenticated:
+    return redirect('/')
+  else:
+    account = daos.select_account_detail(request.user.id)
+    server_settings = {
+        'site_logo': daos.select_server_setting('site_logo'),
+        'service_name': daos.select_server_setting('service_name'),
+    }
+  if 'post' not in account['subsupervisor_permissions']:
+    return redirect('/')
 
   # 새 게시판 생성 요청 또는 게시판 수정 요청 처리
   if request.method == 'POST' and request.GET.get('board'):
@@ -818,10 +893,6 @@ def post(request):
   search_post_title = request.GET.get('post_title', '')
   search_board_id = request.GET.get('board_id', '')
   search_author_id = request.GET.get('author_id', '')
-  is_place_search = request.GET.get('is_place_search', 'n')
-  search_category_id = request.GET.get('category_id', '')
-  search_address = request.GET.get('address', '')
-  place_status = request.GET.get('place_status', '')
 
   # status
   # 각 게시판 별 게시글 수와 댓글 수, 조회수, 좋아요 수 통계 제공
@@ -959,10 +1030,10 @@ def post(request):
       search_posts.append({
         'id': post.id,
         'title': post.title,
-        'image': '/media/' + str(post.image) if post.image else '/media/default.png',
+        'image': '/media/' + str(post.image) if post.image else None,
         'view_count': post.view_count,
         'like_count': post.like_count,
-        'created_at': post.created_at,
+        'created_at': datetime.datetime.strftime(post.created_at, '%Y-%m-%d %H:%M'),
         'search_weight': post.search_weight,
         'board': {
           'name': post.boards.all().last().name,
@@ -995,21 +1066,170 @@ def post(request):
     'categories': categories, # 카테고리 정보
   })
 
-# 여행지 게시글 관리 페이지
-def travel(request):
-  # 로그인 여부 확인
+# 게시글 수정
+def post_edit(request):
+
+  # 권한 확인
   if not request.user.is_authenticated:
-    return to_login_page()
+    return redirect('/')
   else:
     account = daos.select_account_detail(request.user.id)
     server_settings = {
         'site_logo': daos.select_server_setting('site_logo'),
         'service_name': daos.select_server_setting('service_name'),
     }
+  if 'post' not in account['subsupervisor_permissions']:
+    return redirect('/')
+
+  # 게시글 수정
+  if request.method == 'POST':
+    post_id = request.POST.get('post_id', '')
+    post_title = request.POST.get('post_title', '')
+    post_content = request.POST.get('post_content', '')
+    post_search_weight = request.POST.get('post_search_weight', '')
+    post_board_id = request.POST.get('post_board_id', '')
+    post_author_id = request.POST.get('post_author_id', '')
+    post_related_post_id = request.POST.get('post_related_post_id', '')
+    post_category_id = request.POST.get('post_category_id', '')
+    post_address = request.POST.get('post_address', '')
+    post_place_status = request.POST.get('post_place_status', '')
+    post_ad_start_at = request.POST.get('post_ad_start_at', '')
+    post_ad_end_at = request.POST.get('post_ad_end_at', '')
+    post_note = request.POST.get('post_note', '')
+    post_image = request.FILES.get('post_image', None)
+    post = models.POST.objects.get(id=post_id)
+    post.title = post_title
+    post.content = post_content
+    post.search_weight = post_search_weight
+    post.boards.clear()
+    post.boards.add(models.BOARD.objects.get(id=post_board_id))
+    post.author = models.ACCOUNT.objects.get(username=post_author_id)
+    post.related_post = models.POST.objects.get(id=post_related_post_id) if post_related_post_id else None
+    post.place_info = models.PLACE_INFO.objects.get(id=post_address) if post_address else None
+    post.save()
+    if post_image:
+      post.image = post_image
+      post.save()
+    if post_category_id:
+      post.categories.clear()
+      post.categories.add(models.CATEGORY.objects.get(id=post_category_id))
+    if post_place_status:
+      post.place_info.status = post_place_status
+      post.place_info.ad_start_at = post_ad_start_at
+      post.place_info.ad_end_at = post_ad_end_at
+      post.place_info
+      post.place_info.note = post_note
+      post.place_info.save()
+    return JsonResponse({'result': 'success'})
+  
+  # data
+  post_id = request.GET.get('post_id', '')
+  post = models.POST.objects.get(id=post_id)
+  categories = daos.make_category_tree()
+  boards = models.BOARD.objects.exclude(
+    Q(board_type='greeting') | Q(board_type='attendance')
+  ).prefetch_related('display_groups', 'enter_groups', 'write_groups', 'comment_groups').all().order_by('-display_weight')
+  board_dict = {
+    board.name: {
+      'id': board.id,
+      'name': board.name,
+      'board_type': board.board_type,
+      'total_views': int(math.fsum([post.view_count for post in models.POST.objects.filter(Q(boards__id__in=str(board.id)))])),
+      'total_posts': models.POST.objects.filter(Q(boards__id__in=str(board.id))).count(),
+      'level_cut': board.level_cut,
+      'display_weight': board.display_weight,
+      'display': [g.name for g in board.display_groups.all()],
+      'enter': [g.name for g in board.enter_groups.all()],
+      'write': [g.name for g in board.write_groups.all()],
+      'comment': [g.name for g in board.comment_groups.all()],
+      'children': [],
+    } for board in boards if not board.parent_board
+  }
+  for board in boards:
+    if board.parent_board:
+      if board_dict.get(board.parent_board.name):
+        board_dict[board.parent_board.name]['children'].append({
+          'id': board.id,
+          'name': board.name,
+          'board_type': board.board_type,
+          'total_views': int(math.fsum([post.view_count for post in models.POST.objects.filter(Q(boards__id__in=[board.id]))])),
+          'level_cut': board.level_cut,
+          'display_weight': board.display_weight,
+          'total_posts': models.POST.objects.filter(Q(boards__id__in=[board.id])).count(),
+          'display': [g.name for g in board.display_groups.all()],
+          'enter': [g.name for g in board.enter_groups.all()],
+          'write': [g.name for g in board.write_groups.all()],
+          'comment': [g.name for g in board.comment_groups.all()],
+          'children': [],
+        })
+      else:
+        loop = True
+        for key in board_dict.keys():
+          for child in board_dict[key]['children']:
+            if not loop:
+              break
+            if str(child['name']) == str(board.parent_board.name):
+              child['children'].append({
+                'id': board.id,
+                'name': board.name,
+                'board_type': board.board_type,
+                'total_views': int(math.fsum([post.view_count for post in models.POST.objects.filter(Q(boards__id__in=[board.id]))])),
+                'level_cut': board.level_cut,
+                'display_weight': board.display_weight,
+                'display': [g.name for g in board.display_groups.all()],
+                'enter': [g.name for g in board.enter_groups.all()],
+                'write': [g.name for g in board.write_groups.all()],
+                'comment': [g.name for g in board.comment_groups.all()],
+                'children': [],
+              })
+              loop = False
+            if loop:
+              for grandchild in child['children']:
+                if not loop:
+                  break
+                if str(grandchild['name']) == str(board.parent_board.name):
+                  grandchild['children'].append({
+                    'id': board.id,
+                    'name': board.name,
+                    'board_type': board.board_type,
+                    'total_views': int(math.fsum([post.view_count for post in models.POST.objects.filter(Q(boards__id__in=[board.id]))])),
+                    'total_posts': models.POST.objects.filter(Q(boards__id__in=[board.id])).count(),
+                    'level_cut': board.level_cut,
+                    'display_weight': board.display_weight,
+                    'display': [g.name for g in board.display_groups.all],
+                    'enter': [g.name for g in board.enter_groups.all()],
+                    'write': [g.name for g in board.write_groups.all()],
+                    'comment': [g.name for g in board.comment_groups.all()],
+                    'children': [],
+                  })
+                  loop = False
+  boards = []
+  for child in board_dict.keys():
+    boards.append(board_dict[child])
+
+  return render(request, 'supervisor/edit.html', {
+    **daos.get_urls(),
+    'account': account,
+    'server_settings': server_settings,
+    'post': post,
+    'categories': categories,
+    'boards': boards,
+  })
+
+# 여행지 게시글 관리 페이지
+def travel(request):
 
   # 권한 확인
-  if account['account_type'] not in ['supervisor', 'subsupervisor']:
-    return to_login_page()
+  if not request.user.is_authenticated:
+    return redirect('/')
+  else:
+    account = daos.select_account_detail(request.user.id)
+    server_settings = {
+        'site_logo': daos.select_server_setting('site_logo'),
+        'service_name': daos.select_server_setting('service_name'),
+    }
+  if 'post' not in account['subsupervisor_permissions']:
+    return redirect('/')
 
   # 여행지 정보 수정 요청 처리
   if request.method == 'POST' and request.GET.get('modify_travel_info'):
@@ -1075,7 +1295,7 @@ def travel(request):
 
   # 로그인 여부 확인
   if not request.user.is_authenticated:
-    return to_login_page()
+    return redirect('/')
   else:
     account = daos.select_account_detail(request.user.id)
     server_settings = {
@@ -1085,7 +1305,7 @@ def travel(request):
 
   # 권한 확인
   if account['account_type'] not in ['supervisor', 'subsupervisor']:
-    return to_login_page()
+    return redirect('/')
 
   # 여행지 정보 수정 요청 처리
   if request.method == 'POST' and request.GET.get('modify_travel_info'):
@@ -1140,7 +1360,6 @@ def travel(request):
   search_post_title = request.GET.get('post_title', '')
   search_board_id = request.GET.get('board_id', '')
   search_author_id = request.GET.get('author_id', '')
-  is_place_search = request.GET.get('is_place_search', 'n')
   search_category_id = request.GET.get('category_id', '')
   search_address = request.GET.get('address', '')
   place_status = request.GET.get('place_status', '')
@@ -1318,23 +1537,169 @@ def travel(request):
     'categories': categories, # 카테고리 정보
   })
 
-# 쿠폰 관리 페이지
-# 별도의 쿠폰 수정 삭제 기능은 없음
-def coupon(request):
+# 여행지 게시글 수정
+def travel_edit(request):
 
-  # 로그인 여부 확인
+  # 권한 확인
   if not request.user.is_authenticated:
-    return to_login_page()
+    return redirect('/')
   else:
     account = daos.select_account_detail(request.user.id)
     server_settings = {
         'site_logo': daos.select_server_setting('site_logo'),
         'service_name': daos.select_server_setting('service_name'),
     }
+  if 'post' not in account['subsupervisor_permissions']:
+    return redirect('/')
+
+  # 여행지 게시글 수정
+  if request.method == 'POST':
+    post_id = request.POST.get('post_id', '')
+    post_title = request.POST.get('post_title', '')
+    post_content = request.POST.get('post_content', '')
+    post_search_weight = request.POST.get('post_search_weight', '')
+    post_board_id = request.POST.get('post_board_id', '')
+    post_author_id = request.POST.get('post_author_id', '')
+    post_related_post_id = request.POST.get('post_related_post_id', '')
+    post_category_id = request.POST.get('post_category_id', '')
+    post_address = request.POST.get('post_address', '')
+    post_place_status = request.POST.get('post_place_status', '')
+    post_ad_start_at = request.POST.get('post_ad_start_at', '')
+    post_ad_end_at = request.POST.get('post_ad_end_at', '')
+    post_note = request.POST.get('post_note', '')
+    post_image = request.FILES.get('post_image', None)
+    post = models.POST.objects.get(id=post_id)
+    post.title = post_title
+    post.content = post_content
+    post.search_weight = post_search_weight
+    post.boards.clear()
+    post.boards.add(models.BOARD.objects.get(id=post_board_id))
+    post.author = models.ACCOUNT.objects.get(username=post_author_id)
+    post.related_post = models.POST.objects.get(id=post_related_post_id) if post_related_post_id else None
+    post.place_info = models.PLACE_INFO.objects.get(id=post_address) if post_address else None
+    post.save()
+    if post_image:
+      post.image = post_image
+      post.save()
+    if post_category_id:
+      post.categories.clear()
+      post.categories.add(models.CATEGORY.objects.get(id=post_category_id))
+    if post_place_status:
+      post.place_info.status = post_place_status
+      post.place_info.ad_start_at = post_ad_start_at
+      post.place_info.ad_end_at = post_ad_end_at
+      post.place_info.note = post_note
+      post.place_info.save()
+    return JsonResponse({'result': 'success'})
+  
+  # data
+  post_id = request.GET.get('post_id', '')
+  post = models.POST.objects.get(id=post_id)
+  categories = daos.make_category_tree()
+  boards = models.BOARD.objects.exclude(
+    Q(board_type='greeting') | Q(board_type='attendance')
+  ).prefetch_related('display_groups', 'enter_groups', 'write_groups', 'comment_groups').all().order_by('-display_weight')
+  board_dict = {
+    board.name: {
+      'id': board.id,
+      'name': board.name,
+      'board_type': board.board_type,
+      'total_views': int(math.fsum([post.view_count for post in models.POST.objects.filter(Q(boards__id__in=str(board.id)))])),
+      'total_posts': models.POST.objects.filter(Q(boards__id__in=str(board.id))).count(),
+      'level_cut': board.level_cut,
+      'display_weight': board.display_weight,
+      'display': [g.name for g in board.display_groups.all()],
+      'enter': [g.name for g in board.enter_groups.all()],
+      'write': [g.name for g in board.write_groups.all()],
+      'comment': [g.name for g in board.comment_groups.all()],
+      'children': [],
+    } for board in boards if not board.parent_board
+  }
+  for board in boards:
+    if board.parent_board:
+      if board_dict.get(board.parent_board.name):
+        board_dict[board.parent_board.name]['children'].append({
+          'id': board.id,
+          'name': board.name,
+          'board_type': board.board_type,
+          'total_views': int(math.fsum([post.view_count for post in models.POST.objects.filter(Q(boards__id__in=[board.id]))])),
+          'level_cut': board.level_cut,
+          'display_weight': board.display_weight,
+          'total_posts': models.POST.objects.filter(Q(boards__id__in=[board.id])).count(),
+          'display': [g.name for g in board.display_groups.all()],
+          'enter': [g.name for g in board.enter_groups.all()],
+          'write': [g.name for g in board.write_groups.all()],
+          'comment': [g.name for g in board.comment_groups.all()],
+          'children': [],
+        })
+      else:
+        loop = True
+        for key in board_dict.keys():
+          for child in board_dict[key]['children']:
+            if not loop:
+              break
+            if str(child['name']) == str(board.parent_board.name):
+              child['children'].append({
+                'id': board.id,
+                'name': board.name,
+                'board_type': board.board_type,
+                'total_views': int(math.fsum([post.view_count for post in models.POST.objects.filter(Q(boards__id__in=[board.id]))])),
+                'level_cut': board.level_cut,
+                'display_weight': board.display_weight,
+                'display': [g.name for g in board.display_groups.all()],
+                'enter': [g.name for g in board.enter_groups.all()],
+                'write': [g.name for g in board.write_groups.all()],
+                'comment': [g.name for g in board.comment_groups.all()],
+                'children': [],
+              })
+              loop = False
+            if loop:
+              for grandchild in child['children']:
+                if not loop:
+                  break
+                if str(grandchild['name']) == str(board.parent_board.name):
+                  grandchild['children'].append({
+                    'id': board.id,
+                    'name': board.name,
+                    'board_type': board.board_type,
+                    'total_views': int(math.fsum([post.view_count for post in models.POST.objects.filter(Q(boards__id__in=[board.id]))])),
+                    'total_posts': models.POST.objects.filter(Q(boards__id__in=[board.id])).count(),
+                    'level_cut': board.level_cut,
+                    'display_weight': board.display_weight,
+                    'display': [g.name for g in board.display_groups.all],
+                    'enter': [g.name for g in board.enter_groups.all()],
+                    'write': [g.name for g in board.write_groups.all()],
+                    'comment': [g.name for g in board.comment_groups.all()],
+                    'children': [],
+                  })
+                  loop = False
+  boards = []
+  for child in board_dict.keys():
+    boards.append(board_dict[child])
+
+  return render(request, 'supervisor/travel_edit.html', {
+    **daos.get_urls(),
+    'account': account,
+    'server_settings': server_settings,
+    'post': post,
+    'categories': categories,
+    'boards': boards,
+  })
+
+# 쿠폰 관리 페이지
+def coupon(request):
 
   # 권한 확인
-  if account['account_type'] not in ['supervisor', 'subsupervisor']:
-    return to_login_page()
+  if not request.user.is_authenticated:
+    return redirect('/')
+  else:
+    account = daos.select_account_detail(request.user.id)
+    server_settings = {
+        'site_logo': daos.select_server_setting('site_logo'),
+        'service_name': daos.select_server_setting('service_name'),
+    }
+  if 'coupon' not in account['subsupervisor_permissions']:
+    return redirect('/')
 
   # data
   tab_type = request.GET.get('tab', 'couponTab') # coupon, history
@@ -1421,20 +1786,18 @@ def coupon(request):
 
 # 쪽지 관리 페이지
 def message(request):
-  
-  # 로그인 여부 확인
+
+  # 권한 확인
   if not request.user.is_authenticated:
-    return to_login_page()
+    return redirect('/')
   else:
     account = daos.select_account_detail(request.user.id)
     server_settings = {
         'site_logo': daos.select_server_setting('site_logo'),
         'service_name': daos.select_server_setting('service_name'),
     }
-
-  # 권한 확인
-  if account['account_type'] not in ['supervisor', 'subsupervisor']:
-    return to_login_page()
+  if 'message' not in account['subsupervisor_permissions']:
+    return redirect('/')
 
   # data
   tab = request.GET.get('tab', 'inboxTab') # inbox, outbox
@@ -1582,67 +1945,70 @@ def message(request):
 # 배너 관리 페이지
 def banner(request):
 
-  # 로그인 여부 확인
+  # 권한 확인
   if not request.user.is_authenticated:
-    return to_login_page()
+    return redirect('/')
   else:
     account = daos.select_account_detail(request.user.id)
     server_settings = {
         'site_logo': daos.select_server_setting('site_logo'),
         'service_name': daos.select_server_setting('service_name'),
     }
-
-  # 권한 확인
-  if account['account_type'] not in ['supervisor', 'subsupervisor']:
-    return to_login_page()
+  if 'banner' not in account['subsupervisor_permissions']:
+    return redirect('/')
 
   # 배너 생성 및 수정 요청 처리
   # 아이디가 있으면 수정, 없으면 생성
   if request.method == 'POST':
     id = request.GET.get('id')
     if id:
-      banner = models.BANNER.objects.get(id=id)
-      banner.location = request.POST.get('location', banner.location)
-      banner.display_weight = request.POST.get('display_weight', banner.display_weight)
-      banner.image = request.FILES.get('image', banner.image)
-      banner.link = request.POST.get('link', banner.link)
-      banner.save()
+      daos.update_banner(
+        banner_id=id,
+        image=request.FILES.get('image', None),
+        link=request.POST.get('link', ''),
+        display_weight=request.POST.get('display_weight', ''),
+        location=request.POST.get('location', ''),
+        size=request.POST.get('size', ''),
+      )
     else:
-      models.BANNER.objects.create(
-        location = request.POST.get('location', ''),
-        display_weight = request.POST.get('display_weight', ''),
-        image = request.FILES.get('image', ''),
-        link = request.POST.get('link', ''),
+      daos.create_banner(
+        image=request.FILES.get('image', None),
+        link=request.POST.get('link', ''),
+        display_weight=request.POST.get('display_weight', ''),
+        location=request.POST.get('location', ''),
+        size=request.POST.get('size', ''),
       )
     return JsonResponse({'result': 'success'})
 
   # 배너 삭제
   if request.method == 'DELETE':
     banner_id = request.GET.get('id', '')
-    models.BANNER.objects.get(id=banner_id).delete()
+    daos.delete_banner(banner_id)
     return JsonResponse({'result': 'success'})
 
+  # data
+  tab = request.GET.get('tab', 'topTab') # top, side
+
   # search
-  banners = {
-    'top': [], # 상단 배너
-    'side': [], # 사이드 및 하단 배너
-  }
+  banners = []
   for b in models.BANNER.objects.all().order_by('-display_weight'):
-    if b.location == 'side':
-      banners['side'].append({
+    if b.location == 'side' and tab == 'sideTab':
+      banners.append({
         'id': b.id,
         'location': b.location,
         'image': '/media/' + str(b.image),
         'link': b.link,
         'display_weight': b.display_weight,
+        'size': 'full',
       })
-    elif b.location == 'top':
-      banners['top'].append({
+    elif b.location == 'top' and tab == 'topTab':
+      banners.append({
         'id': b.id,
         'location': b.location,
         'image': '/media/' + str(b.image),
         'link': b.link,
         'display_weight': b.display_weight,
+        'size': b.size,
       })
 
   return render(request, 'supervisor/banner.html', {
@@ -1656,42 +2022,38 @@ def banner(request):
 # 레벨 관리 페이지
 def level(request):
 
-  # 로그인 여부 확인
+  # 권한 확인
   if not request.user.is_authenticated:
-    return to_login_page()
+    return redirect('/')
   else:
     account = daos.select_account_detail(request.user.id)
     server_settings = {
         'site_logo': daos.select_server_setting('site_logo'),
         'service_name': daos.select_server_setting('service_name'),
     }
-
-  # 권한 확인
-  if account['account_type'] not in ['supervisor', 'subsupervisor']:
-    return to_login_page()
+  if 'level' not in account['subsupervisor_permissions']:
+    return redirect('/')
 
   # 레벨 생성 및 수정 요청 처리
   if request.method == 'POST':
     level_id = request.POST.get('level')
     if level_id:
-      level = models.LEVEL_RULE.objects.get(level=level_id)
-      if request.FILES.get('image'):
-        level.image = request.FILES.get('image')
-      level.text_color = request.POST.get('text_color', level.text_color)
-      level.background_color = request.POST.get('background_color', level.background_color)
-      level.text = request.POST.get('text', level.text)
-      level.required_exp = request.POST.get('exp', level.required_exp)
-      level.save()
-    else:
-      level = models.LEVEL_RULE.objects.create(
+      daos.update_level(
+        level=level_id,
+        image=request.FILES.get('image', None),
+        text=request.POST.get('text', ''),
         text_color=request.POST.get('text_color', ''),
         background_color=request.POST.get('background_color', ''),
-        text=request.POST.get('text', ''),
         required_exp=request.POST.get('exp', ''),
       )
-      if request.FILES.get('image'):
-        level.image = request.FILES.get('image')
-        level.save()
+    else:
+      daos.create_level(
+        image=request.FILES.get('image', None),
+        text=request.POST.get('text', ''),
+        text_color=request.POST.get('text_color', ''),
+        background_color=request.POST.get('background_color', ''),
+        required_exp=request.POST.get('exp', ''),
+      )
     return JsonResponse({'result': 'success'})
 
   lvs = models.LEVEL_RULE.objects.all().order_by('level')
@@ -1714,128 +2076,32 @@ def level(request):
 # 시스템 설정 페이지
 def setting(request):
 
-  # 로그인 여부 확인
+  # 권한 확인
   if not request.user.is_authenticated:
-    return to_login_page()
+    return redirect('/')
   else:
     account = daos.select_account_detail(request.user.id)
     server_settings = {
         'site_logo': daos.select_server_setting('site_logo'),
         'service_name': daos.select_server_setting('service_name'),
     }
-
-  # 권한 확인
-  if account['account_type'] not in ['supervisor', 'subsupervisor']:
-    return to_login_page()
+  if 'setting' not in account['subsupervisor_permissions']:
+    return redirect('/')
 
   # 설정 정보 변경 요청 처리
   if request.method == 'POST':
-    new_service_name = request.POST.get('service_name', models.SERVER_SETTING.objects.get(name='service_name').value)
-    new_site_logo = request.POST.get('site_logo', models.SERVER_SETTING.objects.get(name='site_logo').value)
-    new_site_header = request.POST.get('site_header', models.SERVER_SETTING.objects.get(name='site_header').value)
-    new_company_info = request.POST.get('company_info', models.SERVER_SETTING.objects.get(name='company_info').value)
-    new_social_network = request.POST.get('social_network', models.SERVER_SETTING.objects.get(name='social_network').value)
-    new_terms = request.POST.get('terms', models.SERVER_SETTING.objects.get(name='terms').value)
-    new_register_point = request.POST.get('register_point', models.SERVER_SETTING.objects.get(name='register_point').value)
-    new_attend_point = request.POST.get('attend_point', models.SERVER_SETTING.objects.get(name='attend_point').value)
-    new_post_point = request.POST.get('post_point', models.SERVER_SETTING.objects.get(name='post_point').value)
-    new_review_point = request.POST.get('review_point', models.SERVER_SETTING.objects.get(name='review_point').value)
-    new_comment_point = request.POST.get('comment_point', models.SERVER_SETTING.objects.get(name='comment_point').value)
-
-    # 설정 정보 변경
-    service_name = models.SERVER_SETTING.objects.get(name='service_name')
-    service_name.value = new_service_name
-    service_name.save()
-    site_logo = models.SERVER_SETTING.objects.get(name='site_logo')
-    site_logo.value = new_site_logo
-    site_logo.save()
-    site_header = models.SERVER_SETTING.objects.get(name='site_header')
-    site_header.value = new_site_header
-    site_header.save()
-    company_info = models.SERVER_SETTING.objects.get(name='company_info')
-    company_info.value = new_company_info
-    company_info.save()
-    social_network = models.SERVER_SETTING.objects.get(name='social_network')
-    social_network.value = new_social_network
-    social_network.save()
-    terms = models.SERVER_SETTING.objects.get(name='terms')
-    terms.value = new_terms
-    terms.save()
-    register_point = models.SERVER_SETTING.objects.get(name='register_point')
-    register_point.value = new_register_point
-    register_point.save()
-    attend_point = models.SERVER_SETTING.objects.get(name='attend_point')
-    attend_point.value = new_attend_point
-    attend_point.save()
-    post_point = models.SERVER_SETTING.objects.get(name='post_point')
-    post_point.value = new_post_point
-    post_point.save()
-    review_point = models.SERVER_SETTING.objects.get(name='review_point')
-    review_point.value = new_review_point
-    review_point.save()
-    comment_point = models.SERVER_SETTING.objects.get(name='comment_point')
-    comment_point.value = new_comment_point
-    comment_point.save()
-
-  # service_name
-  service_name = {
-    'name': 'service_name',
-    'value': models.SERVER_SETTING.objects.get(name='service_name').value,
-  }
-
-  # site_logo
-  site_logo = {
-    'name': 'site_logo',
-    'value': models.SERVER_SETTING.objects.get(name='site_logo').value,
-  }
-
-  # site_header
-  site_header = {
-    'name': 'site_header',
-    'value': models.SERVER_SETTING.objects.get(name='site_header').value,
-  }
-
-  # company_info
-  company_info = {
-    'name': 'company_info',
-    'value': models.SERVER_SETTING.objects.get(name='company_info').value,
-  }
-
-  # terms
-  terms = {
-    'name': 'terms',
-    'value': models.SERVER_SETTING.objects.get(name='terms').value,
-  }
-
-  # register_point
-  register_point = {
-    'name': 'register_point',
-    'value': models.SERVER_SETTING.objects.get(name='register_point').value,
-  }
-
-  # attend_point
-  attend_point = {
-    'name': 'attend_point',
-    'value': models.SERVER_SETTING.objects.get(name='attend_point').value,
-  }
-
-  # post_point
-  post_point = {
-    'name': 'post_point',
-    'value': models.SERVER_SETTING.objects.get(name='post_point').value,
-  }
-
-  # review_point
-  review_point = {
-    'name': 'review_point',
-    'value': models.SERVER_SETTING.objects.get(name='review_point').value,
-  }
-
-  # comment_point
-  comment_point = {
-    'name': 'comment_point',
-    'value': models.SERVER_SETTING.objects.get(name='comment_point').value,
-  }
+    print(request.POST.dict())
+    daos.update_server_setting('service_name', request.POST.get('service_name'))
+    daos.update_server_setting('site_logo', request.POST.get('site_logo'))
+    daos.update_server_setting('site_header', request.POST.get('site_header'))
+    daos.update_server_setting('company_info', request.POST.get('company_info'))
+    daos.update_server_setting('terms', request.POST.get('terms'))
+    daos.update_server_setting('register_point', request.POST.get('register_point'))
+    daos.update_server_setting('attend_point', request.POST.get('attend_point'))
+    daos.update_server_setting('post_point', request.POST.get('post_point'))
+    daos.update_server_setting('review_point', request.POST.get('review_point'))
+    daos.update_server_setting('comment_point', request.POST.get('comment_point'))
+    return JsonResponse({'result': 'success'})
 
   return render(request, 'supervisor/setting.html', {
     **daos.get_urls(),
@@ -1843,15 +2109,15 @@ def setting(request):
     'server_settings': server_settings,
 
     'settings': {
-      'service_name': service_name,
-      'site_logo': site_logo,
-      'site_header': site_header,
-      'company_info': company_info,
-      'terms': terms,
-      'register_point': register_point,
-      'attend_point': attend_point,
-      'post_point': post_point,
-      'review_point': review_point,
-      'comment_point': comment_point,
+      'service_name': daos.select_server_setting('service_name'),
+      'site_logo': daos.select_server_setting('site_logo'),
+      'site_header': daos.select_server_setting('site_header'),
+      'company_info': daos.select_server_setting('company_info'),
+      'terms': daos.select_server_setting('terms'),
+      'register_point': daos.select_server_setting('register_point'),
+      'attend_point': daos.select_server_setting('attend_point'),
+      'post_point': daos.select_server_setting('post_point'),
+      'review_point': daos.select_server_setting('review_point'),
+      'comment_point': daos.select_server_setting('comment_point'),
     },
   })

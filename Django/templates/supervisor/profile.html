@@ -1,4 +1,4 @@
-{% extends 'base/base.html' %}
+{% extends 'base/base_supervisor.html' %}
 {% block content %}
 <main class="container">
 
@@ -13,9 +13,17 @@
 
       <!-- 선택지 버튼 그룹 -->
       <div class="btn-group w-100 d-flex">
-        {% include 'components/main/page_tab.html' with tab_name='프로필' tab_id='profileTab' tab_link='/profile?tab=profileTab' %}
-        <span class="divider"></span>
-        {% include 'components/main/page_tab.html' with tab_name='활동 기록' tab_id='activityTab' tab_link='/activity?tab=activityTab' %}
+        <div class="w-100 d-flex justify-content-center rounded-2">
+          <a class="w-100 btn pastel-pink-background text-white" href="{{supervisor_url}}/supervisor/account/profile?account_id={{request.GET.account_id}}&tab=profileTab" id="profileTab">
+              프로필
+          </a>
+        </div>
+        <div class="divider"></div>
+        <div class="w-100 d-flex justify-content-center rounded-2">
+          <a class="w-100 btn pastel-beige-background" href="{{supervisor_url}}/supervisor/account/activity?account_id={{request.GET.account_id}}&tab=activityTab" id="activityTab">
+              활동 기록
+          </a>
+        </div>
       </div>
 
       <!-- 프로필 정보 -->
@@ -23,51 +31,6 @@
 
         <!-- 프로필 카드 -->
         {% include 'components/main/profile_card.html' with account=profile %}
-
-        <!-- 등급 정보 -->
-        <div class="mb-5">
-          <h6 class="text-black-60 mb-3 pb-3 border-bottom">
-            등급 정보
-          </h6>
-          <div class="accordion shadow">
-            <div class="accordion-item">
-              <h2 class="accordion-header">
-                <button class="accordion-button bg-white text-dark" type="button" data-bs-toggle="collapse"
-                  data-bs-target="#levelTableAccordionItem" aria-expanded="true"
-                  aria-controls="levelTableAccordionItem">
-                  등급 정보 확인
-                </button>
-              </h2>
-              <div id="levelTableAccordionItem" class="accordion-collapse collapse show">
-                <div class="accordion-body">
-                  <table class="table table-border border">
-                    <tr>
-                      <th class="ps-5">등급</th>
-                      <th>레벨</th>
-                      <th class="pe-5 text-end">필요 Exp</th>
-                    </tr>
-                    {% for level in level_rules %}
-                    <tr>
-                      <td class="ps-5">
-                        {{level.text}}
-                      </td>
-                      <td>
-                        {% include 'components/other/level_badge.html' %}
-                      </td>
-                      <td class="pe-5 text-end">
-                        <i class="fi fi-ss-coins"></i> <span class="numberComma">{{level.required_exp}}</span> Exp
-                      </td>
-                    </tr>
-                    {% endfor %}
-                  </table>
-                  <div class="alert alert-info small">
-                    <i class="fi fi-rr-info"></i> 등급 상승은 Exp를 넘긴 후 자동으로 승급됩니다.
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
 
         <!-- 프로필 정보 -->
         <div class="mb-5">
@@ -86,6 +49,9 @@
             <div class="col-6">
               <p class="text-dark">
                 상태
+                <a class="text-black-50"
+                  href="javascript: new bootstrap.Modal(document.getElementById('updateStatusModal')).show();">
+                  <i class="fi fi-rr-edit"></i>
               </p>
               <p class="text-black-50">
                 {% if profile.status == 'active' %}
@@ -131,7 +97,85 @@
                 {{ profile.nickname }}
               </p>
             </div>
+            {% if profile.account_type == 'subsupervisor' and account.account_type == 'supervisor' %}
+            <div class="col-6">
+              <p class="text-dark">
+                부관리자 권한
+                <a class="text-black-50"
+                  href="javascript: new bootstrap.Modal(document.getElementById('rewriteSubSupervisorPermissionsModal')).show();">
+                  <i class="fi fi-rr-edit"></i>
+                </a>
+              </p>
+              <p class="text-black-50">
+                {% if 'user' in profile.subsupervisor_permissions %}
+                <span class="badge bg-success">사용자</span>
+                {% endif %}
+                {% if 'post' in profile.subsupervisor_permissions %}
+                <span class="badge bg-success">게시물</span>
+                {% endif %}
+                {% if 'travel' in profile.subsupervisor_permissions %}
+                <span class="badge bg-success">여행</span>
+                {% endif %}
+                {% if 'coupon' in profile.subsupervisor_permissions %}
+                <span class="badge bg-success">쿠폰</span>
+                {% endif %}
+                {% if 'message' in profile.subsupervisor_permissions %}
+                <span class="badge bg-success">메시지</span>
+                {% endif %}
+                {% if 'banner' in profile.subsupervisor_permissions %}
+                <span class="badge bg-success">배너</span>
+                {% endif %}
+                {% if 'level' in profile.subsupervisor_permissions %}
+                <span class="badge bg-success">레벨</span>
+                {% endif %}
+                {% if 'setting' in profile.subsupervisor_permissions %}
+                <span class="badge bg-success">시스템</span>
+                {% endif %}
+              </p>
+            </div>
+            {% elif profile.account_type == 'partner' %}
+            <div class="col-6">
+              <p class="text-dark">
+                파트너 이름
+                <a class="text-black-50"
+                  href="javascript: new bootstrap.Modal(document.getElementById('rewritePartnerNameModal')).show();">
+                  <i class="fi fi-rr-edit"></i>
+                </a>
+              </p>
+              <p class="text-black-50">
+                {{ profile.partner_name }}
+              </p>
+            </div>
+            {% endif %}
           </div>
+          {% if profile.account_type == 'partner' %}
+          <div class="mb-5 row">
+            <div class="col-6">
+              <p class="text-dark">
+                <span class="text-dark">이메일</span>
+                <a class="text-black-50"
+                  href="javascript: new bootstrap.Modal(document.getElementById('rewriteEmailModal')).show();">
+                  <i class="fi fi-rr-edit"></i>
+                </a>
+              </p>
+              <p class="text-black-50">
+                {{ profile.email }}
+              </p>
+            </div>
+            <div class="col-6">
+              <p class="text-dark">
+                <span class="text-dark">연락처</span>
+                <a class="text-black-50"
+                  href="javascript: new bootstrap.Modal(document.getElementById('rewritePartnerPhoneModal')).show();">
+                  <i class="fi fi-rr-edit"></i>
+                </a>
+              </p>
+              <p class="text-black-50">
+                {{ profile.tel }}
+              </p>
+            </div>
+          </div>
+          {% endif %}
         </div>
 
         <!-- 버튼 -->
@@ -162,6 +206,12 @@
 {% include 'components/modal/account/update_tel.html' %}
 <!-- 파트너 이름 변경 모달 -->
 {% include 'components/modal/account/update_partner_name.html' %}
+<!-- 상태 변경 모달 -->
+{% include 'components/modal/account/update_status.html' %}
+<!-- 부관리자 권한 변경 모달 -->
+{% include 'components/modal/account/update_subsupervisor_permissions.html' %}
+<!-- 이메일 변경 모달 -->
+{% include 'components/modal/account/update_email.html' %}
 
 <script>
 
@@ -169,7 +219,7 @@
   window.addEventListener('load', () => {
     const tab = '{{request.GET.tab}}';
     if (!tab) {
-      location.href = '/profile?tab=profileTab';
+      location.href = '{{supervisor_url}}/supervisor/account/profile?account_id={{ request.GET.account_id }}&tab=profileTab';
     }
   });
 

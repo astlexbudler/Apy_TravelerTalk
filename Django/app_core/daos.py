@@ -248,7 +248,6 @@ def get_default_contexts(request):
         'site_logo': select_server_setting('site_logo'),
         'service_name': select_server_setting('service_name'),
         'site_header': select_server_setting('site_header'),
-        'background': select_server_setting('background'),
         'company_info': select_server_setting('company_info'),
     }
 
@@ -320,6 +319,7 @@ def select_account_detail(account_id):
             'nickname': account.first_name,
             'partner_name': account.last_name,
             'email': account.email,
+            'tel': account.tel,
             'account_type': account.groups.all()[0].name, # 각 계정은 하나의 그룹만 가짐
             'status': account.status,
             'subsupervisor_permissions': str(account.subsupervisor_permissions).split(','),
@@ -640,25 +640,15 @@ def select_all_levels():
     return levels_data
 
 # 레벨 생성
-def create_level(level, image, text, text_color, background_color):
-
-    # 레벨 확인
-    exist = models.LEVEL_RULE.objects.filter(
-        level=level
-    ).exists()
-    if exist:
-        return {
-            'success': False,
-            'message': '이미 존재하는 레벨입니다.',
-        }
+def create_level(image, text, text_color, background_color, required_exp):
 
     # 레벨 생성
     level = models.LEVEL_RULE.objects.create(
-        level=level,
         image=image,
         text=text,
         text_color=text_color,
         background_color=background_color,
+        required_exp=required_exp,
     )
 
     return {
@@ -668,7 +658,7 @@ def create_level(level, image, text, text_color, background_color):
     }
 
 # 레벨 정보 업데이트
-def update_level(level, image=None, text=None, text_color=None, background_color=None):
+def update_level(level, image=None, text=None, text_color=None, background_color=None, required_exp=None):
 
     # 레벨 정보 확인
     level = models.LEVEL_RULE.objects.filter(
@@ -690,6 +680,8 @@ def update_level(level, image=None, text=None, text_color=None, background_color
         level.text_color = text_color
     if background_color: # 배경 색상 업데이트
         level.background_color = background_color
+    if required_exp: # 필요 경험치 업데이트
+        level.required_exp = required_exp
     level.save()
 
     return {
@@ -774,7 +766,7 @@ def search_posts(title=None, category_id=None, board_id=None, related_post_id=No
         } for board in post.boards.all()],
         'board_ids': [board.id for board in post.boards.all()],
         'title': post.title,
-        'image': post.image,
+        'image': '/media/' + str(post.image) if post.image else None,
         'view_count': post.view_count,
         'like_count': post.like_count,
         'created_at': post.created_at,

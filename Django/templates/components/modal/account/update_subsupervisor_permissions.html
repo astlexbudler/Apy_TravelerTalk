@@ -24,8 +24,7 @@
             <div class="modal-body">
 
                 <!-- permissions -->
-                <div class="form-group">
-                    <label>변경할 권한</label>
+                <div class="form-group small">
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" value="user" id="subSupervisorPermissionsUser">
                         <label class="form-check-label" for="subSupervisorPermissionsUser">
@@ -36,6 +35,12 @@
                         <input class="form-check-input" type="checkbox" value="post" id="subSupervisorPermissionsPost">
                         <label class="form-check-label" for="subSupervisorPermissionsPost">
                             게시글 관리
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="travel" id="subSupervisorPermissionsTravel">
+                        <label class="form-check-label" for="subSupervisorPermissionsTravel">
+                            여행지 관리
                         </label>
                     </div>
                     <div class="form-check">
@@ -74,13 +79,14 @@
                         </label>
                     </div>
                 </div>
-                <small class="text-black-50">
-                    권한 변경 시, 해당 사용자의 권한이 변경됩니다.
-                </small>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary" onclick="rewriteSubSupervisorPermissions();"
-                    data-bs-dismiss="modal">변경하기</button>
+                <button class="btn btn-primary" onclick="rewriteSubSupervisorPermissions();"
+                    data-bs-dismiss="modal">
+                    <i class="fi fi-rr-edit"></i> 변경하기</button>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">
+                        취소
+                    </button>
             </div>
         </div>
     </div>
@@ -94,6 +100,9 @@
         }
         if (document.getElementById('subSupervisorPermissionsPost').checked) {
             permissions += 'post,';
+        }
+        if (document.getElementById('subSupervisorPermissionsTravel').checked) {
+            permissions += 'travel,';
         }
         if (document.getElementById('subSupervisorPermissionsCoupon').checked) {
             permissions += 'coupon,';
@@ -115,10 +124,10 @@
         // 권한 변경 요청
         var formData = new FormData();
         formData.append('subsupervisor_permissions', permissions);
-        formData.append('edit_account_id', '{{ profile.id }}');
+        formData.append('id', '{{ profile.id }}');
 
-        var result = await fetch('/api/account?update=y', {
-            method: 'POST',
+        var success = await fetch('/api/account', {
+            method: 'PATCH',
             body: formData,
             headers: {
                 'X-CSRFToken': csrftoken
@@ -131,7 +140,7 @@
             });
 
         // 권한 변경 결과에 따른 처리
-        if (result == 'y') {
+        if (success) {
             await showAlert('권한 변경 완료', '권한이 성공적으로 변경되었습니다.', 'success');
             location.reload();
             return

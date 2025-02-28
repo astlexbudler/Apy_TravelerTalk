@@ -1,0 +1,98 @@
+<div class="modal fade" id="addNewLevel" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    새 레벨 정책 추가
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <form id="newLevelForm">
+
+                    <!-- 대표 이미지 -->
+                    <div class="mb-4">
+                        {% include 'components/other/upload_image.html' with label='배너 이미지' id='imageInput' %}
+                        <div class="alert alert-info small mt-2">
+                            <i class="fi fi-rr-info"></i> 레벨 뱃지 이미지를 업로드하면 텍스트는 표시되지 않습니다.
+                        </div>
+                    </div>
+
+                    <!-- 레벨 텍스트 및 필요 경험치량 -->
+                    <div class="row mb-4">
+                        <div class="form-group col-6">
+                            <label>레벨 텍스트</label>
+                            <input class="form-control" placeholder="레벨 텍스트를 입력하세요." id="levelText" name="text">
+                        </div>
+                        <div class="form-group col-6">
+                            <label>필요 경험치</label>
+                            <input type="number" class="form-control" placeholder="필요 경험치를 입력하세요." id="levelExp" name="exp">
+                        </div>
+                    </div>
+
+                    <!-- 레벨 텍스트 색상 -->
+                    <div class="form-group mb-4">
+                        <label>레벨 텍스트 색상</label>
+                        <input class="form-control" placeholder="레벨 텍스트 색상을 입력하세요." id="levelTextColor"
+                            name="text_color">
+                    </div>
+
+                    <!-- 레벨 배경 색상 -->
+                    <div class="form-group mb-4">
+                        <label>레벨 배경 색상</label>
+                        <input class="form-control" placeholder="레벨 배경 색상을 입력하세요." id="levelBackgroundColor"
+                            name="background_color">
+                    </div>
+
+                </form>
+
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary me-2" onclick="addNewLevel();">
+                    <i class="fi fi-rr-edit"></i> 추가하기
+                </button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal">
+                    취소
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    // 새 레벨 추가
+    addNewLevel = async () => {
+        const levelText = document.getElementById('levelText').value;
+        const levelTextColor = document.getElementById('levelTextColor').value;
+        const levelBackgroundColor = document.getElementById('levelBackgroundColor').value;
+        const levelImage = document.getElementById('imageInput').files;
+        const levelExp = document.getElementById('levelExp').value;
+
+        if (!levelText || !levelTextColor || !levelBackgroundColor) {
+            await showAlert('필수 입력값 누락', '레벨 텍스트, 텍스트 색상, 배경 색상은 필수 입력값입니다.', 'error');
+            return;
+        }
+
+        var formData = new FormData(document.getElementById('newLevelForm'));
+
+        var response = await fetch('{{supervisor_url}}/supervisor/level', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': csrftoken
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                return data.result;
+            });
+
+        if (response == 'success') {
+            await showAlert('레벨 정책 추가', '레벨 정책이 추가되었습니다.', 'success');
+            window.location.reload();
+        } else {
+            await showAlert('레벨 정책 추가 실패', '레벨 정책 추가에 실패했습니다.', 'error');
+        }
+    }
+</script>

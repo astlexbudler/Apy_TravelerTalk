@@ -226,11 +226,11 @@
         {% endif %}
         {% for search_account in accounts %}
         <div class="col-12 p-2 mb-2 border-bottom">
-          <a href="/profile?profile_id={{ search_account.id }}&tab=profileTab" target="_blank">
+          <a href="{{supervisor_url}}/supervisor/account/profile?account_id={{ search_account.id }}&tab=profileTab">
             <div style="display: flex; justify-content: space-between; white-space: nowrap;">
               <div style="display: inline-block; text-align: left;">
                 <span class="text-black-50" style="font-size: 14px;">
-                  <i class="fi fi-rr-user"></i> {{ search_account.id }} (
+                  <i class="fi fi-rr-user"></i> {{ search_account.username }} (
                   {% if 'supervisor' in search_account.account_type %}
                   관리자
                   {% elif 'subsupervisor' in search_account.account_type %}
@@ -255,7 +255,7 @@
 
                 </p>
                 <span class="text-black-50">
-                  <i class="fi fi-rr-calendar"></i> 가입일: {{ search_account.date_joined }} | 최근 접속일: {{ search_account.last_login }}
+                  <i class="fi fi-rr-calendar"></i> 가입일: {{ search_account.date_joined }} / 최근 접속일: {{ search_account.last_login }}
                 </span>
               </div>
               <div style="display: inline-block; text-align: right;">

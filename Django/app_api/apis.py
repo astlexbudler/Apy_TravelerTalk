@@ -347,9 +347,10 @@ class api_account(APIView):
         )
 
         # 활동 기록 생성
+        profile = daos.select_account(id)
         daos.create_account_activity(
             account_id=id,
-            message=f'[수정] {account["username"]}님의 정보가 수정되었습니다.'
+            message=f'[수정] {profile["username"]}님의 정보가 수정되었습니다.'
         )
 
         # 로그인 유지

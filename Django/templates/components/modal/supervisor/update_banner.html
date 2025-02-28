@@ -1,0 +1,90 @@
+<div class="modal fade" id="editBannerModal{{ banner.id }}" tabindex="-1" aria-labelledby="modalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    배너 수정하기
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <!-- 대표 이미지 -->
+                <div class="mb-4">
+                    <label>
+                        배너 이미지
+                    </label>
+                    <div id="imageInput{{ banner.id }}Preview" class="mb-3">
+                        <div class="mb-2 me-2 shadow-sm text-end p-2"
+                            style="min-width: 150px; width: 12vw; background: url('{{ banner.image }}') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw; cursor: pointer;">
+                        </div>
+                    </div>
+                    <a href="javascript: document.getElementById('imageInput{{ banner.id }}').click();" class="btn btn-success btn-sm small">
+                        <i class="fi fi-rr-picture"></i> 이미지 등록
+                    </a>
+                    <input type="file" class="d-none" id="imageInput{{ banner.id }}">
+                </div>
+                <script>
+                    // 대표 이미지 추가
+                    document.getElementById('imageInput{{ banner.id }}').addEventListener('change', async (e) => {
+                        const files = e.target.files;
+
+                        for (let i = 0; i < files.length; i++) {
+                            const file = files[i];
+                            const reader = new FileReader();
+                            reader.onload = (e) => {
+                                const imagePath = e.target.result;
+                                document.getElementById('imageInput{{ banner.id }}Preview').innerHTML = `
+                        <div class="mb-2 me-2 shadow-sm text-end p-2" style="min-width: 150px; width: 12vw; background: url('${imagePath}') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw; cursor: pointer;"></div>
+                        `;
+                            }
+                            reader.readAsDataURL(file);
+                        }
+                    });
+                </script>
+
+                <!-- 위치 및 사이즈 -->
+                <div class="row mb-4">
+                    <div class="form-group col-6">
+                        <label>위치</label>
+                        <select class="form-select" id="bannerLocation{{ banner.id }}">
+                            <option value="top"{% if banner.location == 'top' %} selected{% endif %}>상단</option>
+                            <option value="side"{% if banner.location == 'side' %} selected{% endif %}>측/하단</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-6">
+                        <label>크기</label>
+                        <select class="form-select" id="bannerSize{{ banner.id }}">
+                            <option value="full"{% if banner.size == 'full' %} selected{% endif %}>전체</option>
+                            <option value="half"{% if banner.size == 'half' %} selected{% endif %}>절반(상단 배너만 적용 가능)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- display weight -->
+                <div class="form-group mb-4">
+                    <label>노출 가중치</label>
+                    <input class="form-control" placeholder="노출 우선순위를 입력하세요." id="bannerDisplayWeight{{ banner.id }}"
+                        value="{{ banner.display_weight }}">
+                </div>
+
+                <!-- link -->
+                <div class="form-group mb-4">
+                    <label>링크</label>
+                    <input class="form-control" placeholder="링크를 입력하세요." id="bannerLink{{ banner.id }}"
+                        value="{{ banner.link }}">
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary me-2" onclick="editBanner('{{ banner.id }}');">
+                    <i class="fi fi-rr-edit"></i> 수정하기
+                </button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal">
+                    취소
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

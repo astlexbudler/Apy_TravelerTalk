@@ -39,10 +39,6 @@ class AppCoreConfig(AppConfig):
           value='/static/travelertalk/img/header.jpg'
         )
         models.SERVER_SETTING.objects.create(
-          name='background', # 배경 이미지
-          value='/static/travelertalk/img/background.png'
-        )
-        models.SERVER_SETTING.objects.create(
           name='company_info', # 회사 정보
           value='<p>관리자 페이지에서 회사 정보를 입력해주세요.</p>'
         )
@@ -111,7 +107,7 @@ class AppCoreConfig(AppConfig):
           tel='', # 연락처
           is_staff=True,
           is_superuser=True,
-          subsupervisor_permissions='user,post,coupon,message,banner,setting,ad', # 부관리자 권한
+          subsupervisor_permissions='user,post,travel,coupon,message,banner,level,setting', # 부관리자 권한
           level=level, # 레벨
         )
         supervisor.set_password('supervisor1!')

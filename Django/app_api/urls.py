@@ -28,6 +28,7 @@ from . import apis as a
 # - PATCH: update 쿠폰. code, title, content, image, expire_date, required_mileage, own_account_id, status를 받아 쿠폰 수정.
 
 
+
 urlpatterns = [
 
   # apis as a

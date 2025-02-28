@@ -15,16 +15,16 @@
 
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-primary" onclick="rewritePartnerName();"
-          data-bs-dismiss="modal">변경하기</button>
+        <button class="btn btn-primary me-2" onclick="rewritePartnerName();" data-bs-dismiss="modal">
+          <i class="fi fi-rr-edit"></i> 변경하기</button>
+        <button class="btn btn-secondary" data-bs-dismiss="modal">
+          취소
+        </button>
       </div>
     </div>
   </div>
 </div>
 <script>
-
-
-
 
   // 파트너 이름 변경
   var partnerNameOk = false;
@@ -52,9 +52,9 @@
     // 이름 변경 요청
     var formData = new FormData();
     formData.append('partner_name', newPartnerNameInput.value);
-    formData.append('edit_account_id', '{{ profile.id }}');
-    var result = await fetch('/api/account?update=y', {
-      method: 'POST',
+    formData.append('id', '{{ profile.id }}');
+    var success = await fetch('/api/account', {
+      method: 'PATCH',
       body: formData,
       headers: {
         'X-CSRFToken': csrftoken
@@ -67,7 +67,7 @@
       });
 
     // 이름 변경 결과에 따른 처리
-    if (result == 'y') {
+    if (success) {
       await showAlert('이름 변경 완료', '이름이 성공적으로 변경되었습니다.', 'success');
       location.reload();
       return

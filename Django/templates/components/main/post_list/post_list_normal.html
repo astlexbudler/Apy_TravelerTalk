@@ -36,10 +36,12 @@
 -->
 <a class="text-dark text-decoration-none" href="/post/post_view?post_id={{post.id}}&board_ids={{request.GET.board_ids}}">
     <div style="display: flex; white-space: nowrap;" class="mb-3 pb-3 border-bottom">
+        {% if post.image %}
         <div style="display: inline-block; text-align: left;">
-            <img src="/media/default.png" class="img-fluid rounded img-web shadow m-1"
+            <img src="{{post.image}}" class="img-fluid rounded img-web shadow m-1"
                 style="width: 6vw; min-width: 80px; max-width: 100px;">
         </div>
+        {% endif %}
         <div style="display: inline-block; text-align: left; flex: 1;">
             <div style="display: flex; justify-content: space-between; white-space: nowrap;">
                 <div style="display: inline-block; text-align: left;">

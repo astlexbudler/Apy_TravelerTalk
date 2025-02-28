@@ -1,0 +1,101 @@
+<div class="modal fade" id="addBannerModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    배너 생성하기
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <!-- 대표 이미지 -->
+                <div class="mb-4">
+                    {% include 'components/other/upload_image.html' with label='배너 이미지' id='imageInput' %}
+                </div>
+
+                <!-- 위치 및 사이즈 -->
+                <div class="row mb-4">
+                    <div class="form-group col-6">
+                        <label>위치</label>
+                        <select class="form-select" id="bannerLocation">
+                            <option value="top">상단</option>
+                            <option value="side">측/하단</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-6">
+                        <label>크기</label>
+                        <select class="form-select" id="bannerSize">
+                            <option value="full">전체</option>
+                            <option value="half">절반(상단 배너만 적용 가능)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- display weight -->
+                <div class="form-group mb-4">
+                    <label>노출 가중치</label>
+                    <input class="form-control" placeholder="노출 우선순위를 입력하세요." id="bannerDisplayWeight">
+                </div>
+
+                <!-- link -->
+                <div class="form-group mb-4">
+                    <label>링크</label>
+                    <input class="form-control" placeholder="링크를 입력하세요." id="bannerLink">
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary me-2" onclick="addBanner();">
+                    <i class="fi fi-rr-edit"></i> 생성하기
+                </button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal">
+                    취소
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    // 배너 생성
+    addBanner = async () => {
+        var image = document.getElementById('imageInput').files[0];
+        var location = document.getElementById('bannerLocation').value;
+        var link = document.getElementById('bannerLink').value;
+        var displayWeight = document.getElementById('bannerDisplayWeight').value;
+        var size = document.getElementById('bannerSize').value;
+
+        if (image == undefined | link == '' | displayWeight == '') {
+            await showAlert('필수 입력값 누락', '필수 입력값을 모두 입력해주세요.', 'error');
+            return;
+        }
+
+        var formData = new FormData();
+        formData.append('image', image);
+        formData.append('location', location);
+        formData.append('link', link);
+        formData.append('display_weight', displayWeight);
+        formData.append('size', size);
+
+        var response = await fetch('{{supervisor_url}}/supervisor/banner', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': csrftoken
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                return data.result;
+            });
+
+        if (response == 'success') {
+            await showAlert('배너 생성', '배너가 생성되었습니다.', 'success');
+            window.location.reload();
+        } else {
+            await showAlert('배너 생성 실패', '배너 생성에 실패했습니다.', 'error');
+        }
+    }
+
+</script>

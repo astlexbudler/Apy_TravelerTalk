@@ -243,7 +243,67 @@
 
         <!-- 여행지 게시글 형태 -->
         <div style="display: flex; justify-content: space-between; white-space: nowrap;">
-          {% include 'components/main/post_list/post_list_card.html' %}
+          <div class="col-6 col-lg-4 p-2">
+            <a class="text-dark text-decoration-none" href="{{supervisor_url}}/supervisor/travel/edit?post_id={{ post.id }}">
+                <div class="card hover-scale overflow-hidden shadow-sm">
+                    <div class="hover-scale-in blog-card-ratio ratio ratio-4x3">
+        
+                        <!-- 여행지 정보 상태가 'ad'인 경우, 베스트 업체로 표시 -->
+                         {% if post.place_info.status == 'ad' %}
+                        <span
+                            class="bg-primary px-3 py-1 position-absolute top-0 start-0 w-auto h-auto z-1 mt-2 ms-2 text-white fs-sm text-center"
+                            style="line-height: 16px;">
+                            베스트<br>업체
+                        </span>
+                        {% endif %}
+        
+                        <img class="blog-card-ratio-img card-img-top" src="{{post.image}}">
+                    </div>
+                    <div class="card-body">
+        
+                        <!-- 카테고리 -->
+                        <span class="text-black-50" style="font-size: 12px;">
+                            {% for category in post.place_info.categories %}
+                            {{ category.name }} {% if not forloop.last %} > {% endif %}
+                            {% endfor %}
+                        </span>
+        
+                        <!-- 제목 -->
+                        <h6 class="mb-4">
+                            {{ post.title }}
+                        </h6>
+        
+                        <!-- 주소 -->
+                        <p class="small text-black-50 mb-1">
+                            <i class="fi fi-rr-marker"></i> {{ post.place_info.location_info }}
+                        </p>
+        
+                        <!-- 오픈 정보 -->
+                        <p class="small text-black-50 mb-1">
+                            <i class="fi fi-rr-info"></i> {{ post.place_info.open_info }}
+                        </p>
+        
+                    </div>
+                    <div class="card-footer">
+        
+                        <!-- 댓글보기, 후기 검색, 정보 보기 버튼 -->
+                        <span
+                            class="btn btn-sm btn-outline-secondary small p-1 px-2">
+                            <i class="fi fi-rr-eye"></i> 상세
+                        </span>
+                        <span
+                            class="btn btn-sm btn-outline-secondary small p-1 px-2">
+                            <i class="fi fi-rr-star"></i> 후기
+                        </span>
+                        <span
+                            class="btn btn-sm btn-outline-secondary small p-1 px-2">
+                            <i class="fi fi-rr-comment"></i> 댓글
+                        </span>
+        
+                    </div>
+                </div>
+            </a>
+        </div>
           <div style="flex: 1; padding-left: 10px;">
             <div class="border rounded p-3 mt-2">
               <p>

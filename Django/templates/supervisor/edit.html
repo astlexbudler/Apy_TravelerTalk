@@ -1,0 +1,115 @@
+{% extends 'base/base_supervisor.html' %}
+{% block content %}
+<main class="container">
+
+  <div class="main-section">
+
+    <div style="min-height: calc(100vh - 160px);">
+
+
+      <!-- 페이지 타이틀 -->
+      {% include 'components/main/breadcrumbs.html' %}
+      {% with subtitle=board.name %}
+      {% include 'components/main/title_section.html' with title='게시글 수정' %}
+      {% endwith %}
+
+      <!-- 게시글 작성 폼 -->
+      <div class="mt-4">
+
+        <!-- 대표 이미지 -->
+        <div class="my-4">
+          {% include 'components/other/upload_image.html' with label='썸네일 이미지' id='imageInput' %}
+        </div>
+
+        <!-- 제목 -->
+        <div class="my-4">
+          <div class="form-group">
+            <label>제목</label>
+            <input class="form-control" id="title" placeholder="제목을 입력해 주세요.">
+          </div>
+        </div>
+
+        <!-- wysiwig 에디터 -->
+        <div class="my-4">
+          <div class="form-group">
+            <label>내용 편집기</label>
+            {% include 'components/main/editor.html' with id='content' height='500' %}
+          </div>
+        </div>
+
+        <!-- 작성하기 -->
+        <div class="my-5 text-end">
+          <a class="btn btn-primary" href="javascript: writePost()">
+            <i class="fi fi-rr-edit"></i> 글 작성
+          </a>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</main>
+<script>
+
+  // 대표 이미지 추가
+  document.getElementById('imageInput').addEventListener('change', async (e) => {
+    const files = e.target.files;
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const imagePath = e.target.result;
+        document.getElementById('imagePreview').innerHTML = `
+        <div class="mb-2 me-2 shadow-sm text-end p-2" style="min-width: 150px; width: 12vw; background: url('${imagePath}') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw;"></div>
+        `;
+      }
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // 게시글 작성
+  writePost = async () => {
+    const title = document.querySelector('#title').value;
+    const content = $('#content').summernote('code');
+
+    if (title.length < 2) {
+      showAlert('제목 오류', '제목이 너무 짧습니다. 2자 이상 작성해주세요.', 'error');
+      return;
+    }
+    if (content.length < 10) {
+      showAlert('내용 오류', '내용이 너무 짧습니다. 10자 이상 입력해주세요.', 'error');
+      return;
+    }
+
+    var formData = new FormData();
+    formData.append('title', title);
+    formData.append('content', content);
+    formData.append('review_post_id', '{{ request.GET.review_post_id }}');
+    if (document.getElementById('imageInput')) {
+      formData.append('image', document.getElementById('imageInput').files[0]); // 대표 이미지
+    }
+
+    await fetch('/post/write_post?board_ids={{request.GET.board_ids}}', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrftoken
+      },
+      body: formData,
+    })
+      .then(response => response.json())
+      .then(async (data) => {
+        if (data.result == 'success') {
+          await showAlert('게시글 작성 완료', '게시글이 성공적으로 작성되었습니다.', 'success');
+          window.location.href = '/post/post_view?post_id=' + data.post_id + '&board_ids={{request.GET.board_ids}}';
+        } else {
+          showAlert('게시글 작성 실패', '게시글 작성에 실패했습니다. 잠시 후 다시 시도해주세요.', 'error');
+        }
+      });
+  }
+
+</script>
+
+{% endblock %}

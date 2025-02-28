@@ -227,12 +227,12 @@
       {% endif %}
 
       {% for post in posts %}
-      <a class="text-dark text-decoration-none"
-        href="/post/post_view?post_id={{post.id}}&board_ids={{request.GET.board_ids}}">
+      <a class="text-dark text-decoration-none" href="{{supervisor_url}}/supervisor/post/edit?post_id={{post.id}}">
         <div style="display: flex; white-space: nowrap;" class="mb-3 pb-3 border-bottom">
           <div style="display: inline-block; text-align: left;">
-            <img src="/media/default.png" class="img-fluid rounded img-web shadow m-1"
-              style="width: 6vw; min-width: 80px; max-width: 100px;">
+            {% if post.image %}
+            <img src="{{post.image}}" class="img-fluid rounded img-web shadow m-1" style="width: 6vw; min-width: 80px; max-width: 100px;">
+            {% endif %}
           </div>
           <div style="display: inline-block; text-align: left; flex: 1;">
             <div style="display: flex; justify-content: space-between; white-space: nowrap;">

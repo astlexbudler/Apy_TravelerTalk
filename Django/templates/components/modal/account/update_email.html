@@ -1,0 +1,86 @@
+<div class="modal fade" id="rewriteEmailModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">파트너 이메일 변경</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <!-- partner email -->
+                <div class="form-group">
+                    <label>새 이메일</label> <small id="newPartnerEmailConfirmText"></small>
+                    <input type="email" class="form-control" placeholder="변경할 이메일을 입력해주세요." id="newPartnerEmail">
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary me-2" onclick="rewritePartnerEmail();" data-bs-dismiss="modal">
+                    <i class="fi fi-rr-edit"></i> 변경하기
+                </button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal">
+                    취소
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    // 파트너 이메일 변경
+    var emailOk = false;
+    var newPartnerEmailInput = document.getElementById('newPartnerEmail');
+    var newPartnerEmailConfirmText = document.getElementById('newPartnerEmailConfirmText');
+    newPartnerEmailInput.addEventListener('input', async () => {
+        var email = newPartnerEmailInput.value;
+        if (email.length < 5) {
+            newPartnerEmailConfirmText.innerHTML = '이메일은 5자리 이상이어야 합니다.';
+            newPartnerEmailConfirmText.classList.remove('text-success');
+            newPartnerEmailConfirmText.classList.add('text-danger');
+            emailOk = false;
+            return
+        }
+        if (email.indexOf('@') == -1 || email.indexOf('.') == -1) {
+            newPartnerEmailConfirmText.innerHTML = '이메일 형식이 올바르지 않습니다.';
+            newPartnerEmailConfirmText.classList.remove('text-success');
+            newPartnerEmailConfirmText.classList.add('text-danger');
+            emailOk = false;
+            return
+        }
+        newPartnerEmailConfirmText.innerHTML = '사용 가능한 이메일입니다.';
+        newPartnerEmailConfirmText.classList.remove('text-danger');
+        newPartnerEmailConfirmText.classList.add('text-success');
+        emailOk = true;
+    });
+
+    rewritePartnerEmail = async () => {
+        if (!emailOk) {
+            return;
+        }
+
+        // 이메일 변경 요청
+        var formData = new FormData();
+        formData.append('email', newPartnerEmailInput.value);
+        formData.append('id', '{{ profile.id }}');
+        var success = await fetch('/api/account', {
+            method: 'PATCH',
+            body: formData,
+            headers: {
+                'X-CSRFToken': csrftoken
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                return data.success;
+            });
+
+        // 이메일 변경 결과에 따른 처리
+        if (success) {
+            await showAlert('이메일 변경 완료', '이메일이 성공적으로 변경되었습니다.', 'success');
+            location.reload();
+            return
+        }
+        await showAlert('이메일 변경 실패', '이메일을 확인해주세요.', 'error');
+    }
+
+</script>

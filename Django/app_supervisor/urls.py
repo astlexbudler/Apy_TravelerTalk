@@ -5,7 +5,6 @@ from django.conf import settings
 from django.urls import include
 
 from . import views as v
-from app_user import views as user_v
 from app_api import apis as a
 
 urlpatterns = [
@@ -24,8 +23,12 @@ urlpatterns = [
   # 관리자 아이디 생성 기능 제공(최상위 관리자만 관리자 아이디 생성 가눙)
   # 사용자 정보 수정 기능 제공(사용자 비밀번호 덮어쓰기 기능 제공)
   path('supervisor/account', v.account, name='account'),
-  path('supervisor/account/profile', user_v.profile, name='profile'),
-  path('supervisor/account/activity', user_v.activity, name='activity'),
+
+  # 프로필
+  path('supervisor/account/profile', v.profile, name='profile'),
+
+  # 활동
+  path('supervisor/account/activity', v.activity, name='activity'),
 
   # 게시글 관리 페이지
   # 게시글 목록 및 게시글 삭제 기능 제공
@@ -33,11 +36,17 @@ urlpatterns = [
   # 간단하게 게시글 정보 조회
   path('supervisor/post', v.post, name='post'),
 
+  # 게시글 수정 페이지
+  path('supervisor/post/edit', v.post_edit, name='post_edit'),
+
   # 여행지 게시글 관리 페이지
   # 여행지 게시글 목록 및 여행지 게시글 삭제 기능 제공
   # 여행지 게시글 수정 페이지로 이동 가능
   # 간단하게 여행지 게시글 정보 조회
   path('supervisor/travel', v.travel, name='travel'),
+
+  # 여행지 게시글 수정 페이지
+  path('supervisor/travel/edit', v.travel_edit, name='travel_edit'),
 
   # 쿠폰 관리 페이지
   # 쿠폰 발행 및 관리. 쿠폰 사용 내역 확인 기능 제공
@@ -72,6 +81,8 @@ urlpatterns = [
   # 로그인 api
   # id, password => 'success'(성공 시) or 'pending'(승인 대기중인 아이디) or 'error'(실패 시)
   path('api/login', a.api_login, name='account_login'),
+
+
 
   # 로그아웃 api
   # 로그인 세션 삭제
@@ -114,6 +125,8 @@ urlpatterns = [
   # GET: 쿠폰 검색
   # POST-patch: 쿠폰 수정
   path('api/coupon', a.api_coupon.as_view(), name='coupon'),
+
+
 
   re_path('^static/(?P<path>.*)$', serve,{'document_root': settings.STATIC_ROOT}),
   re_path('^media/(?P<path>.*)$', serve,{'document_root': settings.MEDIA_ROOT}),

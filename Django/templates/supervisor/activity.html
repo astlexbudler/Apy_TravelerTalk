@@ -1,0 +1,127 @@
+{% extends 'base/base_supervisor.html' %}
+{% block content %}
+<main class="container">
+
+  <div class="main-section">
+
+    <div style="min-height: calc(100vh - 160px);">
+
+
+      <!-- 페이지 타이틀 -->
+      {% include 'components/main/breadcrumbs.html' %}
+      {% include 'components/main/title_section.html' with title='사용자 활동' subtitle='사용자의 활동 내역을 확인할 수 있습니다.' %}
+
+      <!-- 선택지 버튼 그룹 -->
+      <div class="btn-group w-100 d-flex">
+        <div class="w-100 d-flex justify-content-center rounded-2">
+          <a class="w-100 btn pastel-beige-background" href="{{supervisor_url}}/supervisor/account/profile?account_id={{request.GET.account_id}}&tab=profileTab" id="profileTab">
+              프로필
+          </a>
+        </div>
+        <div class="divider"></div>
+        <div class="w-100 d-flex justify-content-center rounded-2">
+          <a class="w-100 btn pastel-pink-background text-white" href="{{supervisor_url}}/supervisor/account/activity?account_id={{request.GET.account_id}}&tab=activityTab" id="activityTab">
+              활동 기록
+          </a>
+        </div>
+      </div>
+
+      <!-- 사용자 활동 내역 -->
+      <div class="mt-4">
+
+        <!-- 통계 -->
+        <div class="rounded border p-3 mb-5 shadow">
+          <p>
+            <i class="fi fi-rr-stats"></i> 통계
+          </p>
+          <table class="table table-bordered text-center">
+            <thead>
+              <tr>
+                <th>
+                  <p class="m-0">출석체크</p>
+                </th>
+                <th>
+                  <p class="m-0">후기 작성</p>
+                </th>
+                <th>
+                  <p class="m-0">게시글 작성</p>
+                </th>
+                <th>
+                  <p class="m-0">댓글 작성</p>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <span class="numberComma">
+                    {{status.check_count}}
+                  </span> 회
+                </td>
+                <td>
+                  <span class="numberComma">
+                    {{status.review_count}}
+                  </span> 회
+                </td>
+                <td>
+                  <span class="numberComma">
+                    {{status.post_count}}
+                  </span> 회
+                </td>
+                <td>
+                  <span class="numberComma">
+                    {{status.comment_count}}
+                  </span> 회
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 활동 기록 -->
+        <div class="mb-5" style="min-height: 300px;">
+          <h6 class="text-black-60 mb-3 pb-3 border-bottom">
+            사용자 활동
+          </h6>
+          {% for activity in activities %}
+          {% include 'components/main/account_activity.html' %}
+          {% endfor %}
+        </div>
+
+        <!-- 페이지네이션 영역 -->
+        {% include 'components/main/pagination.html' %}
+
+        <!-- 맨 위로 가기 버튼 -->
+        <div class="text-end">
+          {% include 'components/main/top_button.html' %}
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</main>
+
+<script>
+
+  window.addEventListener('load', () => {
+
+    // 페이지 로드 시 탭 선택 확인
+    window.addEventListener('load', () => {
+      const tab = '{{request.GET.tab}}';
+      if (!tab) {
+        location.href = '{{supervisor_url}}/supervisor/account/profile?account_id={{ request.GET.account_id }}&tab=activityTab';
+      }
+    });
+
+    // pagination
+    // 만약 contexts에서 lastpage를 받았고, pagination 컴포넌트가 있다면, 페이지네이션을 생성합니다.
+    if ('{{last_page}}' && document.querySelector('#pageButton')) {
+      makePaegeButton('{{request.GET.page}}', '{{last_page}}', `/message?search=`);
+    }
+  });
+</script>
+
+{% endblock %}
