@@ -6,6 +6,7 @@ from django.urls import include
 
 from . import views as v
 from app_user import views as user_v
+from app_api import apis as a
 
 urlpatterns = [
 
@@ -66,7 +67,54 @@ urlpatterns = [
   # 시스템 설정 정보 및 이용약관 본문 수정 가능.
   path('supervisor/setting', v.setting, name='setting'),
 
-  path('api', include('app_api.urls')),
+  # API
+  # apis as a
+  # 로그인 api
+  # id, password => 'success'(성공 시) or 'pending'(승인 대기중인 아이디) or 'error'(실패 시)
+  path('api/login', a.api_login, name='account_login'),
+
+  # 로그아웃 api
+  # 로그인 세션 삭제
+  path('api/logout', a.api_logout, name='account_logout'),
+
+  # 파일 업로드 api
+  # 파일을 업로드하고 업로드된 파일의 URL을 반환
+  path('api/upload', a.api_file_upload, name='upload'),
+
+  # 쿠폰 받기 api
+  # 쿠폰 코드를 받아 쿠폰을 받음
+  path('api/receive_coupon', a.api_receive_coupon, name='receive_coupon'),
+
+  # 게시글 좋아요 토글 api
+  # 게시글 id를 받아 좋아요 토글
+  path('api/like_post', a.api_like_post, name='like_post'),
+
+  # 게시글 삭제 api
+  # 게시글 id를 받아 게시글 삭제
+  path('api/delete_post', a.api_delete_post, name='delete_post'),
+
+  # 사용자 API
+  # POST-create: 사용자 정보 생성
+  # GET: 사용자 정보 검색
+  # POST-update: 사용자 정보 수정
+  path('api/account', a.api_account.as_view(), name='account'),
+
+  # 메세지 API
+  # POST: 메세지 발송
+  # GET: 메세지 읽음 처리
+  path('api/message', a.api_message.as_view(), name='message'),
+
+  # 댓글 API
+  # POST: 댓글 작성
+  # DELETE: 댓글 삭제
+  path('api/comment', a.api_comment.as_view(), name='comment'),
+
+  # 쿠폰 API
+  # POST-create: 쿠폰 생성
+  # GET: 쿠폰 검색
+  # POST-patch: 쿠폰 수정
+  path('api/coupon', a.api_coupon.as_view(), name='coupon'),
+
   re_path('^static/(?P<path>.*)$', serve,{'document_root': settings.STATIC_ROOT}),
   re_path('^media/(?P<path>.*)$', serve,{'document_root': settings.MEDIA_ROOT}),
 
