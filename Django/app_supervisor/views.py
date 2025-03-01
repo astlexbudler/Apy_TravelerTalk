@@ -1033,6 +1033,7 @@ def post(request):
         'image': '/media/' + str(post.image) if post.image else None,
         'view_count': post.view_count,
         'like_count': post.like_count,
+        'comment_count': models.COMMENT.objects.filter(post=post).count(),
         'created_at': datetime.datetime.strftime(post.created_at, '%Y-%m-%d %H:%M'),
         'search_weight': post.search_weight,
         'board': {
