@@ -81,6 +81,10 @@
                 <button class="btn btn-primary me-2" onclick="editBanner('{{ banner.id }}');">
                     <i class="fi fi-rr-edit"></i> 수정하기
                 </button>
+                <button class="btn btn-danger me-2" onclick="deleteBanner('{{ banner.id }}');"
+                data-bs-dismiss="modal">
+                <i class="fi fi-rr-trash"></i> 삭제하기
+            </button>
                 <button class="btn btn-secondary" data-bs-dismiss="modal">
                     취소
                 </button>

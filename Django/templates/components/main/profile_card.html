@@ -1,21 +1,21 @@
 <div class="border p-3 mb-5 shadow">
-    <a href="/profile?profile_id={{account_id}}" class="text-dark text-decoration-none">
+    <a href="/profile?profile_id={{profile_id}}" class="text-dark text-decoration-none">
         <div style="display: flex; justify-content: space-between; white-space: nowrap;">
             <div style="display: inline-block; text-align: left;">
                 <span class="text-black-50 me-1" style="font-size: 14px;">일반 회원</span>
                 <p>
-                    {{account.nickname}}
+                    {{profile.nickname}}
                 </p>
             </div>
             <div style="display: inline-block; text-align: right;">
                 <p class="m-0 text-end text-black-50">
-                    {% if account.status == 'active' %}
+                    {% if profile.status == 'active' %}
                     <span class="badge bg-success">정상</span>
-                    {% elif account.status == 'pending' %}
+                    {% elif profile.status == 'pending' %}
                     <span class="badge bg-warning">대기</span>
-                    {% elif account.status == 'blocked' %}
+                    {% elif profile.status == 'blocked' %}
                     <span class="badge bg-danger">정지</span>
-                    {% elif account.status == 'deleted' %}
+                    {% elif profile.status == 'deleted' %}
                     <span class="badge bg-secondary">탈퇴</span>
                     {% endif %}
                 </p>
@@ -26,29 +26,29 @@
         <div class="col-6">
             <p class="text-dark">
                 경험치 
-                {% if 'user' in  account.subsupervisor_permission %}
+                {% if 'user' in  account.subsupervisor_permissions %}
                 <a href="#" class="text-black-50"><i class="fi fi-rr-edit"></i></a>
                 {% endif %}
             </p>
             <p class="text-black-50">
                 <i class="fi fi-ss-coins"></i>
                 <span class="numberComma">
-                    {{account.exp}}
+                    {{profile.exp}}
                 </span> Exp
-                {% include 'components/other/level_badge.html' %}
+                {% include 'components/other/level_badge.html' with level=profile.level %}
             </p>
         </div>
         <div class="col-6">
             <p class="text-dark">
                 마일리지 
-                {% if 'user' in  account.subsupervisor_permission %}
+                {% if 'user' in  account.subsupervisor_permissions %}
                 <a href="#" class="text-black-50"><i class="fi fi-rr-edit"></i></a>
                 {% endif %}
             </p>
             <p class="text-black-50">
                 <i class="fi fi-ss-coins text-secondary"></i>
                 <span class="numberComma">
-                    {{account.mileage}}
+                    {{profile.mileage}}
                 </span> <small class="me-2">마일리지</small>
             </p>
         </div>

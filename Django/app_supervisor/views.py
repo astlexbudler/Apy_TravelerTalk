@@ -718,7 +718,7 @@ def account(request):
       'recent_ip': account.recent_ip,
       'level': {
         'level': account.level.level,
-        'image': account.level.image,
+        'image': '/media/' + account.level.image.url if account.level.image else None,
         'text': account.level.text,
         'text_color': account.level.text_color,
         'background_color': account.level.background_color,
@@ -1083,137 +1083,32 @@ def post_edit(request):
 
   # 게시글 수정
   if request.method == 'POST':
-    post_id = request.POST.get('post_id', '')
-    post_title = request.POST.get('post_title', '')
-    post_content = request.POST.get('post_content', '')
-    post_search_weight = request.POST.get('post_search_weight', '')
-    post_board_id = request.POST.get('post_board_id', '')
-    post_author_id = request.POST.get('post_author_id', '')
-    post_related_post_id = request.POST.get('post_related_post_id', '')
-    post_category_id = request.POST.get('post_category_id', '')
-    post_address = request.POST.get('post_address', '')
-    post_place_status = request.POST.get('post_place_status', '')
-    post_ad_start_at = request.POST.get('post_ad_start_at', '')
-    post_ad_end_at = request.POST.get('post_ad_end_at', '')
-    post_note = request.POST.get('post_note', '')
-    post_image = request.FILES.get('post_image', None)
-    post = models.POST.objects.get(id=post_id)
-    post.title = post_title
-    post.content = post_content
-    post.search_weight = post_search_weight
-    post.boards.clear()
-    post.boards.add(models.BOARD.objects.get(id=post_board_id))
-    post.author = models.ACCOUNT.objects.get(username=post_author_id)
-    post.related_post = models.POST.objects.get(id=post_related_post_id) if post_related_post_id else None
-    post.place_info = models.PLACE_INFO.objects.get(id=post_address) if post_address else None
-    post.save()
-    if post_image:
-      post.image = post_image
-      post.save()
-    if post_category_id:
-      post.categories.clear()
-      post.categories.add(models.CATEGORY.objects.get(id=post_category_id))
-    if post_place_status:
-      post.place_info.status = post_place_status
-      post.place_info.ad_start_at = post_ad_start_at
-      post.place_info.ad_end_at = post_ad_end_at
-      post.place_info
-      post.place_info.note = post_note
-      post.place_info.save()
+    daos.update_post(
+      post_id=request.GET['post_id'],
+      title=request.POST.get('title'),
+      content=request.POST.get('content'),
+      image=request.FILES.get('image', None),
+      search_weight=request.POST.get('search_weight'),
+      view_count=request.POST.get('view_count'),
+      like_count=request.POST.get('like_count'),
+    )
     return JsonResponse({'result': 'success'})
-  
+
+  # 게시글 삭제
+  if request.method == 'DELETE':
+    daos.delete_post(request.GET['post_id'])
+    return JsonResponse({'result': 'success'})
+
   # data
-  post_id = request.GET.get('post_id', '')
-  post = models.POST.objects.get(id=post_id)
-  categories = daos.make_category_tree()
-  boards = models.BOARD.objects.exclude(
-    Q(board_type='greeting') | Q(board_type='attendance')
-  ).prefetch_related('display_groups', 'enter_groups', 'write_groups', 'comment_groups').all().order_by('-display_weight')
-  board_dict = {
-    board.name: {
-      'id': board.id,
-      'name': board.name,
-      'board_type': board.board_type,
-      'total_views': int(math.fsum([post.view_count for post in models.POST.objects.filter(Q(boards__id__in=str(board.id)))])),
-      'total_posts': models.POST.objects.filter(Q(boards__id__in=str(board.id))).count(),
-      'level_cut': board.level_cut,
-      'display_weight': board.display_weight,
-      'display': [g.name for g in board.display_groups.all()],
-      'enter': [g.name for g in board.enter_groups.all()],
-      'write': [g.name for g in board.write_groups.all()],
-      'comment': [g.name for g in board.comment_groups.all()],
-      'children': [],
-    } for board in boards if not board.parent_board
-  }
-  for board in boards:
-    if board.parent_board:
-      if board_dict.get(board.parent_board.name):
-        board_dict[board.parent_board.name]['children'].append({
-          'id': board.id,
-          'name': board.name,
-          'board_type': board.board_type,
-          'total_views': int(math.fsum([post.view_count for post in models.POST.objects.filter(Q(boards__id__in=[board.id]))])),
-          'level_cut': board.level_cut,
-          'display_weight': board.display_weight,
-          'total_posts': models.POST.objects.filter(Q(boards__id__in=[board.id])).count(),
-          'display': [g.name for g in board.display_groups.all()],
-          'enter': [g.name for g in board.enter_groups.all()],
-          'write': [g.name for g in board.write_groups.all()],
-          'comment': [g.name for g in board.comment_groups.all()],
-          'children': [],
-        })
-      else:
-        loop = True
-        for key in board_dict.keys():
-          for child in board_dict[key]['children']:
-            if not loop:
-              break
-            if str(child['name']) == str(board.parent_board.name):
-              child['children'].append({
-                'id': board.id,
-                'name': board.name,
-                'board_type': board.board_type,
-                'total_views': int(math.fsum([post.view_count for post in models.POST.objects.filter(Q(boards__id__in=[board.id]))])),
-                'level_cut': board.level_cut,
-                'display_weight': board.display_weight,
-                'display': [g.name for g in board.display_groups.all()],
-                'enter': [g.name for g in board.enter_groups.all()],
-                'write': [g.name for g in board.write_groups.all()],
-                'comment': [g.name for g in board.comment_groups.all()],
-                'children': [],
-              })
-              loop = False
-            if loop:
-              for grandchild in child['children']:
-                if not loop:
-                  break
-                if str(grandchild['name']) == str(board.parent_board.name):
-                  grandchild['children'].append({
-                    'id': board.id,
-                    'name': board.name,
-                    'board_type': board.board_type,
-                    'total_views': int(math.fsum([post.view_count for post in models.POST.objects.filter(Q(boards__id__in=[board.id]))])),
-                    'total_posts': models.POST.objects.filter(Q(boards__id__in=[board.id])).count(),
-                    'level_cut': board.level_cut,
-                    'display_weight': board.display_weight,
-                    'display': [g.name for g in board.display_groups.all],
-                    'enter': [g.name for g in board.enter_groups.all()],
-                    'write': [g.name for g in board.write_groups.all()],
-                    'comment': [g.name for g in board.comment_groups.all()],
-                    'children': [],
-                  })
-                  loop = False
-  boards = []
-  for child in board_dict.keys():
-    boards.append(board_dict[child])
+  post_id = request.GET['post_id']
+  post = daos.select_post(post_id)
 
   return render(request, 'supervisor/edit.html', {
     **daos.get_urls(),
     'account': account,
     'server_settings': server_settings,
+
     'post': post,
-    'categories': categories,
-    'boards': boards,
   })
 
 # 여행지 게시글 관리 페이지
@@ -1233,51 +1128,39 @@ def travel(request):
 
   # 여행지 정보 수정 요청 처리
   if request.method == 'POST' and request.GET.get('modify_travel_info'):
-    print(request.POST.dict())
-    post_id = request.POST.get('post_id', '')
-    place_status = request.POST.get('place_status')
-    post_search_weight = request.POST.get('post_search_weight')
-    ad_start_at = request.POST.get('ad_start_at')
-    ad_end_at = request.POST.get('ad_end_at')
-    place_info_note = request.POST.get('place_info_note')
     daos.update_post(
-      post_id=post_id,
-      search_weight=post_search_weight,
+      post_id=request.GET['post_id'],
+      search_weight=request.POST.get('search_weight'),
     )
     daos.update_place_info(
-      post_id=post_id,
-      status=place_status,
-      ad_start_at=ad_start_at,
-      ad_end_at=ad_end_at,
-      note=place_info_note,
+      post_id=request.GET['post_id'],
+      status=request.POST.get('place_status'),
+      ad_start_at=request.POST.get('ad_start_at'),
+      ad_end_at=request.POST.get('ad_end_at'),
+      note=request.POST.get('note'),
     )
     return JsonResponse({'result': 'success'})
 
   # 새 카테고리 생성 요청 또는 카테고리 수정 요청 처리
   if request.method == 'POST' and request.GET.get('category'):
     category_id = request.POST.get('category_id')
-    category_name = request.POST.get('category_name')
-    parent_category_id = request.POST.get('parent_category_id')
-    display_weight = request.POST.get('category_weight')
     if category_id:
       daos.update_category(
         category_id=category_id,
-        parent_category_id=parent_category_id,
-        name=category_name,
-        display_weight=display_weight,
+        name=request.POST.get('name'),
+        display_weight=request.POST.get('display_weight'),
       )
     else:
       daos.create_category(
-        parent_category_id=parent_category_id,
-        name=category_name,
-        display_weight=display_weight,
+        parent_category_id=request.POST.get('parent_category_id'),
+        name=request.POST.get('name'),
+        display_weight=request.POST.get('display_weight'),
       )
     return JsonResponse({'result': 'success'})
 
   # 카테고리 삭제 요청 처리
   if request.method == 'DELETE' and request.GET.get('category'):
-    category_id = request.GET.get('category_id')
-    daos.delete_category(category_id)
+    daos.delete_category(request.GET.get('category_id'))
     return JsonResponse({'result': 'success'})
 
   # data
@@ -1285,27 +1168,9 @@ def travel(request):
   search_post_title = request.GET.get('post_title', '')
   search_board_id = request.GET.get('board_id', '')
   search_author_id = request.GET.get('author_id', '')
-  is_place_search = request.GET.get('is_place_search', 'n')
   search_category_id = request.GET.get('category_id', '')
   search_address = request.GET.get('address', '')
   place_status = request.GET.get('place_status', '')
-
-  # status
-  # 각 게시판 별 게시글 수와 댓글 수, 조회수, 좋아요 수 통계 제공
-
-  # 로그인 여부 확인
-  if not request.user.is_authenticated:
-    return redirect('/')
-  else:
-    account = daos.select_account_detail(request.user.id)
-    server_settings = {
-        'site_logo': daos.select_server_setting('site_logo'),
-        'service_name': daos.select_server_setting('service_name'),
-    }
-
-  # 권한 확인
-  if account['account_type'] not in ['supervisor', 'subsupervisor']:
-    return redirect('/')
 
   # 여행지 정보 수정 요청 처리
   if request.method == 'POST' and request.GET.get('modify_travel_info'):
@@ -1365,89 +1230,7 @@ def travel(request):
   place_status = request.GET.get('place_status', '')
 
   # status
-  # 각 게시판 별 게시글 수와 댓글 수, 조회수, 좋아요 수 통계 제공
   all_post = models.POST.objects.prefetch_related('boards').select_related('author', 'place_info', 'related_post').prefetch_related('place_info__categories').all()
-  boards = models.BOARD.objects.exclude(
-    Q(board_type='greeting') | Q(board_type='attendance')
-  ).prefetch_related('display_groups', 'enter_groups', 'write_groups', 'comment_groups').all().order_by('-display_weight')
-  board_dict = {
-    board.name: {
-      'id': board.id,
-      'name': board.name,
-      'board_type': board.board_type,
-      'total_views': int(math.fsum([post.view_count for post in models.POST.objects.filter(Q(boards__id__in=str(board.id)))])),
-      'total_posts': models.POST.objects.filter(Q(boards__id__in=str(board.id))).count(),
-      'level_cut': board.level_cut,
-      'display_weight': board.display_weight,
-      'display': [g.name for g in board.display_groups.all()],
-      'enter': [g.name for g in board.enter_groups.all()],
-      'write': [g.name for g in board.write_groups.all()],
-      'comment': [g.name for g in board.comment_groups.all()],
-      'children': [],
-    } for board in boards if not board.parent_board
-  }
-  for board in boards:
-    if board.parent_board:
-      if board_dict.get(board.parent_board.name):
-        board_dict[board.parent_board.name]['children'].append({
-          'id': board.id,
-          'name': board.name,
-          'board_type': board.board_type,
-          'total_views': int(math.fsum([post.view_count for post in models.POST.objects.filter(Q(boards__id__in=[board.id]))])),
-          'level_cut': board.level_cut,
-          'display_weight': board.display_weight,
-          'total_posts': models.POST.objects.filter(Q(boards__id__in=[board.id])).count(),
-          'display': [g.name for g in board.display_groups.all()],
-          'enter': [g.name for g in board.enter_groups.all()],
-          'write': [g.name for g in board.write_groups.all()],
-          'comment': [g.name for g in board.comment_groups.all()],
-          'children': [],
-        })
-      else:
-        loop = True
-        for key in board_dict.keys():
-          for child in board_dict[key]['children']:
-            if not loop:
-              break
-            if str(child['name']) == str(board.parent_board.name):
-              child['children'].append({
-                'id': board.id,
-                'name': board.name,
-                'board_type': board.board_type,
-                'total_views': int(math.fsum([post.view_count for post in models.POST.objects.filter(Q(boards__id__in=[board.id]))])),
-                'total_posts': models.POST.objects.filter(Q(boards__id__in=[board.id])).count(),
-                'level_cut': board.level_cut,
-                'display_weight': board.display_weight,
-                'display': [g.name for g in board.display_groups.all()],
-                'enter': [g.name for g in board.enter_groups.all()],
-                'write': [g.name for g in board.write_groups.all()],
-                'comment': [g.name for g in board.comment_groups.all()],
-                'children': [],
-              })
-              loop = False
-            if loop:
-              for grandchild in child['children']:
-                if not loop:
-                  break
-                if str(grandchild['name']) == str(board.parent_board.name):
-                  grandchild['children'].append({
-                    'id': board.id,
-                    'name': board.name,
-                    'board_type': board.board_type,
-                    'total_views': int(math.fsum([post.view_count for post in models.POST.objects.filter(Q(boards__id__in=[board.id]))])),
-                    'total_posts': models.POST.objects.filter(Q(boards__id__in=[board.id])).count(),
-                    'level_cut': board.level_cut,
-                    'display_weight': board.display_weight,
-                    'display': [g.name for g in board.display_groups.all],
-                    'enter': [g.name for g in board.enter_groups.all()],
-                    'write': [g.name for g in board.write_groups.all()],
-                    'comment': [g.name for g in board.comment_groups.all()],
-                    'children': [],
-                  })
-                  loop = False
-  boards = []
-  for child in board_dict.keys():
-    boards.append(board_dict[child])
 
   # 게시글 검색
   sps = all_post.filter(
@@ -1495,7 +1278,7 @@ def travel(request):
       search_posts.append({
         'id': post.id,
         'title': post.title,
-        'image': '/media/' + str(post.image) if post.image else '/media/default.png',
+        'image': '/media/' + str(post.image) if post.image else None,
         'view_count': post.view_count,
         'like_count': post.like_count,
         'created_at': datetime.datetime.strftime(post.created_at, '%Y-%m-%d'),
@@ -1510,7 +1293,10 @@ def travel(request):
           'partner_name': post.author.last_name, # 작성자 파트너 이름
         },
         'place_info': { # 여행지 게시글인 경우, 여행지 정보
-          'categories': [c.name for c in post.place_info.categories.all()],
+          'categories': [{
+            'id': c.id,
+            'name': c.name,
+          } for c in post.place_info.categories.all()],
           'address': post.place_info.address,
           'location_info': post.place_info.location_info,
           'open_info': post.place_info.open_info,
@@ -1524,6 +1310,7 @@ def travel(request):
       print(e)
 
   # 카테고리 정보
+  boards = daos.make_travel_board_tree()
   categories = daos.make_category_tree()
 
   return render(request, 'supervisor/travel.html', {
@@ -1534,6 +1321,7 @@ def travel(request):
     'posts': search_posts, # 검색된 게시글 정보
     'last_page': last_page, # 페이지 처리를 위해 필요한 정보
     'status': boards, # 게시판 별 통계 데이터. 게시판 별로 게시글 수, 댓글 수, 조회수, 좋아요 수 제공
+    'boards': boards, # 게시판 정보
     'categories': categories, # 카테고리 정보
   })
 
@@ -1554,128 +1342,29 @@ def travel_edit(request):
 
   # 여행지 게시글 수정
   if request.method == 'POST':
-    post_id = request.POST.get('post_id', '')
-    post_title = request.POST.get('post_title', '')
-    post_content = request.POST.get('post_content', '')
-    post_search_weight = request.POST.get('post_search_weight', '')
-    post_board_id = request.POST.get('post_board_id', '')
-    post_author_id = request.POST.get('post_author_id', '')
-    post_related_post_id = request.POST.get('post_related_post_id', '')
-    post_category_id = request.POST.get('post_category_id', '')
-    post_address = request.POST.get('post_address', '')
-    post_place_status = request.POST.get('post_place_status', '')
-    post_ad_start_at = request.POST.get('post_ad_start_at', '')
-    post_ad_end_at = request.POST.get('post_ad_end_at', '')
-    post_note = request.POST.get('post_note', '')
-    post_image = request.FILES.get('post_image', None)
-    post = models.POST.objects.get(id=post_id)
-    post.title = post_title
-    post.content = post_content
-    post.search_weight = post_search_weight
-    post.boards.clear()
-    post.boards.add(models.BOARD.objects.get(id=post_board_id))
-    post.author = models.ACCOUNT.objects.get(username=post_author_id)
-    post.related_post = models.POST.objects.get(id=post_related_post_id) if post_related_post_id else None
-    post.place_info = models.PLACE_INFO.objects.get(id=post_address) if post_address else None
-    post.save()
-    if post_image:
-      post.image = post_image
-      post.save()
-    if post_category_id:
-      post.categories.clear()
-      post.categories.add(models.CATEGORY.objects.get(id=post_category_id))
-    if post_place_status:
-      post.place_info.status = post_place_status
-      post.place_info.ad_start_at = post_ad_start_at
-      post.place_info.ad_end_at = post_ad_end_at
-      post.place_info.note = post_note
-      post.place_info.save()
+    daos.update_post(
+      post_id=request.GET['post_id'],
+      board_ids=request.POST.get('board_ids'),
+      title=request.POST.get('title'),
+      content=request.POST.get('content'),
+      image=request.FILES.get('image', None),
+      search_weight=request.POST.get('search_weight'),
+      view_count=request.POST.get('view_count'),
+      like_count=request.POST.get('like_count'),
+    )
+    daos.update_place_info(
+      post_id=request.GET['post_id'],
+      category_ids=request.POST.get('category_ids'),
+      location_info=request.POST.get('location_info'),
+      open_info=request.POST.get('open_info'),
+    )
     return JsonResponse({'result': 'success'})
-  
+
   # data
   post_id = request.GET.get('post_id', '')
-  post = models.POST.objects.get(id=post_id)
+  post = daos.select_post(post_id)
   categories = daos.make_category_tree()
-  boards = models.BOARD.objects.exclude(
-    Q(board_type='greeting') | Q(board_type='attendance')
-  ).prefetch_related('display_groups', 'enter_groups', 'write_groups', 'comment_groups').all().order_by('-display_weight')
-  board_dict = {
-    board.name: {
-      'id': board.id,
-      'name': board.name,
-      'board_type': board.board_type,
-      'total_views': int(math.fsum([post.view_count for post in models.POST.objects.filter(Q(boards__id__in=str(board.id)))])),
-      'total_posts': models.POST.objects.filter(Q(boards__id__in=str(board.id))).count(),
-      'level_cut': board.level_cut,
-      'display_weight': board.display_weight,
-      'display': [g.name for g in board.display_groups.all()],
-      'enter': [g.name for g in board.enter_groups.all()],
-      'write': [g.name for g in board.write_groups.all()],
-      'comment': [g.name for g in board.comment_groups.all()],
-      'children': [],
-    } for board in boards if not board.parent_board
-  }
-  for board in boards:
-    if board.parent_board:
-      if board_dict.get(board.parent_board.name):
-        board_dict[board.parent_board.name]['children'].append({
-          'id': board.id,
-          'name': board.name,
-          'board_type': board.board_type,
-          'total_views': int(math.fsum([post.view_count for post in models.POST.objects.filter(Q(boards__id__in=[board.id]))])),
-          'level_cut': board.level_cut,
-          'display_weight': board.display_weight,
-          'total_posts': models.POST.objects.filter(Q(boards__id__in=[board.id])).count(),
-          'display': [g.name for g in board.display_groups.all()],
-          'enter': [g.name for g in board.enter_groups.all()],
-          'write': [g.name for g in board.write_groups.all()],
-          'comment': [g.name for g in board.comment_groups.all()],
-          'children': [],
-        })
-      else:
-        loop = True
-        for key in board_dict.keys():
-          for child in board_dict[key]['children']:
-            if not loop:
-              break
-            if str(child['name']) == str(board.parent_board.name):
-              child['children'].append({
-                'id': board.id,
-                'name': board.name,
-                'board_type': board.board_type,
-                'total_views': int(math.fsum([post.view_count for post in models.POST.objects.filter(Q(boards__id__in=[board.id]))])),
-                'level_cut': board.level_cut,
-                'display_weight': board.display_weight,
-                'display': [g.name for g in board.display_groups.all()],
-                'enter': [g.name for g in board.enter_groups.all()],
-                'write': [g.name for g in board.write_groups.all()],
-                'comment': [g.name for g in board.comment_groups.all()],
-                'children': [],
-              })
-              loop = False
-            if loop:
-              for grandchild in child['children']:
-                if not loop:
-                  break
-                if str(grandchild['name']) == str(board.parent_board.name):
-                  grandchild['children'].append({
-                    'id': board.id,
-                    'name': board.name,
-                    'board_type': board.board_type,
-                    'total_views': int(math.fsum([post.view_count for post in models.POST.objects.filter(Q(boards__id__in=[board.id]))])),
-                    'total_posts': models.POST.objects.filter(Q(boards__id__in=[board.id])).count(),
-                    'level_cut': board.level_cut,
-                    'display_weight': board.display_weight,
-                    'display': [g.name for g in board.display_groups.all],
-                    'enter': [g.name for g in board.enter_groups.all()],
-                    'write': [g.name for g in board.write_groups.all()],
-                    'comment': [g.name for g in board.comment_groups.all()],
-                    'children': [],
-                  })
-                  loop = False
-  boards = []
-  for child in board_dict.keys():
-    boards.append(board_dict[child])
+  boards = daos.make_travel_board_tree()
 
   return render(request, 'supervisor/travel_edit.html', {
     **daos.get_urls(),
@@ -1759,7 +1448,7 @@ def coupon(request):
     coupons.append({
       'code': coupon.code,
       'name': coupon.name,
-      'image': coupon.image,
+      'image': '/media/' + str(coupon.image) if coupon.image else None,
       'content': coupon.content,
       'required_mileage': coupon.required_mileage,
       'expire_at': datetime.datetime.strftime(coupon.expire_at, '%Y-%m-%d'),
@@ -1847,7 +1536,7 @@ def message(request):
       'content': m.content,
       'is_read': m.is_read,
       'created_at': m.created_at,
-      'image': str(m.image) if m.image else None,
+      'image': '/media/' + str(m.image) if m.image else None,
       'include_coupon': {
         'code': m.include_coupon.code,
         'name': m.include_coupon.name,
@@ -1858,7 +1547,7 @@ def message(request):
         'partner_name': sd.last_name,
         'level': {
           'level': sd.level.level,
-          'image': sd.level.image,
+          'image': '/media/' + str(sd.level.image) if sd.level.image else None,
           'text': sd.level.text,
           'text_color': sd.level.text_color,
           'background_color': sd.level.background_color,
@@ -1912,7 +1601,7 @@ def message(request):
       'content': m.content,
       'is_read': m.is_read,
       'created_at': m.created_at,
-      'image': str(m.image) if m.image else None,
+      'image': '/media/' + str(m.image) if m.image else None,
       'include_coupon': {
         'code': m.include_coupon.code,
         'name': m.include_coupon.name,
@@ -1923,7 +1612,7 @@ def message(request):
         'partner_name': rc.last_name,
         'level': {
           'level': rc.level.level,
-          'image': rc.level.image,
+          'image': '/media/' + str(rc.level.image) if rc.level.image else None,
           'text': rc.level.text,
           'text_color': rc.level.text_color,
           'background_color': rc.level.background_color,
@@ -1996,7 +1685,7 @@ def banner(request):
       banners.append({
         'id': b.id,
         'location': b.location,
-        'image': '/media/' + str(b.image),
+        'image': '/media/' + str(b.image) if b.image else None,
         'link': b.link,
         'display_weight': b.display_weight,
         'size': 'full',
@@ -2005,7 +1694,7 @@ def banner(request):
       banners.append({
         'id': b.id,
         'location': b.location,
-        'image': '/media/' + str(b.image),
+        'image': '/media/' + str(b.image) if b.image else None,
         'link': b.link,
         'display_weight': b.display_weight,
         'size': b.size,

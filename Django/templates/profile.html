@@ -22,7 +22,7 @@
       <div class="mt-4">
 
         <!-- 프로필 카드 -->
-        {% include 'components/main/profile_card.html' with account=profile %}
+        {% include 'components/main/profile_card.html' %}
 
         <!-- 등급 정보 -->
         <div class="mb-5">
@@ -89,13 +89,13 @@
               </p>
               <p class="text-black-50">
                 {% if profile.status == 'active' %}
-                정상
+                <span class="badge bg-success">정상</span>
                 {% elif profile.status == 'pending' %}
-                가입 대기중
+                <span class="badge bg-warning">대기</span>
                 {% elif profile.status == 'blocked' %}
-                정지
+                <span class="badge bg-danger">정지</span>
                 {% elif profile.status == 'deleted' %}
-                탈퇴
+                <span class="badge bg-secondary">탈퇴</span>
                 {% endif %}
               </p>
             </div>

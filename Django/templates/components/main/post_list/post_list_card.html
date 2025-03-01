@@ -36,49 +36,53 @@
             <div class="hover-scale-in blog-card-ratio ratio ratio-4x3">
 
                 <!-- 여행지 정보 상태가 'ad'인 경우, 베스트 업체로 표시 -->
+                {% if post.place_info.status == 'ad' %}
                 <span
                     class="bg-primary px-3 py-1 position-absolute top-0 start-0 w-auto h-auto z-1 mt-2 ms-2 text-white fs-sm text-center"
                     style="line-height: 16px;">
                     베스트<br>업체
                 </span>
+                {% endif %}
 
-                <img class="blog-card-ratio-img card-img-top" src="/media/default.png">
+                <img class="blog-card-ratio-img card-img-top" src="{{post.image}}">
             </div>
             <div class="card-body">
 
                 <!-- 카테고리 -->
                 <span class="text-black-50" style="font-size: 12px;">
-                    서비스 > 관광
+                    {% for category in post.place_info.categories %}
+                    {{ category.name }} {% if not forloop.last %} > {% endif %}
+                    {% endfor %}
                 </span>
 
                 <!-- 제목 -->
                 <h6 class="mb-4">
-                    등록된 여행 정보 제목
+                    {{ post.title }}
                 </h6>
 
                 <!-- 주소 -->
                 <p class="small text-black-50 mb-1">
-                    <i class="fi fi-rr-marker"></i> 위치 정보 안내
+                    <i class="fi fi-rr-marker"></i> {{ post.place_info.location_info }}
                 </p>
 
                 <!-- 오픈 정보 -->
                 <p class="small text-black-50 mb-1">
-                    <i class="fi fi-rr-info"></i> 영업 정보 안내
+                    <i class="fi fi-rr-info"></i> {{ post.place_info.open_info }}
                 </p>
 
             </div>
             <div class="card-footer">
 
                 <!-- 댓글보기, 후기 검색, 정보 보기 버튼 -->
-                <a href="{{main_url}}/post/travel_view?post_id={{ post.id }}"
+                <a href="#"
                     class="btn btn-sm btn-outline-secondary small p-1 px-2">
                     <i class="fi fi-rr-eye"></i> 상세
                 </a>
-                <a href="{{main_url}}/post/review?search={{post.title}}"
+                <a href="#"
                     class="btn btn-sm btn-outline-secondary small p-1 px-2">
                     <i class="fi fi-rr-star"></i> 후기
                 </a>
-                <a href="{{main_url}}/post/travel_view?post_id={{ post.id }}"
+                <a href="#"
                     class="btn btn-sm btn-outline-secondary small p-1 px-2">
                     <i class="fi fi-rr-comment"></i> 댓글
                 </a>

@@ -41,7 +41,7 @@
               <div class="w-100 shadow-sm" style="height: 200px; background: black url('{{ banner.image }}') center/cover no-repeat;"></div>
             </a>
           </div>
-          {% include 'components/modal/supervisor/update_banner.html' with banner=banner %}
+          {% include 'components/modal/supervisor/update_banner.html' %}
           {% endfor %}
         </div>
 
@@ -111,6 +111,27 @@
       window.location.reload();
     } else {
       await showAlert('배너 수정 실패', '배너 수정에 실패했습니다.', 'error');
+    }
+  }
+
+  deleteBanner = async (id) => {
+    var response = await fetch('{{supervisor_url}}/supervisor/banner?id=' + id, {
+      method: 'DELETE',
+      headers: {
+        'X-CSRFToken': csrftoken
+      }
+    })
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        return data.result;
+      });
+
+    if (response == 'success') {
+      await showAlert('배너 삭제', '배너가 삭제되었습니다.', 'success');
+      window.location.reload();
+    } else {
+      await showAlert('배너 삭제 실패', '배너 삭제에 실패했습니다.', 'error');
     }
   }
 

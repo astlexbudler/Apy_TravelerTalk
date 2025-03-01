@@ -9,8 +9,8 @@
 
       <!-- 페이지 타이틀 -->
       {% include 'components/main/breadcrumbs.html' %}
-      {% with subtitle=board.name %}
-      {% include 'components/main/title_section.html' with title='게시글 수정' %}
+      {% with subtitle=post.title %}
+      {% include 'components/main/title_section.html' with title='게시글 정보 수정' %}
       {% endwith %}
 
       <!-- 게시글 작성 폼 -->
@@ -18,14 +18,49 @@
 
         <!-- 대표 이미지 -->
         <div class="my-4">
-          {% include 'components/other/upload_image.html' with label='썸네일 이미지' id='imageInput' %}
+          <div>
+            <label>
+                썸네일 이미지
+            </label>
+            <div id="imageInputPreview" class="mb-3">
+              <div class="mb-2 me-2 shadow-sm text-end p-2" style="min-width: 150px; width: 12vw; background: url('{{ post.image }}') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw;"></div>
+            </div>
+            <a href="javascript: document.getElementById('imageInput').click();" class="btn btn-success btn-sm small">
+                <i class="fi fi-rr-picture"></i> 이미지 등록
+            </a>
+            <input type="file" class="d-none" id="imageInput" multiple>
+        </div>
+        <script>
+            // 대표 이미지 추가
+            document.getElementById('imageInput').addEventListener('change', async (e) => {
+                const files = e.target.files;
+
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const imagePath = e.target.result;
+                        document.getElementById('imageInputPreview').innerHTML = `
+                <div class="mb-2 me-2 shadow-sm text-end p-2" style="min-width: 150px; width: 12vw; background: url('${imagePath}') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw; cursor: pointer;" onclick="deleteImage(this)"></div>
+                `;
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // 이미지 삭제
+            deleteImage = (element) => {
+                element.remove();
+                document.getElementById('imageInput').value = '';
+            }
+        </script>
         </div>
 
         <!-- 제목 -->
         <div class="my-4">
           <div class="form-group">
             <label>제목</label>
-            <input class="form-control" id="title" placeholder="제목을 입력해 주세요.">
+            <input class="form-control" id="title" placeholder="제목을 입력해 주세요." value="{{ post.title }}">
           </div>
         </div>
 
@@ -33,14 +68,57 @@
         <div class="my-4">
           <div class="form-group">
             <label>내용 편집기</label>
-            {% include 'components/main/editor.html' with id='content' height='500' %}
+            <textarea id="content">
+              {{ post.content|safe }}
+            </textarea>
+            <script>
+                // 아래 기능만 메뉴에 활성화
+                // 폰트 사이즈, 볼드, 이탤릭, 밑줄, 정렬, 테이블, 이미지, 구분선
+                $(document).ready(function () {
+                    $('#content').summernote({
+                        tabsize: 2,
+                        height: 500,
+                        toolbar: [
+                            ['fontsize', ['fontsize']],
+                            ['font', ['bold', 'italic', 'underline', 'clear']],
+                            ['para', ['paragraph']],
+                            ['table', ['table']],
+                            ['insert', ['hr', 'picture']],
+                        ]
+                    });
+                });
+            </script>
+          </div>
+        </div>
+
+        <!-- 게시글 정보 -->
+        <div class="my-4 row">
+          <div class="form-group col-4">
+            <label>검색 가중치</label>
+            <input class="form-control" value="{{ post.search_weight }}" id="search_weight">
+          </div>
+          <div class="form-group col-4">
+            <label>조회수</label>
+            <input class="form-control" value="{{ post.view_count }}" id="view_count">
+          </div>
+          <div class="form-group col-4">
+            <label>좋아요 수</label>
+            <input class="form-control" value="{{ post.like_count }}" id="like_count">
+          </div>
+          <div class="col-12 mt-2">
+            <div class="alert alert-info small">
+              <i class="fi fi-rr-info"></i> 검색 가중치는 리뷰 및 여행지 게시글의 검색 결제 우선 순위를 결정합니다.
+            </div>
           </div>
         </div>
 
         <!-- 작성하기 -->
         <div class="my-5 text-end">
-          <a class="btn btn-primary" href="javascript: writePost()">
-            <i class="fi fi-rr-edit"></i> 글 작성
+          <a class="btn btn-primary me-2" href="javascript: rewritePost()">
+            <i class="fi fi-rr-edit"></i> 글 수정
+          </a>
+          <a class="btn btn-danger" href="javascript: deletePost()">
+            <i class="fi fi-rr-trash"></i> 글 삭제
           </a>
         </div>
 
@@ -70,8 +148,8 @@
     }
   });
 
-  // 게시글 작성
-  writePost = async () => {
+  // 게시글 수정
+  rewritePost = async () => {
     const title = document.querySelector('#title').value;
     const content = $('#content').summernote('code');
 
@@ -87,12 +165,15 @@
     var formData = new FormData();
     formData.append('title', title);
     formData.append('content', content);
-    formData.append('review_post_id', '{{ request.GET.review_post_id }}');
+    formData.append('related_post_id', '{{ request.GET.related_post_id }}');
+    formData.append('search_weight', document.getElementById('search_weight').value);
+    formData.append('view_count', document.getElementById('view_count').value);
+    formData.append('like_count', document.getElementById('like_count').value);
     if (document.getElementById('imageInput')) {
       formData.append('image', document.getElementById('imageInput').files[0]); // 대표 이미지
     }
 
-    await fetch('/post/write_post?board_ids={{request.GET.board_ids}}', {
+    await fetch('{{supervisor_url}}/supervisor/post/edit?post_id={{ request.GET.post_id }}', {
       method: 'POST',
       headers: {
         'X-CSRFToken': csrftoken
@@ -102,10 +183,59 @@
       .then(response => response.json())
       .then(async (data) => {
         if (data.result == 'success') {
-          await showAlert('게시글 작성 완료', '게시글이 성공적으로 작성되었습니다.', 'success');
-          window.location.href = '/post/post_view?post_id=' + data.post_id + '&board_ids={{request.GET.board_ids}}';
+          await showAlert('게시글 수정 완료', '게시글이 성공적으로 수정되었습니다.', 'success');
+          window.location.href = '{{supervisor_url}}/supervisor/post';
         } else {
-          showAlert('게시글 작성 실패', '게시글 작성에 실패했습니다. 잠시 후 다시 시도해주세요.', 'error');
+          showAlert('게시글 수정 실패', '게시글 수정 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error');
+        }
+      });
+  }
+
+  // 게시글 삭제
+  deletePost = async () => {
+    var isDelete = await Swal.fire({
+      html: `
+      <div>
+        <div class="text-center py-4">
+          <h1 class="text-dark">게시글 삭제</h1>
+        </div>
+        <diV class="text-center">
+          <p class="text-black-50">
+            게시글을 삭제하시겠습니까? 삭제된 게시글은 복구할 수 없습니다.
+          </p>
+        </div>
+      </div>`,
+      icon: `warning`,
+      showConfirmButton: true,
+      confirmButtonText: `삭제하기`,
+      confirmButtonColor: `#f25767`,
+      showCancelButton: true,
+      cancelButtonText: `취소`,
+      cancelButtonColor: `#929ea8`
+    })
+      .then((result) => {
+        if (result.isConfirmed) {
+          return true;
+        }
+        return false;
+      });
+    if (!isDelete) {
+      return;
+    }
+
+    await fetch('{{supervisor_url}}/supervisor/post/edit?post_id={{ request.GET.post_id }}', {
+      method: 'DELETE',
+      headers: {
+        'X-CSRFToken': csrftoken
+      }
+    })
+      .then(response => response.json())
+      .then(async (data) => {
+        if (data.result == 'success') {
+          await showAlert('게시글 삭제 완료', '게시글이 성공적으로 삭제되었습니다.', 'success');
+          window.location.href = '{{supervisor_url}}/supervisor/post';
+        } else {
+          showAlert('게시글 삭제 실패', '게시글 삭제 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error');
         }
       });
   }

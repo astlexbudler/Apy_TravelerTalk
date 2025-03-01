@@ -633,8 +633,8 @@ def travel(request):
     **contexts,
     'boards': boards, # 게시판 정보
     'board': board, # 게시판 정보
-    #'posts': posts, # 게시글 정보
-    'last_page': 1, # 마지막 페이지
+    'posts': posts, # 게시글 정보
+    'last_page': last_page, # 마지막 페이지
     'categories': categories, # 카테고리 정보
     'category': category, # 카테고리 정보
   })

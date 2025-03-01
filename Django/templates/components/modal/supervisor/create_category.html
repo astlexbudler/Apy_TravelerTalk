@@ -44,8 +44,8 @@
         console.log(subCategoryParent, newCategoryName, newCategoryWeight);
         var formData = new FormData();
         formData.append('parent_category_id', subCategoryParent);
-        formData.append('category_name', newCategoryName);
-        formData.append('category_weight', newCategoryWeight);
+        formData.append('name', newCategoryName);
+        formData.append('display_weight', newCategoryWeight);
 
         // 생성 요청
         await fetch('{{supervisor_url}}/supervisor/post?category=y', {

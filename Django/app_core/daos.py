@@ -630,7 +630,7 @@ def select_all_levels():
     # 딕셔너리 형태로 포멧
     levels_data = [{
         'level': level.level,
-        'image': level.image,
+        'image': '/media/' + str(level.image) if level.image else None,
         'text': level.text,
         'text_color': level.text_color,
         'background_color': level.background_color,
@@ -822,7 +822,7 @@ def select_account_bookmarked_posts(account_id):
         } for board in post.boards.all()],
         'board_ids': [board.id for board in post.boards.all()],
         'title': post.title,
-        'image': post.image,
+        'image': '/media/' + str(post.image) if post.image else None,
         'view_count': post.view_count,
         'like_count': post.like_count,
         'created_at': post.created_at,
@@ -879,10 +879,11 @@ def select_post(post_id):
         'board_ids': [board.id for board in post.boards.all()],
         'title': post.title,
         'content': post.content,
-        'image': post.image,
+        'image': '/media/' + str(post.image) if post.image else None,
         'view_count': post.view_count,
         'like_count': post.like_count,
         'created_at': post.created_at,
+        'search_weight': post.search_weight,
         'comment_count': models.COMMENT.objects.filter(post=post).count(),
     }
 
@@ -1317,7 +1318,7 @@ def select_all_coupons(code=None, name=None, status=None):
         } if coupon.related_post else None,
         'name': coupon.name,
         'content': coupon.content,
-        'image': coupon.image,
+        'image': '/media/' + str(coupon.image) if coupon.image else None,
         'expire_at': coupon.expire_at,
         'required_mileage': coupon.required_mileage,
         'own_account': {
@@ -1372,7 +1373,7 @@ def select_created_coupons(account_id, status=None):
         } if coupon.related_post else None,
         'name': coupon.name,
         'content': coupon.content,
-        'image': coupon.image,
+        'image': '/media/' + str(coupon.image) if coupon.image else None,
         'expire_at': coupon.expire_at,
         'required_mileage': coupon.required_mileage,
         'own_account': {
@@ -1440,7 +1441,7 @@ def select_owned_coupons(account_id, status=None, page=1):
         } if coupon.related_post else None,
         'name': coupon.name,
         'content': coupon.content,
-        'image': coupon.image,
+        'image': '/media/' + str(coupon.image) if coupon.image else None,
         'expire_at': coupon.expire_at,
         'required_mileage': coupon.required_mileage,
         'own_account': {
@@ -1627,7 +1628,7 @@ def select_message(message_id):
         'to_account': to_account,
         'title': message.title,
         'content': message.content,
-        'image': message.image,
+        'image': '/media/' + str(message.image) if message.image else None,
         'include_coupon': {
             'code': message.include_coupon_code,
             'name': message.include_coupon.name,
@@ -1696,7 +1697,7 @@ def select_received_messages(account_id, page=1):
             'sender_account': from_account,
             'title': message.title,
             'content': message.content,
-            'image': message.image,
+            'image': '/media/' + str(message.image) if message.image else None,
             'include_coupon': {
                 'code': message.include_coupon_code,
                 'name': message.include_coupon.name,
@@ -1766,7 +1767,7 @@ def select_sent_messages(account_id, page=1):
                 'to_account': to_account,
                 'title': message.title,
                 'content': message.content,
-                'image': message.image,
+                'image': '/media/' + str(message.image) if message.image else None,
                 'include_coupon': {
                     'code': message.include_coupon_code,
                     'name': message.include_coupon.name,
@@ -1909,7 +1910,7 @@ def select_banners():
         if banner.location == 'top':
             banner_data['top'].append({
                 'id': banner.id,
-                'image': banner.image,
+                'image': '/media/' + str(banner.image) if banner.image else None,
                 'link': banner.link,
                 'display_weight': banner.display_weight,
                 'location': banner.location,
@@ -1918,7 +1919,7 @@ def select_banners():
         else:
             banner_data['side'].append({
                 'id': banner.id,
-                'image': banner.image,
+                'image': '/media/' + str(banner.image) if banner.image else None,
                 'link': banner.link,
                 'display_weight': banner.display_weight,
                 'location': banner.location,
