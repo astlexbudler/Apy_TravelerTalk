@@ -1,155 +1,102 @@
-{% extends 'base/main_base.html' %}
+{% extends 'base/base.html' %}
 {% block content %}
-<!-- 왼쪽 사이드바 -->
-<aside class="d-none d-lg-block" style="width: 320px;">
-  {% include 'parts/left_aside_main.html' %}
-</aside>
+<main class="container" style="display: flex; align-items: flex-start;">
 
-<!-- 중앙 섹션 -->
-<section class="main-section px-5 px-lg-1" style="flex: 1; min-height: 100vh;">
+  <!-- 왼쪽 사이드바 -->
+  {% include 'components/aside/aside_left.html' %}
 
-  <!-- 제목 -->
-  <div class="mt-4 mb-5">
-    {% include 'parts/goback.html' %}
+  <div class="main-section px-5" style="flex: 1;">
 
-    <div style="display: flex; justify-content: space-between; white-space: nowrap;">
-      <div style="display: inline-block; text-align: left;">
-        <p class="mt-5">
-          {% for board in post.boards %}
-          {{ board.name }} {% if forloop.counter < post.boards|length  %} &gt; {% endif %}
-          {% endfor %}
-        </p>
-        <h5>
-          {{post.title}}
-          {% if account.id == post.author.id %}
-          <a href="/partner/rewrite_post" class="text-black-50 small">
-            <i class="fi fi-rr-edit"></i>
-          </a>
-          {% endif %}
-        </h5>
-        <p class="small mt-1">
-          <span>
-            <i class="fi fi-rr-calendar"></i> {{ post.created_at }}
-          </span>
-          <span class="ms-3">
-            <i class="fi fi-rr-user"></i> {{ post.author.partner_name }}
-          </span>
-        </p>
+    <div style="min-height: 300px;">
+
+      <!-- 페이지 타이틀 -->
+      {% include 'components/main/breadcrumbs.html' %}
+      <div class="mb-5 pb-2 border-bottom">
+        <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+          <div style="display: inline-block; text-align: left;">
+            <h5 class="text-black-60">
+              {{post.title}}
+            </h5>
+            <p class="small text-black-50">
+              {% for board in post.boards %}
+              {{ board.name }} {% if forloop.counter < post.boards|length %} &gt; {% endif %} {% endfor %} </p>
+          </div>
+          <div style="display: inline-block; text-align: right;">
+            <p class="m-0 text-end text-black-50" style="font-size: 14px;">
+              <span class="me-1" style="white-space: nowrap;">
+                <i class="fi fi-rr-eye"></i> {{ post.view_count }}
+              </span>
+              <span class="me-1" style="white-space: nowrap;">
+                <i class="fi fi-rr-comment-alt-dots"></i> {{ comments|length }}
+              </span>
+            </p>
+            <a href="javascript: scrollToComment()"
+              class="btn btn-sm btn-success mt-2 p-1 px-2">
+              <i class="fi fi-rr-comment-alt-dots"></i> 댓글 바로가기
+            </a>
+            {% if post.author.id != account.id %}
+            {% if bookmarkable %}
+            <a href="javascript: bookmark()"
+              class="btn btn-sm btn-success mt-2 p-1 px-2">
+              <i class="fi fi-rr-star"></i> 즐겨찾기
+            </a>
+            {% else %}
+            <a href="javascript: bookmark()"
+              class="btn btn-sm btn-success mt-2 p-1 px-2">
+              <i class="fi fi-rr-star-filled"></i> 즐겨찾기 해제
+            </a>
+            {% endif %}
+            <a href="{{main_url}}/post/review?search={{post.title}}"
+              class="btn btn-sm btn-primary mt-2 p-1 px-2">
+              <i class="fi fi-rr-star"></i> 후기검색
+            </a>
+            <a href="/post/write_post?review_post_id={{ post.id }}"
+              class="btn btn-sm btn-primary mt-2 p-1 px-2">
+              <i class="fi fi-rr-comment-alt-dots"></i> 후기 작성
+            </a>
+            {% endif %}
+          </div>
+        </div>
       </div>
-      <div style="display: inline-block; text-align: right;">
-        <p class="m-0 text-end text-black-50" style="font-size: 14px;">
-          <span class="me-1" style="white-space: nowrap;">
-            <i class="fi fi-rr-eye"></i> {{ post.view_count }}
-          </span>
-          <span class="me-1" style="white-space: nowrap;">
-            <i class="fi fi-rr-comment-alt-dots"></i> {{ comments|length }}
-          </span>
-        </p>
-        <a href="javascript: scrollToComment()"
-          class="btn btn-sm btn-success mt-2 p-1 px-2">
-          <i class="fi fi-rr-comment-alt-dots"></i> 댓글 바로가기
-        </a>
-        {% if post.author.id != account.id %}
-        {% if bookmarkable %}
-        <a href="javascript: bookmark()"
-          class="btn btn-sm btn-success mt-2 p-1 px-2">
-          <i class="fi fi-rr-star"></i> 즐겨찾기
-        </a>
-        {% else %}
-        <a href="javascript: bookmark()"
-          class="btn btn-sm btn-success mt-2 p-1 px-2">
-          <i class="fi fi-rr-star-filled"></i> 즐겨찾기 해제
-        </a>
-        {% endif %}
-        <a href="{{main_url}}/post/review?search={{post.title}}"
-          class="btn btn-sm btn-primary mt-2 p-1 px-2">
-          <i class="fi fi-rr-star"></i> 후기검색
-        </a>
-        <a href="/post/write_post?review_post_id={{ post.id }}"
-          class="btn btn-sm btn-primary mt-2 p-1 px-2">
-          <i class="fi fi-rr-comment-alt-dots"></i> 후기 작성
-        </a>
-        {% endif %}
+
+      <!-- 게시글 내용 -->
+      <div class="my-4">
+        <div style="min-height: 200px;">
+          {{post.content|safe}}
+        </div>
       </div>
-    </div>
-  </div>
 
-  <!-- 게시글 내용 -->
-  <div class="my-4">
-    <div style="min-height: 200px;">
-      <div id="viewer"></div>
-    </div>
-  </div>
+      <!-- 댓글 작성 폼 -->
+      {% with commentable=true comment_form_title='댓글' placeholder='댓글을 작성해주세요.' button_text='<i class="fi fi-rr-edit"></i> 댓글 작성' commentable=commentable %}
+      {% include 'components/main/post_view/comment/comment_form.html' %}
+      {% endwith %}
 
-  <!-- 댓글 작성 -->
-  <div class="mt-5 mb-3 pb-3 border-bottom">
-    <div class="d-flex w-100">
-      <div class="d-flex w-100">
-        <p class="text-dark">
-          댓글
-        </p>
-      </div>
-      <div class="d-flex w-100 flex-row-reverse">
-        <p class="m-0 text-end text-black-50" style="font-size: 14px;">
-          <span class="me-1" style="white-space: nowrap;">
-            <i class="fi fi-rr-eye"></i> {{ post.view_count }}
-          </span>
-          <span class="me-1" style="white-space: nowrap;">
-            <i class="fi fi-rr-comment-alt-dots"></i> {{ comments|length }}
-          </span>
-          <span class="me-1" style="white-space: nowrap;">
-            <i class="fi fi-rr-social-network"></i> {{ post.like_count }}
-          </span>
-        </p>
-      </div>
-    </div>
-    <textarea id="commentInput" class="form-control" rows="3"
-      placeholder="건전한 인터넷 문화 조성을 위해 댓글 작성 시 주의해주세요.">
-    </textarea>
-    {% if commentable %}
-    <button class="btn mt-4 btn-primary" onclick="writeComment('{{ post.id }}', document.getElementById('commentInput').value);">
-      댓글 작성
-    </button>
-    {% else %}
-    <button class="btn btn-primary mt-4" disabled>댓글 작성</button>
-    {% endif %}
-
-  </div>
-
-  <!-- 댓글 목록 -->
-  <ul class="list-unstyled mt-5" id="commentUl">
-    {% if comments|length < 1 %} <li>
+      <!-- 댓글 목록 -->
+      {% if comments|length == 0 %}
       <p>
-        댓글이 없습니다.
+        아직 댓글이 없습니다.
       </p>
-      </li>
-      {% else %}
-      {% for comment in comments %}
-      {% include 'parts/comment_list.html' %}
-      {% endfor %}
       {% endif %}
-  </ul>
+      <ul class="list-unstyled mt-3">
+        {% for comment in comments %}
+        {% include 'components/main/post_view/comment/comment_list.html' %}
+        {% endfor %}
+      </ul>
 
-</section>
+      <!-- 맨 위로 가기 버튼 -->
+      <div class="text-end">
+        {% include 'components/main/top_button.html' %}
+      </div>
 
-<!-- 오른쪽 사이드바 -->
-<aside class="d-none d-lg-block" style="width: 320px;">
-  {% include 'parts/right_aside_main.html' %}
-</aside>
+    </div>
 
-<script src="https://cdn.jsdelivr.net/npm/xzoom/dist/xzoom.min.js"></script>
+  </div>
+
+  <!-- 오른쪽 사이드바 -->
+  {% include 'components/aside/aside_right.html' %}
+
+</main>
 <script>
-
-  window.onload = () => {
-    console.log(`Window loaded at ${getNowDatetimeString()}`);
-  }
-
-  const viewer = new toastui.Editor.factory({
-    el: document.querySelector('#viewer'),
-    viewer: true,
-    height: '500px',
-    initialValue: `{{ post.content|safe }}`,
-  });
 
   bookmark = async () => {
     // 북마크 토글 요청

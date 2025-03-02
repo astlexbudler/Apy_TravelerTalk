@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ko" data-bs-theme="light">
+{% load static %}
+{% csrf_token %}
+
+<!--
+    ==================================================
+    * Template Name: main_base.html
+    * 이 페이지는 기본적인 페이지들의 기본 레이아웃을 정의합니다.
+-->
+
+<head>
+
+    <meta name="robots" content="noindex, nofollow">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>
+        {{server.server_name}} 관리자
+    </title>
+
+    <!-- FAVICON
+    ================================================== -->
+    <link rel="icon" type="image/png" href="/static/travelertalk/img/icon.png">
+    <link rel="favicon" type="image/png" href="/static/travelertalk/img/icon.png">
+
+    <!-- CSS
+    ================================================== -->
+    <link href="/static/travelertalk/css/style.css" rel="stylesheet">
+    <link href="/static/travelertalk/css/custom.css" rel="stylesheet">
+    <link rel='stylesheet' href='/static/travelertalk/css/calendarwidget.css'>
+    <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-rounded/css/uicons-regular-rounded.css'>
+    <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/2.6.0/uicons-brands/css/uicons-brands.css'>
+    <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/2.6.0/uicons-bold-straight/css/uicons-bold-straight.css'>
+    <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-straight/css/uicons-regular-straight.css'>
+    <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/2.6.0/uicons-solid-rounded/css/uicons-solid-rounded.css'>
+    <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/2.6.0/uicons-solid-straight/css/uicons-solid-straight.css'>
+    <link href="/static/travelertalk/summernote/summernote-bs5.css" rel="stylesheet">
+
+    <!-- JS
+    ================================================== -->
+    <script src="/static/travelertalk/vendor/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/travelertalk/vendor/swiper/swiper-bundle.min.js"></script>
+    <script src="/static/travelertalk/vendor/timezz/timezz.js"></script>
+    <script src="/static/travelertalk/js/theme.js"></script>
+    <script src="/static/travelertalk/js/color-modes.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/static/travelertalk/js/custom.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+    <script src="/static/travelertalk/js/calendarwidget.js"></script>
+    <script src="/static/travelertalk/summernote/summernote-bs5.js"></script>
+
+</head>
+
+<body style="word-break: keep-all;" class="theme-light bg-light">
+
+    <!-- PAGE LOADING -->
+    {% include 'components/other/loading.html' %}
+
+    <!-- MAIN WRAPPER
+    ================================================== -->
+    <div class="wrapper">
+
+        <!-- HEADER -->
+        {% include 'components/header/header_partner.html' %}
+
+        <!-- MAIN SECTION
+        ================================================== -->
+        <!-- 아래 부분은 각 페이지에서 오버라이딩 됩니다. -->
+        {% block content %}{% endblock %}
+
+    </div>
+    <script>
+        window.addEventListener('load', (event) => {
+            console.log(`Window loaded at ${getNowDatetimeString()}`);
+
+            // numberComma
+            // numberComma 클래스가 포함된 요소의 텍스트를 숫자로 변환 후 콤마를 추가합니다.
+            // 예: 1000 => 1,000
+            document.querySelectorAll('.numberComma').forEach(element => {
+                element.innerHTML = element.innerHTML.replace(/[^0-9]/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            });
+        });
+    </script>
+
+</body>
+
+</html>

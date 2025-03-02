@@ -13,13 +13,10 @@
                 <div class="form-group mb-4">
                     <label>광고 상태</label>
                     <select class="form-control" id="{{ post.id }}adStatus">
-                        <option value="active" {% if post.place_info.status == 'active' %}selected{% endif %}>광고 없음
-                        </option>
-                        <option value="ad" {% if post.place_info.status == 'ad' %}selected{% endif %}>광고중</option>
-                        <option value="blocked" {% if post.place_info.status == 'blocked' %}selected{% endif %}>숨김
-                        </option>
-                        <option value="writing" {% if post.place_info.status == 'writing' %}selected{% endif %}>작성중
-                        </option>
+                        <option value="ad" {% if post.place_info.status == 'ad' %}selected{% endif %}>광고</option>
+                        <option value="pending" {% if post.place_info.status == 'pending' %}selected{% endif %}>광고 요청</option>
+                        <option value="active" {% if post.place_info.status == 'active' %}selected{% endif %}>게시</option>
+                        <option value="writing" {% if post.place_info.status == 'writing' %}selected{% endif %}>숨김</option>
                     </select>
                 </div>
 

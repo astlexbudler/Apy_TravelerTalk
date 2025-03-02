@@ -15,8 +15,8 @@
             <!-- 헤더 상단 메뉴 -->
             <div style="display: flex; justify-content: space-between; white-space: nowrap;">
                 <div style="display: inline-block; text-align: left;">
-                    <a class="text-black-50 small me-3" style="white-space: nowrap;" href="{{supervisor_url}}/supervisor/supervisor">
-                        <i class="fi fi-rr-home"></i> 관리자 메인
+                    <a class="text-black-50 small me-3" style="white-space: nowrap;" href="{{PARTNER_URL}}/partner/partner">
+                        <i class="fi fi-rr-home"></i> 파트너 메인
                     </a>
                 </div>
                 <div style="display: inline-block; text-align: right;">
@@ -32,7 +32,7 @@
                     <div style="width: 80px; height: 80px;">
 
                         <!-- 로고 -->
-                        <a href="{{supervisor_url}}/supervisor/supervisor">
+                        <a href="{{PARTNER_URL}}/partner/partner">
                             <img class="logo-dark" src="/static/travelertalk/img/icon.png">
                             <img class="logo-light" src="/static/travelertalk/img/icon.png">
                         </a>
@@ -70,7 +70,7 @@
 
                                 </div>
                                 <div class="offcanvas-body">
-                                    {% include 'components/header/menu_supervisor.html' %}
+                                    {% include 'components/header/menu_partner.html' %}
                                 </div>
 
                             </div>

@@ -1,17 +1,69 @@
-<!--
-    menu_partner.html
-    이 컴포넌트는 푸터에 들어갈 사용자 페이지의 링크를 구성합니다.
+<div style="flex: 1; display: inline-block; text-align: left;">
+    <div class="row ps-5">
+        <div class="col-6 col-md-3 mb-4">
+            <h6 class="text-black-60">
+                메인
+            </h6>
+            <ul class="list-unstyled m-0">
+                <li class="mb-1">
+                    <a href="/" class="small text-black-50">메인 페이지</a>
+                </li>
+                <li class="mb-1">
+                    <a href="{{main_url}}/signup" class="small text-black-50">회원가입</a>
+                </li>
+                <li class="mb-1">
+                    <a href="{{main_url}}/terms" class="small text-black-50">이용약관</a>
+                </li>
+            </ul>
+        </div>
+        <div class="col-6 col-md-3 mb-4">
+            <h6 class="text-black-60">
+                사용자
+            </h6>
+            <ul class="list-unstyled m-0">
+                <li class="mb-1">
+                    <a href="{{main_url}}/profile" class="small text-black-50">프로필</a>
+                </li>
+                <li class="mb-1">
+                    <a href="{{main_url}}/activity" class="small text-black-50">활동</a>
+                </li>
+                <li class="mb-1">
+                    <a href="{{main_url}}/bookmark" class="small text-black-50">즐겨찾기</a>
+                </li>
 
-    1. 사용자 페이지로 이동하는 링크가 포함됩니다.
-    링크 목록
-    - {{main_url}}: 메인 페이지
-    - {{main_url}}/signup: 회원가입
-    - {{main_url}}/find_account: 계정 찾기
-    - {{main_url}}/terms: 이용약관
-    - {{main_url}}/profile: 프로필
-    - {{main_url}}/activity: 활동
-    - {{main_url}}/coupon: 쿠폰
-    - {{main_url}}/message: 메시지
-    - {{main_url}}/post/attendance: 출석 게시판
-    - {{main_url}}/post/greeting: 인사말 게시판
--->
+            </ul>
+        </div>
+        <div class="col-6 col-md-3 mb-4">
+            <h6 class="text-black-60">
+                서비스
+            </h6>
+            <ul class="list-unstyled m-0">
+                <li class="mb-1">
+                    <a href="{{main_url}}/coupon" class="small text-black-50">쿠폰</a>
+                </li>
+                <li class="mb-1">
+                    <a href="{{main_url}}/message" class="small text-black-50">메시지</a>
+                </li>
+            </ul>
+        </div>
+        <div class="col-6 col-md-3 mb-4">
+            <h6 class="text-black-60">
+                게시판
+            </h6>
+            <ul class="list-unstyled m-0">
+                <li class="mb-1">
+                    <a href="{{main_url}}/post/attendance" class="small text-black-50">출석 게시판</a>
+                </li>
+                <li class="mb-1">
+                    <a href="{{main_url}}/post/greeting" class="small text-black-50">인사말 게시판</a>
+                </li>
+                <li class="mb-1">
+                    <a href="{{main_url}}/post/review" class="small text-black-50">후기 게시판</a>
+                </li>
+                <li class="mb-1">
+                    <a href="{{main_url}}/post/coupon" class="small text-black-50">쿠폰 게시판</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>

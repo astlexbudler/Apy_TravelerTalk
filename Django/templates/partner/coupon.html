@@ -1,9 +1,5 @@
-{% extends 'base/partner_base.html' %}
+{% extends 'base/base_partner.html' %}
 {% block content %}
-<!-- 왼쪽 사이드바 -->
-<aside class="d-none d-lg-block" style="width: 320px;"></aside>
-
-<!-- 중앙 섹션 -->
 <section class="main-section px-5 px-lg-1" style="flex: 1; min-height: 100vh;">
 
   <!-- 제목 -->
@@ -20,13 +16,13 @@
   <!-- 선택지 버튼 그룹 -->
   <div class="btn-group w-100 d-flex mb-4">
     <div class="w-100 d-flex justify-content-center rounded-2">
-      <a class="w-100 btn" href="{{partner_url}}/partner/coupon?tab=coupon" id="couponTab">
+      <a class="w-100 btn" href="{{PARTNER_URL}}/partner/coupon?tab=coupon" id="couponTab">
         보유 쿠폰
       </a>
     </div>
     <span class="divider"></span>
     <div class="w-100 d-flex justify-content-center rounded-2">
-      <a class="w-100 btn" href="{{partner_url}}/partner/coupon?tab=history" id="historyTab">
+      <a class="w-100 btn" href="{{PARTNER_URL}}/partner/coupon?tab=history" id="historyTab">
         쿠폰 사용 내역
       </a>
     </div>
@@ -47,7 +43,7 @@
       <p>
         <i class="fi fi-rr-search"></i> 검색
       </p>
-      <form id="couponSearchForm" method="get" action="{{partner_url}}/coupon">
+      <form id="couponSearchForm" method="get" action="{{PARTNER_URL}}/coupon">
         <div class="row">
           <input type="hidden" name="tab" value="{{request.GET.tab}}">
           <div class="form-group mt-4 col-12">
@@ -190,9 +186,6 @@
 
 </section>
 
-<!-- 오른쪽 사이드바 -->
-<aside class="d-none d-lg-block" style="width: 320px;"></aside>
-
 <!-- Modals -->
 {% for coupon in coupons %}
 <!-- 쿠폰 정보 확인 -->
@@ -206,12 +199,14 @@
 <script>
 
   window.onload = () => {
+    alert('component error');
+
     console.log(`Window loaded at ${getNowDatetimeString()}`);
 
     // Tab
     var tab = '{{request.GET.tab}}';
     if (tab == '') {
-      location.href = '{{partner_url}}/partner/coupon?tab=coupon';
+      location.href = '{{PARTNER_URL}}/partner/coupon?tab=coupon';
     }
 
     var couponTab = document.getElementById('couponTab');
@@ -236,7 +231,7 @@
 
     // Page
     console.log('{{request.GET.page}} | {{last_page}}');
-    makePaegeButton('{{request.GET.page}}', '{{last_page}}', '{{partner_url}}/partner/coupon?search={{request.GET.search}}');
+    makePaegeButton('{{request.GET.page}}', '{{last_page}}', '{{PARTNER_URL}}/partner/coupon?search={{request.GET.search}}');
   }
 
   // 쿠폰 만료 처리(삭제)

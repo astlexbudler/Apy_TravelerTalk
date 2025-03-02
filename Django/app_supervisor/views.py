@@ -1358,8 +1358,18 @@ def travel_edit(request):
       category_ids=request.POST.get('category_ids'),
       location_info=request.POST.get('location_info'),
       open_info=request.POST.get('open_info'),
+      address=request.POST.get('address'),
     )
     return JsonResponse({'result': 'success'})
+
+  # 여행지 게시글 삭제
+  if request.method == 'DELETE':
+    post_id = request.GET.get('post_id', None)
+    post = daos.select_post(post_id)
+    daos.delete_place_info(post['place_info']['id'])
+    return JsonResponse({
+      'result': 'success',
+    })
 
   # data
   post_id = request.GET.get('post_id', '')

@@ -641,47 +641,38 @@ def travel(request):
 
 # 여행 게시글 상세보기
 def travel_view(request):
-  # account, activities(5), unread_messages(5), coupons(5), server, best_reviews(5)
   contexts = daos.get_default_contexts(request) # 기본 컨텍스트 정보 가져오기
-  boards = daos.get_board_tree(contexts['account']['account_type']) # 게시판 정보
+  boards = daos.make_board_tree(contexts['account']['account_type']) # 게시판 정보
 
   # 데이터 가져오기
   post_id = request.GET.get('post_id', '')
 
   # 게시글 확인
-  post = daos.get_post_info(post_id)
+  post = daos.select_post(post_id)
   if not post: # 게시글이 없는 경우
     return redirect('/?redirect=post_not_found') # 메인 페이지로 이동
 
-  # 게시판 정보
-  comments = daos.get_all_post_comments(post_id)
+  # 댓글 권한 확인
+  commentable = False
+  if contexts['account']['account_type'] in post['boards'][-1]['comment_groups']:
+    commentable = True
+
+  # 댓글 가져오기
+  comments = daos.select_comments(post_id)
 
   # 조회수 증가
-  if post_id not in request.session.get('view_posts', ''):
+  if post_id not in  request.session.get('view_posts', ''):
     request.session['view_posts'] = request.session.get('view_posts', '') + ',' + post_id
-    po = models.POST.objects.get(id=post_id)
-    po.view_count += 1
-    po.save()
-
-  # 현재 사용자의 북마크에 추가된 게시글인지 확인
-  if models.ACCOUNT.objects.prefetch_related('bookmarked_places').filter(
-    username = contexts['account']['id'],
-    bookmarked_places__id = post['id']
-  ).exists():
-    bookmarkable = False
-  else:
-    bookmarkable = True
-
-  # 댓글 작성 가능 여부
-  commentable = False
-  if contexts['account']['account_type'] in post['boards'][-1]['comment']:
-    commentable = True
+    daos.update_post(
+      post_id=post_id,
+      view_count=int(post['view_count']) + 1,
+    )
 
   return render(request, 'post/travel_view.html', {
     **contexts,
     'boards': boards, # 게시판 정보
     'post': post, # 게시글 정보
-    'bookmarkable': bookmarkable, # 북마크 가능 여부
+    'board': post['boards'][-1], # 게시판 정보
     'comments': comments, # 댓글 정보
     'commentable': commentable, # 댓글 작성 가능 여부
   })

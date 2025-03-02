@@ -1,387 +1,405 @@
-{% extends 'base/partner_base.html' %}
+{% extends 'base/base_partner.html' %}
 {% block content %}
-<!-- 왼쪽 사이드바 -->
-<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+<main class="container">
 
-<!-- 중앙 섹션 -->
-<section class="main-section px-5 px-lg-1" style="flex: 1; min-height: 100vh;">
+  <div class="main-section">
 
-  <!-- 제목 -->
-  <div class="mt-4 mb-5">
-    {% include 'parts/goback.html' %}
-    <h5 class="mt-5">
-      여행지 게시글 수정
-    </h5>
-    <p class="small">
-      {% for board in post.boards %}
-      {{ board.name }} {% if forloop.counter < post.boards|length %} &gt; {% endif %}
-      {% endfor %}
-    </p>
+    <div style="min-height: calc(100vh - 160px);">
+
+
+      <!-- 페이지 타이틀 -->
+      {% include 'components/main/breadcrumbs.html' %}
+
+      <!-- 여행지 정보 -->
+      {% with subtitle=post.title %}
+      {% include 'components/main/title_section.html' with title='여행지 정보 수정' subtitle='여행지 정보 수정' %}
+      {% endwith %}
+
+      <!-- 여행지 정보 수정 폼 -->
+      <!-- 게시글 수정 폼 -->
+      <div class="mt-4">
+
+        <!-- 게시판 및 카테고리 선택 -->
+        <div class="my-4 row">
+          <div class="form-group col-6">
+            <label>게시판</label>
+            <select class="form-select" id="board_id">
+              {% for board in boards %}
+              <option value="{{ board.id }}" {% if board.id == request.GET.board_id %}selected{% endif %}>{{ board.name }}</option>
+              {% if board.children|length > 0 %}
+              {% for child in board.children %}
+              <option value="{{ board.id }},{{ child.id }}" {% if child.id == request.GET.board_id %}selected{% endif %}>- {{ child.name }}</option>
+              {% if child.children|length > 0 %}
+              {% for grandchild in child.children %}
+              <option value="{{ board.id }},{{ child.id }},{{ grandchild.id }}" {% if grandchild.id == request.GET.board_id %}selected{% endif %}>
+                -- {{ grandchild.name }}</option>
+              {% if grandchild.children|length > 0 %}
+              {% for grandgrandchild in grandchild.children %}
+              <option value="{{ board.id }},{{ child.id }},{{ grandchild.id }},{{ grandgrandchild.id }}" {% if grandgrandchild.id == request.GET.board_id %}selected{% endif %}>--- {{ grandgrandchild.name }}</option>
+              {% endfor %}
+              {% endif %}
+              {% endfor %}
+              {% endif %}
+              {% endfor %}
+              {% endif %}
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group col-6">
+            <label>카테고리</label>
+            <select class="form-select" id="category_id">
+              {% for category in categories %}
+              <option value="{{ category.id }}">{{ category.name }}</option>
+              {% endfor %}
+
+              {% for category in categories %}
+              <option value="{{ category.id }}" {% if category.id == request.GET.category_id %}selected{% endif %}>{{ category.name }}</option>
+              {% if category.children|length > 0 %}
+              {% for child in category.children %}
+              <option value="{{ category.id }},{{ child.id }}" {% if child.id == request.GET.category_id %}selected{% endif %}>- {{ child.name }}</option>
+              {% if child.children|length > 0 %}
+              {% for grandchild in child.children %}
+              <option value="{{ category.id }},{{ child.id }},{{ grandchild.id }}" {% if grandchild.id == request.GET.category_id %}selected{% endif %}>
+                -- {{ grandchild.name }}</option>
+              {% if grandchild.children|length > 0 %}
+              {% for grandgrandchild in grandchild.children %}
+              <option value="{{ category.id }},{{ child.id }},{{ grandchild.id }},{{ grandgrandchild.id }}" {% if grandgrandchild.id == request.GET.category_id %}selected{% endif %}>--- {{ grandgrandchild.name }}</option>
+              {% endfor %}
+              {% endif %}
+              {% endfor %}
+              {% endif %}
+              {% endfor %}
+              {% endif %}
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <!-- 위치정보 및 영업정보 -->
+        <div class="row my-4">
+          <div class="form-group col-6">
+            <label>위치정보</label>
+            <input type="text" class="form-control" id="location_info" value="{{ post.place_info.location_info }}" placeholder="위치정보를 입력해 주세요.">
+          </div>
+          <div class="form-group col-6">
+            <label>영업정보</label>
+            <input type="text" class="form-control" id="open_info" value="{{ post.place_info.open_info }}" placeholder="영업정보를 입력해 주세요.">
+          </div>
+        </div>
+
+        <!-- 주소 address, addressDetail -->
+        <div class="my-4">
+          <div class="form-group">
+            <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+                <div style="display: inline-block; text-align: left;">
+                    <label class="mt-5">주소</label>
+                </div>
+                <div style="display: inline-block; text-align: right;">
+                    <a class="btn btn-success mt-3" href="javascript: sample3_execDaumPostcode();">주소검색</a>
+                </div>
+            </div>
+            <div class="content">
+                <div id="wrap" style="display:none;border:1px solid;width:100%;height:300px;margin:5px 0;position:relative">
+                    <img src="//t1.daumcdn.net/postcode/resource/images/close.png" id="btnFoldWrap"
+                        style="cursor:pointer;position:absolute;right:0px;top:-1px;z-index:1" onclick="foldDaumPostcode()"
+                        alt="접기 버튼">
+                </div>
+                <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+                <script>
+                    // 우편번호 찾기 찾기 화면을 넣을 element
+                    var element_wrap = document.getElementById('wrap');
+        
+                    function foldDaumPostcode() {
+                        // iframe을 넣은 element를 안보이게 한다.
+                        element_wrap.style.display = 'none';
+                    }
+        
+                    function sample3_execDaumPostcode() {
+                        // 현재 scroll 위치를 저장해놓는다.
+                        var currentScroll = Math.max(document.body.scrollTop, document.documentElement.scrollTop);
+                        new daum.Postcode({
+                            oncomplete: function (data) {
+                                // 검색결과 항목을 클릭했을때 실행할 코드를 수정하는 부분.
+        
+                                // 각 주소의 노출 규칙에 따라 주소를 조합한다.
+                                // 내려오는 변수가 값이 없는 경우엔 공백('')값을 가지므로, 이를 참고하여 분기 한다.
+                                var addr = ''; // 주소 변수
+                                var extraAddr = ''; // 참고항목 변수
+        
+                                //사용자가 선택한 주소 타입에 따라 해당 주소 값을 가져온다.
+                                if (data.userSelectedType === 'R') { // 사용자가 도로명 주소를 선택했을 경우
+                                    addr = data.roadAddress;
+                                } else { // 사용자가 지번 주소를 선택했을 경우(J)
+                                    addr = data.jibunAddress;
+                                }
+        
+                                // 사용자가 선택한 주소가 도로명 타입일때 참고항목을 조합한다.
+                                if (data.userSelectedType === 'R') {
+                                    // 법정동명이 있을 경우 추가한다. (법정리는 제외)
+                                    // 법정동의 경우 마지막 문자가 "동/로/가"로 끝난다.
+                                    if (data.bname !== '' && /[동|로|가]$/g.test(data.bname)) {
+                                        extraAddr += data.bname;
+                                    }
+                                    // 건물명이 있고, 공동주택일 경우 추가한다.
+                                    if (data.buildingName !== '' && data.apartment === 'Y') {
+                                        extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+                                    }
+                                    // 표시할 참고항목이 있을 경우, 괄호까지 추가한 최종 문자열을 만든다.
+                                    if (extraAddr !== '') {
+                                        extraAddr = ' (' + extraAddr + ')';
+                                    }
+                                }
+        
+                                // 우편번호와 주소 정보를 해당 필드에 넣는다.
+                                document.getElementById("address").value = addr;
+        
+                                // iframe을 넣은 element를 안보이게 한다.
+                                // (autoClose:false 기능을 이용한다면, 아래 코드를 제거해야 화면에서 사라지지 않는다.)
+                                element_wrap.style.display = 'none';
+        
+                                // 우편번호 찾기 화면이 보이기 이전으로 scroll 위치를 되돌린다.
+                                document.body.scrollTop = currentScroll;
+                            },
+                            // 우편번호 찾기 화면 크기가 조정되었을때 실행할 코드를 수정하는 부분. iframe을 넣은 element의 높이값을 조정한다.
+                            onresize: function (size) {
+                                element_wrap.style.height = size.height + 'px';
+                            },
+                            width: '100%',
+                            height: '100%'
+                        }).embed(element_wrap);
+        
+                        // iframe을 넣은 element를 보이게 한다.
+                        element_wrap.style.display = 'block';
+                    }
+                </script>
+            </div>
+            <div class="form-group position-relative col-12 mt-3" style="display: inline-block;">
+                <input class="form-control pe-6" placeholder="소재지가 해외인경우 직접 입력해주세요." id="address" name="address" value="{{ post.place_info.address }}">
+                <div class="position-absolute" style="right: 15px; top: 50%; transform: translateY(-50%);">
+                    <i class="fi fi-rr-marker text-success"></i>
+                </div>
+            </div>
+            <div class="form-group position-relative col-12 mt-2" style="display: inline-block;">
+                <input class="form-control pe-6" placeholder="상세 주소를 입력해주세요.(선택)" id="addressDetail" name="addressDetail">
+                <div class="position-absolute" style="right: 15px; top: 50%; transform: translateY(-50%);">
+                    <i class="fi fi-rr-check text-success"></i>
+                </div>
+            </div>
+        </div>
+        </div>
+
+      </div>
+
+      <!-- 게시글 정보 -->
+      {% with subtitle=post.title %}
+      {% include 'components/main/title_section.html' with title='게시글 정보 수정' %}
+      {% endwith %}
+
+      <!-- 게시글 정보 수정 폼 -->
+      <div class="mt-4">
+
+        <!-- 대표 이미지 -->
+        <div class="my-4">
+          <div>
+            <label>
+                썸네일 이미지
+            </label>
+            <div id="imageInputPreview" class="mb-3">
+              <div class="mb-2 me-2 shadow-sm text-end p-2" style="min-width: 150px; width: 12vw; background: url('{{ post.image }}') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw;"></div>
+            </div>
+            <a href="javascript: document.getElementById('imageInput').click();" class="btn btn-success btn-sm small">
+                <i class="fi fi-rr-picture"></i> 이미지 등록
+            </a>
+            <input type="file" class="d-none" id="imageInput" multiple>
+        </div>
+        <script>
+            // 대표 이미지 추가
+            document.getElementById('imageInput').addEventListener('change', async (e) => {
+                const files = e.target.files;
+
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const imagePath = e.target.result;
+                        document.getElementById('imageInputPreview').innerHTML = `
+                <div class="mb-2 me-2 shadow-sm text-end p-2" style="min-width: 150px; width: 12vw; background: url('${imagePath}') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw; cursor: pointer;" onclick="deleteImage(this)"></div>
+                `;
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // 이미지 삭제
+            deleteImage = (element) => {
+                element.remove();
+                document.getElementById('imageInput').value = '';
+            }
+        </script>
+        </div>
+
+        <!-- 제목 -->
+        <div class="my-4">
+          <div class="form-group">
+            <label>제목</label>
+            <input class="form-control" id="title" placeholder="제목을 입력해 주세요." value="{{ post.title }}">
+          </div>
+        </div>
+
+        <!-- wysiwig 에디터 -->
+        <div class="my-4">
+          <div class="form-group">
+            <label>내용 편집기</label>
+            <textarea id="content">
+              {{ post.content|safe }}
+            </textarea>
+            <script>
+                // 아래 기능만 메뉴에 활성화
+                // 폰트 사이즈, 볼드, 이탤릭, 밑줄, 정렬, 테이블, 이미지, 구분선
+                $(document).ready(function () {
+                    $('#content').summernote({
+                        tabsize: 2,
+                        height: 500,
+                        toolbar: [
+                            ['fontsize', ['fontsize']],
+                            ['font', ['bold', 'italic', 'underline', 'clear']],
+                            ['para', ['paragraph']],
+                            ['table', ['table']],
+                            ['insert', ['hr', 'picture']],
+                        ]
+                    });
+                });
+            </script>
+          </div>
+        </div>
+
+        <!-- 수정하기 -->
+        <div class="my-5 text-end">
+          <a class="btn btn-primary me-2" href="javascript: rewritePost()">
+            <i class="fi fi-rr-edit"></i> 글 수정
+          </a>
+          <a class="btn btn-danger" href="javascript: deletePost()">
+            <i class="fi fi-rr-trash"></i> 삭제하기
+          </a>
+        </div>
+
+      </div>
+
+    </div>
+
   </div>
 
-  <!-- 게시글 컨테이너 -->
-  <div class='row my-5'>
-
-    <!-- 게시 상태 선택 -->
-    <div class="form-group">
-      <label>게시 상태 선택</label>
-      <select class="form-select" id="place_status">
-        <option value="writing" {% if post.place_info.status == 'writing' %}selected{% endif %}>숨김</option>
-        <option value="normal" {% if post.place_info.status == 'normal' %}selected{% endif %}>게시</option>
-        <option value="pending" {% if post.place_info.status == 'pending' %}selected{% endif %}>광고 요청</option>
-      </select>
-    </div>
-
-    <!-- 지역 카테고리 선택 (게시판) -->
-    <div class="form-group mt-5">
-      <label>지역 카테고리 선택</label><br>
-      <div class="mb-3">
-        <!-- Level 1 -->
-        <select class="form-select mb-1" onchange="
-          document.getElementById('selectedBoard').value = this.options[this.selectedIndex].value;
-          document.querySelectorAll('.subBoard').forEach(e => e.classList.add('d-none'));
-          document.getElementById('board' + this.value).classList.toggle('d-none');">
-          <option>-선택해주세요-</option>
-          {% for travel_board in boards %}
-          <option value="{{travel_board.id}}" {% if travel_board.id in post.board_ids %}selected{% endif %}
-          >{{travel_board.name}}</option>
-          {% endfor %}
-        </select>
-
-        {% for travel_board in boards %}
-        {% if travel_board.children|length > 0 %}
-        <!-- Level 2 -->
-        <select class="subBoard form-select mb-1 {% if travel_board.id not in post.board_ids %}d-none{% endif %}
-        " id="board{{travel_board.id}}" onchange="
-          document.getElementById('selectedBoard').value = this.options[this.selectedIndex].value;
-          document.querySelectorAll('.subBoard').forEach(e => e.classList.add('d-none'));
-          document.getElementById('board' + '{{travel_board.id}}').classList.toggle('d-none');
-          document.getElementById('board' + this.value).classList.toggle('d-none');">
-          <option>-선택해주세요-</option>
-          {% for child in travel_board.children %}
-          <option value="{{child.id}},{{travel_board.id}}" {% if child.id in post.board_ids %}selected{% endif %}
-          >{{travel_board.name}} > {{child.name}}</option>
-          {% endfor %}
-        </select>
-        {% endif %}
-
-        {% for child in travel_board.children %}
-        {% if child.children|length > 0 %}
-        <!-- Level 3 -->
-        <select class="subBoard form-select mb-1 {% if child.id not in post.board_ids %}d-none{% endif %}
-        " id="board{{child.id}}" onchange="
-          document.getElementById('selectedBoard').value = this.options[this.selectedIndex].value;
-          document.querySelectorAll('.subBoard').forEach(e => e.classList.add('d-none'));
-          document.getElementById('board' + '{{travel_board.id}}').classList.toggle('d-none');
-          document.getElementById('board' + '{{child.id}}').classList.toggle('d-none');
-          document.getElementById('board' + this.value).classList.toggle('d-none');">
-          <option>-선택해주세요-</option>
-          {% for child2 in child.children %}
-          <option value="{{child.id}},{{travel_board.id}},{{child2.id}}" {% if child2.id in post.board_ids %}selected{% endif %}
-          >{{travel_board.name}} > {{child.name}} > {{child2.name}}</option>
-          {% endfor %}
-        </select>
-        {% endif %}
-
-        {% for child2 in child.children %}
-        {% if child2.children|length > 0 %}
-        <!-- Level 4 -->
-        <select class="subBoard form-select mb-1 {% if child2.id not in post.board_ids %}d-none{% endif %}
-        " id="board{{child2.id}}" onchange="
-          document.getElementById('selectedBoard').value = this.options[this.selectedIndex].value;
-          document.querySelectorAll('.subBoard').forEach(e => e.classList.add('d-none'));
-          document.getElementById('board' + '{{travel_board.id}}').classList.toggle('d-none');
-          document.getElementById('board' + '{{child.id}}').classList.toggle('d-none');
-          document.getElementById('board' + '{{child2.id}}').classList.toggle('d-none');
-          document.getElementById('board' + this.value).classList.toggle('d-none');">
-          <option>-선택해주세요-</option>
-          {% for child3 in child2.children %}
-          <option value="{{child.id}},{{travel_board.id}},{{child2.id}},{{child3.id}}" {% if child3.id in post.board_ids %}selected{% endif %}
-          >{{travel_board.name}} > {{child.name}} > {{child2.name}} > {{child3.name}}</option>
-          {% endfor %}
-        </select>
-        {% endif %}
-        {% endfor %}
-        {% endfor %}
-        {% endfor %}
-
-      </div>
-      <input class="d-none" id="selectedBoard" value="{{ post.board_ids }}">
-    </div>
-
-    <!-- 서비스 카테고리 선택(카테고리) -->
-    <div class="form-group mt-2">
-      <label>업종 카테고리 선택</label><br>
-      <div class="mb-3">
-        <!-- category1 -->
-        <select class="form-select mb-1" onchange="
-          document.getElementById('serviceCategory').value = this.options[this.selectedIndex].value;
-          document.querySelectorAll('.subCategory').forEach(e => e.classList.add('d-none'));
-          document.getElementById('category' + this.value).classList.toggle('d-none');">
-          <option>-선택해주세요-</option>
-          {% for category in categories %}
-          <option value="{{category.id}}" {% if category.id in post.service_ids %}selected{% endif %}
-          >{{category.name}}</option>
-          {% endfor %}
-        </select>
-        {% for category in categories %}
-        {% if category.children|length > 0 %}
-        <!-- category2 -->
-        <select class="subCategory form-select mb-1 {% if category.id not in post.service_ids %}d-none{% endif %}
-        " id="category{{category.id}}" onchange="
-          document.getElementById('serviceCategory').value = this.options[this.selectedIndex].value;
-          document.querySelectorAll('.subCategory').forEach(e => e.classList.add('d-none'));
-          document.getElementById('category' + '{{category.id}}').classList.toggle('d-none');
-          document.getElementById('category' + this.value).classList.toggle('d-none');">
-          <option>-선택해주세요-</option>
-          {% for child in category.children %}
-          <option value="{{category.id}},{{child.id}}" {% if child.id in post.service_ids %}selected{% endif %}
-          >{{category.name}} > {{child.name}}</option>
-          {% endfor %}
-        </select>
-        {% endif %}
-
-        {% for child in category.children %}
-        {% if child.children|length > 0 %}
-        <!-- category3 -->
-        <select class="subCategory form-select d-none mb-1" id="category{{child.id}}" onchange="
-          document.getElementById('serviceCategory').value = this.options[this.selectedIndex].value;
-          document.querySelectorAll('.subCategory').forEach(e => e.classList.add('d-none'));
-          document.getElementById('category' + '{{category.id}}').classList.toggle('d-none');
-          document.getElementById('category' + '{{child.id}}').classList.toggle('d-none');
-          document.getElementById('category' + this.value).classList.toggle('d-none');">
-          <option>-선택해주세요-</option>
-          {% for child2 in child.children %}
-          <option value="{{category.id}},{{child.id}},{{child2.id}}" {% if child2.id in post.service_ids %}selected{% endif %}
-          >{{category.name}} > {{child.name}} > {{child2.name}}</option>
-          {% endfor %}
-        </select>
-        {% endif %}
-
-        {% for child2 in child.children %}
-        {% if child2.children|length > 0 %}
-        <!-- category4 -->
-        <select class="subCategory form-select mb-1 {% if child2.id not in post.service_ids %}d-none{% endif %}
-        " id="category{{child2.id}}" onchange="
-          document.getElementById('serviceCategory').value = this.options[this.selectedIndex].value;
-          document.querySelectorAll('.subCategory').forEach(e => e.classList.add('d-none'));
-          document.getElementById('category' + '{{category.id}}').classList.toggle('d-none');
-          document.getElementById('category' + '{{child.id}}').classList.toggle('d-none');
-          document.getElementById('category' + '{{child2.id}}').classList.toggle('d-none');
-          document.getElementById('category' + this.value).classList.toggle('d-none');">
-          <option>-선택해주세요-</option>
-          {% for child3 in child2.children %}
-          <option value="{{category.id}},{{child.id}},{{child2.id}},{{child3.id}}" {% if child3.id in post.service_ids %}selected{% endif %}
-          >{{category.name}} > {{child.name}} > {{child2.name}} > {{child3.name}}</option>
-          {% endfor %}
-        </select>
-        {% endif %}
-        {% endfor %}
-        {% endfor %}
-        {% endfor %}
-
-      </div>
-      <input class="d-none" id="serviceCategory" value="{{ post.service_ids }}">
-    </div>
-
-    <!-- 위치정보 및 영업정보 -->
-    <div class="row">
-      <div class="col-12 col-md-6">
-        <div class="form-group">
-          <label>위치정보</label>
-          <input type="text" class="form-control" id="location_info" value="{{ post.place_info.location_info }}">
-        </div>
-      </div>
-      <div class="col-12 col-md-6">
-        <div class="form-group">
-          <label>영업정보</label>
-          <input type="text" class="form-control" id="open_info" value="{{ post.place_info.open_info }}">
-        </div>
-      </div>
-    </div>
-
-    <!-- 주소 또는 위치 안내 -->
-    <div class="form-group mt-2 mb-5">
-      <label>주소 또는 위치 안내</label>
-      <input type="text" class="form-control" id="address" value="{{ post.place_info.address }}">
-    </div>
-
-    <hr>
-
-    <!-- 대표 이미지 -->
-    <div class="my-4">
-      <p>
-        썸네일 등록
-      </p>
-      <div id="imagePreview" class="mb-2 row">
-        {% if post.image and post.image != '/media/default.png' %}
-        <div class="mb-2 me-2 shadow-sm text-end p-2" style="min-width: 150px; width: 12vw; background: url('{{post.image}}') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw;"></div>
-        {% endif %}
-      </div>
-      <a href="javascript: document.getElementById('imageInput').click();" class="btn btn-success">
-        이미지 추가
-      </a>
-      <input type="file" class="d-none" id="imageInput" multiple>
-      <input id="imagePaths" value="{% for image in post.images %}{{ image }},{% endfor %}" class="d-none">
-    </div>
-
-    <!-- 제목 -->
-    <div class="my-4 mt-3">
-      <div class="form-group">
-        <label>제목</label>
-        <input type="text" class="form-control" value="{{ post.title }}" id="title">
-      </div>
-    </div>
-
-    <div class="form-group mt-2 mb-3">
-      <label>내용</label>
-      <div id="postContent">
-        {{ post.content|safe }}
-      </div>
-      <div class="d-none" id="viewer"></div>
-    </div>
-
-    <!-- 저장하기 -->
-    <div class="my-5">
-      <a class="btn btn-primary" href="javascript: writePost()">
-        작성하기 <i class="fi fi-rr-edit"></i>
-      </a>
-    </div>
-
-  </div>
-
-</section>
-
-<!-- 오른쪽 사이드바 -->
-<aside class="d-none d-lg-block" style="width: 320px;"></aside>
-
+</main>
 <script>
 
-  window.onload = () => {
-    console.log(`Window loaded at ${getNowDatetimeString()}`);
-  }
+  // 대표 이미지 추가
+  document.getElementById('imageInput').addEventListener('change', async (e) => {
+    const files = e.target.files;
 
-  // toastui editor
-  const editor = new toastui.Editor({
-    el: document.querySelector('#postContent'),
-    height: '500px',
-    width: '100px',
-    initialEditType: 'wysiwyg',
-    initialValue: '{{ post.content }}',
-    previewStyle: 'vertical',
-    hideModeSwitch: true,
-    language: 'ko-KR'
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const imagePath = e.target.result;
+        document.getElementById('imagePreview').innerHTML = `
+        <div class="mb-2 me-2 shadow-sm text-end p-2" style="min-width: 150px; width: 12vw; background: url('${imagePath}') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw;"></div>
+        `;
+      }
+      reader.readAsDataURL(file);
+    }
   });
 
-  // 이미지 업로드 및 미리보기 생성
-  try {
-    document.getElementById('imageInput').addEventListener('change', async (e) => {
-      const files = e.target.files;
-      const imagePaths = document.getElementById('imagePaths');
-      const imagePreview = document.getElementById('imagePreview');
+  // 게시글 수정
+  rewritePost = async () => {
+    const title = document.querySelector('#title').value;
+    const content = $('#content').summernote('code');
 
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const imagePath = e.target.result;
-          imagePreview.innerHTML = `
-          <div class="mb-2 me-2 shadow-sm text-end p-2" style="min-width: 150px; width: 12vw; background: url('${imagePath}') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw;"></div>
-          `;
-        }
-        reader.readAsDataURL(file);
-      }
-    });
-  } catch (e) {
-    console.error(e);
-  }
-
-  writePost = async () => {
-    var board_ids = document.getElementById('selectedBoard').value;
-    var service_ids = document.getElementById('serviceCategory').value;
-    var location_info = document.getElementById('location_info').value;
-    var open_info = document.getElementById('open_info').value;
-    var address = document.getElementById('address').value;
-    var title = document.getElementById('title').value;
-    var content = editor.getMarkdown();
-    var place_status = document.getElementById('place_status').value;
-
-    if (location_info == '' || open_info == '' || address == '' || title == '' || content == '') {
-      showAlert('작성 오류', '입력하지 않은 항목이 있습니다. 모든 항목을 입력해주세요.', 'error');
+    if (title.length < 2) {
+      showAlert('제목 오류', '제목이 너무 짧습니다. 2자 이상 수정해주세요.', 'error');
+      return;
+    }
+    if (content.length < 10) {
+      showAlert('내용 오류', '내용이 너무 짧습니다. 10자 이상 입력해주세요.', 'error');
       return;
     }
 
     var formData = new FormData();
     formData.append('title', title);
     formData.append('content', content);
-    formData.append('board_ids', board_ids);
-    formData.append('service_ids', service_ids);
-    formData.append('location_info', location_info);
-    formData.append('open_info', open_info);
-    formData.append('address', address);
-    formData.append('place_status', place_status);
-    if (document.getElementById('imageInput').files.length > 0) {
-      formData.append('image', document.getElementById('imageInput').files[0]);
+    formData.append('board_ids', document.getElementById('board_id').value);
+    formData.append('category_ids', document.getElementById('category_id').value);
+    formData.append('location_info', document.getElementById('location_info').value);
+    formData.append('open_info', document.getElementById('open_info').value);
+    formData.append('address', document.getElementById('address').value + ' ' + document.getElementById('addressDetail').value);
+    if (document.getElementById('imageInput')) {
+      formData.append('image', document.getElementById('imageInput').files[0]); // 대표 이미지
     }
 
-    await fetch('{{partner_url}}/partner/rewrite_post', {
+    await fetch('{{PARTNER_URL}}/partner/rewrite_post', {
       method: 'POST',
       headers: {
         'X-CSRFToken': csrftoken
       },
       body: formData,
     })
-    .then(response => response.json())
-    .then(async (data) => {
-      if (data.result == 'success') {
-        await showAlert('게시글 수정 완료', '게시글이 성공적으로 수정되었습니다.', 'success');
-        window.location.href = '{{partner_url}}/partner';
-      } else {
-        showAlert('게시글 수정 실패', '게시글 수정에 실패했습니다. 잠시 후 다시 시도해주세요.', 'error');
-      }
-    });
+      .then(response => response.json())
+      .then(async (data) => {
+        if (data.result == 'success') {
+          await showAlert('게시글 수정 완료', '게시글이 성공적으로 수정되었습니다.', 'success');
+          window.location.href = '{{PARTNER_URL}}/partner/partner';
+        } else {
+          showAlert('게시글 수정 실패', '게시글 수정 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error');
+        }
+      });
   }
 
-
-  // 게시글 수정
-  const rewritePost = async () => {
-    const title = document.getElementById('title').value;
-    const content = editor.getMarkdown();
-    const board = document.getElementById('board').value;
-    const imagePaths = document.getElementById('imagePaths').value;
-
-    // 입력값 확인
-    if (title == '' || content == '' || board == '' || imagePaths == '') {
-      showAlert('작성 오류', '입력하지 않은 항목이 있습니다. 제목과 내용, 게시판, 이미지를 모두 입력해주세요.', 'error');
+  // 게시글 삭제
+  deletePost = async () => {
+    var isDelete = await Swal.fire({
+      html: `
+      <div>
+        <div class="text-center py-4">
+          <h1 class="text-dark">게시글 삭제</h1>
+        </div>
+        <diV class="text-center">
+          <p class="text-black-50">
+            게시글을 삭제하시겠습니까? 삭제된 게시글은 복구할 수 없습니다.
+          </p>
+        </div>
+      </div>`,
+      icon: `warning`,
+      showConfirmButton: true,
+      confirmButtonText: `삭제하기`,
+      confirmButtonColor: `#f25767`,
+      showCancelButton: true,
+      cancelButtonText: `취소`,
+      cancelButtonColor: `#929ea8`
+    })
+      .then((result) => {
+        if (result.isConfirmed) {
+          return true;
+        }
+        return false;
+      });
+    if (!isDelete) {
       return;
     }
 
-    // 게시글 수정 요청 발송
-    var formData = new FormData();
-    formData.append('title', title);
-    formData.append('content', content);
-    formData.append('board_ids', board);
-    formData.append('images', imagePaths);
-    var result = await fetch('{{partner_url}}/partner/rewrite_post', {
-      method: 'POST',
-      body: formData,
+    await fetch('{{PARTNER_URL}}/partner/rewrite_post?post_id={{ request.GET.post_id }}', {
+      method: 'DELETE',
       headers: {
         'X-CSRFToken': csrftoken
       }
     })
-    .then(res => res.json())
-    .then(data => {
-      console.log(data);
-      return data.result;
-    });
-
-    // 결과 확인
-    if(result == 'success') {
-      await showAlert('게시글 수정', '게시글이 수정되었습니다.', 'success');
-      location.href = '{{partner_url}}';
-    } else {
-      showAlert('게시글 수정', '게시글 수정에 실패했습니다.', 'error');
-    }
+      .then(response => response.json())
+      .then(async (data) => {
+        if (data.result == 'success') {
+          await showAlert('게시글 삭제 완료', '게시글이 성공적으로 삭제되었습니다.', 'success');
+          window.location.href = '{{PARTNER_URL}}/partner/partner';
+        } else {
+          showAlert('게시글 삭제 실패', '게시글 삭제 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error');
+        }
+      });
   }
 
 </script>

@@ -97,6 +97,8 @@ create_post_place_info(data): 게시글의 여행지 정보 생성
 update_place_info(post_id, data): 게시글의 여행지 정보 업데이트
     - data 포함 항목만 업데이트.
 
+delete_place_info(post_id): 게시글의 여행지 정보 삭제
+
 ##### [COMMENT]
 select_comments(post_id): 게시글 댓글 가져오기
     - post_id로 댓글 목록 반환.
@@ -214,7 +216,7 @@ def get_default_contexts(request):
                         'id': sender.id,
                         'nickname': sender.first_name,
                     },
-                    'created_at': message.created_at,
+                    'created_at': datetime.datetime.strftime(message.created_at, '%Y-%m-%d %H:%M'),
                 })
             else:
                 unread_messages.append({
@@ -224,7 +226,7 @@ def get_default_contexts(request):
                         'id': message.sender_account,
                         'nickname': f'게스트({message.sender_account})',
                     },
-                    'created_at': message.created_at,
+                    'created_at': datetime.datetime.strftime(message.created_at, '%Y-%m-%d %H:%M'),
                 })
 
         # 내 쿠폰 확인
@@ -769,7 +771,7 @@ def search_posts(title=None, category_id=None, board_id=None, related_post_id=No
         'image': '/media/' + str(post.image) if post.image else None,
         'view_count': post.view_count,
         'like_count': post.like_count,
-        'created_at': post.created_at,
+        'created_at': datetime.datetime.strftime(post.created_at, '%Y-%m-%d %H:%M'),
         'comment_count': models.COMMENT.objects.filter(post=post).count(),
     } for post in posts]
 
@@ -825,7 +827,7 @@ def select_account_bookmarked_posts(account_id):
         'image': '/media/' + str(post.image) if post.image else None,
         'view_count': post.view_count,
         'like_count': post.like_count,
-        'created_at': post.created_at,
+        'created_at': datetime.datetime.strftime(post.created_at, '%Y-%m-%d %H:%M'),
         'comment_count': models.COMMENT.objects.filter(post=post).count(),
     } for post in posts]
 
@@ -861,6 +863,7 @@ def select_post(post_id):
             'title': post.related_post.title,
         } if post.related_post else None,
         'place_info': {
+            'id': post.place_info.id,
             'categories': [{
                 'id': c.id,
                 'name': c.name,
@@ -869,6 +872,7 @@ def select_post(post_id):
             'location_info': post.place_info.location_info,
             'open_info': post.place_info.open_info,
             'status': post.place_info.status,
+            'address': post.place_info.address,
         } if post.place_info else None,
         'boards': [{
             'id': board.id,
@@ -882,7 +886,7 @@ def select_post(post_id):
         'image': '/media/' + str(post.image) if post.image else None,
         'view_count': post.view_count,
         'like_count': post.like_count,
-        'created_at': post.created_at,
+        'created_at': datetime.datetime.strftime(post.created_at, '%Y-%m-%d %H:%M'),
         'search_weight': post.search_weight,
         'comment_count': models.COMMENT.objects.filter(post=post).count(),
     }
@@ -1122,6 +1126,20 @@ def delete_post(post_id):
     return {
         'success': True,
         'message': '게시글이 삭제되었습니다.',
+    }
+
+# 게시글의 여행지 정보 삭제
+def delete_place_info(place_info_id):
+
+    # 게시글의 여행지 정보 삭제
+    place_info = models.PLACE_INFO.objects.filter(
+        id=place_info_id
+    ).first()
+    place_info.delete()
+
+    return {
+        'success': True,
+        'message': '게시글의 여행지 정보가 삭제되었습니다.',
     }
 
 
