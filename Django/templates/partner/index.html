@@ -96,9 +96,13 @@
           <div style="flex: 1; padding-left: 10px;">
             <div class="border rounded p-3 mt-2">
               <p>
-                <h5 class="text-black-60 me-2">
+                <span class="h5 text-black-60 me-2">
                   광고 설정
-                </h5>
+                </span>
+                <a href="javascript: new bootstrap.Modal(document.getElementById('{{post.id}}Modal')).show()"
+                  class="text-black-50">
+                  <i class="fi fi-rr-edit"></i>
+                </a>
               </p>
               <p>
                 광고 상태:
@@ -171,5 +175,35 @@
   </div>
 
 </main>
+<script>
+
+  // 여행지 게시글 광고 설정
+  updateAd = async (post_id) => {
+    var adStatus = document.getElementById(post_id + 'adStatus').value;
+
+    var formData = new FormData();
+    formData.append('place_status', adStatus);
+
+    // 수정 요청
+    await fetch('{{PARTNER_URL}}/partner/partner?post_id=' + post_id, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRFToken': csrftoken,
+      },
+    })
+      .then(response => response.json())
+      .then(async data => {
+        console.log(data);
+        if (data.result  ==  'success') {
+          await showAlert('수정 성공', '광고 설정이 수정되었습니다.', 'success');
+          location.reload();
+        } else {
+          await showAlert('수정 실패', '광고 설정 수정에 실패했습니다.', 'danger');
+        }
+      });
+  }
+
+</script>
 
 {% endblock %}

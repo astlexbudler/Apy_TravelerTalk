@@ -82,6 +82,19 @@ def index(request):
     except Exception as e:
       print(e)
 
+  # 여행지 정보 수정 요청 처리
+  if request.method == 'POST':
+    for post in posts: # 모든 게시글을 숨김
+      daos.update_place_info(
+        post_id=post['id'],
+        status='writing',
+      )
+    daos.update_place_info( # 요청한 게시글만 보이게
+      post_id=request.GET['post_id'],
+      status=request.POST.get('place_status'),
+    )
+    return JsonResponse({'result': 'success'})
+
   return render(request, 'partner/index.html', {
     'account': account,
     'server_settings': server_settings,
@@ -160,7 +173,7 @@ def rewrite_post(request):
   if request.method == 'POST':
     print(request.POST.dict())
     post = daos.update_post(
-      post_id=request.POST['post_id'],
+      post_id=request.GET['post_id'],
       title=request.POST['title'],
       content=request.POST['content'],
       image=request.FILES.get('image', None),
@@ -218,19 +231,19 @@ def coupon(request):
     return redirect('/')
 
   # 데이터 가져오기
-  tab = request.GET.get('tab', 'coupon') # coupopn, history
+  tab = request.GET.get('tab', 'couponTab') # coupopn, history
   page = int(request.GET.get('page', 1))
   search_coupon_code = request.GET.get('code', '') # 쿠폰 이름 검색
   search_coupon_name = request.GET.get('name', '') # 쿠폰 소유자 검색
 
   # 쿠폰 목록 가져오기
-  if tab == 'coupon': # 쿠폰 목록
+  if tab == 'couponTab': # 쿠폰 목록
     coupons, last_page = daos.select_owned_coupons(
       account_id=request.user.id,
       status='active',
       page=page,
     )
-  elif tab == 'history': # 쿠폰 사용 내역
+  elif tab == 'historyTab': # 쿠폰 사용 내역
     coupons, last_page = daos.select_owned_coupons(
       account_id=request.user.id,
       page=page,
@@ -242,4 +255,23 @@ def coupon(request):
 
     'coupons': coupons,
     'last_page': last_page,
+  })
+
+# 쿠폰 게시글 관리
+def coupon_post(request):
+
+  # 권한 확인
+  if not request.user.is_authenticated:
+    return redirect('/')
+  account = daos.select_account_detail(request.user.id)
+  server_settings = {
+      'site_logo': daos.select_server_setting('site_logo'),
+      'service_name': daos.select_server_setting('service_name'),
+  }
+  if account['account_type'] != 'partner':
+    return redirect('/')
+
+  return render(request, 'partner/coupon_post.html', {
+    'account': account,
+    'server_settings': server_settings,
   })

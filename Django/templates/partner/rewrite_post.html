@@ -335,7 +335,7 @@
       formData.append('image', document.getElementById('imageInput').files[0]); // 대표 이미지
     }
 
-    await fetch('{{PARTNER_URL}}/partner/rewrite_post', {
+    await fetch('{{PARTNER_URL}}/partner/rewrite_post?post_id={{ request.GET.post_id }}', {
       method: 'POST',
       headers: {
         'X-CSRFToken': csrftoken

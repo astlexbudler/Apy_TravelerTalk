@@ -1,0 +1,49 @@
+{% extends 'base/base_partner.html' %}
+{% block content %}
+<main class="container">
+
+  <div class="main-section">
+
+    <div style="min-height: 300px;">
+
+      <!-- 페이지 타이틀 -->
+      {% with title='쿠폰 게시글 관리' subtitle='쿠폰 게시글을 관리합니다.' %}
+      {% include 'components/main/title_section.html' %}
+      {% endwith %}
+
+      <!-- 게시글 목록 -->
+      <div class="row pb-5">
+
+        {% if posts|length == 0 %}
+        <p>
+          게시글이 없습니다.
+        </p>
+        {% endif %}
+        {% for post in posts %}
+        {% endfor %}
+
+      </div>
+
+    </div>
+
+    <!-- 검색 영역 -->
+    <div class="text-end">
+      <a class="btn btn-primary" href="#">
+        <i class="fi fi-rr-edit"></i> 글 작성
+      </a>
+    </div>
+
+    <!-- 맨 위로 가기 버튼 -->
+    <div class="text-end mt-4">
+      {% include 'components/main/top_button.html' %}
+    </div>
+
+  </div>
+
+</main>
+
+<script>
+
+</script>
+
+{% endblock %}

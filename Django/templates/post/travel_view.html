@@ -13,6 +13,8 @@
       {% include 'components/main/breadcrumbs.html' %}
       <div class="mb-5 pb-2 border-bottom">
         <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+
+          <!-- 게시글 정보 -->
           <div style="display: inline-block; text-align: left;">
             <h5 class="text-black-60">
               {{post.title}}
@@ -21,35 +23,33 @@
               {% for board in post.boards %}
               {{ board.name }} {% if forloop.counter < post.boards|length %} &gt; {% endif %} {% endfor %} </p>
           </div>
+
+          <!-- 게시글 메뉴 -->
           <div style="display: inline-block; text-align: right;">
             <p class="m-0 text-end text-black-50" style="font-size: 14px;">
               <span class="me-1" style="white-space: nowrap;">
                 <i class="fi fi-rr-eye"></i> {{ post.view_count }}
               </span>
               <span class="me-1" style="white-space: nowrap;">
+                <i class="fi fi-rr-heart"></i> {{ post.like_count }}
+              </span>
+              <span class="me-1" style="white-space: nowrap;">
                 <i class="fi fi-rr-comment-alt-dots"></i> {{ comments|length }}
               </span>
             </p>
-            <a href="javascript: scrollToComment()"
-              class="btn btn-sm btn-success mt-2 p-1 px-2">
-              <i class="fi fi-rr-comment-alt-dots"></i> 댓글 바로가기
-            </a>
-            {% if post.author.id != account.id %}
-            {% if bookmarkable %}
             <a href="javascript: bookmark()"
               class="btn btn-sm btn-success mt-2 p-1 px-2">
-              <i class="fi fi-rr-star"></i> 즐겨찾기
+              {% if post.id not in account.bookmarked_posts %}
+              <i class="fi fi-rr-bookmark"></i> 즐겨찾기
+              {% else %}
+              <i class="fi fi-rr-bookmark"></i> 즐겨찾기 해제
+              {% endif %}
             </a>
-            {% else %}
-            <a href="javascript: bookmark()"
-              class="btn btn-sm btn-success mt-2 p-1 px-2">
-              <i class="fi fi-rr-star-filled"></i> 즐겨찾기 해제
-            </a>
-            {% endif %}
             <a href="{{main_url}}/post/review?search={{post.title}}"
               class="btn btn-sm btn-primary mt-2 p-1 px-2">
               <i class="fi fi-rr-star"></i> 후기검색
             </a>
+            {% if account.account_type in 'user,dame' %}
             <a href="/post/write_post?review_post_id={{ post.id }}"
               class="btn btn-sm btn-primary mt-2 p-1 px-2">
               <i class="fi fi-rr-comment-alt-dots"></i> 후기 작성

@@ -13,6 +13,8 @@
       {% include 'components/main/breadcrumbs.html' %}
       <div class="mb-5 pb-2 border-bottom">
         <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+
+          <!-- 게시글 정보 -->
           <div style="display: inline-block; text-align: left;">
             <h5 class="text-black-60">
               {{post.title}}
@@ -21,7 +23,20 @@
               {% for board in post.boards %}
               {{ board.name }} {% if forloop.counter < post.boards|length %} &gt; {% endif %} {% endfor %} </p>
           </div>
+
+          <!-- 게시글 메뉴 -->
           <div style="display: inline-block; text-align: right;">
+            <p class="m-0 text-end text-black-50" style="font-size: 14px;">
+              <span class="me-1" style="white-space: nowrap;">
+                <i class="fi fi-rr-eye"></i> {{ post.view_count }}
+              </span>
+              <span class="me-1" style="white-space: nowrap;">
+                <i class="fi fi-rr-heart"></i> {{ post.like_count }}
+              </span>
+              <span class="me-1" style="white-space: nowrap;">
+                <i class="fi fi-rr-comment-alt-dots"></i> {{ comments|length }}
+              </span>
+            </p>
             {% if account.id == post.author.id or 'post' in account.supervisor_permissions %}
             <a class="btn btn-success btn-sm small me-2" href="#">
               <i class="fi fi-rr-edit"></i> 게시글 수정

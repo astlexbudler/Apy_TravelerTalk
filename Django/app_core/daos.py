@@ -1053,7 +1053,7 @@ def update_post(post_id, title=None, content=None, image=None, board_ids=None, s
     }
 
 # 게시글의 여행지 정보 업데이트
-def update_place_info(post_id, category_ids=None, location_info=None, open_info=None, status=None, ad_start_at=None, ad_end_at=None, note=None):
+def update_place_info(post_id, category_ids=None, location_info=None, open_info=None, status=None, ad_start_at=None, ad_end_at=None, note=None, address=None):
 
     # 게시글 확인
     post = models.POST.objects.filter(
@@ -1106,6 +1106,8 @@ def update_place_info(post_id, category_ids=None, location_info=None, open_info=
         place_info.ad_end_at = ad_end_at
     if note: # 메모 업데이트
         place_info.note = note
+    if address:
+        place_info.address = address
     place_info.save()
 
     return {
@@ -1212,7 +1214,7 @@ def create_comment(post_id, account_id, content):
 
     # 출석체크, 가입 인사 확인 및 포인트 지급
     if post.title.startswith('attendance:'):
-        point = int(select_server_setting('attendance_point'))
+        point = int(select_server_setting('attend_point'))
         account.mileage += point
         account.exp += point
         account.save()
@@ -1871,6 +1873,7 @@ def select_all_server_settings():
 def select_server_setting(name):
 
     # 서버 설정 확인
+    print(name)
     server_setting = models.SERVER_SETTING.objects.filter(
         name=name
     )
