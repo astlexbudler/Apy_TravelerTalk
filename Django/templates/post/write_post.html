@@ -91,7 +91,7 @@
       formData.append('image', document.getElementById('imageInput').files[0]); // 대표 이미지
     }
 
-    await fetch('/post/write_post?board_ids={{request.GET.board_ids}}', {
+    await fetch('/post/write_post?board_ids={{board_ids}}', {
       method: 'POST',
       headers: {
         'X-CSRFToken': csrftoken
@@ -102,7 +102,7 @@
       .then(async (data) => {
         if (data.result == 'success') {
           await showAlert('게시글 작성 완료', '게시글이 성공적으로 작성되었습니다.', 'success');
-          window.location.href = '/post/post_view?post_id=' + data.post_id + '&board_ids={{request.GET.board_ids}}';
+          window.location.href = '/post/post_view?post_id=' + data.post_id + '&board_ids={{board_ids}}';
         } else {
           showAlert('게시글 작성 실패', '게시글 작성에 실패했습니다. 잠시 후 다시 시도해주세요.', 'error');
         }

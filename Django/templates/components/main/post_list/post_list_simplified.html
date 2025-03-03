@@ -17,3 +17,29 @@
         'comment_count': 'post comment count Integer.',
     }
 -->
+<a class="text-dark text-decoration-none" href="/post/post_view?post_id={{post.id}}&board_ids={{request.GET.board_ids}}">
+    <div class="mb-3 pb-3 border-bottom">
+        <p class="text-black-50 small m-0">
+            {% for board in post.boards %}
+            {{ board.name }} {% if not forloop.last %} > {% endif %}
+            {% endfor %}
+        </p>
+        <p>
+            {{post.title}}<br>
+            <span class="text-black-50 small">
+                {{post.author.nickname}}
+            </span>
+        </p>
+        <p class="m-0 text-end text-black-50" style="font-size: 12px;">
+            <span class="me-1" style="white-space: nowrap;">
+                <i class="fi fi-rr-eye"></i> {{post.view_count}}
+            </span>
+            <span class="me-1" style="white-space: nowrap;">
+                <i class="fi fi-rr-social-network"></i> {{post.like_count}}
+            </span>
+            <span style="white-space: nowrap;">
+                <i class="fi fi-rr-comment-dots"></i> {{post.comment_count}}
+            </span>
+        </p>
+    </div>
+</a>

@@ -1796,7 +1796,6 @@ def select_sent_messages(account_id, page=1):
                 'created_at': datetime.datetime.strftime(message.created_at, '%Y-%m-%d %H:%M'),
             })
         except Exception as e:
-            print(e)
             message.delete()
 
     return messages_data, last_page
@@ -1873,7 +1872,6 @@ def select_all_server_settings():
 def select_server_setting(name):
 
     # 서버 설정 확인
-    print(name)
     server_setting = models.SERVER_SETTING.objects.filter(
         name=name
     )

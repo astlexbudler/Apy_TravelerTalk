@@ -37,7 +37,7 @@
                 <i class="fi fi-rr-comment-alt-dots"></i> {{ comments|length }}
               </span>
             </p>
-            <a href="javascript: bookmark()"
+            <a href="javascript: likePost()"
               class="btn btn-sm btn-success mt-2 p-1 px-2">
               {% if post.id not in account.bookmarked_posts %}
               <i class="fi fi-rr-bookmark"></i> 즐겨찾기
@@ -98,15 +98,15 @@
 </main>
 <script>
 
-  bookmark = async () => {
-    // 북마크 토글 요청
-    await fetch('/api/like_post?post_id={{post.id}}')
+likePost = async () => {
+    await fetch('/api/like_post?post_id={{ request.GET.post_id }}')
     .then(response => response.json())
     .then(data => {
       console.log(data);
     });
-    location.reload();
+   location.reload();
   }
+
 </script>
 
 {% endblock %}

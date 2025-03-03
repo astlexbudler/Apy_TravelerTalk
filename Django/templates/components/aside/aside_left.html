@@ -88,10 +88,10 @@
             <p>
                 즐겨찾기한 게시글이 없습니다
             </p>
-            {% for bookmark in bookmarks %}
-            {{ bookmark }}
-            {% endfor %}
             {% endif %}
+            {% for bookmark in bookmarks %}
+            {% include 'components/main/post_list/post_list_simplified.html' with post=bookmark %}
+            {% endfor %}
         </div>
     </div>
 

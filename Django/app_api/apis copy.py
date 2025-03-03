@@ -873,6 +873,7 @@ def like_post(request):
 
   # 게시글 확인
   board = post.boards.all().last()
+  print('board.board_type:', board.board_type)
   if 'travel' == board.board_type: # 여행지 게시글인 경우, 북마크 추가
     user = models.ACCOUNT.objects.prefetch_related('bookmarked_places').filter(
       username=request.user.username

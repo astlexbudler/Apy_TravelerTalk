@@ -82,7 +82,6 @@ def write_post(request):
     content = str(request.POST.get('content')).replace('`', "'")
     review_post_id = request.POST.get('review_post_id') # 후기 게시글 작성시, 대상 게시글 아이디
     image = request.FILES.get('image') if request.FILES.get('image') else None
-    review_post_id = request.POST.get('review_post_id') # 후기 게시글 작성시, 대상 게시글 아이디
     board_ids = request.GET.get('board_ids') # 게시판 아이디
     if not title or not content: # 제목 또는 내용이 없는 경우
       return JsonResponse({'result': 'error'})
@@ -90,12 +89,11 @@ def write_post(request):
     # 리뷰 게시글인 경우
     if review_post_id:
       board = daos.select_board(
-        models.BOARD.objects.filter(board_type='review').id
+        models.BOARD.objects.filter(board_type='review').first().id
       )
-      board_ids = board['ids']
+      board_ids = ','.join([str(b) for b in board['ids']])
 
     # 게시글 작성
-    print('board_ids:', board_ids)
     post = daos.create_post(
       author_id=request.user.id,
       title=title,
@@ -117,8 +115,8 @@ def write_post(request):
       )
       daos.update_account(
         account_id=request.user.id,
-        exp_change=point,
-        mileage_change=point,
+        exp=request.user.exp + point,
+        mileage=request.user.mileage + point,
       )
     else:
       point = int(models.SERVER_SETTING.objects.get(name='post_point').value)
@@ -143,15 +141,15 @@ def write_post(request):
   # board_ids가 없는 경우, 메인 페이지로 이동
   if not board_ids and not review_post_id:
     return redirect('/?redirect_message=not_found_board')
-  board_ids = str(board_ids).split(',') # 게시판 아이디를 리스트로 변환
-  board = daos.select_board(board_ids[-1]) # 마지막 게시판 정보 가져오기
 
   # 게시판 접근 권한 확인
   if review_post_id: # 후기 게시글 작성인 경우
     if contexts['account']['account_type'] not in ['user', 'dame']: # 사용자, 파트너 계정만 가능
       return redirect('/?redirect_message=not_allowed_board')
     board = daos.select_board(models.BOARD.objects.filter(board_type='review').first().id) # 마지막 게시판 정보 가져오기
+    board_ids = ''.join([str(b) for b in board['ids']]) # 게시판 아이디
   else:
+    board = daos.select_board(str(board_ids).split(',')[-1]) # 마지막 게시판 정보 가져오기
     if contexts['account']['account_type'] not in board['write_groups']: # write 권한 확인
       return redirect('/?redirect_message=not_allowed_board')
 
@@ -167,17 +165,11 @@ def write_post(request):
     if board['level_cut'] > int(contexts['account']['level']['level']):
       return redirect('/?redirect_message=not_allowed_board')
 
-  # 후기 게시글인 경우
-  if review_post_id:
-    review_post = daos.select_post(review_post_id)
-  else:
-    review_post = None
-
   return render(request, 'post/write_post.html', {
     **contexts,
     'boards': boards, # 게시판 정보
     'board': board, # 게시판 정보
-    'review_post': review_post, # 후기 게시글 정보
+    'board_ids': board_ids, # 게시판 아이디
   })
 
 # 게시글 수정 페이지
@@ -443,39 +435,20 @@ def review(request):
   boards = daos.make_board_tree(contexts['account']['account_type']) # 게시판 정보
 
   # 후기 게시판
-  b = models.BOARD.objects.filter(board_type='review').first()
-  board = {
-    'id': b.id,
-    'name': b.name,
-  }
+  board = daos.select_board(
+    models.BOARD.objects.filter(board_type='review').first().id
+  )
 
-  '''
   # 데이터 가져오기
   page = int(request.GET.get('page', '1'))
   search = request.GET.get('search', '')
 
   # search posts
-  posts = models.POST.objects.select_related('author', 'review_post').prefetch_related('boards').filter(
-    Q(title__contains=search) | Q(review_post__title__contains=search),
-    boards__id__in=[str(b.id)],
-  ).order_by('-created_at')
-  last_page = len(posts) // 20 + 1
-  posts = [{
-    'id': p.id,
-    'title': p.title,
-    'image': '/media/' + str(p.image) if p.image else '/media/default.png',
-    'view_count': p.view_count,
-    'like_count': p.like_count,
-    'created_at': p.created_at,
-    'author': {
-      'id': p.author.id,
-      'nickname': p.author.first_name, # 작성자 닉네임
-    },
-    'review_post': { # 리뷰 게시글인 경우, 리뷰 대상 게시글 정보
-      'id': p.review_post.id,
-      'title': p.review_post.title,
-    } if p.review_post else None,
-  } for p in posts[(page - 1) * 20:page * 20]]
+  posts, last_page = daos.search_posts(
+    title=search,
+    board_id=board['ids'][-1],
+    page=page,
+  )
 
   today_best_reviews = None
   weekly_best_reviews = None
@@ -485,49 +458,53 @@ def review(request):
     # 오늘의 베스트 후기(추천, 조회, 업로드 순)
     today = datetime.datetime.now().strftime('%Y-%m-%d')
     today_best_reviews = []
-    tbrs = models.POST.objects.select_related('author', 'review_post').prefetch_related('boards').filter(
-      boards__id__in=[str(b.id)],
+    tbrs = models.POST.objects.select_related('author').prefetch_related('boards').filter(
+      boards__id__in=[board['id']],
       created_at__date=today,
     ).order_by('-like_count', '-view_count', '-created_at')[:10]
     for tbr in tbrs:
       today_best_reviews.append({
         'id': tbr.id,
         'title': tbr.title,
+        'boards': [{
+          'id': b.id,
+          'name': b.name,
+        } for b in tbr.boards.all()],
         'author': {
           'nickname': tbr.author.first_name,
         },
-        'review_post': {
-          'title': tbr.review_post.title,
-        },
         'like_count': tbr.like_count,
         'view_count': tbr.view_count,
+        'comment_count': models.COMMENT.objects.filter(post=tbr).count(),
         'created_at': tbr.created_at,
       })
     # 주간 베스트 후기(weight 기준)
     weekly_best_reviews = []
-    wbrs = models.POST.objects.select_related('author', 'review_post').prefetch_related('boards').filter(
-      boards__id__in=[str(b.id)],
+    wbrs = models.POST.objects.select_related('author').prefetch_related('boards').filter(
+      boards__id__in=[board['id']],
       created_at__gte=datetime.datetime.now() - datetime.timedelta(days=7),
     ).order_by('-search_weight')[:10]
     for wbr in wbrs:
       weekly_best_reviews.append({
         'id': wbr.id,
         'title': wbr.title,
+        'boards': [{
+          'id': b.id,
+          'name': b.name,
+        } for b in wbr.boards.all()],
         'author': {
           'nickname': wbr.author.first_name,
         },
-        'review_post': {
-          'title': wbr.review_post.title,
-        },
         'like_count': wbr.like_count,
         'view_count': wbr.view_count,
+        'comment_count': models.COMMENT.objects.filter(post=wbr).count(),
         'created_at': wbr.created_at,
       })
     # 월간 베스트 후기(weight 기준)
     now = datetime.datetime.now()
     monthly_best_reviews = []
-    mbrs = models.POST.objects.select_related('author', 'review_post').prefetch_related('boards').filter(
-      boards__id__in=[str(b.id)],
+    mbrs = models.POST.objects.select_related('author').prefetch_related('boards').filter(
+      boards__id__in=[str(board['id'])],
       created_at__year=now.year,
       created_at__month=now.month,
     ).order_by('-search_weight')[:10]
@@ -535,27 +512,28 @@ def review(request):
       monthly_best_reviews.append({
         'id': mbr.id,
         'title': mbr.title,
+        'boards': [{
+          'id': b.id,
+          'name': b.name,
+        } for b in mbr.boards.all()],
         'author': {
           'nickname': mbr.author.first_name,
         },
-        'review_post': {
-          'title': mbr.review_post.title,
-        },
         'like_count': mbr.like_count,
         'view_count': mbr.view_count,
+        'comment_count': models.COMMENT.objects.filter(post=mbr).count(),
         'created_at': mbr.created_at,
       })
-    '''
 
   return render(request, 'post/review.html', {
     **contexts,
     'boards': boards, # 게시판 정보
     'board': board, # 후기 게시판
-    #'posts': posts, # 후기 게시글
+    'posts': posts, # 후기 게시글
     'last_page': 1, # 마지막 페이지, page 처리에 사용
-    #'today_reviews': today_best_reviews, # 오늘의 베스트 후기
-    #'weekly_reviews': weekly_best_reviews, # 주간 베스트 후기
-    #'monthly_reviews': monthly_best_reviews, # 월간 베스트 후기
+    'today_reviews': today_best_reviews, # 오늘의 베스트 후기
+    'weekly_reviews': weekly_best_reviews, # 주간 베스트 후기
+    'monthly_reviews': monthly_best_reviews, # 월간 베스트 후기
   })
 
 # 후기 게시글 상세

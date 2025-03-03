@@ -135,17 +135,15 @@ def api_receive_coupon(request):
 def api_like_post(request):
 
     # 게시글 아이디 확인
-    post_id = request.POST.get('post_id')
+    post_id = request.GET.get('post_id')
 
     # 로그인 여부 확인
     if not request.user.is_authenticated:
         return JsonResponse({"success": False, 'status': 401, "message": "로그인이 필요합니다."})
-    account_id = request.user.username
+    account_id = request.user.id
 
     # 게시글 확인
     post = daos.select_post(post_id)
-    if post['success'] == False:
-        return JsonResponse({"success": False, 'status': 400, "message": post['message']})
 
     # 게시글 타입 확인 후 좋아요 처리
     if post['place_info'] == None: # 세션으로 처리
@@ -156,33 +154,57 @@ def api_like_post(request):
         else:
             user_like_posts += str(post['id']) + ','
             is_liked = True
+
+        # 게시글 업데이트
+        if is_liked:
+            like_count = int(post['like_count']) + 1
+
+            # 사용자 활동 기록 생성
+            daos.create_account_activity(
+                account_id=account_id,
+                message=f'[좋아요] {post["title"]} 게시글에 좋아요를 눌렀습니다.'
+            )
+
+        else: # 좋아요 취소
+            like_count = int(post['like_count']) - 1
+
+            # 사용자 활동 기록 생성
+            daos.create_account_activity(
+                account_id=account_id,
+                message=f'[좋아요] {post["title"]} 게시글에 좋아요를 취소하였습니다.'
+            )
     else: # DB로 처리
-        user_bookmark_posts = daos.select_account(account_id)['bookmark_posts']
+        user_bookmark_posts = daos.select_account(account_id)['bookmarked_posts']
         if str(post['id']) in user_bookmark_posts:
-            user_bookmark_posts = user_bookmark_posts.replace(str(post['id']) + ',', '')
+            request.user.bookmarked_posts.remove(
+                models.POST.objects.get(id=post_id)
+            )
+            request.user.save()
             is_liked = False
         else:
-            user_bookmark_posts += str(post['id']) + ','
+            request.user.bookmarked_posts.add(
+                models.POST.objects.get(id=post_id)
+            )
+            request.user.save()
             is_liked = True
+        # 게시글 업데이트
+        if is_liked:
+            like_count = int(post['like_count']) + 1
 
-    # 게시글 업데이트
-    if is_liked:
-        like_count = int(post['like_count']) + 1
+            # 사용자 활동 기록 생성
+            daos.create_account_activity(
+                account_id=account_id,
+                message=f'[좋아요] {post["title"]} 게시글을 즐겨찾기에 추가하였습니다.'
+            )
 
-        # 사용자 활동 기록 생성
-        daos.create_account_activity(
-            account_id=account_id,
-            message=f'[좋아요] {post["author"]["username"]}님의 게시글에 좋아요를 눌렀습니다.'
-        )
+        else: # 좋아요 취소
+            like_count = int(post['like_count']) - 1
 
-    else: # 좋아요 취소
-        like_count = int(post['like_count']) - 1
-
-        # 사용자 활동 기록 생성
-        daos.create_account_activity(
-            account_id=account_id,
-            message=f'[좋아요] {post["author"]["username"]}님의 게시글에 좋아요를 취소하였습니다.'
-        )
+            # 사용자 활동 기록 생성
+            daos.create_account_activity(
+                account_id=account_id,
+                message=f'[좋아요] {post["title"]} 게시글을 즐겨찾기에서 삭제하였습니다.'
+            )
 
     daos.update_post(
         post_id=post_id,

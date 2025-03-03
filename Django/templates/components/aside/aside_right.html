@@ -56,9 +56,8 @@
                 리뷰 게시글이 없습니다.
             </p>
             {% else %}
-            {{ best_reviews }}
             {% for review in best_reviews %}
-            {{ review }}
+            {% include 'components/main/post_list/post_list_simplified.html' with post=review %}
             {% endfor %}
             {% endif %}
         </div>
