@@ -45,6 +45,7 @@ INSTALLED_APPS = [
   'app_message',
   'corsheaders',
   'django_hosts',
+  'rest_framework',
 ]
 
 AUTHENTICATION_BACKENDS = [
