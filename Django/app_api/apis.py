@@ -91,9 +91,9 @@ def api_file_upload(request):
     file = request.FILES['file']
 
     # 응답
-    file_path = daos.upload_file(file)
+    file_path = daos.upload_file(file)['path']
     response = {
-        'path': 'media/' + file_path,
+        'path': 'media/' + str(file_path),
     }
 
     return JsonResponse({"success": True, 'status': 200, "message": "파일 업로드 성공", 'data': response})
