@@ -39,13 +39,26 @@
                         <ul class="dropdown-menu dropdown-menu-end p-0" aria-labelledby="bd-theme">
                             <li>
                                 <div style="width: 240px;" class="pt-3">
-                                    {% if messages|length == 0 %}
+                                    {% if unread_messages|length == 0 %}
                                     <p class="p-2">
                                         새로운 쪽지가 없습니다.
                                     </p>
                                     {% else %}
-                                    {% for message in messages %}
-                                    {{ message }}
+                                    {% for message in unread_messages %}
+                                    <div class="p-2 mb-2 border-bottom">
+                                        <p class="text-black-60 m-0">
+                                            {{message.title}}
+                                        </p>
+                                        <p class="text-black-50" style="font-size: 12px;">
+                                            {% if message.sender.nickname %}
+                                            {{message.sender.nickname}}
+                                            {% elif message.sender.id == 'supervisor' %}
+                                            관리자
+                                            {% else %}
+                                            {{message.sender.id}}
+                                            {% endif %} | {{message.created_at}}
+                                        </p>
+                                    </div>
                                     {% endfor %}
                                     {% endif %}
                                 </div>
@@ -175,13 +188,6 @@
         </div>
     </div>
 
-    <!-- 헤더 이미지 -->
-    <div class="header-bottom"
-        style="box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
-        <!-- 이미지 헤더 -->
-        <div class="w-100"
-            style="height: 150px; background: url('{{server_settings.site_header}}') center top no-repeat; background-size: cover;">
-        </div>
-    </div>
+
 </header>
 {% include 'components/header/toggle_theme.html' %}

@@ -27,18 +27,23 @@
                 <form id="couponWriteForm">
                     {% csrf_token %}
 
+                    <!-- 대표 이미지 -->
+                    <div class="mb-4">
+                        {% include 'components/other/upload_image.html' with label='이미지 첨부' id='imageInput' %}
+                    </div>
+
                     <!-- 여행지 게시글 선택 -->
                     <div class="form-group mb-4">
-                        <label>여행지</label>
-                        <input class="form-control" placeholder="여행지 게시글 아이디" id="newCouponPostId" name="post_id">
+                        <label for="newPostId">여행지</label> <small id="postConfirmText"></small>
+                        <input class="form-control" placeholder="여행지 게시글 아이디" id="newPostId" name="post_id" oninput="checkPostId(this)">
                         <div class="alert alert-info small mt-2">
-                            <i class="fi fi-rr-info"></i> ?
+                            <i class="fi fi-rr-info"></i> 쿠폰을 발급한 게시글의 개시글 아이디를 입력해주세요.(url에서 확인 가능)
                         </div>
                     </div>
 
                     <!-- code -->
                     <div class="form-group mb-4">
-                        <label>쿠폰 코드</label>
+                        <label for="'post_id">쿠폰 코드</label>
                         <a href="javascript: codeRoll();">
                             <i class="fi fi-rr-refresh"></i>
                         </a>
@@ -64,11 +69,12 @@
                     <div class="row mb-2">
                         <div class="form-group col-6">
                             <label>필요 포인트</label>
-                            <input class="form-control" placeholder="필요 포인트를 입력해주세요." name="required_mileage">
+                            <input class="form-control" placeholder="필요 포인트를 입력해주세요." name="required_mileage" id="newCouponRequirePoint"
+                                required>
                         </div>
                         <div class="form-group col-6">
                             <label>만료일</label>
-                            <input type="date" class="form-control" name="expire_at">
+                            <input type="date" class="form-control" name="expire_at" id="newCouponExpireAt" required>
                         </div>
                     </div>
 
@@ -76,7 +82,7 @@
 
             </div>
             <div class="modal-footer">
-                <button class="btn btn-primary me-2" id="createCouponButton">
+                <button class="btn btn-primary me-2" onclick="createCoupon()">
                     <i class="fi fi-rr-edit"></i> 생성하기
                 </button>
                 <button class="btn btn-secondary" data-bs-dismiss="modal">
@@ -87,6 +93,29 @@
     </div>
 </div>
 <script>
+
+    // 게시글 유효성 확인
+    checkPostId = async (postIdInput) => {
+        var postId = postIdInput.value;
+        if (postId.length > 0) {
+            const data = await fetch('/api/search_post?post_id=' + postId)
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                return data.data;
+            });
+            if (data.place_info) {
+                document.getElementById('postConfirmText').innerHTML = data.title + ' 여행지 확인';
+                document.getElementById('postConfirmText').classList.remove('text-danger');
+                document.getElementById('postConfirmText').classList.add('text-success');
+                return
+            }
+        }
+        document.getElementById('postConfirmText').innerHTML = '게시글을 확인해주세요.';
+        document.getElementById('postConfirmText').classList.remove('text-success');
+        document.getElementById('postConfirmText').classList.add('text-danger');
+    }
+
     // 새 쿠폰 번호 생성
     // 16자리의 랜덤 숫자를 생성하여 새 쿠폰 생성 모달의 쿠폰 코드 입력창에 채워넣음
     codeRoll = async () => {
@@ -132,7 +161,9 @@
         }
     });
 
+    // 쿠폰 생성
     createCoupon = async () => {
+        var post_id = document.getElementById('newPostId').value;
         var code = document.getElementById('newCouponCode').value;
         var name = document.getElementById('newCouponName').value;
         var content = document.getElementById('newCouponContent').value;
@@ -151,7 +182,7 @@
 
         // 쿠폰 생성 요청
         var formData = new FormData(document.getElementById('couponWriteForm'));
-        var result = await fetch('/api/coupon?create=y', {
+        var success = await fetch('/api/coupon', {
             method: 'POST',
             headers: {
                 'X-CSRFToken': csrftoken
@@ -161,11 +192,11 @@
             .then(response => response.json())
             .then(data => {
                 console.log(data);
-                return data.result;
+                return data.success;
             });
 
         // 결과에 따른 처리
-        if (result == 'success') {
+        if (success) {
             await showAlert('쿠폰 생성', '쿠폰이 생성되었습니다.', 'success');
             location.reload();
         } else {

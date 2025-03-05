@@ -56,6 +56,10 @@ urlpatterns = [
   # 게시글 id를 받아 게시글 삭제
   path('delete_post', a.api_delete_post, name='delete_post'),
 
+  # 게시글 검색 api
+  # GET: 게시글 검색
+  path('search_post', a.api_search_post, name='search_post'),
+
   # 사용자 API
   # POST-create: 사용자 정보 생성
   # GET: 사용자 정보 검색

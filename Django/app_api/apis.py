@@ -244,6 +244,16 @@ def api_delete_post(request):
 
     return JsonResponse({"success": True, 'status': 200, "message": "게시글 삭제 성공"})
 
+# 게시글 검색 api
+def api_search_post(request):
+
+    post_id = request.GET.get('post_id')
+
+    # 게시글 검색
+    post = daos.select_post(post_id)
+
+    return JsonResponse({"success": True, 'status': 200, "message": "게시글 조회 성공", 'data': post})
+
 # 사용자 REST API
 class api_account(APIView):
     # 사용자 검색 api(GET)
@@ -403,6 +413,8 @@ class api_message(APIView):
             guest_id = request.session.get('guest_id', ''.join(random.choices(string.ascii_uppercase + string.digits, k=10)))
             request.session['guest_id'] = guest_id
             sender_id = guest_id
+        elif 'message' in request.user.subsupervisor_permissions:
+            sender_id = 'supervisor'
         else:
             sender_id = request.user.id
         receiver_id = request.data.get('receiver_id')
@@ -551,29 +563,20 @@ class api_coupon(APIView):
     # 쿠폰 생성 api(POST)
     def post(self, request, *args, **kwargs):
 
-        # 쿠폰 생성
-        code = request.data.get('code')
-        related_post_id = request.data.get('related_post_id')
-        name = request.data.get('name')
-        content = request.data.get('content') # wysiwig 사용
-        image = request.data.get('image')
-        expire_at = request.data.get('expire_at')
-        required_mileage = request.data.get('required_mileage')
-
         # 로그인 여부 확인
         if not request.user.is_authenticated:
             return JsonResponse({"success": False, 'status': 401, "message": "로그인이 필요합니다."})
         create_account_id = request.user.id
 
         response = daos.create_coupon(
-            account_id=create_account_id,
-            code=code,
-            related_post_id=related_post_id,
-            name=name,
-            content=content,
-            image=image,
-            expire_at=expire_at,
-            required_mileage=required_mileage
+            account_id=request.user.id,
+            code=request.data.get('code'),
+            related_post_id=request.data.get('post_id'),
+            name=request.data.get('name'),
+            content=request.data.get('content'),
+            image=request.data.get('image'),
+            expire_at=request.data.get('expire_at'),
+            required_mileage=request.data.get('required_mileage')
         )
 
         # 활동 기록 생성
@@ -591,27 +594,17 @@ class api_coupon(APIView):
     def patch(self, request, *args, **kwargs):
 
         # 쿠폰 수정
-        code = request.data.get('code')
-        name = request.data.get('name')
-        content = request.data.get('content') # wysiwig 사용
-        image = request.data.get('image')
-        expire_at = request.data.get('expire_at')
-        required_mileage = request.data.get('required_mileage')
-        own_account_id = request.data.get('own_account_id')
-        status = request.data.get('status')
-        note = request.data.get('note')
-
-        # 쿠폰 수정
         response = daos.update_coupon(
-            code=code,
-            name=name,
-            content=content,
-            image=image,
-            expire_at=expire_at,
-            required_mileage=required_mileage,
-            own_account_id=own_account_id,
-            status=status,
-            note=note
+            code=request.data.get('code'),
+            name=request.data.get('name'),
+            content=request.data.get('content'),
+            image=request.data.get('image'),
+            expire_at=request.data.get('expire_at'),
+            required_mileage=request.data.get('required_mileage'),
+            own_account_id=request.data.get('own_account_id'),
+            status=request.data.get('status'),
+            note=request.data.get('note'),
+            related_post_id=request.data.get('post_id')
         )
 
         if response['success']:

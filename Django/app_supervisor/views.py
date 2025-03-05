@@ -1416,14 +1416,18 @@ def coupon(request):
 
   # 쿠폰 검색
   if tab_type == 'couponTab':
-    cs = models.COUPON.objects.select_related('related_post', 'create_account').prefetch_related('own_accounts').filter(
+    cs = models.COUPON.objects.select_related(
+      'related_post', 'create_account', 'own_account'
+    ).filter(
       Q(status='active')
     ).filter(
       code__contains=search_coupon_code,
       name__contains=search_coupon_name,
     ).order_by('-created_at')
   elif tab_type == 'historyTab':
-    cs = models.COUPON.objects.select_related('related_post', 'create_account').prefetch_related('own_accounts').exclude(
+    cs = models.COUPON.objects.select_related(
+      'related_post', 'create_account', 'own_account'
+    ).exclude(
       Q(status='active')
     ).filter(
       code__contains=search_coupon_code,
@@ -1464,14 +1468,18 @@ def coupon(request):
       'required_mileage': coupon.required_mileage,
       'expire_at': datetime.datetime.strftime(coupon.expire_at, '%Y-%m-%d'),
       'status': coupon.status,
-      'post': {
+      'related_post': {
         'id': coupon.related_post.id,
         'title': coupon.related_post.title,
       },
       'create_account': {
-        'id': coupon.create_account.username,
+        'id': coupon.create_account.id,
         'partner_name': coupon.create_account.last_name,
       },
+      'own_account': {
+        'id': coupon.own_account.id,
+        'nickname': coupon.own_account.first_name,
+      } if coupon.own_account else None,
     })
 
   return render(request, 'supervisor/coupon.html', {
@@ -1552,19 +1560,7 @@ def message(request):
         'code': m.include_coupon.code,
         'name': m.include_coupon.name,
       } if m.include_coupon else None,
-      'sender': {
-        'id': sd.username,
-        'nickname': sd.first_name,
-        'partner_name': sd.last_name,
-        'level': {
-          'level': sd.level.level,
-          'image': '/media/' + str(sd.level.image) if sd.level.image else None,
-          'text': sd.level.text,
-          'text_color': sd.level.text_color,
-          'background_color': sd.level.background_color,
-        } if sd.level else None,
-        'groups': [g.name for g in sd.groups.all()],
-      } if (sd := models.ACCOUNT.objects.prefetch_related('groups').select_related('level').filter(username=m.sender_account).first()) else {'id': m.sender_account},
+      'sender': daos.select_account(m.sender_account) if daos.select_account(m.sender_account) else {'id': m.sender_account},
     } for m in msgs[(page - 1) * 20:page * 20]]
 
     return render(request, 'supervisor/message.html', {
@@ -1617,19 +1613,7 @@ def message(request):
         'code': m.include_coupon.code,
         'name': m.include_coupon.name,
       } if m.include_coupon else None,
-      'to': {
-        'id': rc.username,
-        'nickname': rc.first_name,
-        'partner_name': rc.last_name,
-        'level': {
-          'level': rc.level.level,
-          'image': '/media/' + str(rc.level.image) if rc.level.image else None,
-          'text': rc.level.text,
-          'text_color': rc.level.text_color,
-          'background_color': rc.level.background_color,
-        } if rc.level else None,
-        'groups': [g.name for g in rc.groups.all()],
-      } if (rc := get_user_model().objects.prefetch_related('groups').select_related('level').get(username=m.to_account)) else {'id': m.to_account},
+      'to': daos.select_account(m.to_account) if daos.select_account(m.to_account) else {'id': m.to_account},
     } for m in msgs[(page - 1) * 20:page * 20]]
 
     return render(request, 'supervisor/message.html', {

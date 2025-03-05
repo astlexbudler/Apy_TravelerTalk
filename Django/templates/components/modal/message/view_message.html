@@ -28,8 +28,8 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">
-                    쪽지
+                <h5 class="modal-title text-black-60">
+                    쪽지(old)
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -38,7 +38,7 @@
                 <div class="row">
                     {% if message.image %}
                     <div class="col-6">
-                        <img src="/media/{{message.image}}" class="w-100">
+                        <img src="/media/{{message.image}}" class="w-100 shadow">
                     </div>
                     {% endif %}
                     <div class="{% if 'media' in message.image %}col-12{% else %}col-6{% endif %}">
@@ -99,8 +99,9 @@
                     답장
                 </button>
                 {% endif %}
-                <button type="button" class="btn text-white" style="background-color: gray;"
-                    data-bs-dismiss="modal">닫기</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    닫기
+                </button>
             </div>
         </div>
     </div>

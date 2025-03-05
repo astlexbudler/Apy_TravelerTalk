@@ -25,3 +25,97 @@
         },
     }
 -->
+<div class="modal fade" id="couponModal{{coupon.code}}" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-black-60">
+                    {{coupon.name}}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <!-- 쿠폰 정보 -->
+                <div class="row">
+                    {% if coupon.image %}
+                    <div class="col-6">
+                        <img src="{{coupon.image}}" class="w-100 shadow">
+
+                    </div>
+                    {% endif %}
+                    <div class="{% if coupon.image %}col-6{% else %}col-12{% endif %}">
+                        <p class="text-black-50 m-0">
+                            <span style="font-size: 12px;">
+                                <u>
+                                    {{coupon.code}}
+                                </u>
+                                <a href="javascript: navigator.clipboard.writeText('{{coupon.code}}'); showAlert('클립보드 복사', '쿠폰 코드가 복사되었습니다.', 'success');"
+                                    class="text-black-50">
+                                    <i class="fi fi-rr-clipboard"></i>
+                                </a>
+                            </span>
+                        </p>
+                        <p class="text-dark">
+                            {{coupon.name}}
+                        </p>
+                        <p class="text-black-50">
+                            {{coupon.content}}
+                        </p>
+                        <p class="text-black-50" style="font-size: 12px;">
+                            <i class="fi fi-rr-marker"></i>
+                            <a href="/post/travel_view?post={{coupon.post.id}}" target="_blank" class="text-black-50"
+                                style="text-decoration: underline;">{{coupon.related_post.title}}
+                            </a>
+                        </p>
+                        <p class="text-black-50 small">
+                            사용기한: {{coupon.expire_at}} 까지
+                        </p>
+                        {% if coupon.required_mileage != 0 %}
+                        <div class="alert alert-info small">
+                            <i class="fi fi-ss-coins"></i> <span class="numberComma">{{coupon.required_mileage}}</span>
+                            마일리지 필요
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- 사용자 표시(쿠폰 생성자만 확인 가능) -->
+                {% if account.id == coupon.create_account.id %}
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <p class="text-black-60">
+                            쿠폰 소유자
+                        </p>
+                        <div class="my-2">
+                            {% if not coupon.own_account %}
+                            <p class="text-black-50">
+                                쿠폰을 보유한 사용자가 없습니다.
+                            </p>
+                            {% else %}
+                            <a class="text-dark me-2" href="{{main_url}}/profile?profile_id={{account.id}}"
+                                target="_blank">
+                                {{coupon.onw_account.nickname}}
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+            </div>
+            <div class="modal-footer">
+                <!-- 쿠폰 수정 버튼(쿠폰 생성자만 확인 가능) -->
+                {% if account.id == coupon.create_account.id and coupon.status == 'active' %}
+                <button type="button" class="btn btn-primary me-2" data-bs-dismiss="modal"
+                    onclick="new bootstrap.Modal(document.getElementById('rewriteCouponModal{{coupon.code}}')).show();">
+                    <i class="fi fi-rr-edit"></i> 수정하기
+                </button>
+                {% endif %}
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    닫기
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

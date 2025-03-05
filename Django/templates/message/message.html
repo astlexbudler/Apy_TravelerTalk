@@ -36,6 +36,7 @@
           {% endif %}
           {% for message in messages %}
           {% include 'components/main/message_list.html' %}
+          {% include 'components/modal/message/view_message.html' %}
           {% endfor %}
         </div>
 
@@ -67,15 +68,6 @@
 
 </main>
 
-<!--
-  Modals
-  - 쪽지 상세보기 모달
-  - 받은 쪽지 및 보낸 쪽지 모달.
-  - 받은 쪽지는 발신자, 보낸 쪽지는 수신자를 확인할 수 있음. 받은 쪽지는 답장 버튼 및 쿠폰 받기 버튼이 있음.
--->
-{% for message in messages %}
-{% include 'parts/message_read_modal.html' %}
-{% endfor %}
 <!-- 쪽지 작성 모달 -->
 {% include 'components/modal/message/create_message.html' %}
 

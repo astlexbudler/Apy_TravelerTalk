@@ -97,28 +97,36 @@
           </p>
           {% endif %}
           {% for coupon in coupons %}
-          <a href="#" class="text-dark">
+          <a class="text-dark" href="javascript: new bootstrap.Modal(document.getElementById('couponModal{{coupon.code}}')).show();">
             <div class="p-2 mb-2 pb-3 border-bottom">
-                <div style="display: flex; justify-content: space-between; white-space: nowrap;">
-                    <div style="display: inline-block; text-align: left;">
-                        <h6 class="text-black-60 mb-4">
-                            {{coupon.name}}
-                        </h6>
-                        <p class="text-black-50 small m-0">
-                            여행지: {{coupon.related_post.title}}
-                        </p>
-                        <p class="text-black-50 small">
-                            사용기간: {{coupon.expire_at}}까지
-                        </p>
-                    </div>
-                    <div style="display: inline-block; text-align: right;">
-                        <p class="text-black-50">
-                            <i class="fi fi-ss-coins"></i> <span class="numberComma">1000</span> 마일리지 필요
-                        </p>
-                    </div>
+              <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+                {% if coupon.image %}
+                <div style="display: inline-block; text-align: left;">
+                  <img src="{{coupon.image}}" class="img-fluid rounded img-web shadow m-1"
+                  style="width: 6vw; min-width: 80px; max-width: 100px;">
                 </div>
+                {% endif %}
+                <div class="ps-3" style="display: inline-block; text-align: left; flex: 1;">
+                    <h6 class="text-black-60 mb-4">
+                        {{coupon.name}}
+                    </h6>
+                    <p class="text-black-50 small m-0">
+                        여행지: {{coupon.related_post.title}}
+                    </p>
+                    <p class="text-black-50 small">
+                        사용기간: {{coupon.expire_at}}까지
+                    </p>
+                </div>
+                <div style="display: inline-block; text-align: right;">
+                    <p class="text-black-50">
+                        <i class="fi fi-ss-coins"></i> <span class="numberComma">{{coupon.required_mileage}}</span> 마일리지 필요
+                    </p>
+                </div>
+              </div>
             </div>
           </a>
+          {% include 'components/modal/coupon/view_coupon.html' %}
+          {% include 'components/modal/coupon/update_coupon.html' %}
           {% endfor %}
         </div>
 
@@ -152,13 +160,13 @@
     // Tab
     var tab = '{{request.GET.tab}}';
     if (tab == '') {
-      location.href = '{{PARTNER_URL}}/partner/coupon?tab=couponTab';
+      location.href = '{{SUPERVISOR_URL}}/supervisor/coupon?tab=couponTab';
     }
 
     // pagination
     if ('{{last_page}}' && document.querySelector('#pageButton')) {
       var tab = '{{request.GET.tab}}';
-      makePaegeButton('{{request.GET.page}}', '{{last_page}}', `{{PARTNER_URL}}/partner/coupon?tab=${tab}`);
+      makePaegeButton('{{request.GET.page}}', '{{last_page}}', `{{SUPERVISOR_URL}}/supervisor/coupon?tab=${tab}`);
     }
   });
 

@@ -11,3 +11,162 @@
     쿠폰 수정 API를 호출하여 쿠폰을 수정합니다.
     /api/coupon?coupon_id= PATCH 요청을 보내어 쿠폰을 수정합니다.
 -->
+<div class="modal fade" id="rewriteCouponModal{{coupon.code}}" tabindex="-1" aria-labelledby="modalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    쿠폰 수정하기
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <form id="couponRewriteForm">
+                    {% csrf_token %}
+
+                    <!-- 대표 이미지 -->
+                    <div class="mb-4">
+                        <div>
+                            <label>
+                                이미지 첨부
+                            </label>
+                            <div id="{{coupon.code}}Preview" class="mb-3">
+                                {% if coupon.image %}
+                                <div class="mb-2 me-2 shadow-sm text-end p-2"
+                                    style="min-width: 150px; width: 12vw; background: url('{{coupon.image}}') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw; cursor: pointer;"
+                                    onclick="deleteImage(this)"></div>
+                                {% endif %}
+                            </div>
+                            <a href="javascript: document.getElementById('{{coupon.code}}').click();"
+                                class="btn btn-success btn-sm small">
+                                <i class="fi fi-rr-picture"></i> 이미지 등록
+                            </a>
+                            <input type="file" class="d-none" id="{{coupon.code}}" multiple name="image">
+                        </div>
+                        <script>
+                            // 대표 이미지 추가
+                            document.getElementById('{{coupon.code}}').addEventListener('change', async (e) => {
+                                const files = e.target.files;
+
+                                for (let i = 0; i < files.length; i++) {
+                                    const file = files[i];
+                                    const reader = new FileReader();
+                                    reader.onload = (e) => {
+                                        const imagePath = e.target.result;
+                                        document.getElementById('{{coupon.code}}Preview').innerHTML = `
+                                <div class="mb-2 me-2 shadow-sm text-end p-2" style="min-width: 150px; width: 12vw; background: url('${imagePath}') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw; cursor: pointer;" onclick="deleteImage(this)"></div>
+                                `;
+                                    }
+                                    reader.readAsDataURL(file);
+                                }
+                            });
+
+                            // 이미지 삭제
+                            deleteImage = (element) => {
+                                element.remove();
+                                document.getElementById('{{coupon.code}}').value = '';
+                            }
+                        </script>
+                    </div>
+
+                    <div class="form-group mb-4">
+                        <label for="newPostId">여행지</label> <small id="postConfirmText"></small>
+                        <input class="form-control" placeholder="여행지 게시글 아이디" id="newPostId" name="post_id" oninput="checkPostId(this)" value="{{coupon.related_post.id}}">
+                        <div class="alert alert-info small mt-2">
+                            <i class="fi fi-rr-info"></i> 쿠폰을 발급한 게시글의 개시글 아이디를 입력해주세요.(url에서 확인 가능)
+                        </div>
+                    </div>
+
+                    <!-- code -->
+                    <div class="form-group mb-4">
+                        <label>쿠폰 코드</label>
+                        <input class="form-control" placeholder="쿠폰 코드를 입력해주세요." id="rewriteCouponCode" name="code"
+                            value="{{coupon.code}}" readonly>
+                        <div class="alert alert-info small mt-2">
+                            <i class="fi fi-rr-info"></i> 쿠폰 코드는 쿠폰을 사용할 때 필요한 코드입니다. 쿠폰 코드는 수정할 수 없습니다.
+                        </div>
+                    </div>
+
+                    <!-- name -->
+                    <div class="form-group mb-4">
+                        <label>쿠폰 이름</label>
+                        <input class="form-control" placeholder="쿠폰 이름을 입력해주세요." id="rewriteCouponName" name="name"
+                            value="{{coupon.name}}" required>
+                    </div>
+
+                    <!-- content -->
+                    <div class="form-group mb-4">
+                        <label>쿠폰 설명</label>
+                        <textarea class="form-control" rows="5" placeholder="쿠폰 설명을 입력해주세요."
+                            id="rewriteCouponContent" name="content" required>{{coupon.content}}</textarea>
+                    </div>
+
+                    <!-- required_mileage, expire_at -->
+                    <div class="row mb-2">
+                        <div class="form-group col-6">
+                            <label>필요 포인트</label>
+                            <input class="form-control" placeholder="필요 포인트를 입력해주세요."
+                                id="rewriteCouponRequireMileage" name="required_mileage" value="{{coupon.required_mileage}}">
+                        </div>
+                        <div class="form-group col-6">
+                            <label>만료일</label>
+                            <input type="date" class="form-control" id="rewriteCouponExpireAt" name="expire_at"
+                                value="{{coupon.expire_at}}">
+                        </div>
+                    </div>
+
+                </form>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="rewriteCoupon();">
+                    <i class="fi fi-rr-edit"></i> 수정하기
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    취소
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    rewriteCoupon = async () => {
+        var name = document.getElementById('rewriteCouponName').value;
+        var content = document.getElementById('rewriteCouponContent').value;
+        var required_mileage = document.getElementById('rewriteCouponRequireMileage').value;
+        var expire_at = document.getElementById('rewriteCouponExpireAt').value;
+
+        if (name == '' | content == '' | expire_at == '' | required_mileage == '') {
+            await showAlert('쿠폰 생성', '쿠폰 이름, 설명, 만료일, 필요 포인트는 필수 입력 사항입니다.', 'error');
+            return;
+        }
+
+        // 쿠폰 수정 요청
+        var form = document.getElementById('couponRewriteForm');
+        var formData = new FormData(form);
+
+        var success = await fetch('/api/coupon', {
+            method: 'PATCH',
+            headers: {
+                'X-CSRFToken': csrftoken
+            },
+            body: formData,
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                return data.success;
+            });
+
+        // 결과에 따른 처리
+        if (success) {
+            await showAlert('쿠폰 수정', '쿠폰이 수정되었습니다.', 'success');
+            location.reload();
+        } else {
+            await showAlert('쿠폰 수정 실패', '쿠폰 수정에 실패했습니다.', 'error');
+        }
+
+    }
+</script>

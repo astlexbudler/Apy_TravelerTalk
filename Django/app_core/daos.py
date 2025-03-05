@@ -178,7 +178,7 @@ def get_default_contexts(request):
 
     # 사용자 정보 확인
     if not request.user.is_authenticated:
-        guest_id = request.session.get('guest_id', ''.join(random.choices(string.ascii_letters + string.digits, k=16)))
+        guest_id = request.session.get('guest_id', 'guest_'.join(random.choices(string.ascii_letters + string.digits, k=8)))
         request.session['guest_id'] = guest_id
         account = {
             'id': guest_id,
@@ -575,6 +575,9 @@ def select_account_activities(account_id, page=1):
 
 # 사용자 활동 생성
 def create_account_activity(account_id, message, exp_change=0, mileage_change=0):
+
+    if account_id in ['guest', 'supervisor']:
+        return
 
     # 사용자 정보 확인
     account = models.ACCOUNT.objects.filter(
@@ -1311,9 +1314,9 @@ def select_all_coupons(code=None, name=None, status=None):
 
     # 모든 쿠폰 정보 확인
     coupons = models.COUPON.objects.select_related(
-        'own_account', 'related_post', 'created_account', 'own_account__level',
+        'own_account', 'related_post', 'create_account', 'own_account__level',
     ).prefetch_related(
-        'created_account__group'
+        'create_account__group'
     )
 
     query = Q()
@@ -1346,12 +1349,12 @@ def select_all_coupons(code=None, name=None, status=None):
             'nickname': coupon.own_account.first_name,
             'level': select_level(coupon.own_account.level.level),
         } if coupon.own_account else None,
-        'created_account': {
-            'id': coupon.created_account.id,
-            'nickname': coupon.created_account.first_name,
-            'partner_name': coupon.created_account.last_name,
-            'account_type': coupon.created_account.groups.all()[0].name, # 각 계정은 하나의 그룹만 가짐
-        } if coupon.created_account else None,
+        'create_account': {
+            'id': coupon.create_account.id,
+            'nickname': coupon.create_account.first_name,
+            'partner_name': coupon.create_account.last_name,
+            'account_type': coupon.create_account.groups.all()[0].name, # 각 계정은 하나의 그룹만 가짐
+        } if coupon.create_account else None,
         'status': coupon.status,
         'note': coupon.note,
     } for coupon in coupons]
@@ -1373,11 +1376,11 @@ def select_created_coupons(account_id, status=None):
 
     # 사용자가 생성한 쿠폰 정보 확인
     coupons = models.COUPON.objects.select_related(
-        'own_account', 'related_post', 'created_account', 'own_account__level',
+        'own_account', 'related_post', 'create_account', 'own_account__level',
     ).prefetch_related(
-        'created_account__group'
+        'create_account__group'
     ).filter(
-        created_account=account.first(),
+        create_account=account.first(),
         status=status
     )
 
@@ -1401,12 +1404,12 @@ def select_created_coupons(account_id, status=None):
             'nickname': coupon.own_account.first_name,
             'level': select_level(coupon.own_account.level.level),
         } if coupon.own_account else None,
-        'created_account': {
-            'id': coupon.created_account.id,
-            'nickname': coupon.created_account.first_name,
-            'partner_name': coupon.created_account.last_name,
-            'account_type': coupon.created_account.groups.all()[0].name, # 각 계정은 하나의 그룹만 가짐
-        } if coupon.created_account else None,
+        'create_account': {
+            'id': coupon.create_account.id,
+            'nickname': coupon.create_account.first_name,
+            'partner_name': coupon.create_account.last_name,
+            'account_type': coupon.create_account.groups.all()[0].name, # 각 계정은 하나의 그룹만 가짐
+        } if coupon.create_account else None,
         'status': coupon.status,
         'note': coupon.note,
     } for coupon in coupons]
@@ -1430,7 +1433,7 @@ def select_owned_coupons(account_id, status=None, page=1):
     coupons = models.COUPON.objects.select_related(
         'own_account', 'related_post', 'create_account', 'own_account__level',
     ).prefetch_related(
-        'created_account__group'
+        'create_account__group'
     )
 
     if status == 'active':
@@ -1469,12 +1472,12 @@ def select_owned_coupons(account_id, status=None, page=1):
             'nickname': coupon.own_account.first_name,
             'level': select_level(coupon.own_account.level.level),
         } if coupon.own_account else None,
-        'created_account': {
-            'id': coupon.created_account.id,
-            'nickname': coupon.created_account.first_name,
-            'partner_name': coupon.created_account.last_name,
-            'account_type': coupon.created_account.groups.all()[0].name, # 각 계정은 하나의 그룹만 가짐
-        } if coupon.created_account else None,
+        'create_account': {
+            'id': coupon.create_account.id,
+            'nickname': coupon.create_account.first_name,
+            'partner_name': coupon.create_account.last_name,
+            'account_type': coupon.create_account.groups.all()[0].name, # 각 계정은 하나의 그룹만 가짐
+        } if coupon.create_account else None,
         'status': coupon.status,
         'note': coupon.note,
     } for coupon in coupons]
@@ -1487,8 +1490,8 @@ def create_coupon(account_id, code, related_post_id, name, content, image, expir
     # 사용자 확인
     account = models.ACCOUNT.objects.filter(
         id=account_id
-    )
-    if not account.exists():
+    ).first()
+    if not account:
         return {
             'success': False,
             'message': '사용자 정보가 존재하지 않습니다.',
@@ -1497,8 +1500,8 @@ def create_coupon(account_id, code, related_post_id, name, content, image, expir
     # related_post 확인
     related_post = models.POST.objects.filter(
         id=related_post_id
-    )
-    if not related_post.exists():
+    ).first()
+    if not related_post:
         return {
             'success': False,
             'message': '관련 게시글 정보가 존재하지 않습니다.',
@@ -1517,13 +1520,13 @@ def create_coupon(account_id, code, related_post_id, name, content, image, expir
     # 쿠폰 생성
     coupon = models.COUPON.objects.create(
         code=code,
-        related_post=related_post.first(),
+        related_post=related_post,
         name=name,
         content=content,
         image=image,
         expire_at=expire_at,
         required_mileage=required_mileage,
-        created_account=account.first(),
+        create_account=account,
     )
 
     return {
@@ -1533,7 +1536,7 @@ def create_coupon(account_id, code, related_post_id, name, content, image, expir
     }
 
 # 쿠폰 정보 업데이트
-def update_coupon(code, name=None, content=None, image=None, expire_at=None, required_mileage=None, own_account_id=None, status=None, note=None):
+def update_coupon(code, name=None, content=None, image=None, expire_at=None, required_mileage=None, own_account_id=None, status=None, note=None, related_post_id=None):
 
     # 쿠폰 확인
     coupon = models.COUPON.objects.filter(
@@ -1573,6 +1576,12 @@ def update_coupon(code, name=None, content=None, image=None, expire_at=None, req
         coupon.status = status
     if note: # 메모 업데이트
         coupon.note = note
+    if related_post_id:
+        post = models.POST.objects.filter(
+            id=related_post_id
+        ).first()
+        if post:
+            coupon.related_post = post
     coupon.save()
 
     return {
@@ -1600,46 +1609,56 @@ def select_message(message_id):
         }
 
     # 보낸 사람 정보
-    from_account = models.ACCOUNT.objects.filter(
-        id=message.sender_account
-    ).first()
-    if not from_account: # supervisor or guest_id
-        if message.sender_account == 'supervisor':
+    if message.sender_account == 'supervisor':
+        from_account = {
+            'id': 'supervisor',
+            'nickname': '관리자',
+        }
+    elif message.sender_account.startswith('guest'):
+        from_account = {
+            'id': account_id,
+            'nickname': f'손님({message.sender_account})',
+        }
+    else:
+        from_account = models.ACCOUNT.objects.filter(
+            id=message.sender_account
+        ).first()
+        if not from_account:
             from_account = {
-                'id': 'supervisor',
-                'nickname': '관리자',
+                'id': '',
+                'nickname': '없는 사용자',
             }
         else:
             from_account = {
-                'id': 'guest',
-                'nickname': f'게스트({message.sender_account})',
+                'id': from_account.id,
+                'nickname': from_account.first_name,
             }
-    else:
-        from_account = {
-            'id': from_account.id,
-            'nickname': from_account.first_name,
-        }
 
     # 받는 사람 정보
-    to_account = models.ACCOUNT.objects.filter(
-        id=message.to_account
-    ).first()
-    if not to_account: # supervisor or guest_id
-        if message.to_account == 'supervisor':
+    if message.to_account == 'supervisor':
+        to_account = {
+            'id': 'supervisor',
+            'nickname': '관리자',
+        }
+    elif message.to_account.startswith('guest'):
+        to_account = {
+            'id': account_id,
+            'nickname': f'손님({message.to_account})',
+        }
+    else:
+        to_account = models.ACCOUNT.objects.filter(
+            id=message.to_account
+        ).first()
+        if not to_account:
             to_account = {
-                'id': 'supervisor',
-                'nickname': '관리자',
+                'id': '',
+                'nickname': '없는 사용자',
             }
         else:
             to_account = {
-                'id': 'guest',
-                'nickname': f'손님({message.to_account})',
+                'id': to_account.id,
+                'nickname': to_account.first_name,
             }
-    else:
-        to_account = {
-            'id': to_account.id,
-            'nickname': to_account.first_name,
-        }
 
     # 메세지 정보 포멧
     message_data = {
@@ -1691,25 +1710,30 @@ def select_received_messages(account_id, page=1):
     for message in messages:
 
         # 보낸 사람 정보
-        from_account = models.ACCOUNT.objects.filter(
-            id=message.sender_account
-        ).first()
-        if not from_account: # supervisor or guest_id
-            if message.sender_account == 'supervisor':
+        if message.sender_account == 'supervisor':
+            from_account = {
+                'id': 'supervisor',
+                'nickname': '관리자',
+            }
+        elif message.sender_account.startswith('guest'):
+            from_account = {
+                'id': account_id,
+                'nickname': f'손님({message.sender_account})',
+            }
+        else:
+            from_account = models.ACCOUNT.objects.filter(
+                id=message.sender_account
+            ).first()
+            if not from_account: # supervisor or guest_id
                 from_account = {
-                    'id': 'supervisor',
-                    'nickname': '관리자',
+                    'id': '',
+                    'nickname': '없는 사용자',
                 }
             else:
                 from_account = {
-                    'id': 'guest',
-                    'nickname': f'손님({message.sender_account})',
+                    'id': from_account.id,
+                    'nickname': from_account.first_name,
                 }
-        else:
-            from_account = {
-                'id': from_account.id,
-                'nickname': from_account.first_name,
-            }
 
         # 메세지 포멧
         messages_data.append({
@@ -1732,20 +1756,35 @@ def select_received_messages(account_id, page=1):
 def select_sent_messages(account_id, page=1):
 
     # 사용자 확인
-    account = models.ACCOUNT.objects.filter(
-        id=account_id
-    )
-    if not account.exists():
-        return {
-            'success': False,
-            'message': '사용자 정보가 존재하지 않습니다.',
+    if account_id == 'supervisor':
+        account = {
+            'id': 'supervisor',
+            'nickname': '관리자',
+        }
+    elif account_id.startswith('guest'):
+        account = {
+            'id': account_id,
+            'nickname': f'손님({account_id})',
+        }
+    else:
+        account = models.ACCOUNT.objects.filter(
+            id=account_id
+        ).first()
+        if not account:
+            return {
+                'success': False,
+                'message': '사용자 정보가 존재하지 않습니다.',
+            }
+        account = {
+            'id': account.id,
+            'nickname': account.first_name,
         }
 
     # 사용자가 보낸 메세지 확인
     messages = models.MESSAGE.objects.select_related(
         'include_coupon'
     ).filter(
-        sender_account=account_id
+        sender_account=account['id']
     )
 
     # 정렬
@@ -1761,26 +1800,30 @@ def select_sent_messages(account_id, page=1):
 
         try:
             # 받는 사람 정보
-            to_account = models.ACCOUNT.objects.filter(
-                id=message.to_account
-            ).first()
-            if not to_account: # supervisor or guest_id
-                if message.to_account == 'supervisor':
+            if message.to_account == 'supervisor':
+                to_account = {
+                    'id': 'supervisor',
+                    'nickname': '관리자',
+                }
+            elif message.to_account.startswith('guest'):
+                to_account = {
+                    'id': account_id,
+                    'nickname': f'손님({message.to_account})',
+                }
+            else:
+                to_account = models.ACCOUNT.objects.filter(
+                    id=message.to_account
+                ).first()
+                if not to_account:
                     to_account = {
-                        'id': 'supervisor',
-                        'nickname': '관리자',
+                        'id': '',
+                        'nickname': '없는 사용자',
                     }
                 else:
                     to_account = {
-                        'id': 'guest',
-                        'nickname': f'손님({message.to_account})',
+                        'id': to_account.id,
+                        'nickname': to_account.first_name,
                     }
-            else:
-                to_account = {
-                    'id': to_account.id,
-                    'nickname': to_account.first_name,
-                }
-
             # 메세지 포멧
             messages_data.append({
                 'id': message.id,
