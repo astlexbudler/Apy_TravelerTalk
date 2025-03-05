@@ -205,4 +205,104 @@
 
     }
 
+    rewriteCoupon = async (couponCode) => {
+        var name = document.getElementById('rewriteCouponName' + couponCode).value;
+        var content = document.getElementById('rewriteCouponContent' + couponCode).value;
+        var required_mileage = document.getElementById('rewriteCouponRequireMileage' + couponCode).value;
+        var expire_at = document.getElementById('rewriteCouponExpireAt' + couponCode).value;
+
+        if (name == '' | content == '' | expire_at == '' | required_mileage == '') {
+            await showAlert('쿠폰 생성', '쿠폰 이름, 설명, 만료일, 필요 포인트는 필수 입력 사항입니다.', 'error');
+            return;
+        }
+
+        // 쿠폰 수정 요청
+        var form = document.getElementById('couponRewriteForm');
+        var formData = new FormData(form);
+
+        var success = await fetch('/api/coupon', {
+            method: 'PATCH',
+            headers: {
+                'X-CSRFToken': csrftoken
+            },
+            body: formData,
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                return data.success;
+            });
+
+        // 결과에 따른 처리
+        if (success) {
+            await showAlert('쿠폰 수정', '쿠폰이 수정되었습니다.', 'success');
+            location.reload();
+        } else {
+            await showAlert('쿠폰 수정 실패', '쿠폰 수정에 실패했습니다.', 'error');
+        }
+
+    }
+
+    // 쿠폰 수정(상태)
+    rewriteCouponStatus = async (couponCode) => {
+
+        // 쿠폰 수정 요청
+        var form = document.getElementById('couponStatusRewriteForm' + couponCode);
+        var formData = new FormData(form);
+
+        var data = await fetch('/api/coupon', {
+            method: 'PATCH',
+            headers: {
+                'X-CSRFToken': csrftoken
+            },
+            body: formData,
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                return data;
+            });
+
+        // 결과에 따른 처리
+        if (data.success) {
+            await showAlert('쿠폰 수정', '쿠폰이 수정되었습니다.', 'success');
+            location.reload();
+        } else if (data.status == 401) {
+            await showAlert('사용 처리 실패', '사용자가 충분한 포인트를 가지고 있지 않습니다.', 'error');
+        } else {
+            await showAlert('쿠폰 수정 실패', '쿠폰 수정에 실패했습니다.', 'error');
+        }
+
+    }
+
+    // 쿠폰 회수
+    retrieveCoupon = async (code) => {
+
+        var formData = new FormData();
+        formData.append('code', code);
+        formData.append('own_account_id', '');
+
+        // API 호출
+        var success = await fetch('/api/coupon', {
+        method: 'PATCH',
+        body: formData,
+        headers: {
+            'X-CSRFToken': csrftoken
+        }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            return data.success;
+        });
+
+        // 결과 처리
+        if (success) {
+            await showAlert('쿠폰 회수', '쿠폰 회수가 완료되었습니다.', 'success');
+            location.reload();
+        } else {
+            await showAlert('쿠폰 회수', '쿠폰 회수에 실패했습니다.', 'danger');
+        }
+    }
+
 </script>

@@ -64,7 +64,7 @@
                         </p>
                         <p class="text-black-50" style="font-size: 12px;">
                             <i class="fi fi-rr-marker"></i>
-                            <a href="/post/travel_view?post={{coupon.post.id}}" target="_blank" class="text-black-50"
+                            <a href="/post/travel_view?post={{coupon.related_post.id}}" target="_blank" class="text-black-50"
                                 style="text-decoration: underline;">{{coupon.related_post.title}}
                             </a>
                         </p>
@@ -93,10 +93,20 @@
                                 쿠폰을 보유한 사용자가 없습니다.
                             </p>
                             {% else %}
-                            <a class="text-dark me-2" href="{{main_url}}/profile?profile_id={{account.id}}"
-                                target="_blank">
-                                {{coupon.onw_account.nickname}}
-                            </a>
+                            <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+                                <div style="display: inline-block; text-align: left;">
+                                    <a class="text-black-60" href="{{PARTNER_URL}}/partner/profile?account_id={{account.id}&tab=profileTab}" target="_blank">
+                                        {{coupon.own_account.nickname}} <small>({{coupon.own_account.id}})</small>
+                                    </a>
+                                </div>
+                                <div style="display: inline-block; text-align: right;">
+                                    {% if coupon.status == 'active' %}
+                                    <button type="button" class="btn btn-danger small p-1 px-2" onclick="retrieveCoupon('{{coupon.code}}');">
+                                        <i class="fi fi-rr-trash"></i> 회수
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </div>
                             {% endif %}
                         </div>
                     </div>
@@ -110,6 +120,10 @@
                 <button type="button" class="btn btn-primary me-2" data-bs-dismiss="modal"
                     onclick="new bootstrap.Modal(document.getElementById('rewriteCouponModal{{coupon.code}}')).show();">
                     <i class="fi fi-rr-edit"></i> 수정하기
+                </button>
+                <button type="button" class="btn btn-success me-2" data-bs-dismiss="modal"
+                    onclick="new bootstrap.Modal(document.getElementById('rewriteCouponStatusModal{{coupon.code}}')).show();">
+                    <i class="fi fi-rr-rotate-right"></i> 상태 변경
                 </button>
                 {% endif %}
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">

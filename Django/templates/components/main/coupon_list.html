@@ -1,10 +1,19 @@
-<a href="#" class="text-dark">
+<a class="text-dark" href="javascript: new bootstrap.Modal(document.getElementById('couponModal{{coupon.code}}')).show();">
     <div class="p-2 mb-2 pb-3 border-bottom">
         <div style="display: flex; justify-content: space-between; white-space: nowrap;">
             <div style="display: inline-block; text-align: left;">
-                <h6 class="text-black-60 mb-4">
-                    {{coupon.name}}
-                </h6>
+                <span class="text-black-60 mb-4 h6">
+                    {{coupon.name}} 
+                    {% if coupon.status == 'active' %}
+                    <span class="badge bg-success">사용 가능</span>
+                    {% elif coupon.status == 'used' %}
+                    <span class="badge bg-secondary">사용 완료</span>
+                    {% elif coupon.status == 'expired' %}
+                    <span class="badge bg-secondary">기간 만료</span>
+                    {% elif coupon.status == 'deleted' %}
+                    <span class="badge bg-danger">삭제됨</span>
+                    {% endif %}
+                </span>
                 <p class="text-black-50 small m-0">
                     여행지: {{coupon.related_post.title}}
                 </p>

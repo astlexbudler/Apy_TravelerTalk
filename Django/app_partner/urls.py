@@ -32,8 +32,9 @@ urlpatterns = [
   # 쿠폰 코드 검색 및 사용 처리 가능
   path('partner/coupon', v.coupon, name='coupon'),
 
-  # 쿠폰 게시글 관리 페이지
-  path('partner/coupon_post', v.coupon_post, name='coupon_post'),
+  # 프로필
+  path('partner/profile', v.profile, name='profile'),
+  path('partner/activity', v.activity, name='activity'),
 
   # API
   path('api/login', a.api_login, name='account_login'),

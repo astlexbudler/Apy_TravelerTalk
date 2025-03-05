@@ -10,7 +10,7 @@
     <div style="min-height: 300px;">
 
       <!-- 상단 배너 영역 -->
-      {% include 'components/main/banner.html' with banners=banners.top %}
+      {% include 'components/main/banner.html' with banners=banners.top bannerCaouselName='top' %}
 
       <!-- 페이지 타이틀 -->
       {% include 'components/main/title_section.html' with title='여행' subtitle='여행 정보를 확인해보세요.' %}
@@ -44,7 +44,7 @@
 
     <!-- 상단 배너 영역 -->
     <div class="d-lg-none">
-      {% include 'components/main/banner.html' with banners=banners.side %}
+      {% include 'components/main/banner.html' with banners=banners.side bannerCaouselName='bottom' %}
     </div>
 
   </div>

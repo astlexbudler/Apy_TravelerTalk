@@ -102,14 +102,12 @@ def api_file_upload(request):
 def api_receive_coupon(request):
 
     # 메세지 아이디 확인
-    message_id = request.POST.get('message_id')
+    message_id = request.GET.get('message_id')
     account_id = request.user.id
 
     # 메세지 확인
     message = daos.select_message(message_id)
-    if message['success'] == False:
-        return JsonResponse({"success": False, 'status': 400, "message": message['message']})
-    elif message['to_account']['id'] != account_id:
+    if message['to_account']['id'] != account_id:
         return JsonResponse({"success": False, 'status': 400, "message": "본인에게만 쿠폰을 받을 수 있습니다."})
     elif message['include_coupon'] == None:
         return JsonResponse({"success": False, 'status': 400, "message": "쿠폰이 포함되어있지 않습니다."})
@@ -121,12 +119,12 @@ def api_receive_coupon(request):
     )
 
     # 메세지에 담긴 쿠폰 삭제
-    daos.update_message(message_id)
+    daos.update_message(message_id, delete_coupon=True)
 
     # 사용자 활동 기록 생성
     daos.create_account_activity(
         account_id=account_id,
-        message=f'[쿠폰받기] {message["from_account"]["username"]}님으로부터 쿠폰을 받았습니다.'
+        message=f'[쿠폰받기] {message["sender_account"]["nickname"]}님으로부터 쿠폰을 받았습니다.'
     )
 
     return JsonResponse({"success": True, 'status': 200, "message": "쿠폰 받기 성공"})
@@ -426,7 +424,7 @@ class api_message(APIView):
         title = request.data.get('title')
         content = request.data.get('content') # wysiwig 사용
         image = request.data.get('image')
-        include_coupon_code = request.data.get('include_coupon_code')
+        include_coupon_code = request.data.get('coupon_code')
 
         # 메세지 생성
         response = daos.create_message(
@@ -593,6 +591,24 @@ class api_coupon(APIView):
     # 쿠폰 수정 api(PATCH)
     def patch(self, request, *args, **kwargs):
 
+        # 쿠폰 상태 변경 여부 확인
+        status = request.data.get('status')
+        if status == 'used': # 사용 상태로 변경 요청 시
+            coupon = daos.select_coupon(request.data.get('code'))
+            own_account = daos.select_account(coupon['own_account']['id'])
+            if own_account['mileage'] < coupon['required_mileage']:
+                return JsonResponse({"success": False, 'status': 400, "message": "마일리지가 부족합니다."})
+            else: # 사용 처리
+                daos.update_account(
+                    account_id=own_account['id'],
+                    mileage=own_account['mileage'] - coupon['required_mileage']
+                )
+                daos.create_account_activity(
+                    account_id=own_account['id'],
+                    message=f'[쿠폰사용] {coupon["code"]} 쿠폰을 사용하였습니다.',
+                    mileage_change=-coupon['required_mileage']
+                )
+
         # 쿠폰 수정
         response = daos.update_coupon(
             code=request.data.get('code'),
@@ -602,7 +618,7 @@ class api_coupon(APIView):
             expire_at=request.data.get('expire_at'),
             required_mileage=request.data.get('required_mileage'),
             own_account_id=request.data.get('own_account_id'),
-            status=request.data.get('status'),
+            status=status,
             note=request.data.get('note'),
             related_post_id=request.data.get('post_id')
         )
@@ -610,4 +626,4 @@ class api_coupon(APIView):
         if response['success']:
             return JsonResponse({"success": True, 'status': 200, "message": "쿠폰 수정 성공"})
         else:
-            return JsonResponse({"success": False, 'status': 400, "message": "쿠폰 수정 실패", "errors": response['message']})
+            return JsonResponse({"success": False, 'status': 401, "message": "쿠폰 수정 실패", "errors": response['message']})

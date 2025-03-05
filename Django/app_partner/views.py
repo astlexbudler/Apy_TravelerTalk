@@ -171,7 +171,6 @@ def rewrite_post(request):
 
   # 게시글 수정 요청
   if request.method == 'POST':
-    print(request.POST.dict())
     post = daos.update_post(
       post_id=request.GET['post_id'],
       title=request.POST['title'],
@@ -238,13 +237,13 @@ def coupon(request):
 
   # 쿠폰 목록 가져오기
   if tab == 'couponTab': # 쿠폰 목록
-    coupons, last_page = daos.select_owned_coupons(
+    coupons, last_page = daos.select_created_coupons(
       account_id=request.user.id,
       status='active',
       page=page,
     )
   elif tab == 'historyTab': # 쿠폰 사용 내역
-    coupons, last_page = daos.select_owned_coupons(
+    coupons, last_page = daos.select_created_coupons(
       account_id=request.user.id,
       page=page,
     )
@@ -257,8 +256,8 @@ def coupon(request):
     'last_page': last_page,
   })
 
-# 쿠폰 게시글 관리
-def coupon_post(request):
+# 프로필
+def profile(request):
 
   # 권한 확인
   if not request.user.is_authenticated:
@@ -271,7 +270,48 @@ def coupon_post(request):
   if account['account_type'] != 'partner':
     return redirect('/')
 
-  return render(request, 'partner/coupon_post.html', {
+  # data
+  account_id = request.GET.get('account_id', '')
+
+  # 계정 정보
+  profile = daos.select_account_detail(account_id)
+
+  return render(request, 'partner/profile.html', {
+    **daos.get_urls(),
     'account': account,
     'server_settings': server_settings,
+
+    'profile': profile,
+  })
+
+# 활동
+def activity(request):
+
+  # 권한 확인
+  if not request.user.is_authenticated:
+    return redirect('/')
+  account = daos.select_account_detail(request.user.id)
+  server_settings = {
+      'site_logo': daos.select_server_setting('site_logo'),
+      'service_name': daos.select_server_setting('service_name'),
+  }
+  if account['account_type'] != 'partner':
+    return redirect('/')
+
+  # data
+  page = int(request.GET.get('page', '1'))
+  profile_id = request.GET.get('account_id', '')
+
+  # 활동 정보
+  activities, last_page = daos.select_account_activities(profile_id, page)
+  status = daos.get_account_activity_stats(profile_id)
+
+  return render(request, 'partner/activity.html', {
+    **daos.get_urls(),
+    'account': account,
+    'server_settings': server_settings,
+
+    'activities': activities,
+    'status': status,
+    'last_page': last_page, # 페이지 처리를 위해 필요한 정보
   })

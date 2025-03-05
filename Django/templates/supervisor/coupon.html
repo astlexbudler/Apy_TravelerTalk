@@ -127,6 +127,7 @@
           </a>
           {% include 'components/modal/coupon/view_coupon.html' %}
           {% include 'components/modal/coupon/update_coupon.html' %}
+          {% include 'components/modal/coupon/update_status_coupon.html' %}
           {% endfor %}
         </div>
 
@@ -169,126 +170,6 @@
       makePaegeButton('{{request.GET.page}}', '{{last_page}}', `{{SUPERVISOR_URL}}/supervisor/coupon?tab=${tab}`);
     }
   });
-
-  // 쿠폰 만료 처리(삭제)
-  changeCouponStatusExpire = async (code) => {
-
-    var formData = new FormData();
-    formData.append('code', code);
-    formData.append('status', 'deleted');
-
-    // API 호출
-    var response = await fetch('/api/coupon?patch=y', {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'X-CSRFToken': csrftoken
-      }
-    })
-      .then(response => response.json())
-      .then(data => {
-        console.log(data);
-        return data.result;
-      });
-
-    // 결과 처리
-    if (response == 'success') {
-      await showAlert('쿠폰 만료 처리', '쿠폰이 만료 처리되었습니다.', 'success');
-      location.reload();
-    } else {
-      await showAlert('쿠폰 만료 처리', '쿠폰 만료 처리에 실패했습니다.', 'danger');
-    }
-  }
-
-  // 쿠폰 사용 처리
-  useCoupon = async (code, account_id) => {
-
-    var formData = new FormData();
-    formData.append('code', code);
-    formData.append('account', account_id);
-
-    // API 호출
-    var response = await fetch('/api/coupon_user?use=y', {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'X-CSRFToken': csrftoken
-      }
-    })
-      .then(response => response.json())
-      .then(data => {
-        console.log(data);
-        return data.result;
-      });
-
-    // 결과 처리
-    if (response == 'success') {
-      await showAlert('쿠폰 사용 처리', '쿠폰 사용 처리가 완료되었습니다.', 'success');
-      location.reload();
-    } else {
-      await showAlert('쿠폰 사용 처리', '쿠폰 사용 처리에 실패했습니다.', 'danger');
-    }
-  }
-
-  // 쿠폰 회수
-  deleteCoupon = async (code, account_id) => {
-
-    var formData = new FormData();
-    formData.append('code', code);
-    formData.append('account', account_id);
-
-    // API 호출
-    var response = await fetch('/api/coupon_user?retrieve=y', {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'X-CSRFToken': csrftoken
-      }
-    })
-      .then(response => response.json())
-      .then(data => {
-        console.log(data);
-        return data.result;
-      });
-
-    // 결과 처리
-    if (response == 'success') {
-      await showAlert('쿠폰 회수', '쿠폰 회수가 완료되었습니다.', 'success');
-      location.reload();
-    } else {
-      await showAlert('쿠폰 회수', '쿠폰 회수에 실패했습니다.', 'danger');
-    }
-  }
-
-  // 쿠폰 사용 취소
-  cancelUseCoupon = async (code, account_id) => {
-
-    var formData = new FormData();
-    formData.append('code', code);
-    formData.append('account', account_id);
-
-    // API 호출
-    var response = await fetch('/api/coupon_user?cancel=y', {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'X-CSRFToken': csrftoken
-      }
-    })
-      .then(response => response.json())
-      .then(data => {
-        console.log(data);
-        return data.result;
-      });
-
-    // 결과 처리
-    if (response == 'success') {
-      await showAlert('쿠폰 사용 취소', '쿠폰 사용 취소가 완료되었습니다.', 'success');
-      location.reload();
-    } else {
-      await showAlert('쿠폰 사용 취소', '쿠폰 사용 취소에 실패했습니다.', 'danger');
-    }
-  }
 
 </script>
 

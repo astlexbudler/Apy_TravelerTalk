@@ -117,6 +117,7 @@ select_all_coupons(code=None, name=None, status=None): 모든 쿠폰 가져오�
     - status에 따라 쿠폰 필터링.
     - code, related_post, name, content, image, expire_at, required_mileage, own_accounts, status 반환.
 
+select_coupon(coupon_id): 쿠폰 정보 가져오기
 select_created_coupons(account_id, status=None): 사용자가 생성한 쿠폰 가져오기
 select_owned_coupons(account_id, status=None): 사용자가 소유한 쿠폰 가져오기
     - status로 필터링하여 쿠폰 반환.
@@ -205,29 +206,36 @@ def get_default_contexts(request):
         )
         unread_messages = []
         for message in messages:
-            sender = models.ACCOUNT.objects.filter(
-                id=message.sender_account
-            ).first()
-            if sender:
-                unread_messages.append({
-                    'id': message.id,
-                    'title': message.title,
-                    'sender': {
+            if message.sender_account == 'supervisor':
+                sender = {
+                    'id': 'supervisor',
+                    'nickname': '관리자',
+                }
+            elif message.sender_account == 'guest':
+                sender = {
+                    'id': 'guest',
+                    'nickname': '게스트',
+                }
+            else:
+                sender = models.ACCOUNT.objects.filter(
+                    id=message.sender_account
+                ).first()
+                if sender:
+                    sender = {
                         'id': sender.id,
                         'nickname': sender.first_name,
-                    },
-                    'created_at': datetime.datetime.strftime(message.created_at, '%Y-%m-%d %H:%M'),
-                })
-            else:
-                unread_messages.append({
-                    'id': message.id,
-                    'title': message.title,
-                    'sender': {
-                        'id': message.sender_account,
-                        'nickname': f'게스트({message.sender_account})',
-                    },
-                    'created_at': datetime.datetime.strftime(message.created_at, '%Y-%m-%d %H:%M'),
-                })
+                    }
+                else:
+                    sender = {
+                        'id': '',
+                        'nickname': '없는 사용자',
+                    }
+            unread_messages.append({
+                'id': message.id,
+                'title': message.title,
+                'sender': sender,
+                'created_at': datetime.datetime.strftime(message.created_at, '%Y-%m-%d %H:%M'),
+            })
 
         # 내 쿠폰 확인
         coupons_preview = models.COUPON.objects.select_related(
@@ -1316,7 +1324,7 @@ def select_all_coupons(code=None, name=None, status=None):
     coupons = models.COUPON.objects.select_related(
         'own_account', 'related_post', 'create_account', 'own_account__level',
     ).prefetch_related(
-        'create_account__group'
+        'create_account__groups'
     )
 
     query = Q()
@@ -1342,7 +1350,7 @@ def select_all_coupons(code=None, name=None, status=None):
         'name': coupon.name,
         'content': coupon.content,
         'image': '/media/' + str(coupon.image) if coupon.image else None,
-        'expire_at': coupon.expire_at,
+        'expire_at': datetime.datetime.strftime(coupon.expire_at, '%Y-%m-%d'),
         'required_mileage': coupon.required_mileage,
         'own_account': {
             'id': coupon.own_account.id,
@@ -1361,8 +1369,40 @@ def select_all_coupons(code=None, name=None, status=None):
 
     return coupons_data
 
+# 쿠폰 정보 가져오기
+def select_coupon(code):
+
+    # 쿠폰 정보 확인
+    coupon = models.COUPON.objects.select_related(
+        'own_account', 'related_post', 'create_account', 'own_account__level',
+    ).prefetch_related(
+        'create_account__groups'
+    ).filter(
+        code=code
+    ).first()
+    if not coupon:
+        return {
+            'success': False,
+            'message': '쿠폰 정보가 존재하지 않습니다.',
+        }
+
+    # 쿠폰 정보 포멧
+    coupon_data = {
+        'code': coupon.code,
+        'required_mileage': coupon.required_mileage,
+        'own_account': {
+            'id': coupon.own_account.id,
+        } if coupon.own_account else None,
+        'create_account': {
+            'id': coupon.create_account.id,
+        } if coupon.create_account else None,
+        'status': coupon.status,
+    }
+
+    return coupon_data
+
 # 사용자가 생성한 쿠폰 정보 가져오기
-def select_created_coupons(account_id, status=None):
+def select_created_coupons(account_id, status=None, page=1):
 
     # 사용자 확인
     account = models.ACCOUNT.objects.filter(
@@ -1378,14 +1418,28 @@ def select_created_coupons(account_id, status=None):
     coupons = models.COUPON.objects.select_related(
         'own_account', 'related_post', 'create_account', 'own_account__level',
     ).prefetch_related(
-        'create_account__group'
-    ).filter(
-        create_account=account.first(),
-        status=status
+        'create_account__groups'
     )
+
+    # 상태에 따라 필터링
+    if status == 'active':
+        coupons = coupons.filter(
+            create_account=account.first(),
+            status='active'
+        )
+    else:
+        coupons = coupons.exclude(
+            status='active'
+        ).filter(
+            create_account=account.first()
+        )
 
     # 정렬
     coupons = coupons.order_by('-created_at')
+
+    # 페이지네이션
+    last_page = (coupons.count() // 20) + 1
+    coupons = coupons[(page-1)*20:page*20]
 
     # 쿠폰 정보 포멧
     coupons_data = [{
@@ -1397,7 +1451,7 @@ def select_created_coupons(account_id, status=None):
         'name': coupon.name,
         'content': coupon.content,
         'image': '/media/' + str(coupon.image) if coupon.image else None,
-        'expire_at': coupon.expire_at,
+        'expire_at': datetime.datetime.strftime(coupon.expire_at, '%Y-%m-%d'),
         'required_mileage': coupon.required_mileage,
         'own_account': {
             'id': coupon.own_account.id,
@@ -1414,7 +1468,7 @@ def select_created_coupons(account_id, status=None):
         'note': coupon.note,
     } for coupon in coupons]
 
-    return coupons_data
+    return coupons_data , last_page
 
 # 사용자가 소유한 쿠폰 정보 가져오기
 def select_owned_coupons(account_id, status=None, page=1):
@@ -1433,16 +1487,16 @@ def select_owned_coupons(account_id, status=None, page=1):
     coupons = models.COUPON.objects.select_related(
         'own_account', 'related_post', 'create_account', 'own_account__level',
     ).prefetch_related(
-        'create_account__group'
+        'create_account__groups'
     )
 
     if status == 'active':
-        coupons.filter(
+        coupons = coupons.filter(
             own_account=account,
             status='active'
         )
     else:
-        coupons.exclude(
+        coupons = coupons.exclude(
             status='active'
         ).filter(
             own_account=account
@@ -1465,7 +1519,7 @@ def select_owned_coupons(account_id, status=None, page=1):
         'name': coupon.name,
         'content': coupon.content,
         'image': '/media/' + str(coupon.image) if coupon.image else None,
-        'expire_at': coupon.expire_at,
+        'expire_at': datetime.datetime.strftime(coupon.expire_at, '%Y-%m-%d'),
         'required_mileage': coupon.required_mileage,
         'own_account': {
             'id': coupon.own_account.id,
@@ -1549,14 +1603,15 @@ def update_coupon(code, name=None, content=None, image=None, expire_at=None, req
         }
 
     # 사용자 확인
-    own_account = models.ACCOUNT.objects.filter(
-        id=own_account_id
-    )
-    if own_account_id and not own_account.exists():
-        return {
-            'success': False,
-            'message': '사용자 정보가 존재하지 않습니다.',
-        }
+    if own_account_id != '' and own_account_id:
+        own_account = models.ACCOUNT.objects.filter(
+            id=own_account_id
+        ).first()
+        if not own_account:
+            return {
+                'success': False,
+                'message': '사용자 정보가 존재하지 않습니다.',
+            }
 
     # 쿠폰 정보 업데이트
     coupon = coupon.first()
@@ -1571,7 +1626,9 @@ def update_coupon(code, name=None, content=None, image=None, expire_at=None, req
     if required_mileage: # 필요 마일리지 업데이트
         coupon.required_mileage = required_mileage
     if own_account_id: # 소유자 업데이트
-        coupon.own_account = own_account.first()
+        coupon.own_account = own_account
+    if own_account_id == '': # 소유자 삭제
+        coupon.own_account = None
     if status: # 상태 업데이트
         coupon.status = status
     if note: # 메모 업데이트
@@ -1614,9 +1671,9 @@ def select_message(message_id):
             'id': 'supervisor',
             'nickname': '관리자',
         }
-    elif message.sender_account.startswith('guest'):
+    elif str(message.sender_account).startswith('guest'):
         from_account = {
-            'id': account_id,
+            'id': message.sender_account,
             'nickname': f'손님({message.sender_account})',
         }
     else:
@@ -1640,9 +1697,9 @@ def select_message(message_id):
             'id': 'supervisor',
             'nickname': '관리자',
         }
-    elif message.to_account.startswith('guest'):
+    elif str(message.to_account).startswith('guest'):
         to_account = {
-            'id': account_id,
+            'id': message.to_account,
             'nickname': f'손님({message.to_account})',
         }
     else:
@@ -1669,7 +1726,7 @@ def select_message(message_id):
         'content': message.content,
         'image': '/media/' + str(message.image) if message.image else None,
         'include_coupon': {
-            'code': message.include_coupon_code,
+            'code': message.include_coupon.code,
             'name': message.include_coupon.name,
         } if message.include_coupon else None,
         'is_read': message.is_read,
@@ -1715,9 +1772,9 @@ def select_received_messages(account_id, page=1):
                 'id': 'supervisor',
                 'nickname': '관리자',
             }
-        elif message.sender_account.startswith('guest'):
+        elif str(message.sender_account).startswith('guest'):
             from_account = {
-                'id': account_id,
+                'id': message.sender_account,
                 'nickname': f'손님({message.sender_account})',
             }
         else:
@@ -1743,7 +1800,7 @@ def select_received_messages(account_id, page=1):
             'content': message.content,
             'image': '/media/' + str(message.image) if message.image else None,
             'include_coupon': {
-                'code': message.include_coupon_code,
+                'code': message.include_coupon.code,
                 'name': message.include_coupon.name,
             } if message.include_coupon else None,
             'is_read': message.is_read,
@@ -1761,7 +1818,7 @@ def select_sent_messages(account_id, page=1):
             'id': 'supervisor',
             'nickname': '관리자',
         }
-    elif account_id.startswith('guest'):
+    elif str(account_id).startswith('guest'):
         account = {
             'id': account_id,
             'nickname': f'손님({account_id})',
@@ -1805,7 +1862,7 @@ def select_sent_messages(account_id, page=1):
                     'id': 'supervisor',
                     'nickname': '관리자',
                 }
-            elif message.to_account.startswith('guest'):
+            elif str(message.to_account).startswith('guest'):
                 to_account = {
                     'id': account_id,
                     'nickname': f'손님({message.to_account})',
@@ -1872,7 +1929,7 @@ def create_message(sender_id, receiver_id, title, content, image, include_coupon
     }
 
 # 메세지 정보 업데이트(읽음 처리)
-def update_message(message_id):
+def update_message(message_id, delete_coupon=False):
 
     # 메세지 확인
     message = models.MESSAGE.objects.filter(
@@ -1887,6 +1944,8 @@ def update_message(message_id):
     # 메세지 업데이트
     message = message.first()
     message.is_read = True
+    if delete_coupon:
+        message.include_coupon = None
     message.save()
 
     return {

@@ -55,39 +55,25 @@
       {% endif %}
 
       <!-- 쿠폰 목록 -->
-      <div class="mb-5" style="min-height: 300px;">
-        <h6 class="text-black-60 mb-3 pb-3 border-bottom">
-          쿠폰
-        </h6>
-        {% if coupons|length == 0 %}
-        <p>
-          쿠폰이 없습니다.
-        </p>
-        {% endif %}
-        {% for coupon in coupons %}
-        <a href="#" class="text-dark">
-          <div class="p-2 mb-2 pb-3 border-bottom">
-              <div style="display: flex; justify-content: space-between; white-space: nowrap;">
-                  <div style="display: inline-block; text-align: left;">
-                      <h6 class="text-black-60 mb-4">
-                          {{coupon.name}}
-                      </h6>
-                      <p class="text-black-50 small m-0">
-                          여행지: {{coupon.related_post.title}}
-                      </p>
-                      <p class="text-black-50 small">
-                          사용기간: {{coupon.expire_at}}까지
-                      </p>
-                  </div>
-                  <div style="display: inline-block; text-align: right;">
-                      <p class="text-black-50">
-                          <i class="fi fi-ss-coins"></i> <span class="numberComma">1000</span> 마일리지 필요
-                      </p>
-                  </div>
-              </div>
-          </div>
-        </a>
-        {% endfor %}
+      <div class="mt-4">
+
+        <!-- 쿠폰 목록 -->
+        <div class="mb-5" style="min-height: 300px;">
+          <h6 class="text-black-60 mb-3 pb-3 border-bottom">
+            쿠폰
+          </h6>
+          {% if coupons|length == 0 %}
+          <p>
+            보유한 쿠폰이 없습니다.
+          </p>
+          {% endif %}
+          {% for coupon in coupons %}
+          {% include 'components/main/coupon_list.html' %}
+          {% include 'components/modal/coupon/view_coupon.html' %}
+          {% include 'components/modal/coupon/update_coupon.html' %}
+          {% include 'components/modal/coupon/update_status_coupon.html' %}
+          {% endfor %}
+        </div>
       </div>
 
     </div>
@@ -130,126 +116,6 @@
       makePaegeButton('{{request.GET.page}}', '{{last_page}}', `{{PARTNER_URL}}/partner/coupon?tab=${tab}`);
     }
   });
-
-  // 쿠폰 만료 처리(삭제)
-  changeCouponStatusExpire = async (code) => {
-
-    var formData = new FormData();
-    formData.append('code', code);
-    formData.append('status', 'deleted');
-
-    // API 호출
-    var response = await fetch('/api/coupon?patch=y', {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'X-CSRFToken': csrftoken
-      }
-    })
-      .then(response => response.json())
-      .then(data => {
-        console.log(data);
-        return data.result;
-      });
-
-    // 결과 처리
-    if (response == 'success') {
-      await showAlert('쿠폰 만료 처리', '쿠폰이 만료 처리되었습니다.', 'success');
-      location.reload();
-    } else {
-      await showAlert('쿠폰 만료 처리', '쿠폰 만료 처리에 실패했습니다.', 'danger');
-    }
-  }
-
-  // 쿠폰 사용 처리
-  useCoupon = async (code, account_id) => {
-
-    var formData = new FormData();
-    formData.append('code', code);
-    formData.append('account', account_id);
-
-    // API 호출
-    var response = await fetch('/api/coupon_user?use=y', {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'X-CSRFToken': csrftoken
-      }
-    })
-      .then(response => response.json())
-      .then(data => {
-        console.log(data);
-        return data.result;
-      });
-
-    // 결과 처리
-    if (response == 'success') {
-      await showAlert('쿠폰 사용 처리', '쿠폰 사용 처리가 완료되었습니다.', 'success');
-      location.reload();
-    } else {
-      await showAlert('쿠폰 사용 처리', '쿠폰 사용 처리에 실패했습니다.', 'danger');
-    }
-  }
-
-  // 쿠폰 회수
-  deleteCoupon = async (code, account_id) => {
-
-    var formData = new FormData();
-    formData.append('code', code);
-    formData.append('account', account_id);
-
-    // API 호출
-    var response = await fetch('/api/coupon_user?retrieve=y', {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'X-CSRFToken': csrftoken
-      }
-    })
-      .then(response => response.json())
-      .then(data => {
-        console.log(data);
-        return data.result;
-      });
-
-    // 결과 처리
-    if (response == 'success') {
-      await showAlert('쿠폰 회수', '쿠폰 회수가 완료되었습니다.', 'success');
-      location.reload();
-    } else {
-      await showAlert('쿠폰 회수', '쿠폰 회수에 실패했습니다.', 'danger');
-    }
-  }
-
-  // 쿠폰 사용 취소
-  cancelUseCoupon = async (code, account_id) => {
-
-    var formData = new FormData();
-    formData.append('code', code);
-    formData.append('account', account_id);
-
-    // API 호출
-    var response = await fetch('/api/coupon_user?cancel=y', {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'X-CSRFToken': csrftoken
-      }
-    })
-      .then(response => response.json())
-      .then(data => {
-        console.log(data);
-        return data.result;
-      });
-
-    // 결과 처리
-    if (response == 'success') {
-      await showAlert('쿠폰 사용 취소', '쿠폰 사용 취소가 완료되었습니다.', 'success');
-      location.reload();
-    } else {
-      await showAlert('쿠폰 사용 취소', '쿠폰 사용 취소에 실패했습니다.', 'danger');
-    }
-  }
 
 </script>
 

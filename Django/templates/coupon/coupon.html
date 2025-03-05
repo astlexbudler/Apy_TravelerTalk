@@ -36,6 +36,7 @@
           {% endif %}
           {% for coupon in coupons %}
           {% include 'components/main/coupon_list.html' %}
+          {% include 'components/modal/coupon/view_coupon.html' %}
           {% endfor %}
         </div>
       </div>
@@ -60,11 +61,6 @@
   </div>
 
 </main>
-
-<!-- Modals -->
-{% for coupon in coupons %}
-{% include 'parts/coupon_read_modal.html' %}
-{% endfor %}
 
 <script>
 

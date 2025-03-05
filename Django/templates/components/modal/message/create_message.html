@@ -16,7 +16,7 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">
+                <h5 class="modal-title text-black-60">
                     쪽지 작성
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -52,13 +52,13 @@
                     </div>
 
                     <!-- 쪽지 제목 -->
-                    <div class="form-group mb-3">
+                    <div class="form-group mb-4">
                         <label>제목</label>
                         <input class="form-control" placeholder="쪽지 제목을 입력하세요." id="messageTitle" name="title">
                     </div>
 
                     <!-- 쪽지 내용 -->
-                    <div class="form-group mb-2">
+                    <div class="form-group mb-4">
                         <label>내용</label>
                         <textarea class="form-control" placeholder="쪽지 내용을 입력하세요." id="messageContent" rows="5"
                             name="content"></textarea>
@@ -221,22 +221,26 @@
             .then(res => res.json())
             .then(data => {
                 console.log(data);
-                return data
+                return data.data;
             });
 
         // 쿠폰 검색 결과 확인
-        var couponConfirmMessage = document.querySelector('#couponConfirmMessage');
-        var exist = data.result == 'success'; // true or false
-        var coupon = data.coupon;
-        if (!exist) {
+        if(data.length == 0) {
             couponConfirmMessage.innerHTML = '존재하지 않는 쿠폰 코드입니다.';
             couponConfirmMessage.classList.add('text-danger');
-            couponConfirmMessage.classList.remove('text-primary');
+            couponConfirmMessage.classList.remove('text-success');
             couponValid = false;
             return;
         }
+        if (data[0]['code'] === couponCode) {
+            couponConfirmMessage.innerHTML = '유효한 쿠폰 코드입니다.';
+            couponConfirmMessage.classList.add('text-success');
+            couponConfirmMessage.classList.remove('text-danger');
+            couponValid = true;
+            return;
+        }
         couponConfirmMessage.innerHTML = '유효한 쿠폰 코드입니다.';
-        couponConfirmMessage.classList.add('text-primary');
+        couponConfirmMessage.classList.add('text-success');
         couponConfirmMessage.classList.remove('text-danger');
         couponValid = true;
     }

@@ -1,9 +1,10 @@
 <div class="p-2 mb-2 pb-3 border-bottom">
-    <a class="text-dark" href="javascript: new bootstrap.Modal(document.getElementById('messageModal{{message.id}}')).show();">
+    <a class="text-dark" href="javascript: new bootstrap.Modal(document.getElementById('messageModal{{message.id}}')).show(); 
+    {% if message.sender_account and not message.is_read %}fetch('/api/message?message_id={{message.id}}');{% endif %}">
         <div style="display: flex; justify-content: space-between; white-space: nowrap;">
             <div style="display: inline-block; text-align: left;">
                 <h6 class="text-black-60 mb-4">
-                    {{ message.title }} 
+                    {{ message.title }}
                     {% if message.include_coupon %}
                     <i class="fi fi-rr-ticket text-success"></i>
                     {% endif %}
@@ -14,7 +15,7 @@
                 </p>
                 {% else %}
                 <p class="text-black-50 small m-0">
-                    보낸이: {{message.receiver.nickname}}
+                    받는이: {{message.to_account.nickname}}
                 </p>
                 {% endif %}
                 <p class="text-black-50 small m-0">

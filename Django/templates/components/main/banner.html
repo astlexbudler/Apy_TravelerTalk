@@ -1,10 +1,35 @@
 <div class="row mb-3">
-    {% for banner in banners %}
-    <div class="p-1 {%if banner.size == 'full' %}col-12{% else %}col-6{% endif %}">
-        <a href="{{ banner.link }}" target="_blank">
-            <div class="w-100 shadow-sm"
-                style="height: 150px; background: black url('{{ banner.image }}') center/cover no-repeat;"></div>
+    <div class="d-none d-lg-block">
+        {% for banner in banners %}
+        <div class="p-1 {%if banner.size == 'full' %}col-12{% else %}col-6{% endif %}">
+            <a href="{{ banner.link }}" target="_blank">
+                <div class="w-100 shadow-sm"
+                    style="height: 150px; background: black url('{{ banner.image }}') center/cover no-repeat;"></div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div id="{{bannerCaouselName}}" data-ride="carousel" class="carousel slide d-lg-none">
+        <ol class="carousel-indicators">
+            {% for banner in banners %}
+            <li data-target="{{bannerCaouselName}}" data-slide-to="{{forloop.counter0}}"
+                {% if forloop.first %}class="active"{% endif %}></li>
+            {% endfor %}
+        </ol>
+        <div class="carousel-inner">
+            {% for banner in banners %}
+            <div class="carousel-item active">
+                <div class="w-100 shadow-sm"
+                    style="height: 150px; background: black url('{{ banner.image }}') center/cover no-repeat;"></div>
+            </div>
+            {% endfor %}
+        </div>
+        <a class="carousel-control-prev" href="{{bannerCaouselName}}" role="button" data-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        </a>
+        <a class="carousel-control-next" href="{{bannerCaouselName}}" role="button" data-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
         </a>
     </div>
-    {% endfor %}
 </div>

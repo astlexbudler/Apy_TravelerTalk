@@ -143,6 +143,7 @@
                 </td>
                 <td>
                   {{ message.created_at }}
+                  {% include 'components/modal/message/view_message.html' %}
                 </td>
               </tr>
               {% endfor %}
@@ -245,7 +246,8 @@
               {% else %}
               {% for message in messages %}
               <tr style="cursor: pointer;"
-                onclick="new bootstrap.Modal(document.getElementById('messageModal{{message.id}}')).show();">
+                onclick="new bootstrap.Modal(document.getElementById('messageModal{{message.id}}')).show();
+                {% if message.sender_account and not message.is_read %}fetch('/api/message?message_id={{message.id}}');{% endif %}">
                 <td>
                   <span class="text-dark">
                     {% if message.to.partner_name%}
@@ -269,6 +271,7 @@
                   {% else %}
                   <i class="fi fi-rr-eye"></i> 읽지 않음
                   {% endif %}
+                  {% include 'components/modal/message/view_message.html' %}
                 </td>
               </tr>
               {% endfor %}
@@ -288,16 +291,6 @@
 
 </main>
 
-<!-- 중앙 섹션 -->
-<!--
-  Modals
-  - 쪽지 상세보기 모달
-  - 받은 쪽지 및 보낸 쪽지 모달.
-  - 받은 쪽지는 발신자, 보낸 쪽지는 수신자를 확인할 수 있음. 받은 쪽지는 답장 버튼 및 쿠폰 받기 버튼이 있음.
--->
-{% for message in messages %}
-{% include 'parts/message_read_modal.html' %}
-{% endfor %}
 <!-- 쪽지 작성 및 답변 모달 -->
 {% include 'components/modal/message/create_message.html' %}
 
