@@ -26,12 +26,12 @@
 
           <!-- 게시글 메뉴 -->
           <div style="display: inline-block; text-align: right;">
-            <p class="m-0 text-end text-black-50" style="font-size: 14px;">
+            <p class="text-end text-black-50" style="font-size: 14px;">
               <span class="me-1" style="white-space: nowrap;">
                 <i class="fi fi-rr-eye"></i> {{ post.view_count }}
               </span>
               <span class="me-1" style="white-space: nowrap;">
-                <i class="fi fi-rr-heart"></i> {{ post.like_count }}
+                <i class="fi fi-rr-social-network"></i> {{ post.like_count }}
               </span>
               <span class="me-1" style="white-space: nowrap;">
                 <i class="fi fi-rr-comment-alt-dots"></i> {{ comments|length }}
@@ -45,9 +45,15 @@
               <i class="fi fi-rr-trash"></i> 게시글 삭제
             </a>
             {% else %}
-            <a class="btn btn-sucess btn-sm small" href="javascript: likePost();">
-              <i class="fi fi-rr-heart"></i> 좋아요
+            {% if request.user.is_authenticated and likeable %}
+            <a class="btn btn-success btn-sm small" href="javascript: likePost();">
+              <i class="fi fi-rr-social-network"></i> 좋아요
             </a>
+            {% elif request.user.is_authenticated and not likeable %}
+            <a class="btn btn-outline-success btn-sm small" href="javascript: likePost();">
+              <i class="fi fi-rr-social-network"></i> 좋아요 취소
+            </a>
+            {% endif %}
             {% endif %}
           </div>
         </div>
@@ -61,14 +67,24 @@
       </div>
 
       <!-- 댓글 작성 폼 -->
+      {% if board.board_type == 'qna' %}
+      {% with commentable=true comment_form_title='답변' placeholder='답변을 작성해주세요.' button_text='<i class="fi fi-rr-edit"></i> 답변 작성' commentable=commentable %}
+      {% include 'components/main/post_view/comment/comment_form.html' %}
+      {% endwith %}
+      {% else %}
       {% with commentable=true comment_form_title='댓글' placeholder='댓글을 작성해주세요.' button_text='<i class="fi fi-rr-edit"></i> 댓글 작성' commentable=commentable %}
       {% include 'components/main/post_view/comment/comment_form.html' %}
       {% endwith %}
+      {% endif %}
 
       <!-- 댓글 목록 -->
       {% if comments|length == 0 %}
       <p>
+        {% if board.board_type == 'qna' %}
+        아직 답변이 없습니다.
+        {% else %}
         아직 댓글이 없습니다.
+        {% endif %}
       </p>
       {% endif %}
       <ul class="list-unstyled mt-3">

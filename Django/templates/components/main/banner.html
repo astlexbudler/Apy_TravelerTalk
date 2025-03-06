@@ -3,8 +3,7 @@
         {% for banner in banners %}
         <div class="p-1 {%if banner.size == 'full' %}col-12{% else %}col-6{% endif %}">
             <a href="{{ banner.link }}" target="_blank">
-                <div class="w-100 shadow-sm"
-                    style="height: 150px; background: black url('{{ banner.image }}') center/cover no-repeat;"></div>
+                <img class="w-100 shadow-sm" src="{{ banner.image }}">
             </a>
         </div>
         {% endfor %}
@@ -20,7 +19,7 @@
         <div class="carousel-inner">
             {% for banner in banners %}
             <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                <div class="w-100 shadow-sm" style="height: 150px; background: black url('{{ banner.image }}') center/cover no-repeat;"></div>
+                <img class="w-100 shadow-sm" src="{{ banner.image }}">
             </div>
             {% endfor %}
         </div>

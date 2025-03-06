@@ -1777,7 +1777,6 @@ def setting(request):
     print(request.POST.dict())
     daos.update_server_setting('service_name', request.POST.get('service_name'))
     daos.update_server_setting('site_logo', request.POST.get('site_logo'))
-    daos.update_server_setting('site_header', request.POST.get('site_header'))
     daos.update_server_setting('company_info', request.POST.get('company_info'))
     daos.update_server_setting('terms', request.POST.get('terms'))
     daos.update_server_setting('register_point', request.POST.get('register_point'))
@@ -1795,7 +1794,6 @@ def setting(request):
     'settings': {
       'service_name': daos.select_server_setting('service_name'),
       'site_logo': daos.select_server_setting('site_logo'),
-      'site_header': daos.select_server_setting('site_header'),
       'company_info': daos.select_server_setting('company_info'),
       'terms': daos.select_server_setting('terms'),
       'register_point': daos.select_server_setting('register_point'),

@@ -30,7 +30,7 @@
     }
 -->
 
-<div class="col-6 col-lg-4 p-2">
+<div class="col-6 col-xl-4 p-1 p-lg-2">
     <a class="text-dark text-decoration-none" href="/post/travel_view?post_id={{post.id}}&board_ids={{request.GET.board_ids}}">
         <div class="card hover-scale overflow-hidden shadow-sm">
             <div class="hover-scale-in blog-card-ratio ratio ratio-4x3">
@@ -56,18 +56,18 @@
                 </span>
 
                 <!-- 제목 -->
-                <h6 class="mb-4">
+                <h6 class="mb-4 text-black-60">
                     {{ post.title }}
                 </h6>
 
                 <!-- 주소 -->
-                <p class="small text-black-50 mb-1">
-                    <i class="fi fi-rr-marker"></i> {{ post.place_info.location_info }}
+                <p class="text-black-50 mb-1" style="font-size: 12px;">
+                    <span class="hideOnMobile"><i class="fi fi-rr-marker"></i> </span>{{ post.place_info.location_info }}
                 </p>
 
                 <!-- 오픈 정보 -->
-                <p class="small text-black-50 mb-1">
-                    <i class="fi fi-rr-info"></i> {{ post.place_info.open_info }}
+                <p class="text-black-50 mb-1" style="font-size: 12px;">
+                    <span class="hideOnMobile"><i class="fi fi-rr-info"></i>  </span>{{ post.place_info.open_info }}
                 </p>
 
             </div>
@@ -75,15 +75,15 @@
 
                 <!-- 댓글보기, 후기 검색, 정보 보기 버튼 -->
                 <a href="/post/travel_view?post_id={{post.id}}&board_ids={{request.GET.board_ids}}"
-                    class="btn btn-sm btn-outline-secondary small p-1 px-2">
+                    class="btn btn-sm btn-outline-secondary p-1 px-2" style="font-size: 12px;">
                     <i class="fi fi-rr-eye"></i> 상세
                 </a>
                 <a href="/post/review?related_post_id={{post.id}}"
-                    class="btn btn-sm btn-outline-secondary small p-1 px-2">
+                    class="btn btn-sm btn-outline-secondary p-1 px-2" style="font-size: 12px;">
                     <i class="fi fi-rr-star"></i> 후기
                 </a>
                 <a href="/post/travel_view?post_id={{post.id}}&board_ids={{request.GET.board_ids}}"
-                    class="btn btn-sm btn-outline-secondary small p-1 px-2">
+                    class="btn btn-sm btn-outline-secondary p-1 px-2" style="font-size: 12px;">
                     <i class="fi fi-rr-comment"></i> 댓글
                 </a>
 

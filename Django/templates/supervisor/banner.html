@@ -34,15 +34,18 @@
           배너가 없습니다.
         </p>
         {% endif %}
-        <div class="row">
+        <div class="row mb-2">
           {% for banner in banners %}
           <div class="p-1 {% if banner.size == 'full' %}col-12{% else %}col-6{% endif %}">
             <a href="javascript: new bootstrap.Modal(document.getElementById('editBannerModal{{ banner.id }}')).show();">
-              <div class="w-100 shadow-sm" style="height: 200px; background: black url('{{ banner.image }}') center/cover no-repeat;"></div>
+              <img class="w-100 shadow-sm" src="{{ banner.image }}">
             </a>
           </div>
           {% include 'components/modal/supervisor/update_banner.html' %}
           {% endfor %}
+        </div>
+        <div class="alert alert-info small">
+          <i class="fi fi-rr-info"></i> 전체 배너의 경우 1000px * 250px 크기를 권장합니다.(절반 크기의 경우 500px * 250px)
         </div>
 
       </div>

@@ -147,10 +147,10 @@ def api_like_post(request):
     if post['place_info'] == None: # 세션으로 처리
         user_like_posts = request.session.get('like_post_ids', '')
         if str(post['id']) in user_like_posts:
-            user_like_posts = user_like_posts.replace(str(post['id']) + ',', '')
+            request.session['like_post_ids'] = user_like_posts.replace(str(post['id']) + ',', '')
             is_liked = False
         else:
-            user_like_posts += str(post['id']) + ','
+            request.session['like_post_ids'] = user_like_posts + str(post['id']) + ','
             is_liked = True
 
         # 게시글 업데이트

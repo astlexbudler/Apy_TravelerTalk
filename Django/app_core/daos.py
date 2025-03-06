@@ -769,8 +769,8 @@ def search_posts(title=None, category_id=None, board_id=None, related_post_id=No
                 'name': c.name,
             } for c in post.place_info.categories.all()],
             'category_ids': [c.id for c in post.place_info.categories.all()],
-            'location_info': post.place_info.location_info,
-            'open_info': post.place_info.open_info,
+            'location_info': post.place_info.location_info if len(post.place_info.location_info) <= 16 else post.place_info.location_info[:20] + '..',
+            'open_info': post.place_info.open_info if len(post.place_info.open_info) <= 16 else post.place_info.open_info[:20] + '..',
             'status': post.place_info.status,
         } if post.place_info else None,
         'boards': [{
@@ -888,6 +888,7 @@ def select_post(post_id):
         'boards': [{
             'id': board.id,
             'name': board.name,
+            'board_type': board.board_type,
             'comment_groups': [group.name for group in board.comment_groups.all()],
             'level_cut': board.level_cut,
         } for board in post.boards.all()],

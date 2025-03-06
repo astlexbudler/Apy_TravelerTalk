@@ -1,0 +1,47 @@
+<!--
+    update_password.html
+    이 컴포넌트는 비밀번호 변경 모달을 표시하는 컴포넌트 입니다.
+
+    비밀번호 변경 모달은 비밀번호와 비밀번호 확인 입력란이 있습니다.
+    비밀번호 변경 버튼을 누르면 비밀번호가 변경됩니다.
+
+    비밀번호 변경 요청 js도 함께 작성되어야 합니다.(에러 시 에러 메세지 표시. 성공 시 페이지 리로드)
+-->
+<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-black-60">
+                    로그인
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-start">
+
+                <form onkeyup="if(event.keyCode == 13) tryLogin(this);" id="mobileLoginForm">
+                    <div class="form-group">
+                        <label>아이디</label>
+                        <input class="form-control" placeholder="아이디를 입력해주세요" name="id">
+                    </div>
+                    <div class="form-group mt-4">
+                        <label>비밀번호</label>
+                        <input type="password" class="form-control" placeholder="비밀번호를 입력해주세요"
+                            name="password">
+                    </div>
+                    <div class="form-group mt-2">
+                        <input type="checkbox" class="form-check-input" name="remember"
+                            disabled>
+                        <label class="small">로그인 상태 유지</label>
+                    </div>
+                    <div class="my-5">
+                        <a href="javascript: tryLogin(document.getElementById('mobileLoginForm'));"
+                            class="btn btn-primary me-1">로그인</a>
+                        <a href="{{main_url}}/signup"
+                            class="btn btn-secondary">회원가입</a>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>

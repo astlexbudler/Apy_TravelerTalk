@@ -27,7 +27,7 @@
           <p>오늘의 추천 후기가 없습니다.</p>
           {% else %}
           {% for post in today_reviews %}
-          {% include 'parts/simplified_board_type.html' %}
+          {% include 'components/main/post_list/post_list_simplified.html' %}
           {% endfor %}
           {% endif %}
         </div>
@@ -41,7 +41,7 @@
           <p>오늘의 추천 후기가 없습니다.</p>
           {% else %}
           {% for post in weekly_reviews %}
-          {% include 'parts/simplified_board_type.html' %}
+          {% include 'components/main/post_list/post_list_simplified.html' %}
           {% endfor %}
           {% endif %}
         </div>
@@ -55,7 +55,7 @@
           <p>오늘의 추천 후기가 없습니다.</p>
           {% else %}
           {% for post in monthly_reviews %}
-          {% include 'parts/simplified_board_type.html' %}
+          {% include 'components/main/post_list/post_list_simplified.html' %}
           {% endfor %}
           {% endif %}
         </div>

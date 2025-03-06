@@ -5,7 +5,7 @@
   <!-- 왼쪽 사이드바 -->
   {% include 'components/aside/aside_left.html' %}
 
-  <div class="main-section px-5" style="flex: 1;">
+  <div class="main-section" style="flex: 1;">
 
     <div style="min-height: 300px;">
 
@@ -20,17 +20,121 @@
         </p>
       </div>
 
-      <!-- 여행지 게시글 목록 -->
-      <div class="row pb-5">
-        {% if posts|length == 0 %}
-        <p>
-          게시글이 없습니다.
-        </p>
-        {% endif %}
-        {% for post in posts %}
-        {% include 'components/main/post_list/post_list_card.html' %}
-        {% endfor %}
+      <div class="row p-0 m-0">
+        <div class="col-3 d-lg-none">
+          <div style="border-bottom: 3px solid #ffafc8;">
+            <h6 class="text-black-60">
+                <i class="fi fi-rr-list"></i> 카테고리
+            </h6>
+          </div>
+
+          <!-- 카테고리 선택 박스 -->
+          <div class="py-3">
+
+              <!-- 1차 카테고리 -->
+              {% for category in categories %}
+              <div class="pt-2 pb-3 mb-2 border-bottom">
+                  {% if category.children|length > 0 %}
+                  <a class="nav-link dropdown-toggle" href="javascript: document.querySelectorAll('.category_{{category.id}}').forEach((el) => el.classList.toggle('d-none'));">
+                      {{ category.name }} ({{ category.post_count }})
+                  </a>
+                  {% elif category.id == request.GET.category %}
+                  <a class="nav-link" href="#" style="color: rgb(184, 184, 184);">
+                      {{ category.name }} ({{ category.post_count }})
+                  </a>
+                  {% else %}
+                  <a class="nav-link"
+                      href="{{main_url}}/post/travel?board_ids={{request.GET.board_ids}}&category={{category.id}}">
+                      {{ category.name }} ({{ category.post_count }})
+                  </a>
+                  {% endif %}
+              </div>
+
+              <!-- 2차 카테고리 -->
+              {% if category.children|length > 0 %}
+              {% for child in category.children %}
+              <div class="ps-2 pt-2 pb-3 mb-2  border-bottom d-none category_{{category.id}}">
+                  {% if child.children|length > 0 %}
+                  <a class="nav-link dropdown-toggle" href="javascript: document.querySelectorAll('.category_{{child.id}}').forEach((el) => el.classList.toggle('d-none'));">
+                      {{ child.name }} ({{ child.post_count }})
+                  </a>
+                  {% elif child.id in request.GET.category %}
+                  <a class="nav-link" href="#" style="color: rgb(184, 184, 184);">
+                      {{ child.name }} ({{ child.post_count }})
+                  </a>
+                  {% else %}
+                  <a class="nav-link"
+                      href="{{main_url}}/post/travel?board_ids={{request.GET.board_ids}}&category={{ child.id }}">
+                      {{ child.name }} ({{ child.post_count }})
+                  </a>
+                  {% endif %}
+              </div>
+
+              <!-- 3차 카테고리 -->
+              {% if child.children|length > 0 %}
+              {% for child2 in child.children %}
+              <div
+                  class="ps-4 pt-2 pb-3 mb-2 border-bottom d-none category_{{child1.id}}">
+                  {% if child2.children|length > 0 %}
+                  <a class="nav-link dropdown-toggle" href="javascript: document.querySelectorAll('.category_{{child2.id}}').forEach((el) => el.classList.toggle('d-none'));">
+                      {{ child2.name }} ({{ child2.post_count }})
+                  </a>
+                  {% elif child2.id in request.GET.category %}
+                  <a class="nav-link" href="#" style="color: rgb(184, 184, 184);">
+                      {{ child2.name }} ({{ child2.post_count }})
+                  </a>
+                  {% else %}
+                  <a class="nav-link"
+                      href="{{main_url}}/post/travel?board_ids={{request.GET.board_ids}}&category={{ child2.id }}">
+                      {{ child2.name }} ({{ child2.post_count }})
+                  </a>
+                  {% endif %}
+              </div>
+
+              <!-- 4차 카테고리 -->
+              {% if child2.children|length > 0 %}
+              {% for child3 in child2.children %}
+              <div
+                  class="ps-6 pt-2 pb-3 mb-2 border-bottom d-none category_{{child2.id}}">
+                  {% if child3.id in request.GET.category %}
+                  <a class="nav-link" href="#" style="color: rgb(184, 184, 184);">
+                      {{ child3.name }} ({{ child3.post_count }})
+                  </a>
+                  {% else %}
+                  <a class="nav-link"
+                      href="javascript:location.href=location.origin + location.pathname + '?board_ids={{request.GET.board_ids}}&category={{ child3.id }}'">
+                      {{ child3.name }} ({{ child3.post_count }})
+                  </a>
+                  {% endif %}
+              </div>
+              {% endfor %}
+              {% endif %}
+
+              {% endfor %}
+              {% endif %}
+
+              {% endfor %}
+              {% endif %}
+
+              {% endfor %}
+          </div>
+        </div>
+        <div class="col-9 col-lg-12">
+          <!-- 여행지 게시글 목록 -->
+          <div class="row pb-5">
+            {% if posts|length == 0 %}
+            <p>
+              게시글이 없습니다.
+            </p>
+            {% endif %}
+            {% for post in posts %}
+            {% include 'components/main/post_list/post_list_card.html' %}
+            {% endfor %}
+          </div>
       </div>
+    </div>
+
+
 
     </div>
 

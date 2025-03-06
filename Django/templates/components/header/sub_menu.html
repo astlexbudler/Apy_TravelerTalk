@@ -1,103 +1,103 @@
-                                <!-- 하위 네비게이션(1차) -->
-                                {% for board in boards %}
-                                {% if board.children|length > 0 %}
-                                <div class="offcanvas-body d-none sub_board rounded" id="sub_board_{{ board.id }}" style="background-color: rgba(255, 255, 255, 0.5);">
-                                    <ul class="navbar-nav mx-auto">
+<!-- 하위 네비게이션(1차) -->
+{% for board in boards %}
+{% if board.children|length > 0 %}
+<div class="offcanvas-body d-none sub_board rounded" id="sub_board_{{ board.id }}" style="background-color: rgba(255, 255, 255, 0.5);">
+    <ul class="navbar-nav mx-auto">
 
-                                        {% for sub1_board in board.children %}
-                                        <li class="nav-item">
-                                            {% if sub1_board.board_type == 'tree' %}
-                                            <a class="nav-link px-3" href="javascript: 
-                                            document.querySelectorAll('.sub_board').forEach(function(e){e.classList.add('d-none');}); 
-                                            document.getElementById('sub_board_{{ board.id }}').classList.toggle('d-none'); 
-                                            document.getElementById('sub_board_{{ sub1_board.id }}').classList.toggle('d-none');"
-                                                class="text-decoration-none text-black small">
-                                                {{ sub1_board.name }}
-                                            </a>
-                                            {% else %}
-                                            <a class="nav-link px-3" href="/post?board_ids={{board.id}},{{ sub1_board.id }}"
-                                                class="text-decoration-none text-black small">
-                                                {{ sub1_board.name }}
-                                            </a>
-                                            {% endif %}
-                                        </li>
-                                        {% endfor %}
+        {% for sub1_board in board.children %}
+        <li class="nav-item">
+            {% if sub1_board.board_type == 'tree' %}
+            <a class="nav-link px-3" href="javascript: 
+            document.querySelectorAll('.sub_board').forEach(function(e){e.classList.add('d-none');}); 
+            document.getElementById('sub_board_{{ board.id }}').classList.toggle('d-none'); 
+            document.getElementById('sub_board_{{ sub1_board.id }}').classList.toggle('d-none');"
+                class="text-decoration-none text-black small">
+                {{ sub1_board.name }}
+            </a>
+            {% else %}
+            <a class="nav-link px-3" href="/post?board_ids={{board.id}},{{ sub1_board.id }}"
+                class="text-decoration-none text-black small">
+                {{ sub1_board.name }}
+            </a>
+            {% endif %}
+        </li>
+        {% endfor %}
 
-                                    </ul>
-                                </div>
-                                {% endif %}
-                                {% endfor %}
+    </ul>
+</div>
+{% endif %}
+{% endfor %}
 
-                                <!-- 하위 네비게이션(2차) -->
-                                {% for board in boards %}
-                                {% if board.children|length > 0 %}
-                                {% for sub1_board in board.children %}
-                                {% if sub1_board.children|length > 0 %}
-                                <div class="offcanvas-body d-none sub_board rounded" id="sub_board_{{ sub1_board.id }}" style="background-color: rgba(255, 255, 255, 0.5);">
-                                    <ul class="navbar-nav mx-auto">
+<!-- 하위 네비게이션(2차) -->
+{% for board in boards %}
+{% if board.children|length > 0 %}
+{% for sub1_board in board.children %}
+{% if sub1_board.children|length > 0 %}
+<div class="offcanvas-body d-none sub_board rounded" id="sub_board_{{ sub1_board.id }}" style="background-color: rgba(255, 255, 255, 0.5);">
+    <ul class="navbar-nav mx-auto">
 
-                                    {% for sub2_board in sub1_board.children %}
-                                        <li class="nav-item">
-                                            {% if sub2_board.board_type == 'tree' %}
-                                            <a class="nav-link px-3" href="javascript: 
-                                            document.querySelectorAll('.sub_board').forEach(function(e){e.classList.add('d-none');}); 
-                                            document.getElementById('sub_board_{{ sub1_board.id }}').classList.toggle('d-none');
-                                            document.getElementById('sub_board_{{ sub2_board.id }}').classList.toggle('d-none');
-                                            document.getElementById('sub_board_{{ board.id }}').classList.toggle('d-none');"
-                                                class="text-decoration-none text-black small">
-                                                {{ sub2_board.name }}
-                                            </a>
-                                            {% else %}
-                                            <a class="nav-link px-3" href="/post?board_ids={{board.id}},{{ sub1_board.id }},{{ sub2_board.id }}"
-                                                class="text-decoration-none text-black small">
-                                                {{ sub2_board.name }}
-                                            </a>
-                                            {% endif %}
-                                        </li>
-                                        {% endfor %}
-                                    </ul>
-                                </div>
-                                {% endif %}
-                                {% endfor %}
-                                {% endif %}
-                                {% endfor %}
+    {% for sub2_board in sub1_board.children %}
+        <li class="nav-item">
+            {% if sub2_board.board_type == 'tree' %}
+            <a class="nav-link px-3" href="javascript: 
+            document.querySelectorAll('.sub_board').forEach(function(e){e.classList.add('d-none');}); 
+            document.getElementById('sub_board_{{ sub1_board.id }}').classList.toggle('d-none');
+            document.getElementById('sub_board_{{ sub2_board.id }}').classList.toggle('d-none');
+            document.getElementById('sub_board_{{ board.id }}').classList.toggle('d-none');"
+                class="text-decoration-none text-black small">
+                {{ sub2_board.name }}
+            </a>
+            {% else %}
+            <a class="nav-link px-3" href="/post?board_ids={{board.id}},{{ sub1_board.id }},{{ sub2_board.id }}"
+                class="text-decoration-none text-black small">
+                {{ sub2_board.name }}
+            </a>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endfor %}
 
-                                <!-- 하위 네비게이션(3차) -->
-                                {% for board in boards %}
-                                {% if board.children|length > 0 %}
-                                {% for sub1_board in board.children %}
-                                {% if sub1_board.children|length > 0 %}
-                                {% for sub2_board in sub1_board.children %}
-                                {% if sub2_board.children|length > 0 %}
-                                <div class="offcanvas-body d-none sub_board rounded" id="sub_board_{{ sub2_board.id }}" style="background-color: rgba(255, 255, 255, 0.5);">
-                                    <ul class="navbar-nav mx-auto">
+<!-- 하위 네비게이션(3차) -->
+{% for board in boards %}
+{% if board.children|length > 0 %}
+{% for sub1_board in board.children %}
+{% if sub1_board.children|length > 0 %}
+{% for sub2_board in sub1_board.children %}
+{% if sub2_board.children|length > 0 %}
+<div class="offcanvas-body d-none sub_board rounded" id="sub_board_{{ sub2_board.id }}" style="background-color: rgba(255, 255, 255, 0.5);">
+    <ul class="navbar-nav mx-auto">
 
-                                        {% for sub3_board in sub2_board.children %}
-                                        <li class="nav-item">
-                                            {% if sub3_board.board_type == 'tree' %}
-                                            <a class="nav-link px-3" href="javascript: 
-                                            document.querySelectorAll('.sub_board').forEach(function(e){e.classList.add('d-none');}); 
-                                            document.getElementById('sub_board_{{ sub3_board.id }}').classList.toggle('d-none');
-                                            document.getElementById('sub_board_{{ sub2_board.id }}').classList.toggle('d-none');
-                                            document.getElementById('sub_board_{{ sub1_board.id }}').classList.toggle('d-none');
-                                            document.getElementById('sub_board_{{ board.id }}').classList.toggle('d-none');"
-                                                class="text-decoration-none text-black small">
-                                                {{ sub3_board.name }}
-                                            </a>
-                                            {% else %}
-                                            <a class="nav-link px-3"
-                                                href="/post?board_ids={{board.id}},{{ sub1_board.id }},{{ sub2_board.id }},{{ sub3_board.id }}"
-                                                class="text-decoration-none text-black small">
-                                                {{ sub3_board.name }}
-                                            </a>
-                                            {% endif %}
-                                        </li>
-                                        {% endfor %}
-                                    </ul>
-                                </div>
-                                {% endif %}
-                                {% endfor %}
-                                {% endif %}
-                                {% endfor %}
-                                {% endif %}
-                                {% endfor %}
+        {% for sub3_board in sub2_board.children %}
+        <li class="nav-item">
+            {% if sub3_board.board_type == 'tree' %}
+            <a class="nav-link px-3" href="javascript: 
+            document.querySelectorAll('.sub_board').forEach(function(e){e.classList.add('d-none');}); 
+            document.getElementById('sub_board_{{ sub3_board.id }}').classList.toggle('d-none');
+            document.getElementById('sub_board_{{ sub2_board.id }}').classList.toggle('d-none');
+            document.getElementById('sub_board_{{ sub1_board.id }}').classList.toggle('d-none');
+            document.getElementById('sub_board_{{ board.id }}').classList.toggle('d-none');"
+                class="text-decoration-none text-black small">
+                {{ sub3_board.name }}
+            </a>
+            {% else %}
+            <a class="nav-link px-3"
+                href="/post?board_ids={{board.id}},{{ sub1_board.id }},{{ sub2_board.id }},{{ sub3_board.id }}"
+                class="text-decoration-none text-black small">
+                {{ sub3_board.name }}
+            </a>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endfor %}

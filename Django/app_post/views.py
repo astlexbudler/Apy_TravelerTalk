@@ -46,6 +46,8 @@ def index(request):
     return redirect('/post/attendance')
   elif board.board_type == 'greeting': # 가입인사 게시판인 경우
     return redirect('/post/greeting')
+  elif board.board_type == 'coupon': # 쿠폰 게시판인 경우
+    return redirect('/post/coupon')
   elif board.board_type == 'review':
     return redirect('/post/review?board_ids=' + request.GET.get('board_ids') + '&page=' + str(page) + '&search=' + search)
   elif board.board_type == 'travel':
@@ -289,6 +291,11 @@ def post_view(request):
   # 댓글 가져오기
   comments = daos.select_comments(post_id)
 
+  # 좋아요 가능 여부
+  likeable = True
+  if post_id in request.session.get('like_post_ids', ''):
+    likeable = False
+
   # 조회수 증가
   if post_id not in  request.session.get('view_posts', ''):
     request.session['view_posts'] = request.session.get('view_posts', '') + ',' + post_id
@@ -304,6 +311,7 @@ def post_view(request):
     'board': post['boards'][-1], # 게시판 정보
     'commentable': commentable, # 댓글 작성 가능 여부
     'comments': comments, # 댓글 정보
+    'likeable': likeable, # 좋아요 가능 여부
   })
 
 # 출석체크 게시판
