@@ -205,11 +205,15 @@
 
     <!-- 버튼 그룹 -->
     <div class="text-end p-3 mb-5">
+      <a class="btn btn-primary btn-sm me-2"
+        href="javascript: new bootstrap.Modal(document.getElementById('addAccount')).show()">
+        <i class="fi fi-rr-user-add"></i> 사용자 생성
+      </a>
       {% if request.GET.tab == 'supervisorTab' %}
       <a class="btn btn-primary btn-sm me-2"
-          href="javascript: new bootstrap.Modal(document.getElementById('addSubsupervisor')).show()">
-          <i class="fi fi-rr-user-add"></i> 하위 관리자 추가
-        </a>
+        href="javascript: new bootstrap.Modal(document.getElementById('addSubsupervisor')).show()">
+        <i class="fi fi-rr-user-add"></i> 하위 관리자 추가
+      </a>
       {% endif %}
 
       <a href="javascript: openExportDataPage();" class="btn btn-sm btn-success">
@@ -327,6 +331,7 @@
 <!-- Modals -->
 <!-- 부 관리자 추가 -->
 {% include 'components/modal/supervisor/create_subsupervisor.html' %}
+{% include 'components/modal/supervisor/create_account.html' %}
 <!-- 아이피 차단 -->
 {% include 'components/modal/supervisor/create_blocked_ip.html' %}
 

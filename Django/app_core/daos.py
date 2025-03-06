@@ -2233,8 +2233,6 @@ def make_board_tree(group_name):
     ).filter(
         #Q(display_groups__name__in=[group_name])
     ).order_by('-display_weight')
-    for board in boards:
-        print(board.name)
     board_dict = { # 부모 게시판이 없는 게시판(최상위 게시판)을 먼저 생성
         board.name: {
             'id': board.id,
@@ -2292,7 +2290,6 @@ def make_board_tree(group_name):
     boards = []
     for child in board_dict.keys():
         boards.append(board_dict[child])
-    print(boards)
     return boards
 
 # 모든 게시판 트리 생성

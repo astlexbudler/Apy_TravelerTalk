@@ -84,12 +84,12 @@
     });
 
     // 하위 관리자 비밀번호 확인
-    const passwordRegex = /^(?=.*[a-zA-Z])(?=.*[0-9]).{8,}$/; // 영문, 숫자 포함 8자 이상
+    const passwordRegex = /^(?=.*[a-zA-Z])(?=.*[0-9]).{5,}$/; // 영문, 숫자 포함 5자 이상
     document.getElementById('subsupervisorPassword').addEventListener('input', () => {
 
         // 비밀번호 형식 확인에 따른 메시지 출력
         if (!passwordRegex.test(subsupervisorPassword.value)) {
-            subsupervisorPasswordConfirmText.innerText = '비밀번호는 8자 이상, 영문, 숫자 포함해야 합니다.';
+            subsupervisorPasswordConfirmText.innerText = '비밀번호는 5자 이상, 영문, 숫자 포함해야 합니다.';
             subsupervisorPasswordConfirmText.classList.remove('text-success');
             subsupervisorPasswordConfirmText.classList.add('text-danger');
             subsupervisorPasswordOk = false; // 비밀번호 형식 불일치. 사용 불가

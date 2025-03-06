@@ -25,17 +25,17 @@
             <label>게시판</label>
             <select class="form-select" id="board_id">
               {% for board in boards %}
-              <option value="{{ board.id }}" {% if board.id == request.GET.board_id %}selected{% endif %}>{{ board.name }}</option>
+              <option value="{{ board.id }}" {% if board.id == post.board_ids %}selected{% endif %}>{{ board.name }}</option>
               {% if board.children|length > 0 %}
               {% for child in board.children %}
-              <option value="{{ board.id }},{{ child.id }}" {% if child.id == request.GET.board_id %}selected{% endif %}>- {{ child.name }}</option>
+              <option value="{{ board.id }},{{ child.id }}" {% if child.id == post.board_ids %}selected{% endif %}>- {{ child.name }}</option>
               {% if child.children|length > 0 %}
               {% for grandchild in child.children %}
-              <option value="{{ board.id }},{{ child.id }},{{ grandchild.id }}" {% if grandchild.id == request.GET.board_id %}selected{% endif %}>
+              <option value="{{ board.id }},{{ child.id }},{{ grandchild.id }}" {% if grandchild.id == post.board_ids %}selected{% endif %}>
                 -- {{ grandchild.name }}</option>
               {% if grandchild.children|length > 0 %}
               {% for grandgrandchild in grandchild.children %}
-              <option value="{{ board.id }},{{ child.id }},{{ grandchild.id }},{{ grandgrandchild.id }}" {% if grandgrandchild.id == request.GET.board_id %}selected{% endif %}>--- {{ grandgrandchild.name }}</option>
+              <option value="{{ board.id }},{{ child.id }},{{ grandchild.id }},{{ grandgrandchild.id }}" {% if grandgrandchild.id == post.board_ids %}selected{% endif %}>--- {{ grandgrandchild.name }}</option>
               {% endfor %}
               {% endif %}
               {% endfor %}
@@ -53,17 +53,17 @@
               {% endfor %}
 
               {% for category in categories %}
-              <option value="{{ category.id }}" {% if category.id == request.GET.category_id %}selected{% endif %}>{{ category.name }}</option>
+              <option value="{{ category.id }}" {% if category.id == post.place_info.category_ids %}selected{% endif %}>{{ category.name }}</option>
               {% if category.children|length > 0 %}
               {% for child in category.children %}
-              <option value="{{ category.id }},{{ child.id }}" {% if child.id == request.GET.category_id %}selected{% endif %}>- {{ child.name }}</option>
+              <option value="{{ category.id }},{{ child.id }}" {% if child.id == post.place_info.category_ids %}selected{% endif %}>- {{ child.name }}</option>
               {% if child.children|length > 0 %}
               {% for grandchild in child.children %}
-              <option value="{{ category.id }},{{ child.id }},{{ grandchild.id }}" {% if grandchild.id == request.GET.category_id %}selected{% endif %}>
+              <option value="{{ category.id }},{{ child.id }},{{ grandchild.id }}" {% if grandchild.id == post.place_info.category_ids %}selected{% endif %}>
                 -- {{ grandchild.name }}</option>
               {% if grandchild.children|length > 0 %}
               {% for grandgrandchild in grandchild.children %}
-              <option value="{{ category.id }},{{ child.id }},{{ grandchild.id }},{{ grandgrandchild.id }}" {% if grandgrandchild.id == request.GET.category_id %}selected{% endif %}>--- {{ grandgrandchild.name }}</option>
+              <option value="{{ category.id }},{{ child.id }},{{ grandchild.id }},{{ grandgrandchild.id }}" {% if grandgrandchild.id == post.place_info.category_ids %}selected{% endif %}>--- {{ grandgrandchild.name }}</option>
               {% endfor %}
               {% endif %}
               {% endfor %}
