@@ -7,12 +7,9 @@
     <div style="min-height: 300px;">
 
       <!-- 페이지 타이틀 -->
-      {% include 'components/main/breadcrumbs.html' %}
-
-      {% with title=board.name %}
+      {% with title='게시글 관리' subtitle='게시판 및 게시글 관리' %}
       {% include 'components/main/title_section.html' %}
       {% endwith %}
-
 <!-- 게시글 -->
 <div class="my-5" id="user">
 
