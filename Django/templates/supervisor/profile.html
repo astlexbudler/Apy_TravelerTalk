@@ -260,8 +260,8 @@
     }
 
     // 회원 탈퇴 요청
-    var result = await fetch('/api/delete_user', {
-      method: 'POST',
+    var result = await fetch('/api/account?account_id={{ request.GET.account_id }}', {
+      method: 'DELETE',
       headers: {
         'X-CSRFToken': csrftoken
       }

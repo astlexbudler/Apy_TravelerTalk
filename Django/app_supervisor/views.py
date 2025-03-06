@@ -582,7 +582,7 @@ def account(request):
     'groups'
   ).select_related(
     'level'
-  ).all().order_by('date_joined')
+  ).all().order_by('-date_joined')
 
   # status
   if tab == 'supervisorTab': # 관리자 검색 탭일 경우, 별도의 사용자 통계 기능 없음.
@@ -739,6 +739,8 @@ def account(request):
     'last_page': last_page, # 페이지 처리를 위해 필요한 정보
     'status': status, # 사용자 종류(탭) 별 통계 데이터(관리자는 없음)
     'blocked_ips': blocked_ips, # 차단 IP 목록
+    'travel_boards': daos.make_travel_board_tree(), # 여행지 게시판 목록
+    'categories': daos.make_category_tree(), # 카테고리 목록
   })
 
 # 프로필
@@ -1526,6 +1528,7 @@ def message(request):
       title__contains=search_message_title,
       sender_account__contains=search_message_receiver,
     ).order_by('-created_at')
+    messages, last_page = daos.select_received_messages('supervisor', page)
 
     # export
     if request.GET.get('export'):
@@ -1548,21 +1551,6 @@ def message(request):
         'table_data': table_data
       })
 
-    last_page = len(msgs) // 20 + 1
-    messages = [{
-      'id': m.id,
-      'title': m.title,
-      'content': m.content,
-      'is_read': m.is_read,
-      'created_at': m.created_at,
-      'image': '/media/' + str(m.image) if m.image else None,
-      'include_coupon': {
-        'code': m.include_coupon.code,
-        'name': m.include_coupon.name,
-      } if m.include_coupon else None,
-      'sender': daos.select_account(m.sender_account) if daos.select_account(m.sender_account) else {'id': m.sender_account},
-    } for m in msgs[(page - 1) * 20:page * 20]]
-
     return render(request, 'supervisor/message.html', {
       **daos.get_urls(),
       'account': account,
@@ -1579,6 +1567,7 @@ def message(request):
       title__contains=search_message_title,
       to_account__contains=search_message_receiver,
     ).order_by('-created_at')
+    messages, last_page = daos.select_sent_messages('supervisor', page)
 
     # export
     if request.GET.get('export'):
@@ -1600,21 +1589,6 @@ def message(request):
         'headers': headers,
         'table_data': table_data
       })
-
-    last_page = len(msgs) // 20 + 1
-    messages = [{
-      'id': m.id,
-      'title': m.title,
-      'content': m.content,
-      'is_read': m.is_read,
-      'created_at': m.created_at,
-      'image': '/media/' + str(m.image) if m.image else None,
-      'include_coupon': {
-        'code': m.include_coupon.code,
-        'name': m.include_coupon.name,
-      } if m.include_coupon else None,
-      'to': daos.select_account(m.to_account) if daos.select_account(m.to_account) else {'id': m.to_account},
-    } for m in msgs[(page - 1) * 20:page * 20]]
 
     return render(request, 'supervisor/message.html', {
       **daos.get_urls(),

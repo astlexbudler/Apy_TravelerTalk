@@ -32,7 +32,7 @@
                         id="accountPasswordConfirm">
                 </div>
 
-                <div class="row mb-2">
+                <div class="row mb-4">
                     <div class="form-group col-4">
                         <label>다중 생성</label>
                         <input type="number" class="form-control" placeholder="다중 생성할 사용자 수를 입력해주세요."
@@ -40,12 +40,17 @@
                     </div>
                     <div class="form-group col-8">
                         <label>계정 종류</label>
-                        <select class="form-select" id="accountType">
+                        <select class="form-select" id="accountType" onchange="changeAccountType(this.value)">
                             <option value="user">사용자</option>
                             <option value="dame">여성회원</option>
                             <option value="partner">파트너</option>
                         </select>
                     </div>
+                </div>
+
+                <!-- 게시글 및 카테고리 정보 -->
+                <div class="d-none" id="partnerInfo">
+                    {% include 'components/main/input_partner_category.html' %}
                 </div>
 
             </div>
@@ -70,6 +75,15 @@
     var accountIdOk = false;
     var accountPasswordOk = false;
     var accountPasswordConfirmOk = false;
+
+    // 계정 종류에 따른 추가 정보 입력
+    changeAccountType = (selected) => {
+        if (selected === 'partner') {
+            document.getElementById('partnerInfo').classList.remove('d-none');
+        } else {
+            document.getElementById('partnerInfo').classList.add('d-none');
+        }
+    }
 
     // 하위 관리자 아이디 확인
     document.getElementById('accountId').addEventListener('input', async () => {
@@ -196,6 +210,8 @@
                 formData.append('partner_name', 'partner');
                 formData.append('email', 'partner@email.com');
                 formData.append('phone', '010-1234-5678');
+                formData.append('board_ids', document.getElementById('selectedBoard').value);
+                formData.append('category_ids', document.getElementById('serviceCategory').value);
             }
 
             if (!accountIdOk || !accountPasswordOk || !accountPasswordConfirmOk) {

@@ -42,6 +42,7 @@
                             </a>
                         </div>
                     </div>
+                    {% if account.account_type not in 'supervisor,sub_supervisor' %}
                     <div class="mb-4 px-2">
                         <div class="form-group mb-2">
                             <input type="checkbox" id="messageToAdmin">
@@ -50,6 +51,7 @@
                         <input id="receiverId" class="d-none">
                         <div id="receiverList"></div>
                     </div>
+                    {% endif %}
 
                     <!-- 쪽지 제목 -->
                     <div class="form-group mb-4">

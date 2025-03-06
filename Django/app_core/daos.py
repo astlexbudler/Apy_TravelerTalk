@@ -729,6 +729,7 @@ def search_posts(title=None, category_id=None, board_id=None, related_post_id=No
         query &= Q(related_post__id=related_post_id)
     if post_type == 'travel': # place_info가 None이 아닌지 확인
         query &= Q(place_info__isnull=False)
+        query &= Q(place_info__status__in=['ad', 'active', 'pending'])
     elif post_type == 'ad': # place_info의 status가 'ad'인지 확인
         query &= Q(place_info__status='ad')
 
@@ -1740,13 +1741,28 @@ def select_message(message_id):
 def select_received_messages(account_id, page=1):
 
     # 사용자 확인
-    account = models.ACCOUNT.objects.filter(
-        id=account_id
-    )
-    if not account.exists():
-        return {
-            'success': False,
-            'message': '사용자 정보가 존재하지 않습니다.',
+    if account_id == 'supervisor':
+        account = {
+            'id': 'supervisor',
+            'nickname': '관리자',
+        }
+    elif str(account_id).startswith('guest'):
+        account = {
+            'id': account_id,
+            'nickname': f'손님({account_id})',
+        }
+    else:
+        account = models.ACCOUNT.objects.filter(
+            id=account_id
+        ).first()
+        if not account:
+            return {
+                'success': False,
+                'message': '사용자 정보가 존재하지 않습니다.',
+            }
+        account = {
+            'id': account.id,
+            'nickname': account.first_name,
         }
 
     # 사용자가 받은 메세지 확인
@@ -1898,7 +1914,7 @@ def select_sent_messages(account_id, page=1):
             })
         except Exception as e:
             message.delete()
-
+    print(messages_data)
     return messages_data, last_page
 
 # 메세지 생성

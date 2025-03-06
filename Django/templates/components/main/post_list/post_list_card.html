@@ -48,14 +48,17 @@
             </div>
             <div class="card-body">
 
-                <!-- 카테고리 -->
+                <!-- 카테고리 
                 <span class="text-black-50" style="font-size: 12px;">
                     {% for category in post.place_info.categories %}
                     {{ category.name }} {% if not forloop.last %} > {% endif %}
                     {% endfor %}
-                </span>
+                </span>-->
 
                 <!-- 제목 -->
+                <small class="text-black-50" style="font-size: 12px;">
+                    {{ post.author.partner_name }}
+                </small>
                 <h6 class="mb-4 text-black-60">
                     {{ post.title }}
                 </h6>

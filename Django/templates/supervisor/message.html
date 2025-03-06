@@ -88,68 +88,26 @@
 
         </div>
 
-        <!-- 검색 결과 -->
-        <p class="text-black-50 small">
-          <i class="fi fi-rr-info"></i> 쿠폰은 쪽지 내용 확인 후 <span class="text-primary">쿠폰 받기</span> 버튼을 클릭하여 받을 수
-          있습니다.
-        </p>
-        <table class="table table-border small border shadow text-center">
-          <tbody>
-            <tr>
-              <th>
-                읽음 여부
-              </th>
-              <th>
-                보낸 사람
-              </th>
-              <th>
-                제목
-              </th>
-              <th>
-                수신 날짜
-              </th>
-            </tr>
-            {% if messages|length < 1 %} <tr>
-              <td colspan="4">
-                <p class="text-black">받은 쪽지가 없습니다.</p>
-              </td>
-              </tr>
-              {% else %}
-              {% for message in messages %}
-              <tr style="cursor: pointer;" onclick="
-            new bootstrap.Modal(document.getElementById('messageModal{{message.id}}')).show();
-            {% if not message.is_read %}setReadDatetime('{{message.id}}');{% endif %}
-          ">
-                <td>
-                  {% if not message.is_read %}
-                  <i class="fi fi-rr-eye"></i> 읽지 않음
-                  {% else %}
-                  <i class="fi fi-rr-eye"></i> 읽음
-                  {% endif %}
-                </td>
-                <td>
-                  <span class="text-dark">
-                    {% if message.sender.partner_name %}
-                    {{ message.sender.partner_name }}
-                    {% elif message.sender.nickname %}
-                    {{ message.sender.nickname }}
-                    {% else %}
-                    비회원 {{message.sender.id}}
-                    {% endif %}
-                  </span>
-                </td>
-                <td>
-                  {{ message.title }}
-                </td>
-                <td>
-                  {{ message.created_at }}
-                  {% include 'components/modal/message/view_message.html' %}
-                </td>
-              </tr>
-              {% endfor %}
-              {% endif %}
-          </tbody>
-        </table>
+        <!-- 쪽지 목록 -->
+        <div class="mb-5" style="min-height: 300px;">
+          <h6 class="text-black-60 mb-3 pb-3 border-bottom">
+            쪽지
+          </h6>
+          {% if messages|length == 0 %}
+          <p>
+            쪽지가 없습니다.
+          </p>
+          {% endif %}
+          {% for message in messages %}
+          {% include 'components/main/message_list.html' %}
+          {% include 'components/modal/message/view_message.html' %}
+          {% endfor %}
+        </div>
+
+        <!-- 안내 메세지 -->
+        <div class="alert alert-info small">
+          <i class="fi fi-rr-info"></i> 쿠폰은 상세보기를 통해 쿠폰 코드를 확인하고 사용할 수 있습니다. 사용 기간이 있는 경우, 기간 내에 사용해주세요.
+        </div>
 
       </div>
 
