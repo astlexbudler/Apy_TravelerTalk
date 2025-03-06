@@ -121,14 +121,12 @@
 
                     <div class="header-icons d-lg-none" style="padding-top: 16px; padding-right: 16px;">
                         <div class="h-col h-toggler d-lg-none">
-                            <button class="navbar-toggler h-burgur-icon" onclick="document.querySelector('#mobileBoardButtons').classList.toggle('d-none');">
+                            <button class="navbar-toggler h-burgur-icon" type="button" data-bs-toggle="offcanvas"
+                                data-bs-target="#offcanvasMobileMenu" aria-controls="offcanvasMobileMenu">
                                 <span></span>
                             </button>
                         </div>
                     </div>
-                    {% if account.account_type == 'guest' %}
-                    {% include 'components/modal/account/login.html' %}
-                    {% endif %}
                     <div class="offcanvas offcanvas-start text-start" tabindex="-1" id="offcanvasMobileMenu" aria-labelledby="offcanvasMobileMenuLabel">
                         <div class="offcanvas-header" style="background-color: #ffafc8;">
                             <div
@@ -177,6 +175,30 @@
                                 {% else %}
                                 {% include 'components/other/side_profile_box.html' %}
                                 {% endif %}
+
+                                <!-- 게시판 목록 -->
+                                <div class="mt-5 mb-3" style="border-bottom: 3px solid #ffafc8;">
+                                    <h6 class="text-black-60">
+                                        게시판
+                                    </h6>
+                                </div>
+                                <ul class="navbar-nav mx-auto">
+                                    <li class="nav-item">
+                                        <a class="nav-link px-3" href="/post?board_ids=35,36">
+                                            이벤트
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link px-3" href="/post/review">
+                                            후기 게시판
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link px-3" href="/post?board_ids=39">
+                                            문의
+                                        </a>
+                                    </li>
+                                </ul>
                             </div>
 
                         </div>
@@ -202,7 +224,7 @@
         <div style="display: inline-block;">
             <div style="width: 24%; min-height: 60px; display: inline-block;" class="p-1">
                 <div class="border rounded p-2 shadow-sm">
-                    <a href="/post/travel?board_ids=1&page=1&search=">
+                    <a href="javascript: toogleMobileMenu('Travel')">
                         <img src="/static/travelertalk/img/travel-bag.png" style="width: 100%; height: auto;">
                         <p class="text-black-50 text-center mb-1">
                             여행지
@@ -212,10 +234,10 @@
             </div>
             <div style="width: 24%; min-height: 60px; display: inline-block;" class="p-1">
                 <div class="border rounded p-2 shadow-sm">
-                    <a href="/post/?board_ids=16,17">
+                    <a href="javascript: toogleMobileMenu('Community')">
                         <img src="/static/travelertalk/img/chat.png" style="width: 100%; height: auto;">
                         <p class="text-black-50 text-center mb-1">
-                            자유게시판
+                            커뮤니티
                         </p>
                     </a>
                 </div>
@@ -232,7 +254,7 @@
             </div>
             <div style="width: 24%; min-height: 60px; display: inline-block;" class="p-1">
                 <div class="border rounded p-2 shadow-sm">
-                    <a href="/post/?board_ids=28">
+                    <a href="javascript: toogleMobileMenu('Event')">
                         <img src="/static/travelertalk/img/giftbox.png" style="width: 100%; height: auto;">
                         <p class="text-black-50 text-center mb-1">
                             이벤트
@@ -242,40 +264,179 @@
             </div>
         </div>
 
-        <!-- 버튼 -->
-        <div class="w-100 d-none" style="white-space: wrap;" id="mobileBoardButtons">
+        <!-- 커뮤니티 메뉴 -->
+        <div class="w-100 mt-4 d-none mobileButtons" style="white-space: wrap;" id="mobileCommunityButtons">
+            <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids=23,24">
+                자유게시판
+            </a>
+            <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids=23,26">
+                가입인사
+            </a>
+            <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids=23,27">
+                익명 게시판
+            </a>
+            <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids=23,28">
+                미녀들의 수다
+            </a>
+            <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids=23,29">
+                정보공유/교환
+            </a>
+            <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids=23,30">
+                구인/구직
+            </a>
+            <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids=23,32">
+                브론즈
+            </a>
+            <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids=23,33">
+                실버
+            </a>
+            <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids=23,34">
+                골드
+            </a>
+        </div>
 
-            {% for board in boards %}
-            {% if board.board_type != 'tree' %}
-            <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids={{ board.id }}">
-                {{ board.name }}
+        <!-- 이벤트 메뉴 -->
+        <div class="w-100 mt-4 d-none mobileButtons" style="white-space: wrap;" id="mobileEventButtons">
+            <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids=35,36">
+                이벤트
             </a>
-            {% else %}
-            {% for sub1_board in board.children %}
-            {% if sub1_board.board_type != 'tree' %}
-            <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids={{board.id}},{{sub1_board.id}}">
-                {{ sub1_board.name }}
+            <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids=35,37">
+                쿠폰거래
             </a>
-            {% else %}
-            {% for sub2_board in sub1_board.children %}
-            {% if sub2_board.board_type != 'tree' %}
-            <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids={{board.id}},{{sub1_board.id}},{{sub2_board.id}}">
-                {{ sub2_board.name }}
-            </a>
-            {% else %}
-            {% for sub3_board in sub2_board.children %}
-            <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids={{board.id}},{{sub1_board.id}},{{sub2_board.id}},{{sub3_board.id}}">
-                {{ sub3_board.name }}
-            </a>
-            {% endfor %}
-            {% endif %}
-            {% endfor %}
-            {% endif %}
-            {% endfor %}
-            {% endif %}
-            {% endfor %}
+        </div>
 
+        <!-- 게시판 기타 메뉴 -->
+        <div class="w-100 mt-4 d-none mobileButtons" style="white-space: wrap;" id="mobileEtcButtons">
+            <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids=39">
+                문의
+            </a>
+        </div>
+
+        <!-- 여행지 메뉴(서울) -->
+        <div class="w-100 mt-4 d-none mobileButtons" style="white-space: wrap;" id="mobileTravelSeoulButtons">
+            <a class="btn mobileTreeButton" href="javascript: toogleMobileDetailMenu('TravelSeoul')">
+                서울
+            </a>
+            <!-- 여행지 메뉴(서울) -->
+            <span id="mobileTravelSeoulDetailButtons" class="d-none">
+                <a class="btn mobileNodeButton" href="/post/travel?board_ids=2,3">
+                    강북
+                </a>
+                <a class="btn mobileNodeButton" href="/post?board_ids=2,4">
+                    압구정
+                </a>
+                <a class="btn mobileNodeButton" href="/post?board_ids=2,5">
+                    동대문
+                </a>
+                <a class="btn mobileNodeButton" href="/post?board_ids=2,6">
+                    홍대/이대
+                </a>
+                <a class="btn mobileNodeButton" href="/post?board_ids=2,7">
+                    이태원
+                </a>
+                <a class="btn mobileNodeButton" href="/post?board_ids=2,8">
+                    강서
+                </a>
+                <a class="btn mobileNodeButton" href="/post?board_ids=2,9">
+                    송파
+                </a>
+            </span>
+        </div>
+
+        <!-- 여행지 메뉴(해외) -->
+        <div class="w-100 mt-4 d-none mobileButtons" style="white-space: wrap;" id="mobileTravelForeignButtons">
+            <a class="btn mobileTreeButton" href="javascript: toogleMobileDetailMenu('TravelForeign')">
+                해외
+            </a>
+            <span id="mobileTravelForeignDetailButtons" class="d-none">
+                <a class="btn mobileNodeButton" href="/post?board_ids=17,18">
+                    필리핀
+                </a>
+                <a class="btn mobileNodeButton" href="/post?board_ids=17,19">
+                    태국
+                </a>
+                <a class="btn mobileNodeButton" href="/post?board_ids=17,20">
+                    캄보디아
+                </a>
+                <a class="btn mobileNodeButton" href="/post?board_ids=17,21">
+                    일본
+                </a>
+                <a class="btn mobileNodeButton" href="/post?board_ids=17,22">
+                    베트남
+                </a>
+            </span>
+        </div>
+
+        <!-- 여행지 메뉴(기타) -->
+        <div class="w-100 mt-4 d-none mobileButtons" style="white-space: wrap;" id="mobileTravelEtcButtons">
+            <a class="btn mobileNodeButton" href="/post?board_ids=1">
+                강남
+            </a>
+            <a class="btn mobileNodeButton" href="/post?board_ids=10">
+                인천/부천
+            </a>
+            <a class="btn mobileNodeButton" href="/post?board_ids=11">
+                경기
+            </a>
+            <a class="btn mobileNodeButton" href="/post?board_ids=12">
+                대전/충청
+            </a>
+            <a class="btn mobileNodeButton" href="/post?board_ids=13">
+                대구/구미
+            </a>
+            <a class="btn mobileNodeButton" href="/post?board_ids=14">
+                경상
+            </a>
+            <a class="btn mobileNodeButton" href="/post?board_ids=15">
+                광주/전라
+            </a>
+            <a class="btn mobileNodeButton" href="/post?board_ids=16">
+                강원/제주
+            </a>
         </div>
 
     </div>
 </div>
+<script>
+
+    // 모바일 게시판 메뉴 토글
+    function toogleMobileMenu(menu) {
+        document.querySelectorAll('.mobileButtons').forEach(function (el) {
+            el.classList.add('d-none');
+        });
+
+        // Travel
+        if (menu == 'Travel') {
+            document.getElementById('mobileTravelSeoulButtons').classList.remove('d-none');
+            document.getElementById('mobileTravelForeignButtons').classList.remove('d-none');
+            document.getElementById('mobileTravelEtcButtons').classList.remove('d-none');
+        }
+
+        // Community
+        if (menu == 'Community') {
+            document.getElementById('mobileCommunityButtons').classList.remove('d-none');
+            document.getElementById('mobileEtcButtons').classList.remove('d-none');
+        }
+
+        // Event
+        if (menu == 'Event') {
+            document.getElementById('mobileEventButtons').classList.remove('d-none');
+            document.getElementById('mobileEtcButtons').classList.remove('d-none');
+        }
+    }
+
+    // 모바일 게시판 세부 메뉴 토글
+    function toogleMobileDetailMenu(menu) {
+
+        // TravelSeoul
+        if (menu == 'TravelSeoul') {
+            document.getElementById('mobileTravelSeoulDetailButtons').classList.toggle('d-none');
+        }
+
+        // TravelForeign
+        if (menu == 'TravelForeign') {
+            document.getElementById('mobileTravelForeignDetailButtons').classList.toggle('d-none');
+        }
+    }
+
+</script>

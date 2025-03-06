@@ -257,7 +257,6 @@ def get_default_contexts(request):
     server_settings = {
         'site_logo': select_server_setting('site_logo'),
         'service_name': select_server_setting('service_name'),
-        'site_header': select_server_setting('site_header'),
         'company_info': select_server_setting('company_info'),
     }
 
@@ -1989,6 +1988,7 @@ def select_all_server_settings():
 
 # 서버 설정 가져오기
 def select_server_setting(name):
+    print(name)
 
     # 서버 설정 확인
     server_setting = models.SERVER_SETTING.objects.filter(

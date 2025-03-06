@@ -3,7 +3,7 @@
     {% for board in boards %}
     <li class="nav-item">
         {% if board.board_type == 'tree' %}
-        <a class="nav-link px-3" href="javascript:
+        <a class="nav-link px-1" href="javascript:
         document.querySelectorAll('.sub_board').forEach(function(e){e.classList.add('d-none');});
         document.getElementById('sub_board_{{ board.id }}').classList.toggle('d-none');">
             {{ board.name }}

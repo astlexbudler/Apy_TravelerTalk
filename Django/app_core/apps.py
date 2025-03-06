@@ -35,10 +35,6 @@ class AppCoreConfig(AppConfig):
           value='/static/travelertalk/img/icon.png'
         )
         models.SERVER_SETTING.objects.create(
-          name='site_header', # 헤더 이미지
-          value='/static/travelertalk/img/header.jpg'
-        )
-        models.SERVER_SETTING.objects.create(
           name='company_info', # 회사 정보
           value='<p>관리자 페이지에서 회사 정보를 입력해주세요.</p>'
         )
@@ -98,7 +94,7 @@ class AppCoreConfig(AppConfig):
 
         # ACCOUNT: 계정 테이블
         supervisor = models.ACCOUNT(
-          username='supervisor', # 관리자 아이디
+          username='kibang', # 관리자 아이디
           first_name='관리자', # 닉네임
           last_name='',
           email='',
@@ -110,14 +106,14 @@ class AppCoreConfig(AppConfig):
           subsupervisor_permissions='user,post,travel,coupon,message,banner,level,setting', # 부관리자 권한
           level=level, # 레벨
         )
-        supervisor.set_password('supervisor1!')
+        supervisor.set_password('a12345')
         supervisor.save()
         supervisor.groups.add(supervisor_group)
         supervisor.save()
 
         # CATEGORY: 카테고리 테이블
         # 골프, 숙박, 스파, 맛집, 유직지, 술집, 마사지, 헤어살롱, 축제, 피부샵
-        # 기타(노래발, 풀빌라, 카지노, 그 외)
+        # 기타(노래발, 풀빌라, 카지노 에이전트, 그 외 에이전트)
         golf = models.CATEGORY.objects.create(
           name='골프',
         )
@@ -174,21 +170,28 @@ class AppCoreConfig(AppConfig):
 
         casino = models.CATEGORY.objects.create(
           parent_category=etc,
-          name='카지노',
+          name='카지노 에이전트',
         )
 
         other = models.CATEGORY.objects.create(
           parent_category=etc,
-          name='그 외',
+          name='그 외 에이전트',
         )
 
         # BOARD: 게시판 테이블 사전 설정
-        # 강남, 서울, 인천/부천, 경기, 대전/충청, 대구/구미, 경상, 광주/전라, 강원/제주
+        # 강남, 인천/부천, 경기, 대전/충청, 대구/구미, 경상, 광주/전라, 강원/제주
+        # 서울(강북, 압구정, 동대문, 홍대/이대, 이태원, 강서, 송파)
+        # 인천/부천
+        # 경기
+        # 대전/충청
+        # 대구/구미
+        # 경상
+        # 광주/전라
+        # 강원/제주
         # 해외(필리핀, 태국, 캄보디아, 일본, 베트남)
-        # 커뮤니티(자유게시판, 출석체크, 가입인사, 익명게시판, 미녀들의수다, 정보공유/교환, 구인/구직, 쿠폰 거래, 브론즈 게시판, 실버 게시판, 골드 게시판)
-        # 이벤트 게시판
+        # 커뮤니티(자유게시판, 출석체크, 가입인사, 익명게시판, 미녀들의수다, 정보공유/교환, 구인/구직, 브론즈 게시판, 실버 게시판, 골드 게시판)
+        # 이벤트 게시판(이벤트, 쿠폰 거래)
         # 후기 게시판
-        # 제휴업체 게시판
         # 문의 게시판
 
         gangnam = models.BOARD.objects.create(
@@ -207,17 +210,115 @@ class AppCoreConfig(AppConfig):
 
         seoul = models.BOARD.objects.create(
           name='서울',
+          board_type='tree',
+        )
+        # display_groups - all
+        # enter_groups - all
+        # write_groups - all
+        # comment_groups - all
+        seoul.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        seoul.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        seoul.write_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        seoul.comment_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        seoul.save()
+
+        gangbuk = models.BOARD.objects.create(
+          parent_board=seoul,
+          name='강북',
           board_type='travel',
         )
         # display_groups - all
         # enter_groups - all
         # write_groups - partner
         # comment_groups - user, dame, partner, supervisor, sub_supervisor
-        seoul.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        seoul.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        seoul.write_groups.add(partner_group)
-        seoul.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        seoul.save()
+        gangbuk.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        gangbuk.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        gangbuk.write_groups.add(partner_group)
+        gangbuk.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+
+        apgujeong = models.BOARD.objects.create(
+          parent_board=seoul,
+          name='압구정',
+          board_type='travel',
+        )
+        # display_groups - all
+        # enter_groups - all
+        # write_groups - partner
+        # comment_groups - user, dame, partner, supervisor, sub_supervisor
+        apgujeong.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        apgujeong.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        apgujeong.write_groups.add(partner_group)
+        apgujeong.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+
+        dongdaemun = models.BOARD.objects.create(
+          parent_board=seoul,
+          name='동대문',
+          board_type='travel',
+        )
+        # display_groups - all
+        # enter_groups - all
+        # write_groups - partner
+        # comment_groups - user, dame, partner, supervisor, sub_supervisor
+        dongdaemun.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        dongdaemun.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        dongdaemun.write_groups.add(partner_group)
+        dongdaemun.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+
+        hongdae = models.BOARD.objects.create(
+          parent_board=seoul,
+          name='홍대/이대',
+          board_type='travel',
+        )
+        # display_groups - all
+        # enter_groups - all
+        # write_groups - partner
+        # comment_groups - user, dame, partner, supervisor, sub_supervisor
+        hongdae.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        hongdae.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        hongdae.write_groups.add(partner_group)
+        hongdae.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+
+        itaewon = models.BOARD.objects.create(
+          parent_board=seoul,
+          name='이태원',
+          board_type='travel',
+        )
+        # display_groups - all
+        # enter_groups - all
+        # write_groups - partner
+        # comment_groups - user, dame, partner, supervisor, sub_supervisor
+        itaewon.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        itaewon.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        itaewon.write_groups.add(partner_group)
+        itaewon.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+
+        gangseo = models.BOARD.objects.create(
+          parent_board=seoul,
+          name='강서',
+          board_type='travel',
+        )
+        # display_groups - all
+        # enter_groups - all
+        # write_groups - partner
+        # comment_groups - user, dame, partner, supervisor, sub_supervisor
+        gangseo.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        gangseo.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        gangseo.write_groups.add(partner_group)
+        gangseo.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+
+        songpa = models.BOARD.objects.create(
+          parent_board=seoul,
+          name='송파',
+          board_type='travel',
+        )
+        # display_groups - all
+        # enter_groups - all
+        # write_groups - partner
+        # comment_groups - user, dame, partner, supervisor, sub_supervisor
+        songpa.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        songpa.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        songpa.write_groups.add(partner_group)
+        songpa.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
 
         incheon = models.BOARD.objects.create(
           name='인천/부천',
@@ -319,7 +420,7 @@ class AppCoreConfig(AppConfig):
 
         abroad = models.BOARD.objects.create(
           name='해외',
-          board_type='travel',
+          board_type='tree',
         )
         # display_groups - all
         # enter_groups - all
@@ -603,19 +704,51 @@ class AppCoreConfig(AppConfig):
         gold.save()
 
         # 이벤트 게시판
-        event = models.BOARD.objects.create(
+        event1 = models.BOARD.objects.create(
           name='이벤트',
+          board_type='tree',
+        )
+        # display_groups - all
+        # enter_groups - all
+        # write_groups - all
+        # comment_groups - all
+        event1.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        event1.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        event1.write_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        event1.comment_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        event1.save()
+
+        # 이벤트 게시판
+        event2 = models.BOARD.objects.create(
+          name='이벤트',
+          parent_board=event1,
           board_type='board',
         )
         # display_groups - all
         # enter_groups - all
         # write_groups - supervisor, sub_supervisor
         # comment_groups - user, dame, partner, supervisor, sub_supervisor
-        event.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        event.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        event.write_groups.add(supervisor_group, subsupervisor_group)
-        event.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        event.save()
+        event2.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        event2.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        event2.write_groups.add(supervisor_group, subsupervisor_group)
+        event2.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        event2.save()
+
+        # 쿠폰 거래 게시판
+        coupon = models.BOARD.objects.create(
+          parent_board=event1,
+          name='쿠폰 거래',
+          board_type='coupon',
+        )
+        # display_groups - all
+        # enter_groups - all
+        # write_groups - partner, supervisor, sub_supervisor
+        # comment_groups - user, dame, partner, supervisor, sub_supervisor
+        coupon.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        coupon.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        coupon.write_groups.add(partner_group, supervisor_group, subsupervisor_group)
+        coupon.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
+        coupon.save()
 
         # 후기 게시판
         review = models.BOARD.objects.create(
@@ -632,21 +765,6 @@ class AppCoreConfig(AppConfig):
         review.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         review.save()
 
-        # 제휴업체 게시판
-        partner = models.BOARD.objects.create(
-          name='제휴업체',
-          board_type='board',
-        )
-        # display_groups - all
-        # enter_groups - all
-        # write_groups - partner, supervisor, sub_supervisor
-        # comment_groups - user, dame, partner, supervisor, sub_supervisor
-        partner.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        partner.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        partner.write_groups.add(partner_group, supervisor_group, subsupervisor_group)
-        partner.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        partner.save()
-
         # 문의 게시판
         qna = models.BOARD.objects.create(
           name='문의',
@@ -661,20 +779,6 @@ class AppCoreConfig(AppConfig):
         qna.write_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         qna.comment_groups.add(supervisor_group, subsupervisor_group)
         qna.save()
-
-        # 배너 생성
-        top_banner = models.BANNER.objects.create(
-          location='top',
-          image='/media/default.png',
-          link='https://naver.com',
-          size='full'
-        )
-        side_banner = models.BANNER.objects.create(
-          location='side',
-          image='/media/default.png',
-          link='https://naver.com',
-          size='full'
-        )
 
         print('데이터베이스 기본 데이터 생성 완료')
     except Exception as e:
