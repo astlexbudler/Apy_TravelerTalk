@@ -208,8 +208,8 @@
     }
 
     // 회원 탈퇴 요청
-    var result = await fetch('/api/delete_user', {
-      method: 'POST',
+    var success = await fetch('/api/account', {
+      method: 'DELETE',
       headers: {
         'X-CSRFToken': csrftoken
       }
@@ -221,7 +221,7 @@
       });
 
     // 회원 탈퇴 결과에 따른 처리
-    if (result == 'y') {
+    if (success) {
       await showAlert('회원 탈퇴 완료', '회원 탈퇴가 성공적으로 처리되었습니다. 이용해주셔서 감사합니다.', 'success');
       logout();
       return

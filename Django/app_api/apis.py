@@ -391,6 +391,27 @@ class api_account(APIView):
 
         return JsonResponse({"success": True, 'status': 200, "message": "사용자 수정 성공"})
 
+    def delete(self, request, *args, **kwargs):
+
+        # 계정 확인
+        if not request.user.is_authenticated:
+            return JsonResponse({"success": False, 'status': 401, "message": "로그인이 필요합니다."})
+        if 'user' in request.user.subsupervisor_permissions:
+            id = request.query_params.get('id', request.user.id)
+        else:
+            id = request.user.id
+
+        # 사용자 삭제
+        daos.delete_account(id)
+
+        # 활동 기록 생성
+        daos.create_account_activity(
+            account_id=request.user.id,
+            message=f'[삭제] {id}님의 정보가 삭제되었습니다.'
+        )
+
+        return JsonResponse({"success": True, 'status': 200, "message": "사용자 삭제 성공"})
+
 # 메세지 REST API
 class api_message(APIView):
     # 메세지 읽음 처리 api(GET)
