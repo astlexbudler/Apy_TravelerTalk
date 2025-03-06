@@ -2227,27 +2227,14 @@ def delete_blocked_ip(ip):
 # 게시판 트리 생성
 def make_board_tree(group_name):
 
-    # 그룹 게시판 확인
-    def remove_empty_tree_nodes(data):
-        def filter_nodes(nodes):
-            return [
-                node for node in nodes
-                if not (node["board_type"] == "tree" and not node["children"])
-            ]
-        # 리스트를 필터링
-        filtered_data = filter_nodes(data)
-        # children 내부도 재귀적으로 검사
-        for node in filtered_data:
-            if "children" in node:
-                node["children"] = filter_nodes(node["children"])
-        return filtered_data
-
     # 게시판 확인
     boards = models.BOARD.objects.prefetch_related(
         'display_groups', 'enter_groups', 'write_groups', 'comment_groups'
     ).filter(
-        Q(display_groups__name__in=[group_name]) | Q(enter_groups__name__in=[group_name]) | Q(write_groups__name__in=[group_name]) | Q(comment_groups__name__in=[group_name])
+        #Q(display_groups__name__in=[group_name])
     ).order_by('-display_weight')
+    for board in boards:
+        print(board.name)
     board_dict = { # 부모 게시판이 없는 게시판(최상위 게시판)을 먼저 생성
         board.name: {
             'id': board.id,
@@ -2305,8 +2292,7 @@ def make_board_tree(group_name):
     boards = []
     for child in board_dict.keys():
         boards.append(board_dict[child])
-    boards = remove_empty_tree_nodes(boards)
-
+    print(boards)
     return boards
 
 # 모든 게시판 트리 생성
