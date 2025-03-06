@@ -291,12 +291,13 @@ class api_account(APIView):
             account_type=account_type,
             tel=tel
         )
+        print('created account:', account)
 
         # 기본 게시글 생성
         if account_type == 'partner':
-            board_ids = request.data.get('board_ids')
-            category_ids = request.data.get('category_ids')
-            address = request.data.get('address')
+            board_ids = request.data.get('board_ids', '1')
+            category_ids = request.data.get('category_ids', '1')
+            address = request.data.get('address', '서울특별시 강남구 역삼동 123-456')
             post = daos.create_post(
                 author_id=account['pk'],
                 title='기본 여행지 게시글 제목',
