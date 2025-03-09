@@ -1,7 +1,7 @@
 <div>
 
     <!-- 계정 타입 -->
-    <a href="{{main_url}}/profile" class="text-dark">
+    <a href="{{MAIN_URL}}/profile" class="text-dark">
 
         {% if account.account_type == 'partner' %}
         <span class="text-black-50 me-1" style="font-size: 14px;">파트너</span>
@@ -31,7 +31,7 @@
         {% if account.account_type in 'user,dame' %}
         <!-- 포인트 -->
         <div>
-            <a class="text-black-60" href="{{main_url}}/activity">
+            <a class="text-black-60" href="{{MAIN_URL}}/activity">
                 마일리지
                 <span class="text-black-50">
                     <i class="fi fi-ss-coins text-secondary"></i> <span class="numberComma">{{account.mileage}}</span>
@@ -40,7 +40,7 @@
         </div>
         <!-- 쿠폰 수 -->
         <div>
-            <a class="text-black-60" href="{{main_url}}/coupon">
+            <a class="text-black-60" href="{{MAIN_URL}}/coupon">
                 내 쿠폰:
                 <span class="text-black-50">
                     <i class="fi fi-rr-ticket"></i> {{coupons_preview|length}}
@@ -51,7 +51,7 @@
 
         <!-- 읽지 않은 쪽지 갯수 -->
         <div>
-            <a class="text-black-60" href="{{main_url}}/messenge">
+            <a class="text-black-60" href="{{MAIN_URL}}/messenge">
                 읽지 않은 쪽지:
                 <span class="text-black-50">
                     <i class="fi fi-rr-envelope"></i> {{unread_messages|length}}
@@ -69,11 +69,11 @@
         </a>
 
         {% if account.account_type == 'partner' %}
-        <a href="{{partner_url}}/partner" class="btn btn-success btn-sm small ms-1" target="_blank">
+        <a href="{{PARTNER_URL}}" class="btn btn-success btn-sm small ms-1" target="_blank">
             <i class="fi fi-rr-settings"></i>
         </a>
         {% elif account.account_type in 'supervisor,subsupervisor' %}
-        <a href="{{supervisor_url}}/supervisor" class="btn btn-success btn-sm small ms-1" target="_blank">
+        <a href="{{SUPERVISOR_URL}}" class="btn btn-success btn-sm small ms-1" target="_blank">
             <i class="fi fi-rr-settings"></i>
         </a>
         {% endif %}

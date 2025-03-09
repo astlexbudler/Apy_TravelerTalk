@@ -66,6 +66,43 @@
         </div>
       </div>
 
+      <!-- 쿠폰 정보 -->
+      <div class="my-4">
+        {% if post.include_coupons|length > 0 %}
+        {% with coupon=post.include_coupons.0 %}
+        <div class="p-3 border shadow">
+          <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+              <div style="display: inline-block; text-align: left;">
+                  <span class="text-black-60 mb-4 h6">
+                      {{coupon.name}} 
+                      {% if coupon.status == 'active' %}
+                      <span class="badge bg-success">
+                        {{post.include_coupons|length}}개 남음
+                      </span>
+                      {% endif %}
+                  </span>
+                  <a href="/post/travel_view?post_id={{coupon.related_post.id}}&board_ids={{coupon.related_post.board_ids}}">
+                    <p class="text-black-50 small m-0">
+                      여행지: {{coupon.related_post.title}}
+                    </p>
+                  </a>
+                  <p class="text-black-50 small">
+                      사용기간: {{coupon.expire_at}}까지
+                  </p>
+              </div>
+              <div style="display: inline-block; text-align: right;">
+                  <p class="text-black-50">
+                      <i class="fi fi-ss-coins"></i> <span class="numberComma">
+                          {{coupon.required_mileage}}
+                      </span> 마일리지 필요
+                  </p>
+              </div>
+          </div>
+        </div>
+        {% endwith %}
+        {% endif %}
+      </div>
+
       <!-- 댓글 작성 폼 -->
       {% if board.board_type == 'qna' %}
       {% with commentable=true comment_form_title='답변' placeholder='답변을 작성해주세요.' button_text='<i class="fi fi-rr-edit"></i> 답변 작성' commentable=commentable %}

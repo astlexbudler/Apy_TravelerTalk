@@ -77,7 +77,7 @@ class COUPONAdmin(admin.ModelAdmin):
 admin.site.register(models.COUPON, COUPONAdmin)
 
 class MESSAGEAdmin(admin.ModelAdmin):
-    list_display = ('to_account', 'sender_account', 'include_coupon', 'title', 'image', 'is_read', 'created_at')
+    list_display = ('receive', 'sender', 'include_coupon', 'title', 'image', 'is_read', 'created_at')
     search_fields = ('title', 'content')
     ordering = ('-created_at',)
 admin.site.register(models.MESSAGE, MESSAGEAdmin)
@@ -92,7 +92,7 @@ class SERVER_SETTINGAdmin(admin.ModelAdmin):
 admin.site.register(models.SERVER_SETTING, SERVER_SETTINGAdmin)
 
 class BANNERAdmin(admin.ModelAdmin):
-    list_display = ('location', 'image', 'link', 'size', 'display_weight')
+    list_display = ('location', 'image', 'link', 'status', 'display_weight')
     search_fields = ('link',)
     ordering = ('display_weight',)
 admin.site.register(models.BANNER, BANNERAdmin)

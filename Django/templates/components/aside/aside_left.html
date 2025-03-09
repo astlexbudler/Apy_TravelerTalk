@@ -52,7 +52,7 @@
             <div class="mt-4">
                 <a href="javascript: tryLogin(document.getElementById('asideLoginForm'));"
                     class="btn btn-primary btn-sm small me-1">로그인</a>
-                <a href="{{main_url}}/signup" class="btn btn-secondary btn-sm small">회원가입</a>
+                <a href="{{MAIN_URL}}/signup" class="btn btn-secondary btn-sm small">회원가입</a>
             </div>
         </form>
     </div>
@@ -67,7 +67,7 @@
 
     <!-- 즐겨찾기 -->
     <div class="pt-4">
-        <div style="border-bottom: 3px solid #ffafc8;">
+        <div style="border-bottom: 3px solid #b5c7d7;">
             <div style="display: flex; justify-content: space-between; white-space: nowrap;">
                 <div style="display: inline-block; text-align: left;">
                     <h6 class="text-black-60">
@@ -75,7 +75,7 @@
                     </h6>
                 </div>
                 <div style="display: inline-block; text-align: right;">
-                    <a href="{{main_url}}/bookmark" class="small text-black-50">더보기</a>
+                    <a href="{{MAIN_URL}}/bookmark" class="small text-black-50">더보기</a>
                 </div>
             </div>
         </div>
@@ -97,7 +97,7 @@
 
     <!-- 내 쿠폰들. 사용자 계정만 표시 -->
     <div class="pt-4">
-        <div style="border-bottom: 3px solid #ffafc8;">
+        <div style="border-bottom: 3px solid #b5c7d7;">
             <div style="display: flex; justify-content: space-between; white-space: nowrap;">
                 <div style="display: inline-block; text-align: left;">
                     <h6 class="text-black-60">
@@ -105,7 +105,7 @@
                     </h6>
                 </div>
                 <div style="display: inline-block; text-align: right;">
-                    <a href="{{main_url}}/coupon" class="small text-black-50">더보기</a>
+                    <a href="{{MAIN_URL}}/coupon" class="small text-black-50">더보기</a>
                 </div>
             </div>
         </div>
@@ -127,7 +127,7 @@
 
     <!-- 활동 내역 -->
     <div class="pt-4">
-        <div style="border-bottom: 3px solid #ffafc8;">
+        <div style="border-bottom: 3px solid #b5c7d7;">
             <div style="display: flex; justify-content: space-between; white-space: nowrap;">
                 <div style="display: inline-block; text-align: left;">
                     <h6 class="text-black-60">
@@ -135,7 +135,7 @@
                     </h6>
                 </div>
                 <div style="display: inline-block; text-align: right;">
-                    <a href="{{main_url}}/activity" class="small text-black-50">더보기</a>
+                    <a href="{{MAIN_URL}}/activity" class="small text-black-50">더보기</a>
                 </div>
             </div>
         </div>
@@ -166,7 +166,7 @@
 
     <!-- 카테고리 선택 박스 -->
     <div>
-        <div style="border-bottom: 3px solid #ffafc8;">
+        <div style="border-bottom: 3px solid #b5c7d7;">
             <h6 class="text-black-60">
                 <i class="fi fi-rr-list"></i> 여행 카테고리
             </h6>
@@ -188,7 +188,7 @@
                 </a>
                 {% else %}
                 <a class="nav-link"
-                    href="{{main_url}}/post/travel?board_ids={{request.GET.board_ids}}&category={{category.id}}">
+                    href="{{MAIN_URL}}/post/travel?board_ids={{request.GET.board_ids}}&category={{category.id}}">
                     {{ category.name }} ({{ category.post_count }})
                 </a>
                 {% endif %}
@@ -208,7 +208,7 @@
                 </a>
                 {% else %}
                 <a class="nav-link"
-                    href="{{main_url}}/post/travel?board_ids={{request.GET.board_ids}}&category={{ child.id }}">
+                    href="{{MAIN_URL}}/post/travel?board_ids={{request.GET.board_ids}}&category={{ child.id }}">
                     {{ child.name }} ({{ child.post_count }})
                 </a>
                 {% endif %}
@@ -229,7 +229,7 @@
                 </a>
                 {% else %}
                 <a class="nav-link"
-                    href="{{main_url}}/post/travel?board_ids={{request.GET.board_ids}}&category={{ child2.id }}">
+                    href="{{MAIN_URL}}/post/travel?board_ids={{request.GET.board_ids}}&category={{ child2.id }}">
                     {{ child2.name }} ({{ child2.post_count }})
                 </a>
                 {% endif %}

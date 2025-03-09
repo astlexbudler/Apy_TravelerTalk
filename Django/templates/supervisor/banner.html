@@ -11,9 +11,77 @@
 
     <!-- 선택지 버튼 그룹 -->
     <div class="btn-group w-100 d-flex">
-      {% include 'components/main/page_tab.html' with tab_name='상단 배너' tab_id='topTab' tab_link='/supervisor/banner?tab=topTab' %}
+      <div class="w-100 d-flex justify-content-center">
+        <a class="w-100 btn" href="{{SUPERVISOR_URL}}/supervisor/banner?tab=topTab" id="topTab">
+          상단 배너
+        </a>
+      </div>
+      <script>
+          window.addEventListener('load', () => {
+              if ('{{request.GET.tab}}' == 'topTab') { // 해당 탭이 선택 되었을 경우,
+                  document.getElementById('topTab').classList.add('pastel-pink-background');
+                  document.getElementById('topTab').classList.add('text-white');
+                  // 탭 박스가 있다면 표시
+                  if (document.getElementById('topTabBox')) {
+                      document.getElementById('topTabBox').classList.remove('d-none');
+                  }
+              } else { // 해당 탭이 선택 되지 않았을 경우,
+                  document.getElementById('topTab').classList.add('pastel-beige-background');
+                  // 탭 박스가 있다면 숨김
+                  if (document.getElementById('topTabBox')) {
+                      document.getElementById('topTabBox').classList.add('d-none');
+                  }
+              }
+          });
+      </script>
       <span class="divider"></span>
-      {% include 'components/main/page_tab.html' with tab_name='측/하단 배너' tab_id='sideTab' tab_link='/supervisor/banner?tab=sideTab' %}
+      <div class="w-100 d-flex justify-content-center">
+        <a class="w-100 btn" href="{{SUPERVISOR_URL}}/supervisor/banner?tab=sideTab" id="sideTab">
+          측/하단 배너
+        </a>
+      </div>
+      <script>
+          window.addEventListener('load', () => {
+              if ('{{request.GET.tab}}' == 'sideTab') { // 해당 탭이 선택 되었을 경우,
+                  document.getElementById('sideTab').classList.add('pastel-pink-background');
+                  document.getElementById('sideTab').classList.add('text-white');
+                  // 탭 박스가 있다면 표시
+                  if (document.getElementById('sideTabBox')) {
+                      document.getElementById('sideTabBox').classList.remove('d-none');
+                  }
+              } else { // 해당 탭이 선택 되지 않았을 경우,
+                  document.getElementById('sideTab').classList.add('pastel-beige-background');
+                  // 탭 박스가 있다면 숨김
+                  if (document.getElementById('sideTabBox')) {
+                      document.getElementById('sideTabBox').classList.add('d-none');
+                  }
+              }
+          });
+      </script>
+      <span class="divider"></span>
+      <div class="w-100 d-flex justify-content-center">
+        <a class="w-100 btn" href="{{SUPERVISOR_URL}}/supervisor/banner?tab=postTab" id="postTab">
+          게시글 배너
+        </a>
+      </div>
+      <script>
+          window.addEventListener('load', () => {
+              if ('{{request.GET.tab}}' == 'postTab') { // 해당 탭이 선택 되었을 경우,
+                  document.getElementById('postTab').classList.add('pastel-pink-background');
+                  document.getElementById('postTab').classList.add('text-white');
+                  // 탭 박스가 있다면 표시
+                  if (document.getElementById('postTabBox')) {
+                      document.getElementById('postTabBox').classList.remove('d-none');
+                  }
+              } else { // 해당 탭이 선택 되지 않았을 경우,
+                  document.getElementById('postTab').classList.add('pastel-beige-background');
+                  // 탭 박스가 있다면 숨김
+                  if (document.getElementById('postTabBox')) {
+                      document.getElementById('postTabBox').classList.add('d-none');
+                  }
+              }
+          });
+      </script>
     </div>
 
       <div class="my-5">
@@ -68,7 +136,7 @@
     // Tab
     tab = '{{request.GET.tab}}';
     if (tab == '') {
-      location.href = '{{supervisor_url}}/supervisor/banner?tab=topTab';
+      location.href = '{{SUPERVISOR_URL}}/supervisor/banner?tab=topTab';
     }
 
   });
@@ -96,7 +164,7 @@
     formData.append('display_weight', displayWeight);
     formData.append('size', size);
 
-    var response = await fetch('{{supervisor_url}}/supervisor/banner?id=' + id, {
+    var response = await fetch('{{SUPERVISOR_URL}}/supervisor/banner?id=' + id, {
       method: 'POST',
       body: formData,
       headers: {
@@ -118,7 +186,7 @@
   }
 
   deleteBanner = async (id) => {
-    var response = await fetch('{{supervisor_url}}/supervisor/banner?id=' + id, {
+    var response = await fetch('{{SUPERVISOR_URL}}/supervisor/banner?id=' + id, {
       method: 'DELETE',
       headers: {
         'X-CSRFToken': csrftoken

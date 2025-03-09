@@ -9,7 +9,7 @@ urlpatterns = [
   # 표준 게시판의 게시글 목록 및 검색 내역 제공
   # 따로 게시판 템플릿이 존재하는 경우, 해당 게시판 페이지로 redirect
   # 게시판 접근 권한 확인
-  path('', v.index, name='index'),
+  path('', v.poat_board, name='post_board'),
 
   # 출석 게시판 페이지
   # 출석 게시글 목록 및 검색 내역 제공
@@ -27,10 +27,6 @@ urlpatterns = [
   # 리뷰 게시판 페이지
   # 리뷰 게시글 목록 및 검색 내역 제공
   path('review', v.review, name='review'),
-
-  # 쿠폰 게시판 페이지
-  # 쿠폰 게시글 목록 및 검색 내역 제공
-  path('coupon', v.coupon, name='coupon'),
 
   # 광고 게시판 페이지
   # 광고 게시글 목록 및 검색 내역 제공
@@ -54,15 +50,5 @@ urlpatterns = [
   # 게시글 작성자의 경우 게시글 수정 버튼 표시
   # 게시글 조회 권한 확인
   path('post_view', v.post_view, name='post_view'),
-
-  # 리뷰 게시글 상세 페이지
-  # 리뷰 게시글의 상세 정보 제공
-  # 리뷰 내용 및 댓글 목록 확인
-  path('review_view', v.review_view, name='review_view'),
-
-  # 광고 게시글 상세 페이지
-  # 광고 게시글의 상세 정보 제공
-  # 광고 게시글 및 댓글 목록 확인
-  path('travel_view', v.travel_view, name='travel_view'),
 
 ]

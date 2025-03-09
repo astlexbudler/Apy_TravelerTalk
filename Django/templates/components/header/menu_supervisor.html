@@ -2,63 +2,187 @@
 
     <!-- 관리자 -->
     <li class="nav-item">
-        <a class="nav-link px-3" href="{{supervisor_url}}/supervisor/supervisor">
+        <a class="nav-link px-3" href="{{SUPERVISOR_URL}}/supervisor/supervisor">
             관리자
         </a>
     </li>
 
     <!-- 사용자 관리 -->
-    <li class="nav-item">
-        <a class="nav-link px-3" href="{{supervisor_url}}/supervisor/account">
+    <li class="nav-item dropdown dropdown-hover">
+        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
             사용자 관리
         </a>
+        <ul class="dropdown-menu start">
+            <li>
+                <a class="dropdown-item" href="{{SUPERVISOR_URL}}/supervisor/account?tab=userTab">
+                    사용자 계정
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item" href="{{SUPERVISOR_URL}}/supervisor/account?tab=dameTab">
+                    여성 회원
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item" href="{{SUPERVISOR_URL}}/supervisor/account?tab=partnerTab">
+                    파트너 계정
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item" href="{{SUPERVISOR_URL}}/supervisor/account?tab=supervisorTab">
+                    관리자 계정
+                </a>
+            </li>
+        </ul>
     </li>
 
     <!-- 게시글 관리 -->
     <li class="nav-item">
-        <a class="nav-link px-3" href="{{supervisor_url}}/supervisor/post">
+        <a class="nav-link px-3" href="{{SUPERVISOR_URL}}/supervisor/post">
             게시글 관리
         </a>
     </li>
 
     <!-- 여행지 관리 -->
-    <li class="nav-item">
-        <a class="nav-link px-3" href="{{supervisor_url}}/supervisor/travel">
+    <li class="nav-item dropdown dropdown-hover">
+        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
             여행지 관리
         </a>
+        <ul class="dropdown-menu start">
+            <li>
+                <a class="dropdown-item" href="{{SUPERVISOR_URL}}/supervisor/travel?tab=noAdTab">
+                    일반 여행지
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item" href="{{SUPERVISOR_URL}}/supervisor/travel?tab=weightAdTab">
+                    가중치 광고 여행지
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item" href="{{SUPERVISOR_URL}}/supervisor/travel?tab=statusAdTab">
+                    베스트 광고 여행지
+                </a>
+            </li>
+        </ul>
     </li>
 
     <!-- 쿠폰 관리 -->
-    <li class="nav-item">
-        <a class="nav-link px-3" href="{{supervisor_url}}/supervisor/coupon">
+    <li class="nav-item dropdown dropdown-hover">
+        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
             쿠폰 관리
         </a>
+        <ul class="dropdown-menu start">
+            <li>
+                <a class="dropdown-item" href="{{SUPERVISOR_URL}}/supervisor/coupon?tab=couponTab">
+                    시용 기능힌 쿠폰
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item" href="{{SUPERVISOR_URL}}/supervisor/coupon?tab=historyTab">
+                    쿠폰 사용 기록
+                </a>
+            </li>
+        </ul>
     </li>
 
     <!-- 쪽지 관리 -->
-    <li class="nav-item">
-        <a class="nav-link px-3" href="{{supervisor_url}}/supervisor/message">
+    <li class="nav-item dropdown dropdown-hover">
+        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
             쪽지 관리
         </a>
+        <ul class="dropdown-menu start">
+            <ul class="m-0 p-0 pb-3" style="list-style-type: none;">
+                <li>
+                    <a class="dropdown-item ps-4 dropdown-toggle active" href="#" disable>
+                        받은 쪽지함
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item ps-4" href="{{SUPERVISOR_URL}}/supervisor/message?tab=inboxTab&message_type=user_question">
+                        받은 사용자 질문 쪽지함
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item ps-4" href="{{SUPERVISOR_URL}}/supervisor/message?tab=inboxTab&message_type=partner_question">
+                        받은 파트너 질문 쪽지함
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item ps-4" href="{{SUPERVISOR_URL}}/supervisor/message?tab=inboxTab&message_type=request_ad">
+                        받은 광고 요청 쪽지함
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item ps-4" href="{{SUPERVISOR_URL}}/supervisor/message?tab=inboxTab&message_type=coupon_request">
+                        받은 쿠폰 요청 쪽지함
+                    </a>
+                </li>
+            </ul>
+            <ul class="m-0 p-0 pb-3" style="list-style-type: none;">
+                <li>
+                    <a class="dropdown-item ps-4 dropdown-toggle active" href="#" disable>
+                        보낸 쪽지함
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item ps-4" href="{{SUPERVISOR_URL}}/supervisor/message?tab=outboxTab&message_type=user_question">
+                        보낸 사용자 질문 쪽지함
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item ps-4" href="{{SUPERVISOR_URL}}/supervisor/message?tab=outboxTab&message_type=partner_question">
+                        보낸 파트너 질문 쪽지함
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item ps-4" href="{{SUPERVISOR_URL}}/supervisor/message?tab=outboxTab&message_type=request_ad">
+                        보낸 광고 요청 쪽지함
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item ps-4" href="{{SUPERVISOR_URL}}/supervisor/message?tab=outboxTab&message_type=coupon_request">
+                        보낸 쿠폰 요청 쪽지함
+                    </a>
+                </li>
+            </ul>
+        </ul>
     </li>
 
     <!-- 배너 관리 -->
-    <li class="nav-item">
-        <a class="nav-link px-3" href="{{supervisor_url}}/supervisor/banner">
+    <li class="nav-item dropdown dropdown-hover">
+        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
             배너 관리
         </a>
+        <ul class="dropdown-menu start">
+            <li>
+                <a class="dropdown-item" href="{{SUPERVISOR_URL}}/supervisor/banner?tab=topTab">
+                    상단 배너
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item" href="{{SUPERVISOR_URL}}/supervisor/banner?tab=sideTab">
+                    측/하단 배너
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item" href="{{SUPERVISOR_URL}}/supervisor/banner?tab=postTab">
+                    게시글 배너
+                </a>
+            </li>
+        </ul>
     </li>
 
     <!-- 레벨 정책 관리 -->
     <li class="nav-item">
-        <a class="nav-link px-3" href="{{supervisor_url}}/supervisor/level">
+        <a class="nav-link px-3" href="{{SUPERVISOR_URL}}/supervisor/level">
             레벨 정책 관리
         </a>
     </li>
 
     <!-- 설정 -->
     <li class="nav-item">
-        <a class="nav-link px-3" href="{{supervisor_url}}/supervisor/setting">
+        <a class="nav-link px-3" href="{{SUPERVISOR_URL}}/supervisor/setting">
             설정
         </a>
     </li>

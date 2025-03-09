@@ -10,12 +10,56 @@
       {% endwith %}
 
 
-    <!-- 선택지 버튼 그룹 -->
-    <div class="btn-group w-100 d-flex">
-      {% include 'components/main/page_tab.html' with tab_name='받은 쪽지함' tab_id='inboxTab' tab_link='/supervisor/message?tab=inboxTab' %}
-      <span class="divider"></span>
-      {% include 'components/main/page_tab.html' with tab_name='보낸 쪽지함' tab_id='outboxTab' tab_link='/supervisor/message?tab=outboxTab' %}
-    </div>
+      <!-- 선택지 버튼 그룹 -->
+      <div class="btn-group w-100 d-flex">
+        <div class="w-100 d-flex justify-content-center">
+          <a class="w-100 btn" href="{{SUPERVISOR_URL}}/supervisor/message?tab=inboxTab" id="inboxTab">
+            받은 쪽지함
+          </a>
+        </div>
+        <script>
+            window.addEventListener('load', () => {
+                if ('{{request.GET.tab}}' == 'inboxTab') { // 해당 탭이 선택 되었을 경우,
+                    document.getElementById('inboxTab').classList.add('pastel-pink-background');
+                    document.getElementById('inboxTab').classList.add('text-white');
+                    // 탭 박스가 있다면 표시
+                    if (document.getElementById('inboxTabBox')) {
+                        document.getElementById('inboxTabBox').classList.remove('d-none');
+                    }
+                } else { // 해당 탭이 선택 되지 않았을 경우,
+                    document.getElementById('inboxTab').classList.add('pastel-beige-background');
+                    // 탭 박스가 있다면 숨김
+                    if (document.getElementById('inboxTabBox')) {
+                        document.getElementById('inboxTabBox').classList.add('d-none');
+                    }
+                }
+            });
+        </script>
+        <span class="divider"></span>
+        <div class="w-100 d-flex justify-content-center">
+          <a class="w-100 btn" href="{{SUPERVISOR_URL}}/supervisor/message?tab=outboxTab" id="outboxTab">
+            보낸 쪽지함
+          </a>
+        </div>
+        <script>
+            window.addEventListener('load', () => {
+                if ('{{request.GET.tab}}' == 'outboxTab') { // 해당 탭이 선택 되었을 경우,
+                    document.getElementById('outboxTab').classList.add('pastel-pink-background');
+                    document.getElementById('outboxTab').classList.add('text-white');
+                    // 탭 박스가 있다면 표시
+                    if (document.getElementById('outboxTabBox')) {
+                        document.getElementById('outboxTabBox').classList.remove('d-none');
+                    }
+                } else { // 해당 탭이 선택 되지 않았을 경우,
+                    document.getElementById('outboxTab').classList.add('pastel-beige-background');
+                    // 탭 박스가 있다면 숨김
+                    if (document.getElementById('outboxTabBox')) {
+                        document.getElementById('outboxTabBox').classList.add('d-none');
+                    }
+                }
+            });
+        </script>
+      </div>
 
       <!-- 받은 쪽지 리스트 -->
       <div class="my-5" id="inbox">
@@ -53,7 +97,7 @@
           <p>
             <i class="fi fi-rr-search"></i> 검색
           </p>
-          <form id="inboxSearchForm" method="get" action="{{supervisor_url}}/supervisor/message">
+          <form id="inboxSearchForm" method="get" action="{{SUPERVISOR_URL}}/supervisor/message">
             <input type="hidden" name="tab" value="inbox">
             <div class="row">
               <div class="form-group mt-4 col-12">
@@ -148,7 +192,7 @@
             <i class="fi fi-rr-search"></i> 검색
           </p>
 
-          <form id="outboxSearchForm" method="get" action="{{supervisor_url}}/supervisor/message">
+          <form id="outboxSearchForm" method="get" action="{{SUPERVISOR_URL}}/supervisor/message">
             <input type="hidden" name="tab" value="outbox">
             <div class="row">
               <div class="form-group mt-4 col-12">
@@ -259,14 +303,14 @@
     // Tab
     tab = '{{request.GET.tab}}';
     if (tab == '') {
-      location.href = '{{supervisor_url}}/supervisor/message?tab=inboxTab';
+      location.href = '{{SUPERVISOR_URL}}/supervisor/message?tab=inboxTab';
     }
 
     // Page
     var tab = '{{request.GET.tab}}';
     var searchMessageTitle = '{{request.GET.messageTitle}}';
     var searchMessageReceiverId = '{{request.GET.messageReceiverId}}';
-    makePaegeButton('{{request.GET.page}}', '{{last_page}}', `{{supervisor_url}}/supervisor/message?tab=${tab}&messageTitle=${searchMessageTitle}&messageReceiverId=${searchMessageReceiverId}`);
+    makePaegeButton('{{request.GET.page}}', '{{last_page}}', `{{SUPERVISOR_URL}}/supervisor/message?tab=${tab}&messageTitle=${searchMessageTitle}&messageReceiverId=${searchMessageReceiverId}`);
 
     // to
     var to = '{{request.GET.to}}';

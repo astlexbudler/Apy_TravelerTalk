@@ -11,6 +11,82 @@
       {% include 'components/main/title_section.html' %}
       {% endwith %}
 
+    <!-- 탭 -->
+    <div class="btn-group w-100 d-flex">
+
+      <div class="w-100 d-flex justify-content-center">
+        <a class="w-100 btn" href="{{SUPERVISOR_URL}}/supervisor/travel?tab=noAdTab" id="noAdTab">
+          일반 여행지
+        </a>
+      </div>
+      <script>
+          window.addEventListener('load', () => {
+              if ('{{request.GET.tab}}' == 'noAdTab') { // 해당 탭이 선택 되었을 경우,
+                  document.getElementById('noAdTab').classList.add('pastel-pink-background');
+                  document.getElementById('noAdTab').classList.add('text-white');
+                  // 탭 박스가 있다면 표시
+                  if (document.getElementById('noAdTabBox')) {
+                      document.getElementById('noAdTabBox').classList.remove('d-none');
+                  }
+              } else { // 해당 탭이 선택 되지 않았을 경우,
+                  document.getElementById('noAdTab').classList.add('pastel-beige-background');
+                  // 탭 박스가 있다면 숨김
+                  if (document.getElementById('noAdTabBox')) {
+                      document.getElementById('noAdTabBox').classList.add('d-none');
+                  }
+              }
+          });
+      </script>
+      <span class="divider"></span>
+      <div class="w-100 d-flex justify-content-center">
+        <a class="w-100 btn" href="{{SUPERVISOR_URL}}/supervisor/travel?tab=weightAdTab" id="weightAdTab">
+          가중치 광고 여행지
+        </a>
+      </div>
+      <script>
+          window.addEventListener('load', () => {
+              if ('{{request.GET.tab}}' == 'weightAdTab') { // 해당 탭이 선택 되었을 경우,
+                  document.getElementById('weightAdTab').classList.add('pastel-pink-background');
+                  document.getElementById('weightAdTab').classList.add('text-white');
+                  // 탭 박스가 있다면 표시
+                  if (document.getElementById('weightAdTabBox')) {
+                      document.getElementById('weightAdTabBox').classList.remove('d-none');
+                  }
+              } else { // 해당 탭이 선택 되지 않았을 경우,
+                  document.getElementById('weightAdTab').classList.add('pastel-beige-background');
+                  // 탭 박스가 있다면 숨김
+                  if (document.getElementById('weightAdTabBox')) {
+                      document.getElementById('weightAdTabBox').classList.add('d-none');
+                  }
+              }
+          });
+      </script>
+      <span class="divider"></span>
+      <div class="w-100 d-flex justify-content-center">
+        <a class="w-100 btn" href="{{SUPERVISOR_URL}}/supervisor/travel?tab=statusAdTab" id="statusAdTab">
+          베스트 광고 여행지
+        </a>
+      </div>
+      <script>
+          window.addEventListener('load', () => {
+              if ('{{request.GET.tab}}' == 'statusAdTab') { // 해당 탭이 선택 되었을 경우,
+                  document.getElementById('statusAdTab').classList.add('pastel-pink-background');
+                  document.getElementById('statusAdTab').classList.add('text-white');
+                  // 탭 박스가 있다면 표시
+                  if (document.getElementById('statusAdTabBox')) {
+                      document.getElementById('statusAdTabBox').classList.remove('d-none');
+                  }
+              } else { // 해당 탭이 선택 되지 않았을 경우,
+                  document.getElementById('statusAdTab').classList.add('pastel-beige-background');
+                  // 탭 박스가 있다면 숨김
+                  if (document.getElementById('statusAdTabBox')) {
+                      document.getElementById('statusAdTabBox').classList.add('d-none');
+                  }
+              }
+          });
+      </script>
+    </div>
+
       <!-- 게시글 -->
       <div class="my-5" id="user">
 
@@ -372,6 +448,12 @@
 <script>
 
   window.addEventListener('load', (event) => {
+
+    // Tab
+    tab = '{{request.GET.tab}}';
+    if (tab == '') {
+      location.href = '{{SUPERVISOR_URL}}/supervisor/travel?tab=noAdTab';
+    }
 
     // Page
     var searchPostTItle = '{{request.GET.postTitle}}';

@@ -1,15 +1,75 @@
 <ul class="navbar-nav mx-auto">
 
+    <!-- 상위 네비게이션(1차) -->
     {% for board in boards %}
-    <li class="nav-item">
-        {% if board.board_type == 'tree' %}
-        <a class="nav-link px-1" href="javascript:
-        document.querySelectorAll('.sub_board').forEach(function(e){e.classList.add('d-none');});
-        document.getElementById('sub_board_{{ board.id }}').classList.toggle('d-none');">
+    <li class="nav-item {% if board.children|length > 0 %} dropdown dropdown-hover{% endif %}">
+
+        <!-- 1차 게시판 아래에 2차 게시판이 있는 경우 -->
+        {% if board.children|length > 0 %}
+        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
             {{ board.name }}
         </a>
+
+        <!-- 2차 게시판(여기서부터 드롭다운) -->
+        <ul class="dropdown-menu start">
+            {% for child in board.children %}
+
+            <!-- 2차 게시판 아래에 3차 게시판이 있는 경우 -->
+            {% if child.children|length > 0 %}
+            <li>
+                <a class="dropdown-item dropdown-toggle active" href="#" disable>
+                    {{ child.name }}
+                </a>
+            </li>
+
+            <!-- 3차 게시판 -->
+            <ul class="m-0 p-0 pb-3" style="list-style-type: none;">
+                {% for sub_child in child.children %}
+
+                <!-- 3차 게시판 아래에 4차 게시판이 있는 경우 -->
+                {% if sub_child.children|length > 0 %}
+                <li>
+                    <a class="dropdown-item ps-4 dropdown-toggle active" href="#" disable>
+                        {{ sub_child.name }}
+                    </a>
+                </li>
+
+                <!-- 4차 게시판 끝 -->
+                <ul class="m-0 p-0 pb-3" style="list-style-type: none;">
+                    {% for sub_sub_child in sub_child.children %}
+                    <li>
+                        <a class="dropdown-item ps-5" href="{{main_url}}/post?board_ids={{board.id}},{{ child.id}},{{ sub_child.id}},{{ sub_sub_child.id}}">
+                            {{ sub_sub_child.name }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+
+                <!-- 3차 게시판 끝 -->
+                {% else %}
+                <li>
+                    <a class="dropdown-item ps-4" href="{{main_url}}/post?board_ids={{board.id}},{{ child.id}},{{ sub_child.id}},{{ sub_sub_child.id}}">
+                        {{ sub_child.name }}
+                    </a>
+                </li>
+                {% endif %}
+                {% endfor %}
+            </ul>
+
+            <!-- 2차 게시판 끝 -->
+            {% else %}
+            <li>
+                <a class="dropdown-item" href="{{main_url}}/post?board_ids={{board.id}},{{ child.id}}">
+                    {{ child.name }}
+                </a>
+            </li>
+            {% endif %}
+            {% endfor %}
+        </ul>
+
+        <!-- 1차 게시판 끝 -->
         {% else %}
-        <a class="nav-link px-3" href="{{main_url}}/post?board_ids={{board.id}}">
+        <a class="nav-link px-2 px-xl-3" href="{{main_url}}/post?board_ids={{board.id}}">
             {{ board.name }}
         </a>
         {% endif %}

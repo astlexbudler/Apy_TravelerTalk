@@ -23,14 +23,14 @@ def login(request):
   if account['account_type'] not in ['supervisor', 'subsupervisor']:
     return render(request, 'login.html')
 
-  return redirect('/supervisor/supervisor')
+  return redirect(settings.SUPERVISOR_URL + '/supervisor/supervisor')
 
 # 관리자 메인 페이지
 def index(request):
 
   # 권한 확인
   if not request.user.is_authenticated:
-    return redirect('/')
+    return redirect(settings.SUPERVISOR_URL)
   else:
     account = daos.select_account_detail(request.user.id)
     server_settings = {
@@ -38,7 +38,7 @@ def index(request):
         'service_name': daos.select_server_setting('service_name'),
     }
   if account['account_type'] not in ['supervisor', 'subsupervisor']:
-    return redirect('/')
+    return redirect(settings.SUPERVISOR_URL)
 
   # 파트너 가입 및 파트너 가입 대기중인 사용자 수
   all_partner = models.ACCOUNT.objects.prefetch_related('groups').filter(
@@ -70,7 +70,7 @@ def index(request):
   coupon_request_message_count = models.MESSAGE.objects.filter(
     title__startswith='쿠폰 요청:',
     is_read=False,
-    to_account='supervisor'
+    #to_account='supervisor'
   ).count()
 
   # 여행지 게시글 광고 정보
@@ -478,215 +478,82 @@ def account(request):
 
   # 권한 확인
   if not request.user.is_authenticated:
-    return redirect('/')
+    return redirect(settings.SUPERVISOR_URL)
   else:
     account = daos.select_account_detail(request.user.id)
     server_settings = {
         'site_logo': daos.select_server_setting('site_logo'),
         'service_name': daos.select_server_setting('service_name'),
     }
+  if account['account_type'] not in ['supervisor', 'subsupervisor']:
+    return redirect(settings.SUPERVISOR_URL)
   if 'user' not in account['subsupervisor_permissions']:
-    return redirect('/')
+    return redirect(settings.SUPERVISOR_URL)
 
-  # 아이피 차단
-  if request.method == 'POST' and request.GET.get('block_ip'):
-    ip_address = request.POST['ip']
-    daos.create_blocked_ip(ip_address)
-    return JsonResponse({'result': 'success'})
-
-  # 아이피 차단 해제
-  if request.method == 'POST' and request.GET.get('unblock_ip'):
-    ip_address = request.POST['ip']
-    daos.delete_blocked_ip(ip_address)
-    return JsonResponse({'result': 'success'})
-
-  '''
-  if request.method == 'POST' and request.GET.get('create_user'):
-    id = request.POST['id']
-    password = request.POST['password']
-    nickname = request.POST['nickname']
-    number = int(request.POST.get('number', '1'))
-
-    user_group = Group.objects.get(name='user')
-    level = models.LEVEL_RULE.objects.get(level=1)
-
-    # number가 2 이상인 경우, 반복
-    if number > 1:
-      for i in range(number):
-        repeat_id = id + str(i)
-        repeat_nickname = nickname + str(i)
-        id_exist = models.ACCOUNT.objects.filter(username=repeat_id).exists()
-        nickname_exist = models.ACCOUNT.objects.filter(first_name=repeat_nickname).exists()
-        if not id_exist and not nickname_exist:
-          account = models.ACCOUNT.objects.create_user(
-            username = repeat_id,
-            first_name = repeat_nickname,
-            note = '관리자에 의해 생성됨.',
-            level = level,
-            recent_ip = '',
-          )
-          account.set_password(password)
-          account.save()
-          account.groups.add(user_group)
-          account.save()
-    else:
-      id_exist = models.ACCOUNT.objects.filter(username=id).exists()
-      nickname_exist = models.ACCOUNT.objects.filter(first_name=nickname).exists()
-      if not id_exist and not nickname_exist:
-        account = models.ACCOUNT.objects.create_user(
-          username = id,
-          first_name = nickname,
-          note = '관리자에 의해 생성됨.',
-          level = level,
-          recent_ip = '',
-        )
-        account.set_password(password)
-        account.save()
-        account.groups.add(user_group)
-        account.save()
-
-    return JsonResponse({'result': 'success'})
-  '''
-
-  # 부관리자 신규 생성 처리
-  if request.method == 'POST' and request.GET.get('create_subsupervisor'):
-    id = request.POST['id']
-    password = request.POST['password']
-    daos.create_account(
-      username=id,
-      password=password,
-      first_name='관리자' + ''.join(random.choices(string.ascii_letters + string.digits, k=6)),
-      last_name='',
-      email='',
-      tel='',
-      account_type='subsupervisor',
-    )
-    return JsonResponse({'result': 'success'})
-
-  # data
+  # 데이터 가져오기
   tab = request.GET.get('tab', 'userTab') # user, dame, partner, supervisor
   page = int(request.GET.get('page', '1'))
-  search_user_dame = request.GET.get('dame', '')
-  search_account_id = request.GET.get('account_id', '')
-  search_account_nickname = request.GET.get('account_nickname', '')
-  search_account_level_at_least = int(request.GET.get('account_level_at_least', '0'))
-  search_account_status = request.GET.get('account_status', '')
-  search_account_ip = request.GET.get('account_ip', '')
-  search_account_mileage_at_least = int(request.GET.get('account_mileage_at_least', '0'))
+  search_id = request.GET.get('username')
+  search_nickname = request.GET.get('nickname', '')
+  search_level_at_least = int(request.GET.get('level_at_least', '0'))
+  search_status = request.GET.get('status')
+  search_ip = request.GET.get('ip')
+  search_mileage_at_least = int(request.GET.get('mileage_at_least', '0'))
 
   # 계정 타입별로 계정 통계 가져오기
-  # 관리자 계정 탭은 별도의 통계 없음.
-  # 파트너는 각 카테고리면 파트너 계정 통계 제공
-  # 사용자는 사용자 및 여성 회원의 계정 통계 제공
-  all_accounts = models.ACCOUNT.objects.prefetch_related(
-    'groups'
-  ).select_related(
-    'level'
-  ).all().order_by('-date_joined')
+  query = Q()
+  if tab == 'user':
+    query = Q(groups__name='user')
+  elif tab == 'dame':
+    query = Q(groups__name='dame')
+  elif tab == 'partner':
+    query = Q(groups__name='partner')
+  elif tab == 'supervisor':
+    query = Q(groups__name__in=['supervisor', 'subsupervisor'])
+  accounts = models.ACCOUNT.objects.filter(query).order_by('-date_joined')
 
-  # status
-  if tab == 'supervisorTab': # 관리자 검색 탭일 경우, 별도의 사용자 통계 기능 없음.
-    status = {}
-  elif tab == 'userTab': # 사용자 검색 탭일 경우, 사용자 및 여성회원 정보 제공
-    dame_accounts = all_accounts.filter(
-      groups__name='dame'
-    )
-    user_accounts = all_accounts.filter(
-      groups__name='user'
-    )
-    status = {
-      'user': {
-        'active': user_accounts.filter(status='active').count(),
-        'pending': 0,
-        'deleted': user_accounts.filter(status='deleted').count(),
-        'blocked': user_accounts.filter(status='blocked').count(),
-      },
-      'dame': {
-        'active': dame_accounts.filter(status='active').count(),
-        'pending': dame_accounts.filter(status='pending').count(),
-        'deleted': dame_accounts.filter(status='deleted').count(),
-        'blocked': dame_accounts.filter(status='blocked').count(),
-      }
-    }
-  elif tab == 'partnerTab': # 파트너 검색 탭일 경우, 파트너 정보 제공
-    partner_accounts = all_accounts.filter(
-      Q(groups__name='partner')
-    )
-    status = {
-      'partner': {
-        'active': partner_accounts.filter(status='active').count(),
-        'pending': partner_accounts.filter(status='pending').count(),
-        'deleted': partner_accounts.filter(status='deleted').count(),
-        'blocked': partner_accounts.filter(status='blocked').count(),
-      }
-    }
+  # 계정 종류 별 통계
+  status = {
+    'active': accounts.filter(status='active').count(),
+    'pending': accounts.filter(status='pending').count(),
+    'deleted': accounts.filter(status='deleted').count(),
+    'blocked': accounts.filter(status='blocked').count(),
+  }
 
-  # 사용자 검색
-  if tab == 'userTab': # 사용자 탭일 경우, user와 dame을 같이 검색
-    sats = all_accounts.select_related('level').filter(
-      Q(username__contains=search_account_id),
-      Q(first_name__contains=search_account_nickname),
-      Q(level__level__gte=search_account_level_at_least),
-      Q(status__contains=search_account_status),
-      Q(recent_ip__contains=search_account_ip),
-      Q(mileage__gte=search_account_mileage_at_least)
-    )
-    if search_user_dame == 'user':
-      sats = sats.filter(
-        Q(groups__name='user')
-      )
-    elif search_user_dame == 'dame':
-      sats = sats.filter(
-        Q(groups__name='dame'),
-      )
-    else:
-      sats = sats.filter(
-        Q(groups__name='user') | Q(groups__name='dame'),
-      )
-  elif tab == 'supervisorTab': # 관리자 탭일 경우, 관리자만 검색
-    sats = all_accounts.filter(
-      Q(groups__name__in=['supervisor', 'subsupervisor']),
-      Q(username__contains=search_account_id),
-      Q(first_name__contains=search_account_nickname),
-      Q(recent_ip__contains=search_account_ip),
-    )
-  elif tab == 'partnerTab': # 파트너 탭일 경우, 파트너만 검색
-    sats = all_accounts.filter(
-      Q(groups__name='partner'),
-      Q(username__contains=search_account_id),
-      Q(first_name__contains=search_account_nickname),
-      Q(level__level__gte=search_account_level_at_least),
-      Q(status__contains=search_account_status),
-      Q(recent_ip__contains=search_account_ip),
-      Q(mileage__gte=search_account_mileage_at_least)
-    )
-
-  # 만약 출력 요청일 경우, 모든 줄 출력
-  if request.GET.get('print'):
-    return render(request, 'supervisor/account_print.html', {
-      **daos.get_urls(),
-      'accounts': sats,
-    })
+  # 이어서 검색 진행
+  if search_id:
+    query &= Q(username=search_id)
+  if search_nickname:
+    query &= Q(first_name=search_nickname)
+  if search_level_at_least:
+    query &= Q(level__level__gte=search_level_at_least)
+  if search_status:
+    query &= Q(status=search_status)
+  if search_ip:
+    query &= Q(recent_ip=search_ip)
+  if search_mileage_at_least:
+    query &= Q(mileage__gte=search_mileage_at_least)
+  accounts = accounts.filter(query)
 
   # export
   if request.GET.get('export'):
     headers = ['아이디', '닉네임', '파트너이름', '이메일', '연락처', '계정 종류', '가입일', '마지막 로그인', '상태', '노트', '마일리지', '경험치', '부관리자 권한', '최근 접속 IP', '레벨']
     values = [
-      [acnt.username for acnt in sats],
-      [acnt.first_name for acnt in sats],
-      [acnt.last_name for acnt in sats],
-      [acnt.email for acnt in sats],
-      [acnt.tel for acnt in sats],
-      [[group.name for group in acnt.groups.all()] for acnt in sats],
-      [acnt.date_joined for acnt in sats],
-      [acnt.last_login for acnt in sats],
-      [acnt.status for acnt in sats],
-      [acnt.note for acnt in sats],
-      [acnt.mileage for acnt in sats],
-      [acnt.exp for acnt in sats],
-      [acnt.subsupervisor_permissions for acnt in sats],
-      [acnt.recent_ip for acnt in sats],
-      [acnt.level.level for acnt in sats],
+      [acnt.username for acnt in accounts],
+      [acnt.first_name for acnt in accounts],
+      [acnt.last_name for acnt in accounts],
+      [acnt.email for acnt in accounts],
+      [acnt.tel for acnt in accounts],
+      [[group.name for group in acnt.groups.all()] for acnt in accounts],
+      [acnt.date_joined for acnt in accounts],
+      [acnt.last_login for acnt in accounts],
+      [acnt.status for acnt in accounts],
+      [acnt.note for acnt in accounts],
+      [acnt.mileage for acnt in accounts],
+      [acnt.exp for acnt in accounts],
+      [acnt.subsupervisor_permissions for acnt in accounts],
+      [acnt.recent_ip for acnt in accounts],
+      [acnt.level.level for acnt in accounts],
     ]
     table_data = list(zip(*values))
     return render(request, 'export.html', {
@@ -695,9 +562,11 @@ def account(request):
       'table_data': table_data,
     })
 
-  last_page = sats.count() // 20 + 1 # 20개씩 표시
+  # 페이지네이션
+  accounts = accounts[(page - 1) * 20:page * 20]
+  last_page = math.ceil(accounts.count() / 20)
   search_accounts = []
-  for account in sats[(page - 1) * 20:page * 20]:
+  for account in accounts:
 
     # 계정 정보
     search_accounts.append({
@@ -707,22 +576,17 @@ def account(request):
       'partner_name': account.last_name,
       'email': account.email,
       'tel': account.tel,
-      'account_type': [group.name for group in account.groups.all()],
-      'date_joined': datetime.datetime.strftime(account.date_joined, '%Y-%m-%d %H:%M:%S'),
-      'last_login': datetime.datetime.strftime(account.last_login, '%Y-%m-%d %H:%M:%S') if account.last_login else '',
+      'account_type': account.groups.all()[0].pk, # 각 계정은 하나의 그룹만 가짐
       'status': account.status,
-      'note': account.note,
-      'mileage': account.mileage,
+      'subsupervisor_permissions': str(account.subsupervisor_permissions).split(','),
+      'level': daos.select_level(account.level.pk),
+      'bookmarked_posts': [post.id for post in account.bookmarked_posts.all()],
       'exp': account.exp,
-      'subsupervisor_permissions': account.subsupervisor_permissions,
-      'recent_ip': account.recent_ip,
-      'level': {
-        'level': account.level.level,
-        'image': '/media/' + account.level.image.url if account.level.image else None,
-        'text': account.level.text,
-        'text_color': account.level.text_color,
-        'background_color': account.level.background_color,
-      } if account.level else None,
+      'mileage': account.mileage,
+      'note': account.note,
+      'created_at': datetime.datetime.strftime(account.date_joined, '%Y-%m-%d %H:%M'),
+      'last_login': datetime.datetime.strftime(account.last_login, '%Y-%m-%d %H:%M') if account.last_login else None,
+      'ip': account.recent_ip,
     })
 
   # 차단 IP 목록
@@ -739,8 +603,6 @@ def account(request):
     'last_page': last_page, # 페이지 처리를 위해 필요한 정보
     'status': status, # 사용자 종류(탭) 별 통계 데이터(관리자는 없음)
     'blocked_ips': blocked_ips, # 차단 IP 목록
-    'travel_boards': daos.make_travel_board_tree(), # 여행지 게시판 목록
-    'categories': daos.make_category_tree(), # 카테고리 목록
   })
 
 # 프로필
@@ -748,44 +610,20 @@ def profile(request):
 
   # 권한 확인
   if not request.user.is_authenticated:
-    return redirect('/')
+    return redirect(settings.SUPERVISOR_URL)
   else:
     account = daos.select_account_detail(request.user.id)
     server_settings = {
         'site_logo': daos.select_server_setting('site_logo'),
         'service_name': daos.select_server_setting('service_name'),
     }
+  if account['account_type'] not in ['supervisor', 'subsupervisor']:
+    return redirect(settings.SUPERVISOR_URL)
   if 'user' not in account['subsupervisor_permissions']:
-    return redirect('/')
-
-  # 프로필 수정
-  if request.method == 'POST':
-    nickname = request.POST.get('nickname', '')
-    email = request.POST.get('email', '')
-    tel = request.POST.get('tel', '')
-    password = request.POST.get('password', '')
-    new_password = request.POST.get('new_password', '')
-    new_password_confirm = request.POST.get('new_password_confirm', '')
-    if password and new_password and new_password_confirm:
-      if not request.user.check_password(password):
-        return JsonResponse({'result': 'fail', 'message': '비밀번호가 일치하지 않습니다.'})
-      if new_password != new_password_confirm:
-        return JsonResponse({'result': 'fail', 'message': '새로운 비밀번호가 일치하지 않습니다.'})
-      request.user.set_password(new_password)
-      request.user.save()
-    if nickname:
-      request.user.first_name = nickname
-    if email:
-      request.user.email = email
-    if tel:
-      request.user.tel = tel
-    request.user.save()
-    return JsonResponse({'result': 'success'})
+    return redirect(settings.SUPERVISOR_URL)
 
   # data
   account_id = request.GET.get('account_id', '')
-
-  # 계정 정보
   profile = daos.select_account_detail(account_id)
 
   return render(request, 'supervisor/profile.html', {
@@ -801,21 +639,20 @@ def activity(request):
 
   # 권한 확인
   if not request.user.is_authenticated:
-    return redirect('/')
+    return redirect(settings.SUPERVISOR_URL)
   else:
     account = daos.select_account_detail(request.user.id)
     server_settings = {
         'site_logo': daos.select_server_setting('site_logo'),
         'service_name': daos.select_server_setting('service_name'),
     }
-  if 'user' not in account['subsupervisor_permissions']:
-    return redirect('/')
+  if account['account_type'] not in ['supervisor', 'subsupervisor']:
+    return redirect(settings.SUPERVISOR_URL)
 
   # data
   page = int(request.GET.get('page', '1'))
   profile_id = request.GET.get('account_id', '')
-
-  # 활동 정보
+  profile = daos.select_account_detail(profile_id)
   activities, last_page = daos.select_account_activities(profile_id, page)
   status = daos.get_account_activity_stats(profile_id)
 
@@ -824,6 +661,7 @@ def activity(request):
     'account': account,
     'server_settings': server_settings,
 
+    'profile': profile,
     'activities': activities,
     'status': status,
     'last_page': last_page, # 페이지 처리를 위해 필요한 정보
@@ -834,186 +672,57 @@ def post(request):
 
   # 권한 확인
   if not request.user.is_authenticated:
-    return redirect('/')
+    return redirect(settings.SUPERVISOR_URL)
   else:
     account = daos.select_account_detail(request.user.id)
     server_settings = {
         'site_logo': daos.select_server_setting('site_logo'),
         'service_name': daos.select_server_setting('service_name'),
     }
+  if account['account_type'] not in ['supervisor', 'subsupervisor']:
+    return redirect(settings.SUPERVISOR_URL)
   if 'post' not in account['subsupervisor_permissions']:
-    return redirect('/')
+    return redirect(settings.SUPERVISOR_URL)
 
-  # 새 게시판 생성 요청 또는 게시판 수정 요청 처리
-  if request.method == 'POST' and request.GET.get('board'):
-    board_id = request.POST.get('board_id')
-    board_name = request.POST.get('board_name')
-    board_type = request.POST.get('board_type')
-    parent_board_id = request.POST.get('parent_board_id')
-    display_weight = request.POST.get('display_weight')
-    level_cut = request.POST.get('level_cut')
-    display_groups = str(request.POST.get('display_groups', '')).split(',')
-    enter_groups = str(request.POST.get('enter_groups', '')).split(',')
-    write_groups = str(request.POST.get('write_groups', '')).split(',')
-    comment_groups = str(request.POST.get('comment_groups', '')).split(',')
-
-    if board_id:
-      daos.update_board(
-        board_id=board_id,
-        parent_board_id=parent_board_id,
-        name=board_name,
-        board_type=board_type,
-        display_groups=Group.objects.filter(name__in=display_groups),
-        enter_groups=Group.objects.filter(name__in=enter_groups),
-        write_groups=Group.objects.filter(name__in=write_groups),
-        comment_groups=Group.objects.filter(name__in=comment_groups),
-        display_weight=display_weight,
-        level_cut=level_cut,
-      )
-    else:
-      daos.create_board(
-        parent_board_id=parent_board_id,
-        name=board_name,
-        board_type=board_type,
-        display_groups=Group.objects.filter(name__in=display_groups),
-        enter_groups=Group.objects.filter(name__in=enter_groups),
-        write_groups=Group.objects.filter(name__in=write_groups),
-        comment_groups=Group.objects.filter(name__in=comment_groups),
-        display_weight=display_weight,
-        level_cut=level_cut,
-      )
-    return JsonResponse({'result': 'success'})
-
-  # 게시판 삭제 요청 처리
-  if request.method == 'DELETE' and request.GET.get('board'):
-    board_id = request.GET.get('board_id', '')
-    daos.delete_board(board_id)
-    return JsonResponse({'result': 'success'})
-
-  # data
+  # 데이터가져오기
   page = int(request.GET.get('page', '1'))
   search_post_title = request.GET.get('post_title', '')
   search_board_id = request.GET.get('board_id', '')
   search_author_id = request.GET.get('author_id', '')
 
-  # status
-  # 각 게시판 별 게시글 수와 댓글 수, 조회수, 좋아요 수 통계 제공
-  all_post = models.POST.objects.exclude(
-    author__isnull=True
-  ).prefetch_related(
-    'boards'
-  ).select_related(
-    'author', 'place_info', 'related_post'
-  ).prefetch_related(
-    'place_info__categories'
-  ).all()
-  boards = models.BOARD.objects.exclude(
-    Q(board_type='greeting') | Q(board_type='attendance')
-  ).prefetch_related('display_groups', 'enter_groups', 'write_groups', 'comment_groups').all().order_by('-display_weight')
-  board_dict = {
-    board.name: {
-      'id': board.id,
-      'name': board.name,
-      'board_type': board.board_type,
-      'total_views': int(math.fsum([post.view_count for post in models.POST.objects.filter(Q(boards__id__in=str(board.id)))])),
-      'total_posts': models.POST.objects.filter(Q(boards__id__in=str(board.id))).count(),
-      'level_cut': board.level_cut,
-      'display_weight': board.display_weight,
-      'display': [g.name for g in board.display_groups.all()],
-      'enter': [g.name for g in board.enter_groups.all()],
-      'write': [g.name for g in board.write_groups.all()],
-      'comment': [g.name for g in board.comment_groups.all()],
-      'children': [],
-    } for board in boards if not board.parent_board
-  }
-  for board in boards:
-    if board.parent_board:
-      if board_dict.get(board.parent_board.name):
-        board_dict[board.parent_board.name]['children'].append({
-          'id': board.id,
-          'name': board.name,
-          'board_type': board.board_type,
-          'total_views': int(math.fsum([post.view_count for post in models.POST.objects.filter(Q(boards__id__in=[board.id]))])),
-          'level_cut': board.level_cut,
-          'display_weight': board.display_weight,
-          'total_posts': models.POST.objects.filter(Q(boards__id__in=[board.id])).count(),
-          'display': [g.name for g in board.display_groups.all()],
-          'enter': [g.name for g in board.enter_groups.all()],
-          'write': [g.name for g in board.write_groups.all()],
-          'comment': [g.name for g in board.comment_groups.all()],
-          'children': [],
-        })
-      else:
-        loop = True
-        for key in board_dict.keys():
-          for child in board_dict[key]['children']:
-            if not loop:
-              break
-            if str(child['name']) == str(board.parent_board.name):
-              child['children'].append({
-                'id': board.id,
-                'name': board.name,
-                'board_type': board.board_type,
-                'total_views': int(math.fsum([post.view_count for post in models.POST.objects.filter(Q(boards__id__in=[board.id]))])),
-                'total_posts': models.POST.objects.filter(Q(boards__id__in=[board.id])).count(),
-                'level_cut': board.level_cut,
-                'display_weight': board.display_weight,
-                'display': [g.name for g in board.display_groups.all()],
-                'enter': [g.name for g in board.enter_groups.all()],
-                'write': [g.name for g in board.write_groups.all()],
-                'comment': [g.name for g in board.comment_groups.all()],
-                'children': [],
-              })
-              loop = False
-            if loop:
-              for grandchild in child['children']:
-                if not loop:
-                  break
-                if str(grandchild['name']) == str(board.parent_board.name):
-                  grandchild['children'].append({
-                    'id': board.id,
-                    'name': board.name,
-                    'board_type': board.board_type,
-                    'total_views': int(math.fsum([post.view_count for post in models.POST.objects.filter(Q(boards__id__in=[board.id]))])),
-                    'total_posts': models.POST.objects.filter(Q(boards__id__in=[board.id])).count(),
-                    'level_cut': board.level_cut,
-                    'display_weight': board.display_weight,
-                    'display': [g.name for g in board.display_groups.all],
-                    'enter': [g.name for g in board.enter_groups.all()],
-                    'write': [g.name for g in board.write_groups.all()],
-                    'comment': [g.name for g in board.comment_groups.all()],
-                    'children': [],
-                  })
-                  loop = False
-  boards = []
-  for child in board_dict.keys():
-    boards.append(board_dict[child])
+  # 게시판별 통계 가져오기
+  boards = daos.make_board_tree(status=True, board_type='not_travel')
 
   # 게시글 검색
-  sps = all_post.filter(
-    place_info__isnull=True,
-    title__contains=search_post_title,
-    author__username__contains=search_author_id,
-  )
-
-  if search_board_id: # 게시판 필터링
-    sps = sps.filter(boards__id__contains=search_board_id)
+  query = Q()
+  if search_post_title:
+    query &= Q(title__contains=search_post_title)
+  if search_author_id:
+    query &= Q(author__username__contains=search_author_id)
+  if search_board_id:
+    query &= Q(boards__id__contains=search_board_id)
+  posts = models.POST.objects.exclude(
+    author__isnull=True, # 작성자가 없는 게시글은 제외
+    place_info__isnull=False, # 장소 정보가 없는 게시글은 제외
+  ).select_related(
+    'author'
+  ).filter(query).order_by('-created_at')
 
   # export
   if request.GET.get('export'):
     headers = ['id', 'title', 'image', 'view_count', 'like_count', 'created_at', 'search_weight', 'board', 'author', 'place_info', 'related_post']
     values = [
-        [str(post.id) for post in sps],
-        [post.title for post in sps],
-        [str(post.image) for post in sps],
-        [str(post.view_count) for post in sps],
-        [str(post.like_count) for post in sps],
-        [str(post.created_at) for post in sps],
-        [str(post.search_weight) for post in sps],
-        [str(post.boards.all().last().name) for post in sps],
-        [str(post.author.username) for post in sps],
-        [str(post.place_info) for post in sps],
-        [str(post.related_post) for post in sps],
+        [str(post.id) for post in posts],
+        [post.title for post in posts],
+        [str(post.image) for post in posts],
+        [str(post.view_count) for post in posts],
+        [str(post.like_count) for post in posts],
+        [str(post.created_at) for post in posts],
+        [str(post.search_weight) for post in posts],
+        [str(post.boards.all().last().name) for post in posts],
+        [str(post.author.username) for post in posts],
+        [str(post.place_info) for post in posts],
+        [str(post.related_post) for post in posts],
     ]
 
     # 행(row) 중심 데이터 변환 (Transpose)
@@ -1025,48 +734,47 @@ def post(request):
         'table_data': table_data,
     })
 
-  last_page = sps.count() // 20 + 1 # 20개씩 표시
+  # 페이지네이션
+  last_page = posts.count() // 20 + 1 # 20개씩 표시
+  posts = posts[(page - 1) * 20:page * 20]
   search_posts = []
-  for post in sps[(page - 1) * 20:page * 20]:
-    try:
-      search_posts.append({
-        'id': post.id,
-        'title': post.title,
-        'image': '/media/' + str(post.image) if post.image else None,
-        'view_count': post.view_count,
-        'like_count': post.like_count,
-        'comment_count': models.COMMENT.objects.filter(post=post).count(),
-        'created_at': datetime.datetime.strftime(post.created_at, '%Y-%m-%d %H:%M'),
-        'search_weight': post.search_weight,
-        'board': {
-          'name': post.boards.all().last().name,
-          'board_type': post.boards.all().last().board_type,
-        },
-        'author': {
-          'id': post.author.username, # 작성자 아이디
-          'nickname': post.author.first_name, # 작성자 닉네임
-          'partner_name': post.author.last_name, # 작성자 파트너 이름
-        },
-        'related_post': { # 리뷰 게시글인 경우, 리뷰 대상 게시글 정보
+
+  # 게시글 정보
+  for post in posts:
+    search_posts.append({
+      'id': post.id,
+      'author': {
+          'id': post.author.id,
+          'nickname': post.author.first_name,
+          'partner_name': post.author.last_name,
+          'level': daos.select_level(post.author.level.level),
+      },
+      'related_post': {
           'id': post.related_post.id,
           'title': post.related_post.title,
-        } if post.related_post else None,
-      })
-    except Exception as e:
-      print(e)
-
-  # 카테고리 정보
-  categories = daos.make_category_tree()
+      } if post.related_post else None,
+      'boards': [{
+          'id': board.id,
+          'name': board.name,
+      } for board in post.boards.all()],
+      'board_ids': [board.id for board in post.boards.all()],
+      'title': post.title,
+      'image': '/media/' + str(post.image) if post.image else None,
+      'view_count': post.view_count,
+      'like_count': post.like_count,
+      'created_at': datetime.datetime.strftime(post.created_at, '%Y-%m-%d %H:%M'),
+      'comment_count': models.COMMENT.objects.filter(post=post).count(),
+    })
 
   return render(request, 'supervisor/post.html', {
     **daos.get_urls(),
     'account': account,
     'server_settings': server_settings,
 
+    'boards': boards, # 게시판 정보
     'posts': search_posts, # 검색된 게시글 정보
     'last_page': last_page, # 페이지 처리를 위해 필요한 정보
     'status': boards, # 게시판 별 통계 데이터. 게시판 별로 게시글 수, 댓글 수, 조회수, 좋아요 수 제공
-    'categories': categories, # 카테고리 정보
   })
 
 # 게시글 수정
@@ -1074,37 +782,43 @@ def post_edit(request):
 
   # 권한 확인
   if not request.user.is_authenticated:
-    return redirect('/')
+    return redirect(settings.SUPERVISOR_URL)
   else:
     account = daos.select_account_detail(request.user.id)
     server_settings = {
         'site_logo': daos.select_server_setting('site_logo'),
         'service_name': daos.select_server_setting('service_name'),
     }
+  if account['account_type'] not in ['supervisor', 'subsupervisor']:
+    return redirect(settings.SUPERVISOR_URL)
   if 'post' not in account['subsupervisor_permissions']:
-    return redirect('/')
+    return redirect(settings.SUPERVISOR_URL)
+
+  # 데이터 가져오기
+  post_id = request.GET.get('post_id')
+  post = daos.select_post(post_id)
+  if not post:
+    return redirect(settings.SUPERVISOR_URL + '/supervisor/post')
 
   # 게시글 수정
   if request.method == 'POST':
+    # 데이터 가져오기
+    title = request.POST.get('title')
+    content = request.POST.get('content')
+    image = request.FILES.get('image')
+    search_weight = request.POST.get('search_weight')
+    view_count = request.POST.get('view_count')
+    like_count = request.POST.get('like_count')
     daos.update_post(
-      post_id=request.GET['post_id'],
-      title=request.POST.get('title'),
-      content=request.POST.get('content'),
-      image=request.FILES.get('image', None),
-      search_weight=request.POST.get('search_weight'),
-      view_count=request.POST.get('view_count'),
-      like_count=request.POST.get('like_count'),
+      post_id=post_id,
+      title=title,
+      content=content,
+      image=image,
+      search_weight=search_weight,
+      view_count=view_count,
+      like_count=like_count,
     )
     return JsonResponse({'result': 'success'})
-
-  # 게시글 삭제
-  if request.method == 'DELETE':
-    daos.delete_post(request.GET['post_id'])
-    return JsonResponse({'result': 'success'})
-
-  # data
-  post_id = request.GET['post_id']
-  post = daos.select_post(post_id)
 
   return render(request, 'supervisor/edit.html', {
     **daos.get_urls(),
@@ -1119,65 +833,22 @@ def travel(request):
 
   # 권한 확인
   if not request.user.is_authenticated:
-    return redirect('/')
+    return redirect(settings.SUPERVISOR_URL)
   else:
     account = daos.select_account_detail(request.user.id)
     server_settings = {
         'site_logo': daos.select_server_setting('site_logo'),
         'service_name': daos.select_server_setting('service_name'),
     }
-  if 'post' not in account['subsupervisor_permissions']:
-    return redirect('/')
+  if account['account_type'] not in ['supervisor', 'subsupervisor']:
+    return redirect(settings.SUPERVISOR_URL)
+  if 'travel' not in account['subsupervisor_permissions']:
+    return redirect(settings.SUPERVISOR_URL)
 
   # 여행지 정보 수정 요청 처리
-  if request.method == 'POST' and request.GET.get('modify_travel_info'):
-    daos.update_post(
-      post_id=request.GET['post_id'],
-      search_weight=request.POST.get('search_weight'),
-    )
-    daos.update_place_info(
-      post_id=request.GET['post_id'],
-      status=request.POST.get('place_status'),
-      ad_start_at=request.POST.get('ad_start_at'),
-      ad_end_at=request.POST.get('ad_end_at'),
-      note=request.POST.get('note'),
-    )
-    return JsonResponse({'result': 'success'})
-
-  # 새 카테고리 생성 요청 또는 카테고리 수정 요청 처리
-  if request.method == 'POST' and request.GET.get('category'):
-    category_id = request.POST.get('category_id')
-    if category_id:
-      daos.update_category(
-        category_id=category_id,
-        name=request.POST.get('name'),
-        display_weight=request.POST.get('display_weight'),
-      )
-    else:
-      daos.create_category(
-        parent_category_id=request.POST.get('parent_category_id'),
-        name=request.POST.get('name'),
-        display_weight=request.POST.get('display_weight'),
-      )
-    return JsonResponse({'result': 'success'})
-
-  # 카테고리 삭제 요청 처리
-  if request.method == 'DELETE' and request.GET.get('category'):
-    daos.delete_category(request.GET.get('category_id'))
-    return JsonResponse({'result': 'success'})
-
-  # data
-  page = int(request.GET.get('page', '1'))
-  search_post_title = request.GET.get('post_title', '')
-  search_board_id = request.GET.get('board_id', '')
-  search_author_id = request.GET.get('author_id', '')
-  search_category_id = request.GET.get('category_id', '')
-  search_address = request.GET.get('address', '')
-  place_status = request.GET.get('place_status', '')
-
-  # 여행지 정보 수정 요청 처리
-  if request.method == 'POST' and request.GET.get('modify_travel_info'):
-    post_id = request.POST.get('post_id', '')
+  if request.method == 'POST':
+    # 데이터 가져오기
+    post_id = request.POST.get('post_id')
     place_status = request.POST.get('place_status')
     post_search_weight = request.POST.get('post_search_weight')
     ad_start_at = request.POST.get('ad_start_at')
@@ -1196,73 +867,71 @@ def travel(request):
     )
     return JsonResponse({'result': 'success'})
 
-  # 새 카테고리 생성 요청 또는 카테고리 수정 요청 처리
-  if request.method == 'POST' and request.GET.get('category'):
-    category_id = request.POST.get('category_id')
-    category_name = request.POST.get('category_name')
-    parent_category_id = request.POST.get('parent_category_id')
-    display_weight = request.POST.get('category_weight')
-    if category_id:
-      daos.update_category(
-        category_id=category_id,
-        parent_category_id=parent_category_id,
-        name=category_name,
-        display_weight=display_weight,
-      )
-    else:
-      daos.create_category(
-        parent_category_id=parent_category_id,
-        name=category_name,
-        display_weight=display_weight,
-      )
-    return JsonResponse({'result': 'success'})
+  # 통계 데이터 가져오기
+  tab = request.GET.get('tab', 'noAdTab') # noAdTab, weightAdTab, statusAdTab
+  posts = models.POST.objects.exclude(
+    place_info__isnull=True, # 여행지 정보가 없는 게시글은 제외
+  ).prefetch_related(
+    'boards'
+  ).select_related(
+    'author', 'place_info'
+  ).prefetch_related(
+    'place_info__categories'
+  ).all().order_by('-created_at')
+  status = {
+    'writing': posts.filter(place_info__status='writing').count(),
+    'active': posts.filter(place_info__status='active').count(),
+    'pending': posts.filter(place_info__status='pending').count(),
+    'weightAd': posts.exclude(search_weight__gt=0, place_info__status='active').count(),
+    'ad': posts.filter(place_info__status='ad').count(),
+  }
 
-  # 카테고리 삭제 요청 처리
-  if request.method == 'DELETE' and request.GET.get('category'):
-    category_id = request.GET.get('category_id')
-    daos.delete_category(category_id)
-    return JsonResponse({'result': 'success'})
-
-  # data
+  # 데이터 가져오기
+  search_title = request.GET.get('title')
+  search_board_id = request.GET.get('board_id')
+  search_author_id = request.GET.get('author_id')
+  search_category_id = request.GET.get('category_id')
+  search_address = request.GET.get('address')
+  search_place_status = request.GET.get('place_status')
   page = int(request.GET.get('page', '1'))
-  search_post_title = request.GET.get('post_title', '')
-  search_board_id = request.GET.get('board_id', '')
-  search_author_id = request.GET.get('author_id', '')
-  search_category_id = request.GET.get('category_id', '')
-  search_address = request.GET.get('address', '')
-  place_status = request.GET.get('place_status', '')
 
-  # status
-  all_post = models.POST.objects.prefetch_related('boards').select_related('author', 'place_info', 'related_post').prefetch_related('place_info__categories').all()
-
-  # 게시글 검색
-  sps = all_post.filter(
-    Q(place_info__isnull=False), # 여행지 정보가 있는 게시글만 검색
-    Q(title__contains=search_post_title),
-    Q(author__username__contains=search_author_id),
-    Q(place_info__categories__id__contains=search_category_id),
-    Q(place_info__address__contains=search_address),
-    Q(place_info__status__contains=place_status),
-  )
-
-  if search_board_id: # 게시판 필터링
-    sps = sps.filter(boards__id__contains=search_board_id)
+  # 쿼리 생성
+  query = Q()
+  if tab == 'noAdTab':
+    query &= Q(place_info__status='writing') | Q(place_info__status='active') | Q(place_info__status='pending')
+  elif tab == 'weightAdTab':
+    query &= Q(search_weight__gt=0) & Q(place_info__status='active')
+  elif tab == 'statusAdTab':
+    query &= Q(place_info__status='ad')
+  if search_title:
+    query &= Q(title__contains=search_title)
+  if search_board_id:
+    query &= Q(boards__id__contains=search_board_id)
+  if search_author_id:
+    query &= Q(author__username=search_author_id)
+  if search_category_id:
+    query &= Q(place_info__categories__id__contains=search_category_id)
+  if search_address:
+    query &= Q(place_info__address__contains=search_address)
+  if search_place_status:
+    query &= Q(place_info__status=search_place_status)
+  search_posts = posts.filter(query)
 
   # export
   if request.GET.get('export'):
     headers = ['id', 'title', 'image', 'view_count', 'like_count', 'created_at', 'search_weight', 'board', 'author', 'place_info', 'related_post']
     values = [
-        [str(post.id) for post in sps],
-        [post.title for post in sps],
-        [str(post.image) for post in sps],
-        [str(post.view_count) for post in sps],
-        [str(post.like_count) for post in sps],
-        [str(post.created_at) for post in sps],
-        [str(post.search_weight) for post in sps],
-        [str(post.boards.all().last().name) for post in sps],
-        [str(post.author.username) for post in sps],
-        [str(post.place_info) for post in sps],
-        [str(post.related_post) for post in sps],
+        [str(post.id) for post in search_posts],
+        [post.title for post in search_posts],
+        [str(post.image) for post in search_posts],
+        [str(post.view_count) for post in search_posts],
+        [str(post.like_count) for post in search_posts],
+        [str(post.created_at) for post in search_posts],
+        [str(post.search_weight) for post in search_posts],
+        [str(post.boards.all().last().name) for post in search_posts],
+        [str(post.author.username) for post in search_posts],
+        [str(post.place_info) for post in search_posts],
+        [str(post.related_post) for post in search_posts],
     ]
 
     # 행(row) 중심 데이터 변환 (Transpose)
@@ -1274,46 +943,47 @@ def travel(request):
         'table_data': table_data,
     })
 
-  last_page = sps.count() // 20 + 1 # 20개씩 표시
+  # 페이지네이션
+  last_page = search_posts.count() // 20 + 1 # 20개씩 표시
+  search_posts = search_posts[(page - 1) * 20:page * 20]
   search_posts = []
-  for post in sps[(page - 1) * 20:page * 20]:
-    try:
-      search_posts.append({
-        'id': post.id,
-        'title': post.title,
-        'image': '/media/' + str(post.image) if post.image else None,
-        'view_count': post.view_count,
-        'like_count': post.like_count,
-        'created_at': datetime.datetime.strftime(post.created_at, '%Y-%m-%d'),
-        'search_weight': post.search_weight,
-        'board': {
-          'name': post.boards.all().last().name,
-          'board_type': post.boards.all().last().board_type,
-        },
-        'author': {
-          'id': post.author.username, # 작성자 아이디
-          'nickname': post.author.first_name, # 작성자 닉네임
-          'partner_name': post.author.last_name, # 작성자 파트너 이름
-        },
-        'place_info': { # 여행지 게시글인 경우, 여행지 정보
+
+  # 게시글 정보
+  for post in search_posts:
+    search_posts.append({
+      'id': post.id,
+      'author': {
+          'id': post.author.id,
+          'partner_name': post.author.first_name,
+      },
+      'place_info': {
           'categories': [{
-            'id': c.id,
-            'name': c.name,
+              'id': c.id,
+              'name': c.name,
           } for c in post.place_info.categories.all()],
-          'address': post.place_info.address,
+          'category_ids': [c.id for c in post.place_info.categories.all()],
           'location_info': post.place_info.location_info,
           'open_info': post.place_info.open_info,
-          'ad_start_at': datetime.datetime.strftime(post.place_info.ad_start_at, '%Y-%m-%d'),
-          'ad_end_at': datetime.datetime.strftime(post.place_info.ad_end_at, '%Y-%m-%d'),
           'status': post.place_info.status,
           'note': post.place_info.note,
-        } if post.place_info else None,
-      })
-    except Exception as e:
-      print(e)
+          'ad_start_at': datetime.datetime.strftime(post.place_info.ad_start_at, '%Y-%m-%d'),
+          'ad_end_at': datetime.datetime.strftime(post.place_info.ad_end_at, '%Y-%m-%d'),
+      } if post.place_info else None,
+      'boards': [{
+          'id': board.id,
+          'name': board.name,
+      } for board in post.boards.all()],
+      'board_ids': [board.id for board in post.boards.all()],
+      'title': post.title,
+      'image': '/media/' + str(post.image) if post.image else None,
+      'view_count': post.view_count,
+      'like_count': post.like_count,
+      'created_at': datetime.datetime.strftime(post.created_at, '%Y-%m-%d %H:%M'),
+      'comment_count': models.COMMENT.objects.filter(post=post).count(),
+    })
 
   # 카테고리 정보
-  boards = daos.make_travel_board_tree()
+  boards = daos.make_board_tree(board_type='travel', status=True)
   categories = daos.make_category_tree()
 
   return render(request, 'supervisor/travel.html', {
@@ -1323,7 +993,7 @@ def travel(request):
 
     'posts': search_posts, # 검색된 게시글 정보
     'last_page': last_page, # 페이지 처리를 위해 필요한 정보
-    'status': boards, # 게시판 별 통계 데이터. 게시판 별로 게시글 수, 댓글 수, 조회수, 좋아요 수 제공
+    'status': status, # 여행지 게시글 상태별 통계 데이터
     'boards': boards, # 게시판 정보
     'categories': categories, # 카테고리 정보
   })
@@ -1333,56 +1003,64 @@ def travel_edit(request):
 
   # 권한 확인
   if not request.user.is_authenticated:
-    return redirect('/')
+    return redirect(settings.SUPERVISOR_URL)
   else:
     account = daos.select_account_detail(request.user.id)
     server_settings = {
         'site_logo': daos.select_server_setting('site_logo'),
         'service_name': daos.select_server_setting('service_name'),
     }
-  if 'post' not in account['subsupervisor_permissions']:
-    return redirect('/')
+  if account['account_type'] not in ['supervisor', 'subsupervisor']:
+    return redirect(settings.SUPERVISOR_URL)
+  if 'travel' not in account['subsupervisor_permissions']:
+    return redirect(settings.SUPERVISOR_URL)
+
+  # 데이터 가져오기
+  post_id = request.GET.get('post_id')
+  post = daos.select_post(post_id)
 
   # 여행지 게시글 수정
   if request.method == 'POST':
+    title = request.POST.get('title')
+    content = request.POST.get('content')
+    image = request.FILES.get('image')
+    search_weight = request.POST.get('search_weight')
+    view_count = request.POST.get('view_count')
+    like_count = request.POST.get('like_count')
+    category_ids = request.POST.get('category_ids')
+    location_info = request.POST.get('location_info')
+    open_info = request.POST.get('open_info')
+    address = request.POST.get('address')
+    board_ids = request.POST.get('board_ids')
+    # 데이터 업데이트
     daos.update_post(
-      post_id=request.GET['post_id'],
-      board_ids=request.POST.get('board_ids'),
-      title=request.POST.get('title'),
-      content=request.POST.get('content'),
-      image=request.FILES.get('image', None),
-      search_weight=request.POST.get('search_weight'),
-      view_count=request.POST.get('view_count'),
-      like_count=request.POST.get('like_count'),
+      post_id=post_id,
+      title=title,
+      content=content,
+      image=image,
+      search_weight=search_weight,
+      view_count=view_count,
+      like_count=like_count,
+      board_ids=board_ids
     )
     daos.update_place_info(
-      post_id=request.GET['post_id'],
-      category_ids=request.POST.get('category_ids'),
-      location_info=request.POST.get('location_info'),
-      open_info=request.POST.get('open_info'),
-      address=request.POST.get('address'),
+      post_id=post_id,
+      category_ids=category_ids,
+      location_info=location_info,
+      open_info=open_info,
+      address=address,
     )
     return JsonResponse({'result': 'success'})
 
-  # 여행지 게시글 삭제
-  if request.method == 'DELETE':
-    post_id = request.GET.get('post_id', None)
-    post = daos.select_post(post_id)
-    daos.delete_place_info(post['place_info']['id'])
-    return JsonResponse({
-      'result': 'success',
-    })
-
-  # data
-  post_id = request.GET.get('post_id', '')
-  post = daos.select_post(post_id)
+  # 카테고리 정보
+  boards = daos.make_board_tree(board_type='travel')
   categories = daos.make_category_tree()
-  boards = daos.make_travel_board_tree()
 
   return render(request, 'supervisor/travel_edit.html', {
     **daos.get_urls(),
     'account': account,
     'server_settings': server_settings,
+
     'post': post,
     'categories': categories,
     'boards': boards,
@@ -1393,61 +1071,58 @@ def coupon(request):
 
   # 권한 확인
   if not request.user.is_authenticated:
-    return redirect('/')
+    return redirect(settings.SUPERVISOR_URL)
   else:
     account = daos.select_account_detail(request.user.id)
     server_settings = {
         'site_logo': daos.select_server_setting('site_logo'),
         'service_name': daos.select_server_setting('service_name'),
     }
+  if account['account_type'] not in ['supervisor', 'subsupervisor']:
+    return redirect(settings.SUPERVISOR_URL)
   if 'coupon' not in account['subsupervisor_permissions']:
-    return redirect('/')
+    return redirect(settings.SUPERVISOR_URL)
 
-  # data
-  tab_type = request.GET.get('tab', 'couponTab') # coupon, history
-  page = int(request.GET.get('page', '1'))
-  search_coupon_code = request.GET.get('coupon_code', '')
-  search_coupon_name = request.GET.get('coupon_name', '')
+  # 데이터 가져오기
+  tab = request.GET.get('tab', 'couponTab') # coupopn, history
+  page = int(request.GET.get('page', 1))
+  search_coupon_code = request.GET.get('code', '') # 쿠폰 이름 검색
+  search_coupon_name = request.GET.get('name', '') # 쿠폰 소유자 검색
+  coupons = models.COUPON.objects.select_related(
+    'related_post', 'create_account', 'own_account'
+  ).all().order_by('-created_at')
 
   # status
   status = {
-    'active': models.COUPON.objects.filter(status='active').count(),
-    'expired': models.COUPON.objects.filter(status='expired').count(),
-    'deleted': models.COUPON.objects.filter(status='deleted').count(),
+    'active': coupons.filter(status='active').count(),
+    'expired': coupons.filter(status='expired').count(),
+    'deleted': coupons.filter(status='deleted').count(),
   }
 
   # 쿠폰 검색
-  if tab_type == 'couponTab':
-    cs = models.COUPON.objects.select_related(
-      'related_post', 'create_account', 'own_account'
-    ).filter(
-      Q(status='active')
-    ).filter(
-      code__contains=search_coupon_code,
-      name__contains=search_coupon_name,
-    ).order_by('-created_at')
-  elif tab_type == 'historyTab':
-    cs = models.COUPON.objects.select_related(
-      'related_post', 'create_account', 'own_account'
-    ).exclude(
-      Q(status='active')
-    ).filter(
-      code__contains=search_coupon_code,
-      name__contains=search_coupon_name,
-    ).order_by('-created_at')
+  query = Q()
+  if tab == 'couponTab':
+    query &= Q(status='active')
+  elif tab == 'historyTab':
+    query &= ~Q(status='active')
+  if search_coupon_code:
+    query &= Q(code=search_coupon_code)
+  if search_coupon_name:
+    query &= Q(name__contains=search_coupon_name)
+  coupons = coupons.filter(query)
 
   if request.GET.get('export'):
     headers = ['code', 'name', 'image', 'content', 'required_mileage', 'expire_at', 'status', 'post', 'create_account']
     values = [
-        [coupon.code for coupon in cs],
-        [coupon.name for coupon in cs],
-        [str(coupon.image) for coupon in cs],
-        [coupon.content for coupon in cs],
-        [coupon.required_mileage for coupon in cs],
-        [coupon.expire_at for coupon in cs],
-        [coupon.status for coupon in cs],
-        [coupon.related_post.title for coupon in cs],
-        [coupon.create_account.last_name for coupon in cs],
+        [coupon.code for coupon in coupons],
+        [coupon.name for coupon in coupons],
+        [str(coupon.image) for coupon in coupons],
+        [coupon.content for coupon in coupons],
+        [coupon.required_mileage for coupon in coupons],
+        [coupon.expire_at for coupon in coupons],
+        [coupon.status for coupon in coupons],
+        [coupon.related_post.title for coupon in coupons],
+        [coupon.create_account.last_name for coupon in coupons],
     ]
 
     # 행(row) 중심 데이터 변환 (Transpose)
@@ -1459,9 +1134,13 @@ def coupon(request):
         'table_data': table_data,
     })
 
-  last_page = cs.count() // 20 + 1 # 20개씩 표시
+  # 페이지네이션
+  last_page = coupons.count() // 20 + 1 # 20개씩 표시
+  coupons = coupons[(page - 1) * 20:page * 20]
   coupons = []
-  for coupon in cs[(page - 1) * 20:page * 20]:
+
+  # 쿠폰 정보
+  for coupon in coupons:
     coupons.append({
       'code': coupon.code,
       'name': coupon.name,
@@ -1499,175 +1178,146 @@ def message(request):
 
   # 권한 확인
   if not request.user.is_authenticated:
-    return redirect('/')
+    return redirect(settings.SUPERVISOR_URL)
   else:
     account = daos.select_account_detail(request.user.id)
     server_settings = {
         'site_logo': daos.select_server_setting('site_logo'),
         'service_name': daos.select_server_setting('service_name'),
     }
+  if account['account_type'] not in ['supervisor', 'subsupervisor']:
+    return redirect(settings.SUPERVISOR_URL)
   if 'message' not in account['subsupervisor_permissions']:
-    return redirect('/')
+    return redirect(settings.SUPERVISOR_URL)
 
   # data
   tab = request.GET.get('tab', 'inboxTab') # inbox, outbox
+  message_type = request.GET.get('message_type', 'user_question') # user_question, partner_question, request_ad, request_coupon
   page = int(request.GET.get('page', '1'))
   search_message_title = request.GET.get('message_title', '')
   search_message_receiver = request.GET.get('message_receiver', '')
 
-  # status
+  # 통계 데이터 가져오기
+  if tab == 'inboxTab':
+    messages = models.MESSAGE.objects.select_related(
+      'sender', 'receiver', 'include_coupon'
+    ).filter(receive__isnull=True).order_by('-created_at')
+  else:
+    messages = models.MESSAGE.objects.select_related(
+      'sender', 'receiver', 'include_coupon'
+    ).filter(sender__isnull=True).order_by('-created_at')
   status = {
-    'unread': models.MESSAGE.objects.filter(is_read=False, to_account='supervisor').count(),
-    'read': models.MESSAGE.objects.filter(is_read=True, to_account='supervisor').count(),
+    'user_question_read': messages.filter(message_type='user_question', is_read=True).count(),
+    'user_question_unread': messages.filter(message_type='user_question', is_read=False).count(),
+    'partner_question_read': messages.filter(message_type='partner_question', is_read=True).count(),
+    'partner_question_unread': messages.filter(message_type='partner_question', is_read=False).count(),
+    'request_ad_read': messages.filter(message_type='request_ad', is_read=True).count(),
+    'request_ad_unread': messages.filter(message_type='request_ad', is_read=False).count(),
+    'request_coupon_read': messages.filter(message_type='request_coupon', is_read=True).count(),
+    'request_coupon_unread': messages.filter(message_type='request_coupon', is_read=False).count(),
   }
 
-  # 받은 쪽지함
-  if tab == 'inboxTab':
-    msgs = models.MESSAGE.objects.select_related('include_coupon').filter(
-      to_account='supervisor',
-      title__contains=search_message_title,
-      sender_account__contains=search_message_receiver,
-    ).order_by('-created_at')
-    messages, last_page = daos.select_received_messages('supervisor', page)
+  # 쿼리 생성
+  query = Q()
+  if message_type:
+    query &= Q(message_type=message_type)
+  if search_message_title:
+    query &= Q(title__contains=search_message_title)
+  if search_message_receiver:
+    receiver = models.ACCOUNT.objects.filter(
+      Q(first_name=search_message_receiver) | Q(last_name=search_message_receiver)
+    ).first()
+    if receiver:
+      query &= Q(receiver=receiver)
+  messages = messages.filter(query)
 
-    # export
-    if request.GET.get('export'):
-      headers = ['id', 'title', 'content', 'is_read', 'created_at', 'sender']
-      values = [
-        [m.id for m in msgs],
-        [m.title for m in msgs],
-        [m.content for m in msgs],
-        [m.is_read for m in msgs],
-        [m.created_at for m in msgs],
-        [m.sender_account for m in msgs],
-      ]
+  # export
+  if request.GET.get('export'):
+    headers = ['id', 'title', 'content', 'is_read', 'created_at', 'sender']
+    values = [
+      [m.id for m in messages],
+      [m.title for m in messages],
+      [m.content for m in messages],
+      [m.is_read for m in messages],
+      [m.created_at for m in messages],
+      [m.sender.first_name if m.sender else 'supervisor' for m in messages],
+      [m.receive.first_name if m.receiver else 'supervisor' for m in messages],
+    ]
 
-      # 행(row) 중심 데이터 변환 (Transpose)
-      table_data = list(zip(*values))
+    # 행(row) 중심 데이터 변환 (Transpose)
+    table_data = list(zip(*values))
 
-      return render(request, 'export.html', {
-        **daos.get_urls(),
-        'headers': headers,
-        'table_data': table_data
-      })
-
-    return render(request, 'supervisor/message.html', {
+    return render(request, 'export.html', {
       **daos.get_urls(),
-      'account': account,
-      'server_settings': server_settings,
-
-      'status': status,
-      'messages': messages,
-      'last_page': last_page,
+      'headers': headers,
+      'table_data': table_data
     })
 
-  elif tab == 'outboxTab': # 보낸 쪽지함
-    msgs = models.MESSAGE.objects.select_related('include_coupon').filter(
-      sender_account='supervisor',
-      title__contains=search_message_title,
-      to_account__contains=search_message_receiver,
-    ).order_by('-created_at')
-    messages, last_page = daos.select_sent_messages('supervisor', page)
+  # 페이지네이션
+  last_page = messages.count() // 20 + 1 # 20개씩 표시
+  messages = messages[(page - 1) * 20:page * 20]
+  messages = []
 
-    # export
-    if request.GET.get('export'):
-      headers = ['id', 'title', 'content', 'is_read', 'created_at', 'to']
-      values = [
-        [m.id for m in msgs],
-        [m.title for m in msgs],
-        [m.content for m in msgs],
-        [m.is_read for m in msgs],
-        [m.created_at for m in msgs],
-        [m.to_account for m in msgs],
-      ]
-
-      # 행(row) 중심 데이터 변환 (Transpose)
-      table_data = list(zip(*values))
-
-      return render(request, 'export.html', {
-        **daos.get_urls(),
-        'headers': headers,
-        'table_data': table_data
-      })
-
-    return render(request, 'supervisor/message.html', {
-      **daos.get_urls(),
-      'account': account,
-      'server_settings': server_settings,
-
-      'status': status,
-      'messages': messages,
-      'last_page': last_page,
+  # 메시지 정보
+  for msg in messages:
+    messages.append({
+      'id': msg.id,
+      'sender_account': {
+        'id': message.sender.id,
+        'nickname': message.sender.first_name,
+      } if message.sender else {'id': '', 'nickname': '관리자', 'account_type': 'supervisor'},
+      'receive_account': {
+        'id': message.receiver.id,
+        'nickname': message.receiver.first_name,
+      } if message.receiver else {'id': '', 'nickname': '관리자', 'account_type': 'supervisor'},
+      'title': msg.title,
+      'content': msg.content,
+      'image': '/media/' + str(msg.image) if msg.image else None,
+      'include_coupon': {
+          'code': msg.include_coupon.code,
+          'name': msg.include_coupon.name,
+          'required_mileage': msg.include_coupon.required_mileage,
+          'expire_at': datetime.datetime.strftime(msg.include_coupon.expire_at, '%Y-%m-%d'),
+      } if msg.include_coupon else None,
+      'is_read': msg.is_read,
+      'created_at': datetime.datetime.strftime(msg.created_at, '%Y-%m-%d %H:%M'),
     })
+
+  return render(request, 'supervisor/message.html', {
+    **daos.get_urls(),
+    'account': account,
+    'server_settings': server_settings,
+
+    'status': status,
+    'messages': messages,
+    'last_page': last_page
+  })
 
 # 배너 관리 페이지
 def banner(request):
 
   # 권한 확인
   if not request.user.is_authenticated:
-    return redirect('/')
+    return redirect(settings.SUPERVISOR_URL)
   else:
     account = daos.select_account_detail(request.user.id)
     server_settings = {
         'site_logo': daos.select_server_setting('site_logo'),
         'service_name': daos.select_server_setting('service_name'),
     }
+  if account['account_type'] not in ['supervisor', 'subsupervisor']:
+    return redirect(settings.SUPERVISOR_URL)
   if 'banner' not in account['subsupervisor_permissions']:
-    return redirect('/')
+    return redirect(settings.SUPERVISOR_URL)
 
-  # 배너 생성 및 수정 요청 처리
-  # 아이디가 있으면 수정, 없으면 생성
-  if request.method == 'POST':
-    id = request.GET.get('id')
-    if id:
-      daos.update_banner(
-        banner_id=id,
-        image=request.FILES.get('image', None),
-        link=request.POST.get('link', ''),
-        display_weight=request.POST.get('display_weight', ''),
-        location=request.POST.get('location', ''),
-        size=request.POST.get('size', ''),
-      )
-    else:
-      daos.create_banner(
-        image=request.FILES.get('image', None),
-        link=request.POST.get('link', ''),
-        display_weight=request.POST.get('display_weight', ''),
-        location=request.POST.get('location', ''),
-        size=request.POST.get('size', ''),
-      )
-    return JsonResponse({'result': 'success'})
-
-  # 배너 삭제
-  if request.method == 'DELETE':
-    banner_id = request.GET.get('id', '')
-    daos.delete_banner(banner_id)
-    return JsonResponse({'result': 'success'})
-
-  # data
-  tab = request.GET.get('tab', 'topTab') # top, side
-
-  # search
-  banners = []
-  for b in models.BANNER.objects.all().order_by('-display_weight'):
-    if b.location == 'side' and tab == 'sideTab':
-      banners.append({
-        'id': b.id,
-        'location': b.location,
-        'image': '/media/' + str(b.image) if b.image else None,
-        'link': b.link,
-        'display_weight': b.display_weight,
-        'size': 'full',
-      })
-    elif b.location == 'top' and tab == 'topTab':
-      banners.append({
-        'id': b.id,
-        'location': b.location,
-        'image': '/media/' + str(b.image) if b.image else None,
-        'link': b.link,
-        'display_weight': b.display_weight,
-        'size': b.size,
-      })
+  # 데이터 가져오기
+  tab = request.GET.get('tab', 'topTab') # topTab, sideTab, postTab
+  if tab == 'postTab':
+    banners= daos.select_banners('post')
+  elif tab == 'sideTab':
+    banners = daos.select_banners('side')
+  else:
+    banners = daos.select_banners('top')
 
   return render(request, 'supervisor/banner.html', {
     **daos.get_urls(),
@@ -1682,15 +1332,17 @@ def level(request):
 
   # 권한 확인
   if not request.user.is_authenticated:
-    return redirect('/')
+    return redirect(settings.SUPERVISOR_URL)
   else:
     account = daos.select_account_detail(request.user.id)
     server_settings = {
         'site_logo': daos.select_server_setting('site_logo'),
         'service_name': daos.select_server_setting('service_name'),
     }
+  if account['account_type'] not in ['supervisor', 'subsupervisor']:
+    return redirect(settings.SUPERVISOR_URL)
   if 'level' not in account['subsupervisor_permissions']:
-    return redirect('/')
+    return redirect(settings.SUPERVISOR_URL)
 
   # 레벨 생성 및 수정 요청 처리
   if request.method == 'POST':
@@ -1714,20 +1366,14 @@ def level(request):
       )
     return JsonResponse({'result': 'success'})
 
-  lvs = models.LEVEL_RULE.objects.all().order_by('level')
-  levels = [{
-    'level': lv.level,
-    'image': '/media/' + str(lv.image) if lv.image else None,
-    'text': lv.text,
-    'text_color': lv.text_color,
-    'background_color': lv.background_color,
-    'required_exp': lv.required_exp,
-  } for lv in lvs]
+  # 레벨 정보 가져오기
+  levels = daos.select_all_levels()
 
   return render(request, 'supervisor/level.html', {
     **daos.get_urls(),
     'account': account,
     'server_settings': server_settings,
+
     'levels': levels,
   })
 
@@ -1736,19 +1382,20 @@ def setting(request):
 
   # 권한 확인
   if not request.user.is_authenticated:
-    return redirect('/')
+    return redirect(settings.SUPERVISOR_URL)
   else:
     account = daos.select_account_detail(request.user.id)
     server_settings = {
         'site_logo': daos.select_server_setting('site_logo'),
         'service_name': daos.select_server_setting('service_name'),
     }
+  if account['account_type'] not in ['supervisor', 'subsupervisor']:
+    return redirect(settings.SUPERVISOR_URL)
   if 'setting' not in account['subsupervisor_permissions']:
-    return redirect('/')
+    return redirect(settings.SUPERVISOR_URL)
 
   # 설정 정보 변경 요청 처리
   if request.method == 'POST':
-    print(request.POST.dict())
     daos.update_server_setting('service_name', request.POST.get('service_name'))
     daos.update_server_setting('site_logo', request.POST.get('site_logo'))
     daos.update_server_setting('company_info', request.POST.get('company_info'))

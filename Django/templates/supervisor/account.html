@@ -9,13 +9,103 @@
     {% include 'components/main/title_section.html' %}
     {% endwith %}
 
-    <!-- 선택지 버튼 그룹 -->
+    <!-- 탭 -->
     <div class="btn-group w-100 d-flex">
-      {% include 'components/main/page_tab.html' with tab_name='사용자 계정' tab_id='userTab' tab_link='/supervisor/account?tab=userTab' %}
+      <div class="w-100 d-flex justify-content-center">
+        <a class="w-100 btn" href="{{SUPERVISOR_URL}}/supervisor/account?tab=userTab" id="userTab">
+          사용자 계정
+        </a>
+      </div>
+      <script>
+          window.addEventListener('load', () => {
+              if ('{{request.GET.tab}}' == 'userTab') { // 해당 탭이 선택 되었을 경우,
+                  document.getElementById('userTab').classList.add('pastel-pink-background');
+                  document.getElementById('userTab').classList.add('text-white');
+                  // 탭 박스가 있다면 표시
+                  if (document.getElementById('userTabBox')) {
+                      document.getElementById('userTabBox').classList.remove('d-none');
+                  }
+              } else { // 해당 탭이 선택 되지 않았을 경우,
+                  document.getElementById('userTab').classList.add('pastel-beige-background');
+                  // 탭 박스가 있다면 숨김
+                  if (document.getElementById('userTabBox')) {
+                      document.getElementById('userTabBox').classList.add('d-none');
+                  }
+              }
+          });
+      </script>
       <span class="divider"></span>
-      {% include 'components/main/page_tab.html' with tab_name='파트너 계정' tab_id='partnerTab' tab_link='/supervisor/account?tab=partnerTab' %}
+      <div class="w-100 d-flex justify-content-center">
+        <a class="w-100 btn" href="{{SUPERVISOR_URL}}/supervisor/account?tab=dameTab" id="dameTab">
+          여성 계정
+        </a>
+      </div>
+      <script>
+          window.addEventListener('load', () => {
+              if ('{{request.GET.tab}}' == 'dameTab') { // 해당 탭이 선택 되었을 경우,
+                  document.getElementById('dameTab').classList.add('pastel-pink-background');
+                  document.getElementById('dameTab').classList.add('text-white');
+                  // 탭 박스가 있다면 표시
+                  if (document.getElementById('dameTabBox')) {
+                      document.getElementById('dameTabBox').classList.remove('d-none');
+                  }
+              } else { // 해당 탭이 선택 되지 않았을 경우,
+                  document.getElementById('dameTab').classList.add('pastel-beige-background');
+                  // 탭 박스가 있다면 숨김
+                  if (document.getElementById('dameTabBox')) {
+                      document.getElementById('dameTabBox').classList.add('d-none');
+                  }
+              }
+          });
+      </script>
       <span class="divider"></span>
-      {% include 'components/main/page_tab.html' with tab_name='관리자 계정' tab_id='supervisorTab' tab_link='/supervisor/account?tab=supervisorTab' %}
+      <div class="w-100 d-flex justify-content-center">
+        <a class="w-100 btn" href="{{SUPERVISOR_URL}}/supervisor/account?tab=partnerTab" id="partnerTab">
+          파트너 계정
+        </a>
+      </div>
+      <script>
+          window.addEventListener('load', () => {
+              if ('{{request.GET.tab}}' == 'partnerTab') { // 해당 탭이 선택 되었을 경우,
+                  document.getElementById('partnerTab').classList.add('pastel-pink-background');
+                  document.getElementById('partnerTab').classList.add('text-white');
+                  // 탭 박스가 있다면 표시
+                  if (document.getElementById('partnerTabBox')) {
+                      document.getElementById('partnerTabBox').classList.remove('d-none');
+                  }
+              } else { // 해당 탭이 선택 되지 않았을 경우,
+                  document.getElementById('partnerTab').classList.add('pastel-beige-background');
+                  // 탭 박스가 있다면 숨김
+                  if (document.getElementById('partnerTabBox')) {
+                      document.getElementById('partnerTabBox').classList.add('d-none');
+                  }
+              }
+          });
+      </script>
+      <span class="divider"></span>
+      <div class="w-100 d-flex justify-content-center">
+        <a class="w-100 btn" href="{{SUPERVISOR_URL}}/supervisor/account?tab=supervisorTab" id="supervisorTab">
+          관리자 계정
+        </a>
+      </div>
+      <script>
+          window.addEventListener('load', () => {
+              if ('{{request.GET.tab}}' == 'supervisorTab') { // 해당 탭이 선택 되었을 경우,
+                  document.getElementById('supervisorTab').classList.add('pastel-pink-background');
+                  document.getElementById('supervisorTab').classList.add('text-white');
+                  // 탭 박스가 있다면 표시
+                  if (document.getElementById('supervisorTabBox')) {
+                      document.getElementById('supervisorTabBox').classList.remove('d-none');
+                  }
+              } else { // 해당 탭이 선택 되지 않았을 경우,
+                  document.getElementById('supervisorTab').classList.add('pastel-beige-background');
+                  // 탭 박스가 있다면 숨김
+                  if (document.getElementById('supervisorTabBox')) {
+                      document.getElementById('supervisorTabBox').classList.add('d-none');
+                  }
+              }
+          });
+      </script>
     </div>
 
     <!-- 차단 IP 목록 -->
@@ -92,7 +182,7 @@
         <p>
           <i class="fi fi-rr-search"></i> 검색
         </p>
-        <form id="userSearchForm" method="get" action="{{supervisor_url}}/supervisor/account">
+        <form id="userSearchForm" method="get" action="{{SUPERVISOR_URL}}/supervisor/account">
           <div class="row">
             <input type="hidden" name="tab" value="{{request.GET.tab}}">
             <div class="form-group mt-4 col-6">
@@ -169,7 +259,7 @@
         <p>
           <i class="fi fi-rr-search"></i> 검색
         </p>
-        <form id="partnerSearchForm" method="get" action="{{supervisor_url}}/supervisor/account">
+        <form id="partnerSearchForm" method="get" action="{{SUPERVISOR_URL}}/supervisor/account">
           <div class="row">
             <input type="hidden" name="tab" value="{{request.GET.tab}}">
             <div class="form-group mt-4 col-6">
@@ -230,7 +320,7 @@
         {% endif %}
         {% for search_account in accounts %}
         <div class="col-12 p-2 mb-2 border-bottom">
-          <a href="{{supervisor_url}}/supervisor/account/profile?account_id={{ search_account.id }}&tab=profileTab">
+          <a href="{{SUPERVISOR_URL}}/supervisor/account/profile?account_id={{ search_account.id }}&tab=profileTab">
             <div style="display: flex; justify-content: space-between; white-space: nowrap;">
               <div style="display: inline-block; text-align: left;">
                 <span class="text-black-50" style="font-size: 14px;">
@@ -307,7 +397,7 @@
 
             <!-- 메세지 보내기 버튼 -->
             <a class="btn btn-primary small p-1 px-2"
-              href="{{supervisor_url}}/supervisor/message?tab=inboxTab&to={{ search_account.id }}">
+              href="{{SUPERVISOR_URL}}/supervisor/message?tab=inboxTab&to={{ search_account.id }}">
               <i class="fi fi-rr-envelope"></i> 메시지 보내기
             </a>
 
@@ -343,7 +433,7 @@
     // Tab
     tab = '{{request.GET.tab}}';
     if (tab == '') {
-      location.href = '{{supervisor_url}}/supervisor/account?tab=userTab';
+      location.href = '{{SUPERVISOR_URL}}/supervisor/account?tab=userTab';
     }
 
     // pagination
@@ -352,7 +442,7 @@
       var searchAccountId = '{{request.GET.accountId}}';
       var searchAccountNickname = '{{request.GET.accountNickname}}';
       var searchAccountStatus = '{{request.GET.accountStatus}}';
-      makePaegeButton('{{request.GET.page}}', '{{last_page}}', `{{supervisor_url}}/supervisor/account?tab=${tab}&accountId=${searchAccountId}&accountNickname=${searchAccountNickname}&accountStatus=${searchAccountStatus}`);
+      makePaegeButton('{{request.GET.page}}', '{{last_page}}', `{{SUPERVISOR_URL}}/supervisor/account?tab=${tab}&accountId=${searchAccountId}&accountNickname=${searchAccountNickname}&accountStatus=${searchAccountStatus}`);
     }
   });
 

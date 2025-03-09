@@ -17,24 +17,40 @@ import string
 # def api_login(request): 로그인 api
 # def api_logout(request): 로그아웃 api
 # def api_file_upload(request): 파일 업로드 api
-# def api_receive_coupon(request): 쿠폰 받기 api
-# def api_like_post(request): 게시글 좋아요 토글 api
-# def api_delete_post(request): 게시글 삭제 api
+# class api_post(APIView): 게시글 REST API
+# - GET: 게시글 조회
+# - DELETE: 게시글 삭제
+# - PATCH: 게시글 좋아요 토글
+# class api_place_info(APIView): 여행지 정보 REST API
+# - PATCH: 여행지 정보 수정
 # class api_account(APIView): 사용자 REST API
-# - GET: search 사용자. id, nickname, any로 검색 가능. (id, nickname, status 반환)
-# - POST: create 사용자. id, password, nickname, partner_name, email(선택), account_type(user, dame, partner, subsupervisor)를 받아 사용자 생성.
-# - PATCH: update 사용자. password, nickname, partner_name, email, status, note, subsupervisor_permissions를 받아 사용자 수정.
+# - GET: 사용자 정보 검섹
+# - POST: 사용자 정보 생성
+# - PATCH: 사용자 정보 수정
 # class api_message(APIView): 메세지 REST API
-# - GET: 메세지 읽음 처리. message_id를 받아 메세지의 is_read를 True로 변경.
-# - POST: create 메세지. sender, receiver, title, content, image, include_coupon_code를 받아 메세지 생성.
+# - GET: 메세지 읽음 처리
+# - POST: 메세지 발송
 # class api_comment(APIView): 댓글 REST API
-# - POST: create 댓글. post_id, account_id, content을 받아 댓글 생성.
-# - PATCH: update 댓글. comment_id, content를 받아 댓글 수정.
-# - DELETE: delete 댓글. comment_id를 받아 댓글 삭제.
+# - POST: 댓글 작성
+# - PATCH: 댓글 수정
+# - DELETE: 댓글 삭제
 # class api_coupon(APIView): 쿠폰 REST API
-# - GET: search 쿠폰. code를 받아 쿠폰 검색.
-# - POST: create 쿠폰. code, title, content, image, expire_date, required_mileage, related_post_id를 받아 쿠폰 생성.
-# - PATCH: update 쿠폰. code, title, content, image, expire_date, required_mileage, own_account_id, status를 받아 쿠폰 수정.
+# - GET: 쿠폰 검색
+# - POST: 쿠폰 생성
+# - PATCH: 쿠폰 수정
+# class api_board(APIView): 게시판 REST API
+# - POST: 게시판 생성
+# - PATCH: 게시판 수정
+# - DELETE: 게시판 삭제
+# class api_category(APIView): 카테고리 REST API
+# - POST: 카테고리 생성
+# - PATCH: 카테고리 수정
+# - DELETE: 카테고리 삭제
+# class api_ip_block(APIView): IP 차단 REST API
+# - POST: IP 차단
+# - DELETE: IP 차단 해제
+
+
 
 # 로그인 api
 def api_login(request):
@@ -63,7 +79,7 @@ def api_login(request):
         # 사용자 활동 기록 생성
         daos.create_account_activity(
             account_id=user.id,
-            message=f'[로그인] {user.username}님이 로그인하였습니다. IP: {user_ip}'
+            message=f'[로그인] {user.username}님이 로그인하였습니다.'
         )
         daos.update_account(
             account_id=user.id,
@@ -98,159 +114,118 @@ def api_file_upload(request):
 
     return JsonResponse({"success": True, 'status': 200, "message": "파일 업로드 성공", 'data': response})
 
-# 쿠폰 받기 api
-def api_receive_coupon(request):
+# 게시글 REST API
+# GET: 게시글 조회
+# DELETE: 게시글 삭제
+# PATCH: 게시글 좋아요 토글
+class api_post(APIView):
+    # 게시글 조회 api(GET)
+    def get(self, request, *args, **kwargs):
 
-    # 메세지 아이디 확인
-    message_id = request.GET.get('message_id')
-    account_id = request.user.id
+        # 게시글 조회
+        post_id = request.query_params.get('post_id')
+        title = request.query_params.get('title')
 
-    # 메세지 확인
-    message = daos.select_message(message_id)
-    if message['to_account']['id'] != account_id:
-        return JsonResponse({"success": False, 'status': 400, "message": "본인에게만 쿠폰을 받을 수 있습니다."})
-    elif message['include_coupon'] == None:
-        return JsonResponse({"success": False, 'status': 400, "message": "쿠폰이 포함되어있지 않습니다."})
+        post = daos.select_post(post_id, title)
 
-    # 쿠폰 받기
-    daos.update_coupon(
-        code=message['include_coupon']['code'],
-        own_account_id=account_id
-    )
+        return JsonResponse({"success": True, 'status': 200, "message": "게시글 조회 성공", 'data': post})
 
-    # 메세지에 담긴 쿠폰 삭제
-    daos.update_message(message_id, delete_coupon=True)
+    # 게시글 삭제 api(DELETE)
+    def delete(self, request, *args, **kwargs):
 
-    # 사용자 활동 기록 생성
-    daos.create_account_activity(
-        account_id=account_id,
-        message=f'[쿠폰받기] {message["sender_account"]["nickname"]}님으로부터 쿠폰을 받았습니다.'
-    )
+        # 게시글 삭제
+        post_id = request.query_params.get('post_id')
 
-    return JsonResponse({"success": True, 'status': 200, "message": "쿠폰 받기 성공"})
+        # 로그인 여부 확인
+        if not request.user.is_authenticated:
+            return JsonResponse({"success": False, 'status': 401, "message": "로그인이 필요합니다."})
 
-# 게시글 좋아요 토글 api
-def api_like_post(request):
+        # 게시글 확인
+        if 'post' not in request.user.subsupervisor_permissions:
+            post = daos.select_post(post_id)
+            if post['author']['id'] != request.user.id:
+                return JsonResponse({"success": False, 'status': 403, "message": "권한이 없습니다."})
 
-    # 게시글 아이디 확인
-    post_id = request.GET.get('post_id')
+        # 게시글 삭제
+        daos.delete_post(post_id)
 
-    # 로그인 여부 확인
-    if not request.user.is_authenticated:
-        return JsonResponse({"success": False, 'status': 401, "message": "로그인이 필요합니다."})
-    account_id = request.user.id
+        # 사용자 활동 기록 생성
+        daos.create_account_activity(
+            account_id=request.user.id,
+            message=f'[게시글삭제] {post["title"]} 게시글이 삭제되었습니다.'
+        )
 
-    # 게시글 확인
-    post = daos.select_post(post_id)
+        return JsonResponse({"success": True, 'status': 200, "message": "게시글 삭제 성공"})
 
-    # 게시글 타입 확인 후 좋아요 처리
-    if post['place_info'] == None: # 세션으로 처리
-        user_like_posts = request.session.get('like_post_ids', '')
-        if str(post['id']) in user_like_posts:
-            request.session['like_post_ids'] = user_like_posts.replace(str(post['id']) + ',', '')
-            is_liked = False
-        else:
-            request.session['like_post_ids'] = user_like_posts + str(post['id']) + ','
-            is_liked = True
+    # 게시글 좋아요 토글 api(PATCH)
+    def patch(self, request, *args, **kwargs):
 
-        # 게시글 업데이트
-        if is_liked:
-            like_count = int(post['like_count']) + 1
+        # 게시글 좋아요 토글
+        post_id = request.data.get('post_id')
 
-            # 사용자 활동 기록 생성
-            daos.create_account_activity(
-                account_id=account_id,
-                message=f'[좋아요] {post["title"]} 게시글에 좋아요를 눌렀습니다.'
-            )
+        # 로그인 여부 확인
+        if not request.user.is_authenticated:
+            return JsonResponse({"success": False, 'status': 401, "message": "로그인이 필요합니다."})
 
-        else: # 좋아요 취소
-            like_count = int(post['like_count']) - 1
+        # 게시글 확인
+        post = daos.select_post(post_id)
 
-            # 사용자 활동 기록 생성
-            daos.create_account_activity(
-                account_id=account_id,
-                message=f'[좋아요] {post["title"]} 게시글에 좋아요를 취소하였습니다.'
-            )
-    else: # DB로 처리
-        user_bookmark_posts = daos.select_account(account_id)['bookmarked_posts']
-        if str(post['id']) in user_bookmark_posts:
-            request.user.bookmarked_posts.remove(
-                models.POST.objects.get(id=post_id)
-            )
-            request.user.save()
-            is_liked = False
-        else:
-            request.user.bookmarked_posts.add(
-                models.POST.objects.get(id=post_id)
-            )
-            request.user.save()
-            is_liked = True
-        # 게시글 업데이트
-        if is_liked:
-            like_count = int(post['like_count']) + 1
+        # 게시글 타입 확인 후 좋아요 처리
+        if post['place_info'] == None: # 세션으로 처리(기본 게시글)
+            user_like_posts = request.session.get('like_post_ids', '')
+            if str(post['id']) in user_like_posts:
+                request.session['like_post_ids'] = user_like_posts.replace(str(post['id']) + ',', '')
+                is_liked = False
 
-            # 사용자 활동 기록 생성
-            daos.create_account_activity(
-                account_id=account_id,
-                message=f'[좋아요] {post["title"]} 게시글을 즐겨찾기에 추가하였습니다.'
-            )
+                # 사용자 활동 기록 생성
+                daos.create_account_activity(
+                    account_id=request.user.id,
+                    message=f'[좋아요] {post["title"]} 게시글에 좋아요를 취소하였습니다.'
+                )
+            else:
+                request.session['like_post_ids'] = user_like_posts + str(post['id']) + ','
+                is_liked = True
 
-        else: # 좋아요 취소
-            like_count = int(post['like_count']) - 1
+                # 사용자 활동 기록 생성
+                daos.create_account_activity(
+                    account_id=request.user.id,
+                    message=f'[좋아요] {post["title"]} 게시글에 좋아요를 눌렀습니다.'
+                )
+        else: # 데이터베이스로 처리(장소 게시글)
+            user_bookmark_posts = daos.select_account(request.user.id)['bookmarked_posts']
+            if str(post['id']) in user_bookmark_posts:
+                request.user.bookmarked_posts.remove(
+                    models.POST.objects.get(id=post_id)
+                )
+                request.user.save()
+                is_liked = False
 
-            # 사용자 활동 기록 생성
-            daos.create_account_activity(
-                account_id=account_id,
-                message=f'[좋아요] {post["title"]} 게시글을 즐겨찾기에서 삭제하였습니다.'
-            )
+                # 사용자 활동 기록 생성
+                daos.create_account_activity(
+                    account_id=request.user.id,
+                    message=f'[좋아요] {post["title"]} 게시글을 즐겨찾기에서 삭제하였습니다.'
+                )
+            else:
+                request.user.bookmarked_posts.add(
+                    models.POST.objects.get(id=post_id)
+                )
+                request.user.save()
+                is_liked = True
 
-    daos.update_post(
-        post_id=post_id,
-        like_count=like_count
-    )
+                # 사용자 활동 기록 생성
+                daos.create_account_activity(
+                    account_id=request.user.id,
+                    message=f'[좋아요] {post["title"]} 게시글을 즐겨찾기에 추가하였습니다.'
+                )
 
-    # 응답
-    response = {
-        'is_liked': is_liked,
-    }
+            # 게시글 업데이트
+            if is_liked:
+                like_count = int(post['like_count']) + 1
+            else:
+                like_count = int(post['like_count']) - 1
+            daos.update_post(post_id, like_count=like_count)
 
-    return JsonResponse({"success": True, 'status': 200, "message": "게시글 좋아요 토글 성공", 'data': response})
-
-# 게시글 삭제 api
-def api_delete_post(request):
-
-    # 게시글 아이디 확인
-    post_id = request.GET.get('post_id')
-
-    # 로그인 여부 확인
-    if not request.user.is_authenticated:
-        return JsonResponse({"success": False, 'status': 401, "message": "로그인이 필요합니다."})
-
-    # 게시글 확인
-    post = daos.select_post(post_id)
-    if post['author']['id'] != request.user.id and 'post' not in request.user.subsupervisor_permissions:
-        return JsonResponse({"success": False, 'status': 400, "message": "권한이 없습니다."})
-
-    # 게시글 삭제
-    daos.delete_post(post_id)
-
-    # 사용자 활동 기록 생성
-    daos.create_account_activity(
-        account_id=request.user.id,
-        message=f'[게시글삭제] {post["author"]["nickname"]}님의 게시글이 삭제되었습니다.'
-    )
-
-    return JsonResponse({"success": True, 'status': 200, "message": "게시글 삭제 성공"})
-
-# 게시글 검색 api
-def api_search_post(request):
-
-    post_id = request.GET.get('post_id')
-
-    # 게시글 검색
-    post = daos.select_post(post_id)
-
-    return JsonResponse({"success": True, 'status': 200, "message": "게시글 조회 성공", 'data': post})
+        return JsonResponse({"success": True, 'status': 200, "message": "게시글 좋아요 토글 성공"})
 
 # 사용자 REST API
 class api_account(APIView):
@@ -277,21 +252,20 @@ class api_account(APIView):
         id = request.data.get('id')
         password = request.data.get('password')
         nickname = request.data.get('nickname')
-        partner_name = request.data.get('partner_name', '')
-        email = request.data.get('email', '')
-        tel = request.data.get('tel', '')
+        partner_name = request.data.get('partner_name')
+        email = request.data.get('email')
+        tel = request.data.get('tel')
         account_type = request.data.get('account_type')
 
         account = daos.create_account(
             username=id,
             password=password,
-            first_name=nickname,
-            last_name=partner_name,
+            nickname=nickname,
+            partner_name=partner_name,
             email=email,
             account_type=account_type,
             tel=tel
         )
-        print('created account:', account)
 
         # 기본 게시글 생성
         if account_type == 'partner':
@@ -354,6 +328,7 @@ class api_account(APIView):
         nickname = request.data.get('nickname')
         partner_name = request.data.get('partner_name')
         email = request.data.get('email')
+        tel = request.data.get('tel')
         exp = None
         mileage = None
         status = None
@@ -368,9 +343,10 @@ class api_account(APIView):
         daos.update_account(
             account_id=id,
             password=password,
-            first_name=nickname,
-            last_name=partner_name,
+            nickname=nickname,
+            partner_name=partner_name,
             email=email,
+            tel=tel,
             exp=exp,
             mileage=mileage,
             status=status,
@@ -417,36 +393,50 @@ class api_message(APIView):
     # 메세지 읽음 처리 api(GET)
     def get(self, request, *args, **kwargs):
 
-        # 메세지 읽음 처리
+        # 로그인 여부 확인
+        if not request.user.is_authenticated:
+            return JsonResponse({"success": False, 'status': 401, "message": "로그인이 필요합니다."})
+
+        # 메세지 읽음 처리 및 쿠폰 수령
         message_id = request.query_params.get('message_id')
+        receive_coupon = request.query_params.get('receive_coupon')
 
-        # 읽음 처리
-        daos.update_message(message_id) # 메세지 읽음 처리
+        # 쿠폰 수령 확인
+        if receive_coupon == 'true':
+            message = daos.select_message(message_id)
+            if message['include_coupon'] == None:
+                return JsonResponse({"success": False, 'status': 400, "message": "쿠폰이 포함되어있지 않습니다."})
+            if request.user.mileage < message['include_coupon']['required_mileage']:
+                return JsonResponse({"success": False, 'status': 400, "message": "마일리지가 부족합니다."})
+            daos.update_account(account_id=request.user.id, mileage=request.user.mileage - message['include_coupon']['required_mileage'])
+            daos.update_message(message_id, delete_coupon=True)
+            daos.create_account_activity(
+                account_id=request.user.id,
+                message=f'[쿠폰수령] {message["include_coupon"]["code"]} 쿠폰을 수령하였습니다.',
+                mileage_change=-message['include_coupon']['required_mileage']
+            )
+        else:
+            daos.update_message(message_id) # 메세지 읽음 처리
 
-        return JsonResponse({"success": True, 'status': 200, "message": "메세지 읽음 처리 성공"})
+        return JsonResponse({"success": True, 'status': 200, "message": "메세지 처리 성공"})
 
     # 메세지 생성 api(POST)
     def post(self, request, *args, **kwargs):
 
-        # 메세지 생성
+        # 로그인 여부 확인
         if not request.user.is_authenticated:
-            guest_id = request.session.get('guest_id', ''.join(random.choices(string.ascii_uppercase + string.digits, k=10)))
-            request.session['guest_id'] = guest_id
-            sender_id = guest_id
-        elif 'message' in request.user.subsupervisor_permissions:
-            sender_id = 'supervisor'
-        else:
-            sender_id = request.user.id
-        receiver_id = request.data.get('receiver_id')
-
-        # 계정 확인
-        if receiver_id != 'supervisor' and not request.user.is_authenticated:
             return JsonResponse({"success": False, 'status': 401, "message": "로그인이 필요합니다."})
 
+        # 메세지 데이터
+        receiver_id = request.data.get('receiver_id')
+        sender_id = request.user.id
+        if 'message' in request.user.subsupervisor_permissions:
+            sender_id = None # 관리자는 None
         title = request.data.get('title')
-        content = request.data.get('content') # wysiwig 사용
+        content = request.data.get('content')
         image = request.data.get('image')
-        include_coupon_code = request.data.get('coupon_code')
+        include_coupon_code = request.data.get('include_coupon_code')
+        message_type = request.data.get('message_type')
 
         # 메세지 생성
         response = daos.create_message(
@@ -455,10 +445,13 @@ class api_message(APIView):
             title=title,
             content=content,
             image=image,
-            include_coupon_code=include_coupon_code
+            include_coupon_code=include_coupon_code,
+            message_type=message_type
         )
 
         # 활동 기록 생성
+        if receiver_id == None:
+            receiver_id = '관리자'
         daos.create_account_activity(
             account_id=sender_id,
             message=f'[메세지] {receiver_id}님에게 메세지를 보냈습니다.'
@@ -476,10 +469,12 @@ class api_comment(APIView):
 
         # 댓글 생성
         post_id = request.data.get('post_id')
+        parent_comment_id = request.data.get('parent_comment_id')
         content = request.data.get('content')
 
         response = daos.create_comment(
             account_id=request.user.id,
+            parent_comment_id=parent_comment_id,
             post_id=post_id,
             content=content
         )
@@ -508,12 +503,23 @@ class api_comment(APIView):
                     exp_change=response['point'],
                     mileage_change=response['point']
                 )
-            else:
+            elif parent_comment_id == None:
                 daos.create_account_activity(
                     account_id=request.user.id,
                     message=f'[댓글] {request.user.username}님이 댓글을 작성하였습니다.',
                     exp_change=response['point'],
                     mileage_change=response['point']
+                )
+            else:
+                daos.create_account_activity(
+                    account_id=request.user.id,
+                    message=f'[대댓글] {request.user.username}님이 대댓글을 작성하였습니다.',
+                    exp_change=response['point'],
+                    mileage_change=response['point']
+                )
+                daos.create_account_activity(
+                    account_id=response['parent_comment_author_id'],
+                    message=f'[대댓글] {request.user.username}님이 댓글에 대댓글을 작성하였습니다.'
                 )
 
             return JsonResponse({"success": True, 'status': 200, "message": "댓글 생성 성공"})
@@ -571,11 +577,11 @@ class api_coupon(APIView):
 
         # 쿠폰 조회
         code = request.query_params.get('code')
-        if not code:
-            return JsonResponse({"success": False, "status": 400, "message": "쿠폰 코드가 필요합니다."})
+        name = request.query_params.get('name')
 
         response = daos.select_all_coupons(
-            code=code
+            code=code,
+            name=name
         )
 
         return JsonResponse({"success": True, 'status': 200, "message": "쿠폰 조회 성공", 'data': response})
@@ -649,3 +655,180 @@ class api_coupon(APIView):
             return JsonResponse({"success": True, 'status': 200, "message": "쿠폰 수정 성공"})
         else:
             return JsonResponse({"success": False, 'status': 401, "message": "쿠폰 수정 실패", "errors": response['message']})
+
+# 게시판 REST API
+class api_board(APIView):
+
+    # 게시판 생성 api(POST)
+    def post(self, request, *args, **kwargs):
+
+        # 권한 확인
+        if not request.user.is_authenticated:
+            return JsonResponse({"success": False, 'status': 401, "message": "로그인이 필요합니다."})
+        if 'post' not in request.user.subsupervisor_permissions:
+            return JsonResponse({"success": False, 'status': 403, "message": "권한이 없습니다."})
+
+        # 게시판 생성
+        name = request.data.get('name')
+        board_type = request.data.get('board_type')
+        parent_board_id = request.data.get('parent_board_id')
+        display_weight = request.data.get('display_weight')
+        level_cut = request.data.get('level_cut')
+        display_groups = request.data.get('display_groups')
+        write_groups = request.data.get('write_groups')
+        comment_groups = request.data.get('comment_groups')
+        daos.create_board(
+            name=name,
+            board_type=board_type,
+            display_groups=display_groups,
+            write_groups=write_groups,
+            comment_groups=comment_groups,
+            level_cut=level_cut,
+            display_weight=display_weight,
+            parent_board_id=parent_board_id
+        )
+
+        return JsonResponse({"success": True, 'status': 200, "message": "게시판 생성 성공"})
+
+    # 게시판 수정 api(PATCH)
+    def patch(self, request, *args, **kwargs):
+
+        # 권한 확인
+        if not request.user.is_authenticated:
+            return JsonResponse({"success": False, 'status': 401, "message": "로그인이 필요합니다."})
+        if 'post' not in request.user.subsupervisor_permissions:
+            return JsonResponse({"success": False, 'status': 403, "message": "권한이 없습니다."})
+
+        # 게시판 수정
+        board_id = request.query_params.get('board_id')
+        name = request.data.get('name')
+        board_type = request.data.get('board_type')
+        parent_board_id = request.data.get('parent_board_id')
+        display_weight = request.data.get('display_weight')
+        level_cut = request.data.get('level_cut')
+        display_groups = request.data.get('display_groups')
+        write_groups = request.data.get('write_groups')
+        comment_groups = request.data.get('comment_groups')
+        daos.update_board(
+            board_id=board_id,
+            name=name,
+            board_type=board_type,
+            display_groups=display_groups,
+            write_groups=write_groups,
+            comment_groups=comment_groups,
+            level_cut=level_cut,
+            display_weight=display_weight,
+            parent_board_id=parent_board_id
+        )
+
+        return JsonResponse({"success": True, 'status': 200, "message": "게시판 수정 성공"})
+
+    # 게시판 삭제 api(DELETE)
+    def delete(self, request, *args, **kwargs):
+
+        # 권한 확인
+        if not request.user.is_authenticated:
+            return JsonResponse({"success": False, 'status': 401, "message": "로그인이 필요합니다."})
+        if 'post' not in request.user.subsupervisor_permissions:
+            return JsonResponse({"success": False, 'status': 403, "message": "권한이 없습니다."})
+
+        # 게시판 삭제
+        board_id = request.query_params.get('board_id')
+        daos.delete_board(board_id)
+
+        return JsonResponse({"success": True, 'status': 200, "message": "게시판 삭제 성공"})
+
+# 카테고리 REST API
+class api_category(APIView):
+
+    # 카테고리 생성 api(POST)
+    def post(self, request, *args, **kwargs):
+
+        # 권한 확인
+        if not request.user.is_authenticated:
+            return JsonResponse({"success": False, 'status': 401, "message": "로그인이 필요합니다."})
+        if 'ad' not in request.user.subsupervisor_permissions:
+            return JsonResponse({"success": False, 'status': 403, "message": "권한이 없습니다."})
+
+        # 카테고리 생성
+        name = request.data.get('name')
+        parent_category_id = request.data.get('parent_category_id')
+        display_weight = request.data.get('display_weight')
+        daos.create_category(
+            name=name,
+            display_weight=display_weight,
+            parent_category_id=parent_category_id
+        )
+
+        return JsonResponse({"success": True, 'status': 200, "message": "카테고리 생성 성공"})
+
+    # 카테고리 수정 api(PATCH)
+    def patch(self, request, *args, **kwargs):
+
+        # 권한 확인
+        if not request.user.is_authenticated:
+            return JsonResponse({"success": False, 'status': 401, "message": "로그인이 필요합니다."})
+        if 'post' not in request.user.subsupervisor_permissions:
+            return JsonResponse({"success": False, 'status': 403, "message": "권한이 없습니다."})
+
+        # 카테고리 수정
+        category_id = request.query_params.get('category_id')
+        name = request.data.get('name')
+        display_weight = request.data.get('display_weight')
+        daos.update_category(
+            category_id=category_id,
+            name=name,
+            display_weight=display_weight
+        )
+
+        return JsonResponse({"success": True, 'status': 200, "message": "카테고리 수정 성공"})
+
+    # 카테고리 삭제 api(DELETE)
+    def delete(self, request, *args, **kwargs):
+
+        # 권한 확인
+        if not request.user.is_authenticated:
+            return JsonResponse({"success": False, 'status': 401, "message": "로그인이 필요합니다."})
+        if 'post' not in request.user.subsupervisor_permissions:
+            return JsonResponse({"success": False, 'status': 403, "message": "권한이 없습니다."})
+
+        # 카테고리 삭제
+        category_id = request.query_params.get('category_id')
+        daos.delete_category(category_id)
+
+        return JsonResponse({"success": True, 'status': 200, "message": "카테고리 삭제 성공"})
+
+
+
+# IP 차단 REST API
+class api_ip_block(APIView):
+
+    # IP 차단 api(POST)
+    def post(self, request, *args, **kwargs):
+
+        # 권한 확인
+        if not request.user.is_authenticated:
+            return JsonResponse({"success": False, 'status': 401, "message": "로그인이 필요합니다."})
+        if 'user' not in request.user.subsupervisor_permissions:
+            return JsonResponse({"success": False, 'status': 403, "message": "권한이 없습니다."})
+
+        # IP 차단
+        ip = request.query_params.get('ip')
+        daos.create_blocked_ip(ip)
+
+        return JsonResponse({"success": True, 'status': 200, "message": "IP 차단 성공"})
+
+    # IP 차단 해제 api(DELETE)
+    def delete(self, request, *args, **kwargs):
+
+        # 권한 확인
+        if not request.user.is_authenticated:
+            return JsonResponse({"success": False, 'status': 401, "message": "로그인이 필요합니다."})
+        if 'user' not in request.user.subsupervisor_permissions:
+            return JsonResponse({"success": False, 'status': 403, "message": "권한이 없습니다."})
+
+        # IP 차단 해제
+        ip = request.query_params.get('ip')
+        daos.delete_blocked_ip(ip)
+
+        return JsonResponse({"success": True, 'status': 200, "message": "IP 차단 해제 성공"})

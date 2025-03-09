@@ -33,17 +33,25 @@
                     </div>
 
                     <!-- 여행지 게시글 선택 -->
-                    <div class="form-group mb-4">
-                        <label for="newPostId">여행지</label> <small id="postConfirmText"></small>
-                        <input class="form-control" placeholder="여행지 게시글 아이디" id="newPostId" name="post_id" oninput="checkPostId(this)">
-                        <div class="alert alert-info small mt-2">
-                            <i class="fi fi-rr-info"></i> 쿠폰을 발급한 게시글의 개시글 아이디를 입력해주세요.(url에서 확인 가능)
+                    <div class="row mb-4">
+                        <div class="form-group col-8">
+                            <label for="newPostId">여행지</label> <small id="postConfirmText"></small>
+                            <input class="form-control" placeholder="여행지 게시글 아이디" id="newPostId" name="post_id" oninput="checkPostId(this)">
+                        </div>
+                        <div class="form-group col-4">
+                            <label for="couponCount">쿠폰 수량</label>
+                            <input class="form-control" placeholder="쿠폰 수량" name="count" value="1" type="number" id="couponCount" oninput="checkCouponCount(this)">
+                        </div>
+                        <div class="form-group">
+                            <div class="alert alert-info small mt-2">
+                                <i class="fi fi-rr-info"></i> 쿠폰을 발급한 게시글의 개시글 아이디를 입력해주세요.(url에서 확인 가능). 쿠폰 수량이 여러개인 경우, 코드는 자동으로 생성됩니다.
+                            </div>
                         </div>
                     </div>
 
                     <!-- code -->
-                    <div class="form-group mb-4">
-                        <label for="'post_id">쿠폰 코드</label>
+                    <div class="form-group mb-4" id="couponCodeInput">
+                        <label for="post_id">쿠폰 코드</label>
                         <a href="javascript: codeRoll();">
                             <i class="fi fi-rr-refresh"></i>
                         </a>
@@ -93,6 +101,16 @@
     </div>
 </div>
 <script>
+
+    // 쿠폰 수량 확인
+    checkCouponCount = async (input) => {
+        var count = parseInt(input.value);
+        if (count == 1) {
+            document.getElementById('couponCodeInput').classList.remove('d-none');
+        } else {
+            document.getElementById('couponCodeInput').classList.add('d-none');
+        }
+    }
 
     // 게시글 유효성 확인
     checkPostId = async (postIdInput) => {
@@ -169,9 +187,10 @@
         var content = document.getElementById('newCouponContent').value;
         var required_mileage = document.getElementById('newCouponRequirePoint').value;
         var expire_at = document.getElementById('newCouponExpireAt').value;
+        var count = document.getElementById('couponCount').value;
 
         // 쿠폰 코드 확인
-        if (!codeOk) {
+        if (!codeOk && count == 1) {
             await showAlert('쿠폰 생성', '쿠폰 코드를 확인해주세요.', 'error');
             return;
         }
@@ -181,27 +200,29 @@
         }
 
         // 쿠폰 생성 요청
-        var formData = new FormData(document.getElementById('couponWriteForm'));
-        var success = await fetch('/api/coupon', {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': csrftoken
-            },
-            body: formData,
-        })
+        for(var i = 0; i < count; i++) {
+            var formData = new FormData(document.getElementById('couponWriteForm'));
+            if (count > 1) {
+                codeRoll();
+                formData.set('code', document.getElementById('newCouponCode').value);
+            }
+            var success = await fetch('/api/coupon', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken
+                },
+                body: formData,
+            })
             .then(response => response.json())
             .then(data => {
                 console.log(data);
                 return data.success;
             });
+        }
 
         // 결과에 따른 처리
-        if (success) {
-            await showAlert('쿠폰 생성', '쿠폰이 생성되었습니다.', 'success');
-            location.reload();
-        } else {
-            await showAlert('쿠폰 생성 실패', '쿠폰 생성에 실패했습니다.', 'error');
-        }
+        await showAlert('쿠폰 생성', '쿠폰이 생성되었습니다.', 'success');
+        location.reload();
 
     }
 

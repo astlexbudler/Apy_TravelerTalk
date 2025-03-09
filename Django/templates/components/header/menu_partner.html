@@ -15,10 +15,22 @@
     </li>
 
     <!-- 쿠폰 관리 -->
-    <li class="nav-item">
-        <a class="nav-link px-3" href="{{PARTNER_URL}}/partner/coupon">
+    <li class="nav-item dropdown dropdown-hover">
+        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
             쿠폰 관리
         </a>
+        <ul class="dropdown-menu start">
+            <li>
+                <a class="dropdown-item" href="{{PARTNER_URL}}/partner/coupon?tab=couponTab">
+                    사용 가능한 쿠폰
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item" href="{{PARTNER_URL}}/partner/coupon?tab=historyTab">
+                    쿠폰 사용 기록
+                </a>
+            </li>
+        </ul>
     </li>
 
 </ul>

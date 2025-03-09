@@ -13,10 +13,48 @@ class AppCoreConfig(AppConfig):
         scheduler.startScheduler()
 
     try:
-      from django.contrib.auth import get_user_model
-      from datetime import datetime
       from django.contrib.auth.models import Group
       from . import models
+
+      # 게시판 목록
+      # 강남(1)
+      # 서울(2)
+      # 강북(2,3)
+      # 압구정(2,4)
+      # 동대문(2,5)
+      # 홍대/이대(2,6)
+      # 이태원(2,7)
+      # 강서(2,8)
+      # 송파(2,9)
+      # 인천/부천(10)
+      # 경기(11)
+      # 대전/충청(12)
+      # 대구/구미(13)
+      # 경상(14)
+      # 광주/전라(15)
+      # 강원/제주(16)
+      # 해외(17)
+      # 필리핀(17,18)
+      # 태국(17,19)
+      # 캄보디아(17,20)
+      # 일본(17,21)
+      # 베트남(17,22)
+      # 커뮤니티(23)
+      # 자유 게시판(23,24)
+      # 출석체크 게시판(23,25)
+      # 가입인사 게시판(23,26)
+      # 익명 게시판(23,27)
+      # 미녀들의 수다(23,28)
+      # 정보공유/교환(23,29)
+      # 구인/구직(23,30)
+      # 브론즈 게시판(23,31)
+      # 실버 게시판(23,32)
+      # 골드 게시판(23,33)
+      # 이벤트 게시판(34)
+      # 이벤트(34,35)
+      # 쿠폰 거래(34,36)
+      # 후기 게시판(37)
+      # 문의 게시판(38)
 
       # 서버 초기 데이터 구성
       # 만약, 초기 데이터가 설정되어있지 않을 경우, 데이터 생성
@@ -111,6 +149,24 @@ class AppCoreConfig(AppConfig):
         supervisor.groups.add(supervisor_group)
         supervisor.save()
 
+        supervisor2 = models.ACCOUNT(
+          username='theme', # 관리자 아이디
+          first_name='관리자', # 닉네임
+          last_name='',
+          email='',
+          status = 'active', # 계정 상태
+          note='',
+          tel='', # 연락처
+          is_staff=True,
+          is_superuser=True,
+          subsupervisor_permissions='user,post,travel,coupon,message,banner,level,setting', # 부관리자 권한
+          level=level, # 레벨
+        )
+        supervisor2.set_password('a12345')
+        supervisor2.save()
+        supervisor2.groups.add(supervisor_group)
+        supervisor2.save()
+
         # CATEGORY: 카테고리 테이블
         # 골프, 숙박, 스파, 맛집, 유직지, 술집, 마사지, 헤어살롱, 축제, 피부샵
         # 기타(노래발, 풀빌라, 카지노 에이전트, 그 외 에이전트)
@@ -198,26 +254,22 @@ class AppCoreConfig(AppConfig):
           name='강남',
           board_type='travel',
         )
-        # display_groups - all
-        # enter_groups - all
+        # display_groups - allß
         # write_groups - partner
         # comment_groups - user, dame, partner, supervisor, sub_supervisor
         gangnam.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        gangnam.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         gangnam.write_groups.add(partner_group)
         gangnam.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         gangnam.save()
 
         seoul = models.BOARD.objects.create(
           name='서울',
-          board_type='tree',
+          board_type='travel',
         )
         # display_groups - all
-        # enter_groups - all
         # write_groups - all
         # comment_groups - all
         seoul.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        seoul.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         seoul.write_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         seoul.comment_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         seoul.save()
@@ -228,11 +280,9 @@ class AppCoreConfig(AppConfig):
           board_type='travel',
         )
         # display_groups - all
-        # enter_groups - all
         # write_groups - partner
         # comment_groups - user, dame, partner, supervisor, sub_supervisor
         gangbuk.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        gangbuk.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         gangbuk.write_groups.add(partner_group)
         gangbuk.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
 
@@ -242,11 +292,9 @@ class AppCoreConfig(AppConfig):
           board_type='travel',
         )
         # display_groups - all
-        # enter_groups - all
         # write_groups - partner
         # comment_groups - user, dame, partner, supervisor, sub_supervisor
         apgujeong.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        apgujeong.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         apgujeong.write_groups.add(partner_group)
         apgujeong.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
 
@@ -256,11 +304,9 @@ class AppCoreConfig(AppConfig):
           board_type='travel',
         )
         # display_groups - all
-        # enter_groups - all
         # write_groups - partner
         # comment_groups - user, dame, partner, supervisor, sub_supervisor
         dongdaemun.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        dongdaemun.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         dongdaemun.write_groups.add(partner_group)
         dongdaemun.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
 
@@ -270,11 +316,9 @@ class AppCoreConfig(AppConfig):
           board_type='travel',
         )
         # display_groups - all
-        # enter_groups - all
         # write_groups - partner
         # comment_groups - user, dame, partner, supervisor, sub_supervisor
         hongdae.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        hongdae.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         hongdae.write_groups.add(partner_group)
         hongdae.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
 
@@ -284,11 +328,9 @@ class AppCoreConfig(AppConfig):
           board_type='travel',
         )
         # display_groups - all
-        # enter_groups - all
         # write_groups - partner
         # comment_groups - user, dame, partner, supervisor, sub_supervisor
         itaewon.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        itaewon.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         itaewon.write_groups.add(partner_group)
         itaewon.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
 
@@ -298,11 +340,9 @@ class AppCoreConfig(AppConfig):
           board_type='travel',
         )
         # display_groups - all
-        # enter_groups - all
         # write_groups - partner
         # comment_groups - user, dame, partner, supervisor, sub_supervisor
         gangseo.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        gangseo.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         gangseo.write_groups.add(partner_group)
         gangseo.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
 
@@ -312,11 +352,9 @@ class AppCoreConfig(AppConfig):
           board_type='travel',
         )
         # display_groups - all
-        # enter_groups - all
         # write_groups - partner
         # comment_groups - user, dame, partner, supervisor, sub_supervisor
         songpa.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        songpa.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         songpa.write_groups.add(partner_group)
         songpa.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
 
@@ -325,11 +363,9 @@ class AppCoreConfig(AppConfig):
           board_type='travel',
         )
         # display_groups - all
-        # enter_groups - all
         # write_groups - partner
         # comment_groups - user, dame, partner, supervisor, sub_supervisor
         incheon.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        incheon.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         incheon.write_groups.add(partner_group)
         incheon.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         incheon.save()
@@ -339,11 +375,9 @@ class AppCoreConfig(AppConfig):
           board_type='travel',
         )
         # display_groups - all
-        # enter_groups - all
         # write_groups - partner
         # comment_groups - user, dame, partner, supervisor, sub_supervisor
         gyeonggi.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        gyeonggi.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         gyeonggi.write_groups.add(partner_group)
         gyeonggi.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         gyeonggi.save()
@@ -353,11 +387,9 @@ class AppCoreConfig(AppConfig):
           board_type='travel',
         )
         # display_groups - all
-        # enter_groups - all
         # write_groups - partner
         # comment_groups - user, dame, partner, supervisor, sub_supervisor
         daejeon.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        daejeon.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         daejeon.write_groups.add(partner_group)
         daejeon.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         daejeon.save()
@@ -367,11 +399,9 @@ class AppCoreConfig(AppConfig):
           board_type='travel',
         )
         # display_groups - all
-        # enter_groups - all
         # write_groups - partner
         # comment_groups - user, dame, partner, supervisor, sub_supervisor
         daegu.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        daegu.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         daegu.write_groups.add(partner_group)
         daegu.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         daegu.save()
@@ -381,11 +411,9 @@ class AppCoreConfig(AppConfig):
           board_type='travel',
         )
         # display_groups - all
-        # enter_groups - all
         # write_groups - partner
         # comment_groups - user, dame, partner, supervisor, sub_supervisor
         gyeongsang.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        gyeongsang.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         gyeongsang.write_groups.add(partner_group)
         gyeongsang.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         gyeongsang.save()
@@ -395,11 +423,9 @@ class AppCoreConfig(AppConfig):
           board_type='travel',
         )
         # display_groups - all
-        # enter_groups - all
         # write_groups - partner
         # comment_groups - user, dame, partner, supervisor, sub_supervisor
         gwangju.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        gwangju.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         gwangju.write_groups.add(partner_group)
         gwangju.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         gwangju.save()
@@ -409,25 +435,21 @@ class AppCoreConfig(AppConfig):
           board_type='travel',
         )
         # display_groups - all
-        # enter_groups - all
         # write_groups - partner
         # comment_groups - user, dame, partner, supervisor, sub_supervisor
         gangwon.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        gangwon.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         gangwon.write_groups.add(partner_group)
         gangwon.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         gangwon.save()
 
         abroad = models.BOARD.objects.create(
           name='해외',
-          board_type='tree',
+          board_type='travel',
         )
         # display_groups - all
-        # enter_groups - all
         # write_groups - partner
         # comment_groups - user, dame, partner, supervisor, sub_supervisor
         abroad.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        abroad.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         abroad.write_groups.add(partner_group)
         abroad.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         abroad.save()
@@ -439,11 +461,9 @@ class AppCoreConfig(AppConfig):
           board_type='travel',
         )
         # display_groups - all
-        # enter_groups - all
         # write_groups - partner
         # comment_groups - user, dame, partner, supervisor, sub_supervisor
         philippines.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        philippines.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         philippines.write_groups.add(partner_group)
         philippines.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         philippines.save()
@@ -455,11 +475,9 @@ class AppCoreConfig(AppConfig):
           board_type='travel',
         )
         # display_groups - all
-        # enter_groups - all
         # write_groups - partner
         # comment_groups - user, dame, partner, supervisor, sub_supervisor
         thailand.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        thailand.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         thailand.write_groups.add(partner_group)
         thailand.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         thailand.save()
@@ -471,11 +489,9 @@ class AppCoreConfig(AppConfig):
           board_type='travel',
         )
         # display_groups - all
-        # enter_groups - all
         # write_groups - partner
         # comment_groups - user, dame, partner, supervisor, sub_supervisor
         cambodia.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        cambodia.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         cambodia.write_groups.add(partner_group)
         cambodia.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         cambodia.save()
@@ -487,11 +503,9 @@ class AppCoreConfig(AppConfig):
           board_type='travel',
         )
         # display_groups - all
-        # enter_groups - all
         # write_groups - partner
         # comment_groups - user, dame, partner, supervisor, sub_supervisor
         japan.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        japan.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         japan.write_groups.add(partner_group)
         japan.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         japan.save()
@@ -503,11 +517,9 @@ class AppCoreConfig(AppConfig):
           board_type='travel',
         )
         # display_groups - all
-        # enter_groups - all
         # write_groups - partner
         # comment_groups - user, dame, partner, supervisor, sub_supervisor
         vietnam.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        vietnam.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         vietnam.write_groups.add(partner_group)
         vietnam.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         vietnam.save()
@@ -515,14 +527,12 @@ class AppCoreConfig(AppConfig):
         # 커뮤니티
         community = models.BOARD.objects.create(
           name='커뮤니티',
-          board_type='tree',
+          board_type='board',
         )
         # display_groups - all
-        # enter_groups - all
         # write_groups - all
         # comment_groups - all
         community.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        community.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         community.write_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         community.comment_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         community.save()
@@ -534,11 +544,9 @@ class AppCoreConfig(AppConfig):
           board_type='board',
         )
         # display_groups - all
-        # enter_groups - all
         # write_groups - user, dame, partner, supervisor, sub_supervisor
         # comment_groups - user, dame, partner, supervisor, sub_supervisor
         free.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        free.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         free.write_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         free.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         free.save()
@@ -550,11 +558,9 @@ class AppCoreConfig(AppConfig):
           board_type='attendance',
         )
         # display_groups - all
-        # enter_groups - all
         # write_groups - none
         # comment_groups - user, dame, partner, supervisor, sub_supervisor
         attend.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        attend.enter_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         attend.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         attend.save()
 
@@ -565,11 +571,9 @@ class AppCoreConfig(AppConfig):
           board_type='greeting',
         )
         # display_groups - all
-        # enter_groups - all
         # write_groups - none
         # comment_groups - user, dame, partner, supervisor, sub_supervisor
         hello.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        hello.enter_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         hello.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         hello.save()
 
@@ -580,11 +584,9 @@ class AppCoreConfig(AppConfig):
           board_type='anonymous',
         )
         # display_groups - all
-        # enter_groups - all
         # write_groups - user, dame, partner, supervisor, sub_supervisor
         # comment_groups - user, dame, partner, supervisor, sub_supervisor
         anonymous.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        anonymous.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         anonymous.write_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         anonymous.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
 
@@ -595,11 +597,9 @@ class AppCoreConfig(AppConfig):
           board_type='board',
         )
         # display_groups - all
-        # enter_groups - dame, supervisor, sub_supervisor
         # write_groups - dame, supervisor, sub_supervisor
         # comment_groups - dame, supervisor, sub_supervisor
         beauty.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        beauty.enter_groups.add(dame_group, supervisor_group, subsupervisor_group)
         beauty.write_groups.add(dame_group, supervisor_group, subsupervisor_group)
         beauty.comment_groups.add(dame_group, supervisor_group, subsupervisor_group)
         beauty.save()
@@ -611,11 +611,9 @@ class AppCoreConfig(AppConfig):
           board_type='board',
         )
         # display_groups - all
-        # enter_groups - all
         # write_groups - user, dame, partner, supervisor, sub_supervisor
         # comment_groups - user, dame, partner, supervisor, sub_supervisor
         information.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        information.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         information.write_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         information.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         information.save()
@@ -627,11 +625,9 @@ class AppCoreConfig(AppConfig):
           board_type='board',
         )
         # display_groups - all
-        # enter_groups - all
         # write_groups - user, dame, partner, supervisor, sub_supervisor
         # comment_groups - user, dame, partner, supervisor, sub_supervisor
         recruitment.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        recruitment.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         recruitment.write_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         recruitment.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         recruitment.save()
@@ -643,11 +639,9 @@ class AppCoreConfig(AppConfig):
           board_type='coupon',
         )
         # display_groups - all
-        # enter_groups - all
         # write_groups - partner, supervisor, sub_supervisor
         # comment_groups - user, dame, partner, supervisor, sub_supervisor
         coupon.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        coupon.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         coupon.write_groups.add(partner_group, supervisor_group, subsupervisor_group)
         coupon.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         coupon.save()
@@ -660,11 +654,9 @@ class AppCoreConfig(AppConfig):
           level_cut=1,
         )
         # display_groups - all
-        # enter_groups - all
         # write_groups - user, dame, supervisor, sub_supervisor
         # comment_groups - user, dame, supervisor, sub_supervisor
         bronze.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        bronze.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         bronze.write_groups.add(user_group, dame_group, supervisor_group, subsupervisor_group)
         bronze.comment_groups.add(user_group, dame_group, supervisor_group, subsupervisor_group)
         bronze.save()
@@ -677,11 +669,9 @@ class AppCoreConfig(AppConfig):
           level_cut=2,
         )
         # display_groups - all
-        # enter_groups - all
         # write_groups - user, dame, supervisor, sub_supervisor
         # comment_groups - user, dame, supervisor, sub_supervisor
         silver.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        silver.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         silver.write_groups.add(user_group, dame_group, supervisor_group, subsupervisor_group)
         silver.comment_groups.add(user_group, dame_group, supervisor_group, subsupervisor_group)
         silver.save()
@@ -694,11 +684,9 @@ class AppCoreConfig(AppConfig):
           level_cut=3,
         )
         # display_groups - all
-        # enter_groups - all
         # write_groups - user, dame, supervisor, sub_supervisor
         # comment_groups - user, dame, supervisor, sub_supervisor
         gold.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        gold.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         gold.write_groups.add(user_group, dame_group, supervisor_group, subsupervisor_group)
         gold.comment_groups.add(user_group, dame_group, supervisor_group, subsupervisor_group)
         gold.save()
@@ -706,30 +694,26 @@ class AppCoreConfig(AppConfig):
         # 이벤트 게시판
         event1 = models.BOARD.objects.create(
           name='이벤트',
-          board_type='tree',
+          board_type='board',
         )
         # display_groups - all
-        # enter_groups - all
         # write_groups - all
         # comment_groups - all
         event1.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        event1.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         event1.write_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         event1.comment_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         event1.save()
 
         # 이벤트 게시판
         event2 = models.BOARD.objects.create(
-          name='이벤트',
+          name='이벤트 게시판',
           parent_board=event1,
           board_type='board',
         )
         # display_groups - all
-        # enter_groups - all
         # write_groups - supervisor, sub_supervisor
         # comment_groups - user, dame, partner, supervisor, sub_supervisor
         event2.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        event2.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         event2.write_groups.add(supervisor_group, subsupervisor_group)
         event2.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         event2.save()
@@ -741,11 +725,9 @@ class AppCoreConfig(AppConfig):
           board_type='coupon',
         )
         # display_groups - all
-        # enter_groups - all
         # write_groups - partner, supervisor, sub_supervisor
         # comment_groups - user, dame, partner, supervisor, sub_supervisor
         coupon.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        coupon.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         coupon.write_groups.add(partner_group, supervisor_group, subsupervisor_group)
         coupon.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         coupon.save()
@@ -756,11 +738,9 @@ class AppCoreConfig(AppConfig):
           board_type='review',
         )
         # display_groups - all
-        # enter_groups - all
         # write_groups - user, dame
         # comment_groups - user, dame, partner, supervisor, sub_supervisor
         review.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        review.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         review.write_groups.add(user_group, dame_group)
         review.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         review.save()
@@ -771,11 +751,9 @@ class AppCoreConfig(AppConfig):
           board_type='qna',
         )
         # display_groups - all
-        # enter_groups - all
         # write_groups - user, dame, partner, supervisor, sub_supervisor
         # comment_groups - supervisor, sub_supervisor
         qna.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        qna.enter_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         qna.write_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         qna.comment_groups.add(supervisor_group, subsupervisor_group)
         qna.save()

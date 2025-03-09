@@ -28,6 +28,19 @@
           </div>
         </div>
 
+        <!-- 쿠폰 등록 -->
+        {% if request.GET.board_ids == '35,37' %}
+        <div class="my-4">
+          <div class="form-group">
+            <label>쿠폰 등록</label> <small id="couponConfirmMessage"></small>
+            <input class="form-control" id="couponName" placeholder="쿠폰 이름을 입력해주세요." oninput="checkCoupon(this.value)">
+            <div class="alert alert-info small mt-2">
+              <i class="fi fi-rr-info"></i> 같은 이름의 쿠폰이 여러개인 경우, 같은 이름의 모든 쿠폰이 등록됩니다.
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
         <!-- wysiwig 에디터 -->
         <div class="my-4">
           <div class="form-group">
@@ -51,6 +64,47 @@
 
 </main>
 <script>
+
+  // 쿠폰 확인
+  const couponConfirmMessage = document.getElementById('couponConfirmMessage');
+  var couponValid = false;
+  checkCoupon = async (couponName) => {
+    if (couponName.length < 2) {
+      couponConfirmMessage.classList.add('text-danger');
+      couponConfirmMessage.classList.remove('text-success');
+      couponConfirmMessage.innerHTML = '쿠폰 이름을 2글자 이상 입력해주세요.';
+      couponValid = false;
+      return;
+    }
+
+    // 쿠폰 검색
+    var data = await fetch(`/api/coupon?name=${couponName}`)
+    .then(res => res.json())
+    .then(data => {
+        console.log(data);
+        return data.data;
+    });
+
+    // 쿠폰 검색 결과 확인
+    if(data.length == 0) {
+        couponConfirmMessage.innerHTML = '존재하지 않는 쿠폰 이름입니다.';
+        couponConfirmMessage.classList.add('text-danger');
+        couponConfirmMessage.classList.remove('text-success');
+        couponValid = false;
+        return;
+    }
+    if (data[0]['name'] == couponName && '{{account.id}}' == data[0]['create_account']['id']) {
+        couponConfirmMessage.innerHTML = '유효한 쿠폰 이름입니다.';
+        couponConfirmMessage.classList.add('text-success');
+        couponConfirmMessage.classList.remove('text-danger');
+        couponValid = true;
+        return;
+    }
+    couponConfirmMessage.innerHTML = '존재하지 않는 쿠폰 이름입니다.';
+    couponConfirmMessage.classList.add('text-danger');
+    couponConfirmMessage.classList.remove('text-success');
+    couponValid = false;
+  }
 
   // 대표 이미지 추가
   document.getElementById('imageInput').addEventListener('change', async (e) => {
@@ -89,6 +143,9 @@
     formData.append('review_post_id', '{{ request.GET.review_post_id }}');
     if (document.getElementById('imageInput')) {
       formData.append('image', document.getElementById('imageInput').files[0]); // 대표 이미지
+    }
+    if (couponValid) {
+      formData.append('coupon_name', document.getElementById('couponName').value);
     }
 
     await fetch('/post/write_post?board_ids={{board_ids}}', {
