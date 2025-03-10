@@ -44,7 +44,7 @@
                     <div class="{% if message.image %}col-6{% else %}col-12{% endif %}">
                         {% if request.GET.tab == 'outboxTab' %}
                         <p class="text-black-50 mb-1 small">
-                            To. <small>{{message.to_account.nickname}}</small>
+                            To. <small>{{message.receive_account.nickname}}</small>
                         </p>
                         {% else %}
                         <p class="text-black-50 mb-1 small">

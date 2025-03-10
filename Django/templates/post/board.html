@@ -38,9 +38,11 @@
         {% include 'components/main/search_bar.html' %}
       </div>
       <div style="display: inline-block; text-align: right;">
+        {% if writable and account.status == 'active' %}
         <a class="btn btn-primary" href="/post/write_post?board_ids={{request.GET.board_ids}}">
           <i class="fi fi-rr-edit"></i> 글 작성
         </a>
+        {% endif %}
       </div>
     </div>
 

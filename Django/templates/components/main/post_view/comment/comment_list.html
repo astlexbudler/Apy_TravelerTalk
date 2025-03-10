@@ -25,18 +25,96 @@
             </p>
         </div>
         <div style="display: inline-block; text-align: right;">
-            {% if account.id == comment.author.id or 'post' in account.supervisor_permissions %}
-            <button class="btn
-                {% if account.id == comment.author.id %}btn-danger{% else %}btn-outline-danger{% endif %} small p-1 px-2" onclick="deleteComment('{{comment.id}}')">
-                <i class="fi fi-rr-trash"></i> 삭제
-            </button>
+            {% if account.id == comment.author.id or 'post' in account.subsupervisor_permissions %}
+            {% if comment.hide %}
+            <a href="javascript: hideComment('{{comment.id}}', false)" class="text-black-50 me-2">
+                <i class="fi fi-rr-eye-crossed"></i>
+            </a>
+            {% else %}
+            <a href="javascript: hideComment('{{comment.id}}', true)" class="text-black-50 me-2">
+                <i class="fi fi-rr-eye"></i>
+            </a>
+            {% endif %}
+            <a href="javascript: deleteComment('{{comment.id}}')" class="text-danger">
+                <i class="fi fi-rr-trash"></i>
+            </a>
             {% endif %}
         </div>
     </div>
     <p class="small">
+        {% if comment.hide and comment.author.id != account.id and 'post' not in account.subsupervisor_permissions and account.id == post.author.id %}
+        <span class="text-black-50">숨김 처리된 댓글입니다.</span>
+        {% else %}
         {{ comment.content }}
+        {% endif %}
     </p>
-    <p class="text-black-50 m-0" style="font-size: 12px;">
-        {{ comment.created_at }}
-    </p>
+    <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+        <div style="display: inline-block; text-align: left;">
+            <p class="text-black-50 m-0" style="font-size: 12px;">
+                {{ comment.created_at }}
+            </p>
+        </div>
+        <div style="display: inline-block; text-align: right;">
+            <a class="text-black-50" href="javascript: document.getElementById('subcommentForm{{comment.id}}').classList.toggle('d-none')">
+                <i class="fi fi-rr-arrow-turn-down-right"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- 대댓글 작성 폼 -->
+    <div class="pt-3 my-3 border-bottom ms-5">
+        <div class="d-none" id="subcommentForm{{comment.id}}">
+            <textarea id="commentInput{{comment.id}}" class="form-control"
+                onkeyup="event.keyCode == 13 ? writeComment('{{post.id}}', document.getElementById('commentInput{{comment.id}}').value, '{{comment.id}}') : null"
+                placeholder="답글을 입력해주세요."></textarea>
+            <button class="btn btn-primary mt-3 mb-5 btn-sm small"
+                onclick="writeComment('{{post.id}}', document.getElementById('commentInput{{comment.id}}').value, '{{comment.id}}')">
+                <i class="fi fi-rr-edit"></i> 답글 작성
+            </button>
+        </div>
+    </div>
+
+    <!-- 대댓글 목록 -->
+    {% if comment.subcomments %}
+    <ul class="list-unstyled ms-5">
+        {% for comment in comment.subcomments %}
+        <li class="border-bottom pb-3 mb-3">
+            <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+                <div style="display: inline-block; text-align: left;">
+                    <p class="text-black mb-1">
+                        <span class="me-2">{{comment.author.nickname}}</span>{% include 'components/other/level_badge.html' with level=comment.author.level %}
+                    </p>
+                </div>
+                <div style="display: inline-block; text-align: right;">
+                    {% if account.id == comment.author.id or 'post' in account.subsupervisor_permissions %}
+                    {% if comment.hide %}
+                    <a href="javascript: hideComment('{{comment.id}}', false)" class="text-black-50 me-2">
+                        <i class="fi fi-rr-eye-crossed"></i>
+                    </a>
+                    {% else %}
+                    <a href="javascript: hideComment('{{comment.id}}', true)" class="text-black-50 me-2">
+                        <i class="fi fi-rr-eye"></i>
+                    </a>
+                    {% endif %}
+                    <a href="javascript: deleteComment('{{comment.id}}')" class="text-danger">
+                        <i class="fi fi-rr-trash"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            <p class="small">
+                {% if comment.hide and comment.author.id != account.id and 'post' not in account.subsupervisor_permissions and account.id == post.author.id %}
+                <span class="text-black-50">숨김 처리된 댓글입니다.</span>
+                {% else %}
+                {{ comment.content }}
+                {% endif %}
+            </p>
+            <p class="text-black-50 m-0" style="font-size: 12px;">
+                {{ comment.created_at }}
+            </p>
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
 </li>

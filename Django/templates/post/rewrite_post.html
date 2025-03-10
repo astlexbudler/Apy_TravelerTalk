@@ -1,78 +1,113 @@
-{% extends 'base/main_base.html' %}
+{% extends 'base/base.html' %}
 {% block content %}
-<!-- 왼쪽 사이드바 -->
-<aside class="d-none d-lg-block" style="width: 320px;"></aside>
+<main class="container">
 
-<!-- 중앙 섹션 -->
-<section class="main-section" style="flex: 1; min-height: 100vh;">
+  <div class="main-section">
 
-  <!-- 제목 -->
-  <div class="mt-4 mb-5">
-    {% include 'parts/goback.html' %}
-    <h5 class="mt-5">
-      게시글 수정
-    </h5>
-    <p class="small">
-      {% for board in post.boards %}
-      {{ board.name }} {% if forloop.counter < post.boards|length %} &gt; {% endif %}
-      {% endfor %}
-    </p>
-  </div>
+    <div style="min-height: calc(100vh - 160px);">
 
-  <!-- 대표 이미지 -->
-  <div class="my-4">
-    <p>
-      썸네일 등록
-    </p>
-    <div id="imagePreview" class="mb-2 row">
-      {% if post.image != '/media/default.png' %}
-      <div class="mb-2 me-2 shadow-sm text-end p-2" style="min-width: 150px; width: 12vw; background: url('{{post.image}}') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw;"></div>
-      {% endif %}
+      <!-- 페이지 타이틀 -->
+      {% include 'components/main/breadcrumbs.html' %}
+      {% with subtitle=board.name %}
+      {% include 'components/main/title_section.html' with title='게시글 정보 수정' %}
+      {% endwith %}
+
+      <!-- 게시글 작성 폼 -->
+      <div class="mt-4">
+
+        <!-- 대표 이미지 -->
+        <div class="my-4">
+          <div>
+            <label>
+              썸네일 이미지
+            </label>
+            <div id="imageInputPreview" class="mb-3">
+              {% if post.image %}
+              <div class="mb-2 me-2 shadow-sm text-end p-2" style="min-width: 150px; width: 12vw; background: url('{{post.image}}') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw; cursor: pointer;" onclick="deleteImage(this)"></div>
+              {% endif %}
+            </div>
+            <a href="javascript: document.getElementById('imageInput').click();" class="btn btn-success btn-sm small">
+                <i class="fi fi-rr-picture"></i> 이미지 등록
+            </a>
+            <input type="file" class="d-none" id="imageInput" multiple name="image">
+        </div>
+        <script>
+            // 대표 이미지 추가
+            document.getElementById('imageInput').addEventListener('change', async (e) => {
+                const files = e.target.files;
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const imagePath = e.target.result;
+                        document.getElementById('imageInputPreview').innerHTML = `
+                <div class="mb-2 me-2 shadow-sm text-end p-2" style="min-width: 150px; width: 12vw; background: url('${imagePath}') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw; cursor: pointer;" onclick="deleteImage(this)"></div>
+                `;
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+            // 이미지 삭제
+            deleteImage = (element) => {
+                element.remove();
+                document.getElementById('imageInput').value = '';
+            }
+        </script>
+        </div>
+
+        <!-- 제목 -->
+        <div class="my-4">
+          <div class="form-group">
+            <label>제목</label>
+            <input class="form-control" id="title" placeholder="제목을 입력해 주세요." value="{{ post.title }}">
+          </div>
+        </div>
+
+        <!-- wysiwig 에디터 -->
+        <div class="my-4">
+          <div class="form-group">
+            <label>내용 편집기</label>
+            <textarea id="content">
+              {{ post.content|safe }}
+            </textarea>
+            <script>
+                // 아래 기능만 메뉴에 활성화
+                // 폰트 사이즈, 볼드, 이탤릭, 밑줄, 정렬, 테이블, 이미지, 구분선
+                $(document).ready(function () {
+                    $('#content').summernote({
+                        tabsize: 2,
+                        height: 500,
+                        toolbar: [
+                            ['fontsize', ['fontsize']],
+                            ['font', ['bold', 'italic', 'underline', 'clear']],
+                            ['para', ['paragraph']],
+                            ['table', ['table']],
+                            ['insert', ['hr', 'picture']],
+                        ]
+                    });
+                });
+            </script>
+          </div>
+        </div>
+
+        <!-- 작성하기 -->
+        <div class="my-5 text-end">
+          <a class="btn btn-primary me-2" href="javascript: rewritePost()">
+            <i class="fi fi-rr-edit"></i> 글 수정
+          </a>
+          <a class="btn btn-danger" href="javascript: deletePost()">
+            <i class="fi fi-rr-trash"></i> 글 삭제
+          </a>
+        </div>
+
+      </div>
+
     </div>
-    <a href="javascript: document.getElementById('imageInput').click();" class="btn btn-success">
-      이미지 추가
-    </a>
-    <input type="file" class="d-none" id="imageInput" multiple>
+
   </div>
 
-  <!-- 제목 -->
-  <div class="form-group mt-2 mb-3">
-    <label>제목</label>
-    <input type="text" id="postTitle" class="form-control" placeholder="제목을 입력해주세요" value="{{ post.title }}">
-  </div>
-
-  <div class="form-group mt-2 mb-3">
-    <label>내용</label>
-    <div id="postContent"></div>
-    <div class="d-none" id="viewer"></div>
-  </div>
-
-  <div class="my-5">
-    <a class="btn btn-primary" href="javascript: writePost()">
-      작성하기 <i class="fi fi-rr-edit"></i>
-    </a>
-  </div>
-
-</section>
-
-<!-- 오른쪽 사이드바 -->
-<aside class="d-none d-lg-block" style="width: 320px;"></aside>
-
+</main>
 <script>
-
-  window.onload = () => {
-    console.log(`Window loaded at ${getNowDatetimeString()}`);
-  }
-
-  const editor = new toastui.Editor({
-    el: document.querySelector('#postContent'),
-    height: '500px',
-    initialEditType: 'wysiwyg',
-    initialValue: `{{ post.content|safe }}`,
-    previewStyle: 'vertical',
-    hideModeSwitch: true,
-    language: 'ko-KR'
-  });
 
   // 대표 이미지 추가
   document.getElementById('imageInput').addEventListener('change', async (e) => {
@@ -91,9 +126,10 @@
     }
   });
 
-  writePost = async () => {
-    const title = document.querySelector('#postTitle').value;
-    const content = editor.getMarkdown();
+  // 게시글 수정
+  rewritePost = async () => {
+    const title = document.querySelector('#title').value;
+    const content = $('#content').summernote('code');
 
     if (title.length < 2) {
       showAlert('제목 오류', '제목이 너무 짧습니다. 2자 이상 작성해주세요.', 'error');
@@ -111,23 +147,73 @@
       formData.append('image', document.getElementById('imageInput').files[0]); // 대표 이미지
     }
 
-    await fetch('/post/rewrite_post?post_id={{ post.id }}', {
+    await fetch('/post/rewrite_post?post_id={{ request.GET.post_id }}&board_ids={{ request.GET.board_ids }}', {
       method: 'POST',
       headers: {
         'X-CSRFToken': csrftoken
       },
       body: formData,
     })
-    .then(response => response.json())
-    .then(async (data) => {
-      if (data.result == 'success') {
-        await showAlert('게시글 수정 완료', '게시글이 성공적으로 작성되었습니다.', 'success');
-        window.location.href = '/post/post_view?post_id=' + data.post_id;
-      } else {
-        showAlert('게시글 수정 실패', '게시글 작성에 실패했습니다. 잠시 후 다시 시도해주세요.', 'error');
-      }
-    });
+      .then(response => response.json())
+      .then(async (data) => {
+        if (data.result == 'success') {
+          await showAlert('게시글 수정 완료', '게시글이 성공적으로 수정되었습니다.', 'success');
+          window.location.href = '/post/post_view?post_id=' + data.post_id + '&board_ids={{ request.GET.board_ids }}';
+        } else {
+          showAlert('게시글 수정 실패', '게시글 수정 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error');
+        }
+      });
   }
+
+  // 게시글 삭제
+  deletePost = async () => {
+    var isDelete = await Swal.fire({
+      html: `
+      <div>
+        <div class="text-center py-4">
+          <h1 class="text-dark">게시글 삭제</h1>
+        </div>
+        <diV class="text-center">
+          <p class="text-black-50">
+            게시글을 삭제하시겠습니까? 삭제된 게시글은 복구할 수 없습니다.
+          </p>
+        </div>
+      </div>`,
+      icon: `warning`,
+      showConfirmButton: true,
+      confirmButtonText: `삭제하기`,
+      confirmButtonColor: `#f25767`,
+      showCancelButton: true,
+      cancelButtonText: `취소`,
+      cancelButtonColor: `#929ea8`
+    })
+      .then((result) => {
+        if (result.isConfirmed) {
+          return true;
+        }
+        return false;
+      });
+    if (!isDelete) {
+      return;
+    }
+
+    await fetch('/api/post?post_id={{ request.GET.post_id }}', {
+      method: 'DELETE',
+      headers: {
+        'X-CSRFToken': csrftoken
+      }
+    })
+      .then(response => response.json())
+      .then(async (data) => {
+        if (data.result == 'success') {
+          await showAlert('게시글 삭제 완료', '게시글이 성공적으로 삭제되었습니다.', 'success');
+          window.location.href = '/post?board_ids={{ request.GET.board_ids }}';
+        } else {
+          showAlert('게시글 삭제 실패', '게시글 삭제 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error');
+        }
+      });
+  }
+
 
 </script>
 

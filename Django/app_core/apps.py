@@ -632,20 +632,6 @@ class AppCoreConfig(AppConfig):
         recruitment.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
         recruitment.save()
 
-        # 쿠폰 거래 게시판
-        coupon = models.BOARD.objects.create(
-          parent_board=community,
-          name='쿠폰 거래',
-          board_type='coupon',
-        )
-        # display_groups - all
-        # write_groups - partner, supervisor, sub_supervisor
-        # comment_groups - user, dame, partner, supervisor, sub_supervisor
-        coupon.display_groups.add(guest_group, user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        coupon.write_groups.add(partner_group, supervisor_group, subsupervisor_group)
-        coupon.comment_groups.add(user_group, dame_group, partner_group, supervisor_group, subsupervisor_group)
-        coupon.save()
-
         # 브론즈 게시판
         bronze = models.BOARD.objects.create(
           parent_board=community,

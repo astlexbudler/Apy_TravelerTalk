@@ -994,7 +994,7 @@ def travel(request):
     'posts': search_posts, # 검색된 게시글 정보
     'last_page': last_page, # 페이지 처리를 위해 필요한 정보
     'status': status, # 여행지 게시글 상태별 통계 데이터
-    'boards': boards, # 게시판 정보
+    'travel_boards': boards, # 게시판 정보
     'categories': categories, # 카테고리 정보
   })
 

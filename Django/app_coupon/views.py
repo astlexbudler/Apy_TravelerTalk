@@ -32,5 +32,6 @@ def index(request):
     'boards': boards, # 게시판 정보
 
     'coupons': coupons, # 쿠폰 정보
+    'profile': contexts['account'], # 프로필 정보
     'last_page': last_page, # page 처리 작업에 사용(반드시 필요)
   })

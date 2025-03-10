@@ -16,12 +16,13 @@
 
           <!-- 게시글 정보 -->
           <div style="display: inline-block; text-align: left;">
+            <p class="small text-black-50 mb-2">
+              {% for board in post.boards %}
+              {{ board.name }} {% if forloop.counter < post.boards|length %} &gt; {% endif %} {% endfor %}
+            </p>
             <h5 class="text-black-60">
               {{post.title}}
             </h5>
-            <p class="small text-black-50">
-              {% for board in post.boards %}
-              {{ board.name }} {% if forloop.counter < post.boards|length %} &gt; {% endif %} {% endfor %} </p>
           </div>
 
           <!-- 게시글 메뉴 -->
@@ -38,7 +39,7 @@
               </span>
             </p>
             {% if account.id == post.author.id or 'post' in account.supervisor_permissions %}
-            <a class="btn btn-success btn-sm small me-2" href="#">
+            <a class="btn btn-success btn-sm small me-2" href="/post/rewrite_post?post_id={{ post.id }}&board_ids={{ request.GET.board_ids }}">
               <i class="fi fi-rr-edit"></i> 게시글 수정
             </a>
             <a class="btn btn-danger btn-sm small" href="javascript: deletePost();">
@@ -57,6 +58,25 @@
             {% endif %}
           </div>
         </div>
+        <div style="display: flex; justify-content: space-between; white-space: nowrap;" class="mt-4">
+          <div style="display: inline-block; text-align: left;">
+            <p class="text-black">
+              {% if board.board_type == 'anonymous' %}
+              익명 사용자
+              {% else %}
+              <span class="me-2">{{post.author.nickname}}</span>
+              {% if post.author.account_type in 'user,dame' %}
+              {% include 'components/other/level_badge.html' with level=post.author.level %}
+              {% endif %}
+              {% endif %}
+            </p>
+          </div>
+          <div style="display: inline-block; text-align: right;">
+              <small class="text-black-50">
+                {{post.created_at}}
+              </small>
+          </div>
+      </div>
       </div>
 
       <!-- 게시글 내용 -->
@@ -105,9 +125,13 @@
 
       <!-- 댓글 작성 폼 -->
       {% if board.board_type == 'qna' %}
+      {% if commentable %}
       {% with commentable=true comment_form_title='답변' placeholder='답변을 작성해주세요.' button_text='<i class="fi fi-rr-edit"></i> 답변 작성' commentable=commentable %}
       {% include 'components/main/post_view/comment/comment_form.html' %}
       {% endwith %}
+      {% else %}
+      <div class="border-bottom my-4"></div>
+      {% endif %}
       {% else %}
       {% with commentable=true comment_form_title='댓글' placeholder='댓글을 작성해주세요.' button_text='<i class="fi fi-rr-edit"></i> 댓글 작성' commentable=commentable %}
       {% include 'components/main/post_view/comment/comment_form.html' %}

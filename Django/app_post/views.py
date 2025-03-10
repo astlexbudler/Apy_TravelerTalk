@@ -74,7 +74,10 @@ def attendance(request):
 
   # 출석 체크 게시플 가져오기
   today = datetime.datetime.now().strftime('%Y-%m-%d')
-  posts, last_page = daos.select_posts(title='attendance:' + today, board_id=board['id'])
+  posts = models.POST.objects.filter(
+    title__contains='attendance:' + today,
+    boards__id__in=[board['id']],
+  ).first()
   if not posts: # 만약 오늘의 출석체크 게시긇이 없다면, 생성
     post = daos.create_post(
       title='attendance:' + today,
@@ -83,7 +86,7 @@ def attendance(request):
     )
     post_id = post['pk']
   else:
-    post_id = posts[0]['id']
+    post_id = posts.id
 
   # 댓글 가져오기
   comments = daos.select_comments(post_id)
@@ -142,15 +145,19 @@ def greeting(request):
     return redirect('/?redirect_message=not_found_board') # 메인 페이지로 이동
 
   # 가입인사 게시글 가져오기
-  posts, last_page = daos.select_posts(title='greeting', board_id=board['id'])
-  if not posts: # 가입인사 게시글이 없는 경우
+  post = models.POST.objects.filter(
+    title='greeting',
+    boards__id__in=[board['id']],
+  ).first()
+  if not post: # 가입인사 게시글이 없는 경우
     post = daos.create_post(
       title='greeting',
+      content='',
       board_ids=board_ids,
     )
     post_id = post['pk']
   else:
-    post_id = posts[0]['id']
+    post_id = post.id
 
   # 가입인사 댓글 가져오기
   is_greeted = False
@@ -283,7 +290,10 @@ def travel(request):
   search = request.GET.get('search', '')
   category_ids = request.GET.get('category_ids')
   board = daos.select_board(str(board_ids).split(',')[-1]) # 마지막 게시판 정보 가져오기
-  category = daos.select_category(str(category_ids).split(',')[-1]) # 마지막 카테고리 정보 가져오기
+  if category_ids:
+    category = daos.select_category(str(category_ids).split(',')[-1]) # 마지막 카테고리 정보 가져오기
+  else:
+    category = None
 
   # 게시글 가져오기
   posts, last_page = daos.select_posts(
@@ -317,14 +327,14 @@ def write_post(request):
   # 데이터 가져오기
   board_ids = request.GET.get('board_ids') # 게시판 아이디
   related_post_id = request.GET.get('related_post_id') # 후기 게시글 대상 또는 쿠폰 게시글 대상 게시글 아이디
-  board = str(board_ids).split(',')[-1] # 마지막 게시판 정보 가져오기
+  board = daos.select_board(str(board_ids).split(',')[-1]) # 마지막 게시판 정보 가져오기
 
   # 리다이렉트
   if not request.user.is_authenticated: # 로그인이 안된 경우
     return redirect('/?redirect_message=need_login') # 로그인 페이지로 이동
   if not board_ids: # 게시판 아이디가 없는 경우
     return redirect('/?redirect_message=not_found_board') # 게시판이 없는 경우, 메인 페이지로 이동
-  if contexts['account']['level']['level'] < board['level_cut']: # 레벨 제한 확인
+  if int(contexts['account']['level']['level']) < int(board['level_cut']): # 레벨 제한 확인
     return redirect('/?redirect_message=not_enough_level') # 레벨이 부족한 경우, 메인 페이지로 이동
 
   # 게시글 작성 처리 요청
@@ -390,7 +400,9 @@ def rewrite_post(request):
 
   # 데이터 가져오기
   post_id = request.GET.get('post_id')
+  board_ids = request.GET.get('board_ids')
   post = daos.select_post(post_id)
+  board = daos.select_board(str(board_ids).split(',')[-1]) # 마지막 게시판 정보 가져오기
 
   # 리다이렉트
   if not request.user.is_authenticated: # 로그인이 안된 경우
@@ -417,7 +429,7 @@ def rewrite_post(request):
       image=image,
     )
     # 사용자 활동 기록 추가
-    if post['boards'][-1]['board_type'] == 'review':
+    if board['board_type'] == 'review':
       daos.create_account_activity(
         account_id=request.user.id,
         message=f'[후기] {title} 후기를 수정하였습니다.',
@@ -427,7 +439,7 @@ def rewrite_post(request):
         account_id=request.user.id,
         message=f'[게시글] {title} 게시글을 수정하였습니다.',
       )
-    return JsonResponse({'result': 'success', 'post_id': post.id})
+    return JsonResponse({'result': 'success', 'post_id': post['pk']})
 
   return render(request, 'post/rewrite_post.html', {
     **contexts, # 기본 컨텍스트 정보
@@ -452,7 +464,7 @@ def post_view(request):
   if post['boards'][-1]['board_type'] == 'travel': # 여행지 게시판인 경우
     return redirect('/post/travel_view?post_id=' + post_id + '&board_ids=' + post['board_ids'])
   if post['boards'][-1]['level_cut'] > contexts['account']['level']['level']: # 레벨 제한 확인
-    return redirect('/?redirect_message=not_enough_level') # 레벨이 부족한 경우, 메인 페이지로 이동
+    return redirect('/?redirect_mssage=not_enough_level') # 레벨이 부족한 경우, 메인 페이지로 이동
 
   # 배너
   banners = daos.select_banners('post')
@@ -483,7 +495,7 @@ def post_view(request):
     'boards': boards, # 게시판 정보
 
     'board': post['boards'][-1], # 게시판 정보
-    'category': post['place_info']['categories'][-1], # 카테고리 정보
+    'category': post['place_info']['categories'][-1] if post['place_info'] else None, # 카테고리 정보
     'post': post, # 게시글 정보
     'comments': comments, # 댓글 정보
     'commentable': commentable, # 댓글 작성 가능 여부

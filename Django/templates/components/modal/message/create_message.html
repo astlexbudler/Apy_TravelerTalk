@@ -32,7 +32,7 @@
                     </div>
 
                     <!-- 쪽지 발송 대상 검색 -->
-                    <div class="form-group mt-2 mb-2">
+                    <div class="form-group mt-2 mb-2 {% if account.account_type not in 'supervisor,sub_supervisor,partner' %}d-none{% endif %}">
                         <label>받는 사람</label> <small id="receiverConfirmMessage"></small>
                         <div class="form-group position-relative w-100" style="display: inline-block;" onkeyup="if(event.keyCode == 13) { addUser(); }">
                             <input class="form-control" placeholder="사용자 아이디 또는 닉네임을 입력해주세요." id="accountSearchInput">
@@ -54,9 +54,27 @@
                     {% endif %}
 
                     <!-- 쪽지 제목 -->
-                    <div class="form-group mb-4">
+                    <div class="form-group mb-2">
                         <label>제목</label>
                         <input class="form-control" placeholder="쪽지 제목을 입력하세요." id="messageTitle" name="title">
+                    </div>
+
+                    <!-- 쪽지 구분 -->
+                    <div class="form-group mb-4">
+                        <label>쪽지 구분</label>
+                        <select class="form-select" id="messageType" name="messageType">
+                            {% if account.account_type in 'user,dame' %}
+                            <option value="user_question" selected>사용자 문의</option>
+                            <option value="request_coupon">쿠폰 요청</option>
+                            {% endif %}
+                            {% if account.account_type in 'partner' %}
+                            <option value="partner_question" selected>파트너 문의</option>
+                            <option value="request_ad">광고 요청</option>
+                            {% endif %}
+                            {% if account.account_type in 'supervisor,sub_supervisor' %}
+                            <option value="supervisor" selected>관리자 쪽지</option>
+                            {% endif %}
+                        </select>
                     </div>
 
                     <!-- 쪽지 내용 -->
@@ -282,6 +300,7 @@
             if (document.getElementById('couponCode')) {
                 formData.append('coupon_code', document.getElementById('couponCode').value);
             }
+            formData.append('message_type', document.getElementById('messageType').value);
             await fetch('/api/message', {
                 method: 'POST',
                 headers: {

@@ -59,38 +59,6 @@
 
   });
 
-  writeComment = async () => {
-    const comment = document.getElementById('commentInput').value;
-    if (comment == '') {
-      await showAlert('메세지 작성', '인사 한마디를 작성해주세요.', 'error');
-      return;
-    }
-
-    // 댓글 작성 요청
-    var formdata = new FormData();
-    formdata.append('post_id', '{{ post.id }}');
-    formdata.append('content', comment);
-    var success = await fetch('/api/comment', {
-      method: 'POST',
-      headers: {
-        'X-CSRFToken': csrftoken
-      },
-      body: formdata
-    })
-      .then((response) => response.json())
-      .then(async (data) => {
-        console.log(data); // fetch 요청 결과 출력
-        return data.success;
-      });
-
-    if (success) {
-      await showAlert('메세지 작성', '인사 메세지가 작성되었습니다.', 'success');
-      location.reload();
-    } else {
-      await showAlert('메세지 작성', '인사 메세지 작성에 실패했습니다.', 'error');
-    }
-  }
-
 </script>
 
 {% endblock %}

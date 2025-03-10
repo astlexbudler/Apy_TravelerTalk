@@ -29,7 +29,7 @@
 </div>
 <script>
     // 댓글 작성 함수
-    writeComment = async (post_id, content) => {
+    writeComment = async (post_id, content, parent_id=null) => {
 
         // 사용자 확인. 로그인 여부만 확인
         // 그 외 권한이나 계정 상태는 서버에서 확인
@@ -47,8 +47,12 @@
 
         // 댓글 작성 요청
         var formdata = new FormData();
-        formdata.append('post_id', post_id);
         formdata.append('content', content);
+        if (parent_id) {
+            formdata.append('parent_comment_id', parent_id);
+        } else {
+            formdata.append('post_id', post_id);
+        }
         var success = await fetch('/api/comment', {
             method: 'POST',
             headers: {
@@ -71,6 +75,43 @@
             await showAlert('작성 실패', '댓글을 작성할 수 없는 게시글이거나, 댓글 작성 권한이 없습니다.', 'error');
             return;
         }
+    }
+
+    // 댓글 숨기기
+    hideComment = async (comment_id, hide) => {
+
+        // formData
+        var formdata = new FormData();
+        formdata.append('comment_id', comment_id);
+        formdata.append('hide', hide);
+
+        var success = await fetch('/api/comment?comment_id=' + comment_id, {
+            method: 'PATCH',
+            body: formdata,
+            headers: {
+                'X-CSRFToken': csrftoken
+            },
+        })
+        .then((response) => response.json())
+        .then(async (data) => {
+            console.log(data); // fetch 요청 결과 출력
+            return data['success'];
+        });
+
+        // 댓글 숨김 결과에 따른 분기 처리
+        if (success) { // 댓글 숨김 성공
+            if (hide) {
+                await showAlert('숨김 성공', '댓글이 숨김 처리되었습니다.', 'success');
+            } else {
+                await showAlert('숨김 해제 성공', '댓글이 숨김 해제되었습니다.', 'success');
+            }
+            location.reload();
+            return;
+        } else {
+            await showAlert('숨김 실패', '댓글 숨김 권한이 없습니다.', 'error');
+            return;
+        }
+
     }
 
     // 댓글 삭제 함수

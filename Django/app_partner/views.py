@@ -15,6 +15,8 @@ def login(request):
     return render(request, 'login.html')
   if account['account_type'] != 'partner':
     return render(request, 'login.html')
+  if account['status'] == 'pending':
+    return render(request, 'login.html')
 
   return redirect(settings.PARTNER_URL + '/partner/partner')
 
@@ -29,7 +31,7 @@ def index(request):
       'site_logo': daos.select_server_setting('site_logo'),
       'service_name': daos.select_server_setting('service_name'),
   }
-  if account['account_type'] != 'partner':
+  if account['account_type'] != 'partner' or account['status'] == 'pending':
     return redirect(settings.PARTNER_URL)
 
   # 게시글 가져오기
@@ -103,7 +105,7 @@ def write_post(request):
       'site_logo': daos.select_server_setting('site_logo'),
       'service_name': daos.select_server_setting('service_name'),
   }
-  if account['account_type'] != 'partner':
+  if account['account_type'] != 'partner' or account['status'] == 'pending':
     return redirect(settings.PARTNER_URL)
 
   # 게시글 작성 요청
@@ -167,7 +169,7 @@ def rewrite_post(request):
       'site_logo': daos.select_server_setting('site_logo'),
       'service_name': daos.select_server_setting('service_name'),
   }
-  if account['account_type'] != 'partner':
+  if account['account_type'] != 'partner' or account['status'] == 'pending':
     return redirect(settings.PARTNER_URL)
 
   # 데이터 가져오기
@@ -233,7 +235,7 @@ def coupon(request):
       'site_logo': daos.select_server_setting('site_logo'),
       'service_name': daos.select_server_setting('service_name'),
   }
-  if account['account_type'] != 'partner':
+  if account['account_type'] != 'partner' or account['status'] == 'pending':
     return redirect(settings.PARTNER_URL)
 
   # 데이터 가져오기
@@ -279,7 +281,7 @@ def profile(request):
       'site_logo': daos.select_server_setting('site_logo'),
       'service_name': daos.select_server_setting('service_name'),
   }
-  if account['account_type'] != 'partner':
+  if account['account_type'] != 'partner' or account['status'] == 'pending':
     return redirect(settings.PARTNER_URL)
 
   # 데이터 가져오기
@@ -305,7 +307,7 @@ def activity(request):
       'site_logo': daos.select_server_setting('site_logo'),
       'service_name': daos.select_server_setting('service_name'),
   }
-  if account['account_type'] != 'partner':
+  if account['account_type'] != 'partner' or account['status'] == 'pending':
     return redirect(settings.PARTNER_URL)
 
   # 데이터 가져오기

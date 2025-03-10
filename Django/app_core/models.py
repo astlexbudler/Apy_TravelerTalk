@@ -18,7 +18,7 @@ import os
 # UPLOAD: 파일 업로드 테이블
 # BANNER: 배너 테이블
 # STATISTIC: 통계 테이블
-# BLOCKED_IP: 차단 IP 테이블
+# Blocked_IP: 차단 IP 테이블
 
 # TREE
 # BOARD: 게시판 트리
@@ -27,7 +27,7 @@ import os
 def upload_to(instance, filename):  # 파일 업로드 경로 및 파일명 설정
     _, ext = os.path.splitext(filename)
     new_filename = f"{datetime.now().strftime('%Y%m%d%H%M%S%f')}{ext}" # 현재 시간을 이용한 파일명 생성
-    return os.path.join("/", new_filename)
+    return os.path.join(new_filename)
 
 ####################
 # ACCOUNT: 계정 테이블
@@ -44,7 +44,7 @@ class ACCOUNT(AbstractUser):
   # date_joined = models.DateTimeField(auto_now_add=True)
   # last_login = models.DateTimeField(auto_now=True)
   # groups = models.ManyToManyField(Group) # 그룹(user, dame, partner, subsupervisor, supervisor 중 하나)
-  status = models.CharField(max_length=20, help_text='active=활성, pending=승인 대기, deleted=삭제, blocked=정지')
+  status = models.CharField(max_length=20, help_text='active=활성, pending=승인 대기, deleted=삭제, bhide=정지')
   note = models.TextField(blank=True, help_text='관리자 메모')
   mileage = models.IntegerField(help_text='쿠폰 마일리지', default=0)
   exp = models.IntegerField(help_text='레벨업 경험치', default=0)
@@ -85,11 +85,11 @@ class POST(models.Model):
   include_coupons = models.ManyToManyField('COUPON', help_text='포함된 쿠폰', related_name='post_include_coupons')
   title = models.CharField(max_length=100, help_text='제목')
   image = models.FileField(upload_to=upload_to, null=True, help_text='대표 이미지')
-  content = models.TextField(help_text='내용(ToastfulEditor)', null=True)
+  content = models.TextField(help_text='내용', null=True)
   view_count = models.IntegerField(help_text='조회수', default=0)
   like_count = models.IntegerField(help_text='좋아요 수', default=0)
   search_weight = models.IntegerField(help_text='검색 가중치', default=0)
-  locked = models.BooleanField(help_text='잠금 여부', default=False)
+  hide = models.BooleanField(help_text='숨김 여부', default=False)
   created_at = models.DateTimeField(auto_now_add=True, help_text='작성 일시')
 
 # PLACE_INFO: 여행지 정보 테이블
@@ -106,11 +106,11 @@ class PLACE_INFO(models.Model):
 
 # COMMENT: 댓글 테이블
 class COMMENT(models.Model):
-  post = models.ForeignKey('POST', on_delete=models.CASCADE, help_text='게시글', related_name='comment_post')
+  post = models.ForeignKey('POST', on_delete=models.CASCADE, help_text='게시글', related_name='comment_post', null=True)
   parent_comment = models.ForeignKey('self', on_delete=models.CASCADE, null=True, help_text='상위 댓글', related_name='comment_parent_comment')
   author = models.ForeignKey('ACCOUNT', on_delete=models.CASCADE, help_text='작성자', related_name='comment_author')
   content = models.TextField(help_text='내용')
-  locked = models.BooleanField(help_text='잠금 여부', default=False)
+  hide = models.BooleanField(help_text='숨김 여부', default=False)
   created_at = models.DateTimeField(auto_now_add=True, help_text='작성 일시')
 
 # COUPON: 쿠폰 테이블
@@ -163,7 +163,7 @@ class STATISTIC(models.Model):
   value = models.IntegerField(help_text='통계 값', default=0)
   date = models.DateTimeField(auto_now_add=True, help_text='통계 일시')
 
-# BLOCKED_IP: 차단 IP 테이블
+# Blocked_IP: 차단 IP 테이블
 class BLOCKED_IP(models.Model):
   ip = models.CharField(max_length=20, help_text='차단 IP')
 

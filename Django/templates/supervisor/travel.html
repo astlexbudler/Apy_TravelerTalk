@@ -11,81 +11,81 @@
       {% include 'components/main/title_section.html' %}
       {% endwith %}
 
-    <!-- 탭 -->
-    <div class="btn-group w-100 d-flex">
+      <!-- 탭 -->
+      <div class="btn-group w-100 d-flex">
 
-      <div class="w-100 d-flex justify-content-center">
-        <a class="w-100 btn" href="{{SUPERVISOR_URL}}/supervisor/travel?tab=noAdTab" id="noAdTab">
-          일반 여행지
-        </a>
+        <div class="w-100 d-flex justify-content-center">
+          <a class="w-100 btn" href="{{SUPERVISOR_URL}}/supervisor/travel?tab=noAdTab" id="noAdTab">
+            일반 여행지
+          </a>
+        </div>
+        <script>
+            window.addEventListener('load', () => {
+                if ('{{request.GET.tab}}' == 'noAdTab') { // 해당 탭이 선택 되었을 경우,
+                    document.getElementById('noAdTab').classList.add('pastel-pink-background');
+                    document.getElementById('noAdTab').classList.add('text-white');
+                    // 탭 박스가 있다면 표시
+                    if (document.getElementById('noAdTabBox')) {
+                        document.getElementById('noAdTabBox').classList.remove('d-none');
+                    }
+                } else { // 해당 탭이 선택 되지 않았을 경우,
+                    document.getElementById('noAdTab').classList.add('pastel-beige-background');
+                    // 탭 박스가 있다면 숨김
+                    if (document.getElementById('noAdTabBox')) {
+                        document.getElementById('noAdTabBox').classList.add('d-none');
+                    }
+                }
+            });
+        </script>
+        <span class="divider"></span>
+        <div class="w-100 d-flex justify-content-center">
+          <a class="w-100 btn" href="{{SUPERVISOR_URL}}/supervisor/travel?tab=weightAdTab" id="weightAdTab">
+            가중치 광고 여행지
+          </a>
+        </div>
+        <script>
+            window.addEventListener('load', () => {
+                if ('{{request.GET.tab}}' == 'weightAdTab') { // 해당 탭이 선택 되었을 경우,
+                    document.getElementById('weightAdTab').classList.add('pastel-pink-background');
+                    document.getElementById('weightAdTab').classList.add('text-white');
+                    // 탭 박스가 있다면 표시
+                    if (document.getElementById('weightAdTabBox')) {
+                        document.getElementById('weightAdTabBox').classList.remove('d-none');
+                    }
+                } else { // 해당 탭이 선택 되지 않았을 경우,
+                    document.getElementById('weightAdTab').classList.add('pastel-beige-background');
+                    // 탭 박스가 있다면 숨김
+                    if (document.getElementById('weightAdTabBox')) {
+                        document.getElementById('weightAdTabBox').classList.add('d-none');
+                    }
+                }
+            });
+        </script>
+        <span class="divider"></span>
+        <div class="w-100 d-flex justify-content-center">
+          <a class="w-100 btn" href="{{SUPERVISOR_URL}}/supervisor/travel?tab=statusAdTab" id="statusAdTab">
+            베스트 광고 여행지
+          </a>
+        </div>
+        <script>
+            window.addEventListener('load', () => {
+                if ('{{request.GET.tab}}' == 'statusAdTab') { // 해당 탭이 선택 되었을 경우,
+                    document.getElementById('statusAdTab').classList.add('pastel-pink-background');
+                    document.getElementById('statusAdTab').classList.add('text-white');
+                    // 탭 박스가 있다면 표시
+                    if (document.getElementById('statusAdTabBox')) {
+                        document.getElementById('statusAdTabBox').classList.remove('d-none');
+                    }
+                } else { // 해당 탭이 선택 되지 않았을 경우,
+                    document.getElementById('statusAdTab').classList.add('pastel-beige-background');
+                    // 탭 박스가 있다면 숨김
+                    if (document.getElementById('statusAdTabBox')) {
+                        document.getElementById('statusAdTabBox').classList.add('d-none');
+                    }
+                }
+            });
+        </script>
       </div>
-      <script>
-          window.addEventListener('load', () => {
-              if ('{{request.GET.tab}}' == 'noAdTab') { // 해당 탭이 선택 되었을 경우,
-                  document.getElementById('noAdTab').classList.add('pastel-pink-background');
-                  document.getElementById('noAdTab').classList.add('text-white');
-                  // 탭 박스가 있다면 표시
-                  if (document.getElementById('noAdTabBox')) {
-                      document.getElementById('noAdTabBox').classList.remove('d-none');
-                  }
-              } else { // 해당 탭이 선택 되지 않았을 경우,
-                  document.getElementById('noAdTab').classList.add('pastel-beige-background');
-                  // 탭 박스가 있다면 숨김
-                  if (document.getElementById('noAdTabBox')) {
-                      document.getElementById('noAdTabBox').classList.add('d-none');
-                  }
-              }
-          });
-      </script>
-      <span class="divider"></span>
-      <div class="w-100 d-flex justify-content-center">
-        <a class="w-100 btn" href="{{SUPERVISOR_URL}}/supervisor/travel?tab=weightAdTab" id="weightAdTab">
-          가중치 광고 여행지
-        </a>
-      </div>
-      <script>
-          window.addEventListener('load', () => {
-              if ('{{request.GET.tab}}' == 'weightAdTab') { // 해당 탭이 선택 되었을 경우,
-                  document.getElementById('weightAdTab').classList.add('pastel-pink-background');
-                  document.getElementById('weightAdTab').classList.add('text-white');
-                  // 탭 박스가 있다면 표시
-                  if (document.getElementById('weightAdTabBox')) {
-                      document.getElementById('weightAdTabBox').classList.remove('d-none');
-                  }
-              } else { // 해당 탭이 선택 되지 않았을 경우,
-                  document.getElementById('weightAdTab').classList.add('pastel-beige-background');
-                  // 탭 박스가 있다면 숨김
-                  if (document.getElementById('weightAdTabBox')) {
-                      document.getElementById('weightAdTabBox').classList.add('d-none');
-                  }
-              }
-          });
-      </script>
-      <span class="divider"></span>
-      <div class="w-100 d-flex justify-content-center">
-        <a class="w-100 btn" href="{{SUPERVISOR_URL}}/supervisor/travel?tab=statusAdTab" id="statusAdTab">
-          베스트 광고 여행지
-        </a>
-      </div>
-      <script>
-          window.addEventListener('load', () => {
-              if ('{{request.GET.tab}}' == 'statusAdTab') { // 해당 탭이 선택 되었을 경우,
-                  document.getElementById('statusAdTab').classList.add('pastel-pink-background');
-                  document.getElementById('statusAdTab').classList.add('text-white');
-                  // 탭 박스가 있다면 표시
-                  if (document.getElementById('statusAdTabBox')) {
-                      document.getElementById('statusAdTabBox').classList.remove('d-none');
-                  }
-              } else { // 해당 탭이 선택 되지 않았을 경우,
-                  document.getElementById('statusAdTab').classList.add('pastel-beige-background');
-                  // 탭 박스가 있다면 숨김
-                  if (document.getElementById('statusAdTabBox')) {
-                      document.getElementById('statusAdTabBox').classList.add('d-none');
-                  }
-              }
-          });
-      </script>
-    </div>
 
       <!-- 게시글 -->
       <div class="my-5" id="user">
@@ -105,115 +105,130 @@
           <p class="mt-4">
             <i class="fi fi-rr-list"></i> 카테고리 편집
           </p>
-          <table class="table table-bordered">
-            <tbody>
-              {% for category in categories %}
-              <tr>
-                <td>
-                  <p>
-                    {{ category.name }}<br>
-
-                    <a href="javascript: document.getElementById('subCategoryParent').value = '{{ category.id }}'; new bootstrap.Modal(document.getElementById('addCategoryModal')).show()"
-                      class="btn btn-success p-1 px-2 small">
-                      <i class="fi fi-rr-plus"></i> 하위 카테고리 추가
-                    </a>
-
-                  </p>
-                </td>
-                <td class="text-center" style="width: 100px;">
-
-                  <!-- 게시판 수정 -->
-                  <a
-                    href="javascript: new bootstrap.Modal(document.getElementById('{{ category.id }}CategoryEditModal')).show()">
-                    <i class="fi fi-rr-edit"></i>
-                  </a>
-                  {% with to_modify_category=category %}
-                  {% include 'components/modal/supervisor/update_category.html' %}
-                  {% endwith %}
-
-                </td>
-              </tr>
-              {% if category.children|length > 0 %}
-              {% for child in category.children %}
-              <tr>
-                <td>
-                  <p class="ms-2">
-                    {{ child.name }}<br>
-
-                    <a href="javascript: document.getElementById('subCategoryParent').value = '{{ child.id }}'; new bootstrap.Modal(document.getElementById('addCategoryModal')).show()"
-                      class="btn btn-success p-1 px-2 small">
-                      <i class="fi fi-rr-plus"></i> 하위 카테고리 추가
-                    </a>
-
-                  </p>
-                </td>
-                <td class="text-center">
-
-                  <!-- 게시판 수정 -->
-                  <a
-                    href="javascript: new bootstrap.Modal(document.getElementById('{{ child.id }}CategoryEditModal')).show()">
-                    <i class="fi fi-rr-edit"></i>
-                  </a>
-                  {% with to_modify_category=child %}
-                  {% include 'components/modal/supervisor/update_category.html' %}
-                  {% endwith %}
-
-                </td>
-                {% if child.children|length > 0 %}
-                {% for grandchild in child.children %}
-              <tr>
-                <td>
-                  <p class="ms-4">
-                    {{ grandchild.name }}<br>
-
-                    <a href="javascript: document.getElementById('subCategoryParent').value = '{{ grandchild.id }}'; new bootstrap.Modal(document.getElementById('addCategoryModal')).show()"
-                      class="btn btn-success p-1 px-2 small">
-                      <i class="fi fi-rr-plus"></i> 하위 카테고리 추가
-                    </a>
-
-                  </p>
-                </td>
-                <td class="text-center">
-
-                  <!-- 게시판 수정 -->
-                  <a
-                    href="javascript: new bootstrap.Modal(document.getElementById('{{ grandchild.id }}CategoryEditModal')).show()">
-                    <i class="fi fi-rr-edit"></i>
-                  </a>
-                  {% with to_modify_category=grandchild %}
-                  {% include 'components/modal/supervisor/update_category.html' %}
-                  {% endwith %}
-
-                </td>
-              </tr>
-              {% if grandchild.children|length > 0 %}
-              {% for grandgrandchild in grandchild.children %}
-              <tr>
-                <td>
-                  <span class="ms-6">{{ grandgrandchild.name }}</span>
-                </td>
-                <td class="text-center">
-
-                  <!-- 게시판 수정 -->
-                  <a
-                    href="javascript: new bootstrap.Modal(document.getElementById('{{ grandgrandchild.id }}CategoryEditModal')).show()">
-                    <i class="fi fi-rr-edit"></i>
-                  </a>
-                  {% with to_modify_category=grandgrandchild %}
-                  {% include 'components/modal/supervisor/update_category.html' %}
-                  {% endwith %}
-
-                </td>
-              </tr>
-              {% endfor %}
-              {% endif %}
-              {% endfor %}
-              {% endif %}
-              {% endfor %}
-              {% endif %}
-              {% endfor %}
-            </tbody>
-          </table>
+          <div class="accordion shadow mb-5">
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button bg-white text-black-50 collapsed" type="button" data-bs-toggle="collapse"
+                  data-bs-target="#levelTableAccordionItem" aria-expanded="false"
+                  aria-controls="levelTableAccordionItem">
+                  카테고리 통계
+                </button>
+              </h2>
+              <div id="levelTableAccordionItem" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                  <table class="table table-bordered">
+                    <tbody>
+                      {% for category in categories %}
+                      <tr>
+                        <td>
+                          <p>
+                            {{ category.name }}<br>
+        
+                            <a href="javascript: document.getElementById('subCategoryParent').value = '{{ category.id }}'; new bootstrap.Modal(document.getElementById('addCategoryModal')).show()"
+                              class="btn btn-success p-1 px-2 small">
+                              <i class="fi fi-rr-plus"></i> 하위 카테고리 추가
+                            </a>
+        
+                          </p>
+                        </td>
+                        <td class="text-center" style="width: 100px;">
+        
+                          <!-- 게시판 수정 -->
+                          <a
+                            href="javascript: new bootstrap.Modal(document.getElementById('{{ category.id }}CategoryEditModal')).show()">
+                            <i class="fi fi-rr-edit"></i>
+                          </a>
+                          {% with to_modify_category=category %}
+                          {% include 'components/modal/supervisor/update_category.html' %}
+                          {% endwith %}
+        
+                        </td>
+                      </tr>
+                      {% if category.children|length > 0 %}
+                      {% for child in category.children %}
+                      <tr>
+                        <td>
+                          <p class="ms-2">
+                            {{ child.name }}<br>
+        
+                            <a href="javascript: document.getElementById('subCategoryParent').value = '{{ child.id }}'; new bootstrap.Modal(document.getElementById('addCategoryModal')).show()"
+                              class="btn btn-success p-1 px-2 small">
+                              <i class="fi fi-rr-plus"></i> 하위 카테고리 추가
+                            </a>
+        
+                          </p>
+                        </td>
+                        <td class="text-center">
+        
+                          <!-- 게시판 수정 -->
+                          <a
+                            href="javascript: new bootstrap.Modal(document.getElementById('{{ child.id }}CategoryEditModal')).show()">
+                            <i class="fi fi-rr-edit"></i>
+                          </a>
+                          {% with to_modify_category=child %}
+                          {% include 'components/modal/supervisor/update_category.html' %}
+                          {% endwith %}
+        
+                        </td>
+                        {% if child.children|length > 0 %}
+                        {% for grandchild in child.children %}
+                      <tr>
+                        <td>
+                          <p class="ms-4">
+                            {{ grandchild.name }}<br>
+        
+                            <a href="javascript: document.getElementById('subCategoryParent').value = '{{ grandchild.id }}'; new bootstrap.Modal(document.getElementById('addCategoryModal')).show()"
+                              class="btn btn-success p-1 px-2 small">
+                              <i class="fi fi-rr-plus"></i> 하위 카테고리 추가
+                            </a>
+        
+                          </p>
+                        </td>
+                        <td class="text-center">
+        
+                          <!-- 게시판 수정 -->
+                          <a
+                            href="javascript: new bootstrap.Modal(document.getElementById('{{ grandchild.id }}CategoryEditModal')).show()">
+                            <i class="fi fi-rr-edit"></i>
+                          </a>
+                          {% with to_modify_category=grandchild %}
+                          {% include 'components/modal/supervisor/update_category.html' %}
+                          {% endwith %}
+        
+                        </td>
+                      </tr>
+                      {% if grandchild.children|length > 0 %}
+                      {% for grandgrandchild in grandchild.children %}
+                      <tr>
+                        <td>
+                          <span class="ms-6">{{ grandgrandchild.name }}</span>
+                        </td>
+                        <td class="text-center">
+        
+                          <!-- 게시판 수정 -->
+                          <a
+                            href="javascript: new bootstrap.Modal(document.getElementById('{{ grandgrandchild.id }}CategoryEditModal')).show()">
+                            <i class="fi fi-rr-edit"></i>
+                          </a>
+                          {% with to_modify_category=grandgrandchild %}
+                          {% include 'components/modal/supervisor/update_category.html' %}
+                          {% endwith %}
+        
+                        </td>
+                      </tr>
+                      {% endfor %}
+                      {% endif %}
+                      {% endfor %}
+                      {% endif %}
+                      {% endfor %}
+                      {% endif %}
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- 검색 -->
@@ -229,49 +244,9 @@
               </div>
               <div class="row my-4">
                 <div class="form-group col-6">
-                  <label>게시판</label>
-                  <select class="form-select" name="board_id">
-                    <option value="">전체</option>
-                    {% for board in status %}
-                    <option value="{{ board.id }}" {% if board.id == request.GET.board_id %}selected{% endif %}>{{ board.name }}</option>
-                    {% if board.children|length > 0 %}
-                    {% for child in board.children %}
-                    <option value="{{ child.id }}" {% if child.id == request.GET.board_id %}selected{% endif %}>- {{ child.name }}</option>
-                    {% if child.children|length > 0 %}
-                    {% for grandchild in child.children %}
-                    <option value="{{ grandchild.id }}" {% if grandchild.id == request.GET.board_id %}selected{% endif %}>
-                      -- {{ grandchild.name }}</option>
-                    {% if grandchild.children|length > 0 %}
-                    {% for grandgrandchild in grandchild.children %}
-                    <option value="{{ grandgrandchild.id }}" {% if grandgrandchild.id == request.GET.board_id %}selected{% endif %}>--- {{ grandgrandchild.name }}</option>
-                    {% endfor %}
-                    {% endif %}
-                    {% endfor %}
-                    {% endif %}
-                    {% endfor %}
-                    {% endif %}
-                    {% endfor %}
-                  </select>
-                </div>
-                <div class="form-group col-6">
                   <label>작성자 아이디 또는 닉네임</label>
                   <input class="form-control" name="author_id" placeholder="작성자 아이디 또는 닉네임"
                     value="{{request.GET.author_id}}">
-                </div>
-              </div>
-              <div class="form-group mt-2 mb-4">
-                <label>작성자 아이디</label>
-                <input class="form-control" name="author_id" placeholder="작성자">
-              </div>
-              <div class="row mt-2">
-                <div class="form-group col-6">
-                  <label>여행지 카테고리</label>
-                  <select class="form-select" name="category_id">
-                    <option value="">전체</option>
-                    {% for category in categories %}
-                    <option value="{{ category.id }}">{{ category.name }}</option>
-                    {% endfor %}
-                  </select>
                 </div>
                 <div class="form-group col-6">
                   <label>여행지 게시글 상태</label>
@@ -285,6 +260,152 @@
                   </select>
                 </div>
               </div>
+              <div class="form-group mt-2 mb-4">
+                <label>작성자 아이디</label>
+                <input class="form-control" name="author_id" placeholder="작성자">
+              </div>
+              <div class="row">
+                <div class="form-group col-6">
+                    <label>지역 카테고리 선택</label><br>
+                    <div class="mb-3">
+                        <!-- Level 1 -->
+                        <select class="form-select mb-1" onchange="
+                  document.getElementById('selectedBoard').value = this.options[this.selectedIndex].value;
+                  document.querySelectorAll('.subBoard').forEach(e => e.classList.add('d-none'));
+                  document.getElementById('board' + this.value).classList.toggle('d-none');">
+                            <option>-선택해주세요-</option>
+                            {% for travel_board in travel_boards %}
+                            <option value="{{travel_board.id}}">{{travel_board.name}}</option>
+                            {% endfor %}
+                        </select>
+            
+                        {% for travel_board in travel_boards %}
+                        {% if travel_board.children|length > 0 %}
+                        <!-- Level 2 -->
+                        <select class="subBoard form-select d-none mb-1" id="board{{travel_board.id}}" onchange="
+                  document.getElementById('selectedBoard').value = this.options[this.selectedIndex].value;
+                  document.querySelectorAll('.subBoard').forEach(e => e.classList.add('d-none'));
+                  document.getElementById('board' + '{{travel_board.id}}').classList.toggle('d-none');
+                  document.getElementById('board' + this.value).classList.toggle('d-none');">
+                            <option>-선택해주세요-</option>
+                            {% for child in travel_board.children %}
+                            <option value="{{child.id}},{{travel_board.id}}">{{travel_board.name}} > {{child.name}}</option>
+                            {% endfor %}
+                        </select>
+                        {% endif %}
+            
+                        {% for child in travel_board.children %}
+                        {% if child.children|length > 0 %}
+                        <!-- Level 3 -->
+                        <select class="subBoard form-select d-none mb-1" id="board{{child.id}}" onchange="
+                  document.getElementById('selectedBoard').value = this.options[this.selectedIndex].value;
+                  document.querySelectorAll('.subBoard').forEach(e => e.classList.add('d-none'));
+                  document.getElementById('board' + '{{travel_board.id}}').classList.toggle('d-none');
+                  document.getElementById('board' + '{{child.id}}').classList.toggle('d-none');
+                  document.getElementById('board' + this.value).classList.toggle('d-none');">
+                            <option>-선택해주세요-</option>
+                            {% for child2 in child.children %}
+                            <option value="{{child.id}},{{travel_board.id}},{{child2.id}}">{{travel_board.name}} >
+                                {{child.name}} >
+                                {{child2.name}}</option>
+                            {% endfor %}
+                        </select>
+                        {% endif %}
+            
+                        {% for child2 in child.children %}
+                        {% if child2.children|length > 0 %}
+                        <!-- Level 4 -->
+                        <select class="subBoard form-select d-none mb-1" id="board{{child2.id}}" onchange="
+                  document.getElementById('selectedBoard').value = this.options[this.selectedIndex].value;
+                  document.querySelectorAll('.subBoard').forEach(e => e.classList.add('d-none'));
+                  document.getElementById('board' + '{{travel_board.id}}').classList.toggle('d-none');
+                  document.getElementById('board' + '{{child.id}}').classList.toggle('d-none');
+                  document.getElementById('board' + '{{child2.id}}').classList.toggle('d-none');
+                  document.getElementById('board' + this.value).classList.toggle('d-none');">
+                            <option>-선택해주세요-</option>
+                            {% for child3 in child2.children %}
+                            <option value="{{child.id}},{{travel_board.id}},{{child2.id}},{{child3.id}}">{{travel_board.name}} >
+                                {{child.name}} > {{child2.name}} > {{child3.name}}</option>
+                            {% endfor %}
+                        </select>
+                        {% endif %}
+                        {% endfor %}
+                        {% endfor %}
+                        {% endfor %}
+            
+                    </div>
+                    <input class="d-none" id="selectedBoard">
+                </div>
+                <div class="form-group col-6">
+                    <label>업종 카테고리 선택</label><br>
+                    <div class="mb-3">
+                        <!-- category1 -->
+                        <select class="form-select mb-1" onchange="
+                  document.getElementById('serviceCategory').value = this.options[this.selectedIndex].value;
+                  document.querySelectorAll('.subCategory').forEach(e => e.classList.add('d-none'));
+                  document.getElementById('category' + this.value).classList.toggle('d-none');">
+                            <option>-선택해주세요-</option>
+                            {% for category in categories %}
+                            <option value="{{category.id}}">{{category.name}}</option>
+                            {% endfor %}
+                        </select>
+                        {% for category in categories %}
+                        {% if category.children|length > 0 %}
+                        <!-- category2 -->
+                        <select class="subCategory form-select d-none mb-1" id="category{{category.id}}" onchange="
+                  document.getElementById('serviceCategory').value = this.options[this.selectedIndex].value;
+                  document.querySelectorAll('.subCategory').forEach(e => e.classList.add('d-none'));
+                  document.getElementById('category' + '{{category.id}}').classList.toggle('d-none');
+                  document.getElementById('category' + this.value).classList.toggle('d-none');">
+                            <option>-선택해주세요-</option>
+                            {% for child in category.children %}
+                            <option value="{{category.id}},{{child.id}}">{{category.name}} > {{child.name}}</option>
+                            {% endfor %}
+                        </select>
+                        {% endif %}
+            
+                        {% for child in category.children %}
+                        {% if child.children|length > 0 %}
+                        <!-- category3 -->
+                        <select class="subCategory form-select d-none mb-1" id="category{{child.id}}" onchange="
+                  document.getElementById('serviceCategory').value = this.options[this.selectedIndex].value;
+                  document.querySelectorAll('.subCategory').forEach(e => e.classList.add('d-none'));
+                  document.getElementById('category' + '{{category.id}}').classList.toggle('d-none');
+                  document.getElementById('category' + '{{child.id}}').classList.toggle('d-none');
+                  document.getElementById('category' + this.value).classList.toggle('d-none');">
+                            <option>-선택해주세요-</option>
+                            {% for child2 in child.children %}
+                            <option value="{{category.id}},{{child.id}},{{child2.id}}">{{category.name}} > {{child.name}} >
+                                {{child2.name}}</option>
+                            {% endfor %}
+                        </select>
+                        {% endif %}
+            
+                        {% for child2 in child.children %}
+                        {% if child2.children|length > 0 %}
+                        <!-- category4 -->
+                        <select class="subCategory form-select d-none mb-1" id="category{{child2.id}}" onchange="
+                  document.getElementById('serviceCategory').value = this.options[this.selectedIndex].value;
+                  document.querySelectorAll('.subCategory').forEach(e => e.classList.add('d-none'));
+                  document.getElementById('category' + '{{category.id}}').classList.toggle('d-none');
+                  document.getElementById('category' + '{{child.id}}').classList.toggle('d-none');
+                  document.getElementById('category' + '{{child2.id}}').classList.toggle('d-none');
+                  document.getElementById('category' + this.value).classList.toggle('d-none');">
+                            <option>-선택해주세요-</option>
+                            {% for child3 in child2.children %}
+                            <option value="{{category.id}},{{child.id}},{{child2.id}},{{child3.id}}">{{category.name}} >
+                                {{child.name}} > {{child2.name}} > {{child3.name}}</option>
+                            {% endfor %}
+                        </select>
+                        {% endif %}
+                        {% endfor %}
+                        {% endfor %}
+                        {% endfor %}
+            
+                    </div>
+                    <input class="d-none" id="serviceCategory">
+                </div>
+            </div>
               <div class="form-group my-4 col-12">
                 <label>여행지 주소</label>
                 <input class="form-control" name="address" placeholder="여행지 주소">
@@ -426,17 +547,18 @@
 
         {% endif %}
 
-      <!-- 페이지네이션 영역 -->
-      {% include 'components/main/pagination.html' %}
+        <!-- 페이지네이션 영역 -->
+        {% include 'components/main/pagination.html' %}
 
+      </div>
+
+      <!-- 맨 위로 가기 버튼 -->
+      <div class="text-end mb-5">
+        {% include 'components/main/top_button.html' %}
       </div>
 
     </div>
 
-    <!-- 맨 위로 가기 버튼 -->
-    <div class="text-end mb-5">
-      {% include 'components/main/top_button.html' %}
-    </div>
   </div>
 
 </main>

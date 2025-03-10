@@ -11,153 +11,169 @@
       {% include 'components/main/title_section.html' %}
       {% endwith %}
 
-<!-- 게시글 -->
-<div class="my-5" id="user">
+      <!-- 게시글 -->
+      <div class="my-5" id="user">
 
-  <!-- 버튼 -->
-  <div class="p-3 mb-5 text-end">
+        <!-- 버튼 -->
+        <div class="p-3 mb-5 text-end">
 
-    <a class="btn btn-success btn-sm me-2" href="javascript: new bootstrap.Modal(document.getElementById('addnewBoardModal')).show()">
-      <i class="fi fi-rr-plus"></i> 최상위 게시판 추가
-    </a>
+          <a class="btn btn-success btn-sm me-2" href="javascript: new bootstrap.Modal(document.getElementById('addnewBoardModal')).show()">
+            <i class="fi fi-rr-plus"></i> 최상위 게시판 추가
+          </a>
 
-  </div>
+        </div>
 
-  <!-- 통계 -->
-  <div class="rounded border p-3 mb-5 shadow">
-    <p>
-      <i class="fi fi-rr-stats"></i> 게시판 편집
-    </p>
-    <table class="table table-bordered">
-      <thead>
-        <tr>
-          <th>구분</th>
-          <th>조회수</th>
-          <th>게시글 수</th>
-          <th style="width: 100px;"></th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for board in status %}
-        <tr>
-          <td>
-            <p>
-              {{ board.name }}<br>
-
-              <!-- 하위 게시판 추가. 트리 타입만 가능 -->
-              {% if board.board_type == 'tree' %}
-              <a href="javascript: document.getElementById('subBoardParent').value = '{{ board.id }}'; new bootstrap.Modal(document.getElementById('addnewBoardModal')).show()"
-              class="btn btn-success p-1 px-2 small">
-                <i class="fi fi-rr-plus"></i> 하위 게시판 추가
-              </a>
-              {% endif %}
-
-            </p>
-          </td>
-          <td>{{ board.total_views }}</td>
-          <td>{{ board.total_posts }}</td>
-          <td class="text-center">
-
-            <!-- 게시판 수정 -->
-            <a href="javascript: new bootstrap.Modal(document.getElementById('{{ board.id }}EditModal')).show()">
-              <i class="fi fi-rr-edit"></i>
-            </a>
-            {% with to_modify_board=board %}
-            {% include 'parts/update_board_modal.html' %}
-            {% endwith %}
-
-          </td>
-        </tr>
-        {% if board.children|length > 0 %}
-        {% for child in board.children %}
-        <tr>
-          <td>
-            <p class="ms-2">
-              {{ child.name }}<br>
-
-              <!-- 하위 게시판 추가. 트리 타입만 가능 -->
-              {% if child.board_type == 'tree' %}
-              <a href="javascript: document.getElementById('subBoardParent').value = '{{ board.id }}'; new bootstrap.Modal(document.getElementById('addnewBoardModal')).show()"
-              class="btn btn-success p-1 px-2 small">
-                <i class="fi fi-rr-plus"></i> 하위 게시판 추가
-              </a>
-              {% endif %}
-
-            </p>
-          </td>
-          <td>{{ child.total_views }}</td>
-          <td>{{ child.total_posts }}</td>
-          <td class="text-center">
-
-            <!-- 게시판 수정 -->
-            <a href="javascript: new bootstrap.Modal(document.getElementById('{{ child.id }}EditModal')).show()">
-              <i class="fi fi-rr-edit"></i>
-            </a>
-            {% with to_modify_board=child %}
-            {% include 'parts/update_board_modal.html' %}
-            {% endwith %}
-
-          </td>
-          {% if child.children|length > 0 %}
-          {% for grandchild in child.children %}
-          <tr>
-            <td>
-              <p class="ms-4">
-                {{ grandchild.name }}<br>
-
-                <!-- 하위 게시판 추가. 트리 타입만 가능 -->
-                {% if grandchild.board_type == 'tree' %}
-                <a href="javascript: document.getElementById('subBoardParent').value = '{{ board.id }}'; new bootstrap.Modal(document.getElementById('addnewBoardModal')).show()"
-                class="btn btn-success p-1 px-2 small">
-                  <i class="fi fi-rr-plus"></i> 하위 게시판 추가
-                </a>
-                {% endif %}
-
-              </p>
-            </td>
-            <td>{{ grandchild.total_views }}</td>
-            <td>{{ grandchild.total_posts }}</td>
-            <td class="text-center">
-
-              <!-- 게시판 수정 -->
-              <a href="javascript: new bootstrap.Modal(document.getElementById('{{ grandchild.id }}EditModal')).show()">
-                <i class="fi fi-rr-edit"></i>
-              </a>
-              {% with to_modify_board=grandchild %}
-              {% include 'parts/update_board_modal.html' %}
-              {% endwith %}
-
-            </td>
-          </tr>
-            {% if grandchild.children|length > 0 %}
-            {% for grandgrandchild in grandchild.children %}
-            <tr>
-              <td>
-                <span class="ms-6">{{ grandgrandchild.name }}</span>
-              </td>
-              <td>{{ grandgrandchild.total_views }}</td>
-              <td>{{ grandgrandchild.total_posts }}</td>
-              <td class="text-center">
-
-                <!-- 게시판 수정 -->
-                <a href="javascript: new bootstrap.Modal(document.getElementById('{{ grandgrandchild.id }}EditModal')).show()">
-                  <i class="fi fi-rr-edit"></i>
-                </a>
-                {% with to_modify_board=grandgrandchild %}
-                {% include 'parts/update_board_modal.html' %}
-                {% endwith %}
-
-              </td>
-            </tr>
-            {% endfor %}
-            {% endif %}
-          {% endfor %}
-          {% endif %}
-        {% endfor %}
-        {% endif %}
-        {% endfor %}
-      </tbody>
-    </table>
+        <!-- 통계 -->
+        <div class="rounded border p-3 mb-5 shadow">
+          <p>
+            <i class="fi fi-rr-stats"></i> 게시판 편집
+          </p>
+          <div class="accordion shadow mb-5">
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button bg-white text-black-50 collapsed" type="button" data-bs-toggle="collapse"
+                  data-bs-target="#levelTableAccordionItem" aria-expanded="false"
+                  aria-controls="levelTableAccordionItem">
+                  게시판 통계
+                </button>
+              </h2>
+              <div id="levelTableAccordionItem" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                  <table class="table table-bordered">
+                    <thead>
+                      <tr>
+                        <th>구분</th>
+                        <th>조회수</th>
+                        <th>게시글 수</th>
+                        <th style="width: 100px;"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for board in status %}
+                      <tr>
+                        <td>
+                          <p>
+                            {{ board.name }}<br>
+              
+                            <!-- 하위 게시판 추가. 트리 타입만 가능 -->
+                            {% if board.board_type == 'tree' %}
+                            <a href="javascript: document.getElementById('subBoardParent').value = '{{ board.id }}'; new bootstrap.Modal(document.getElementById('addnewBoardModal')).show()"
+                            class="btn btn-success p-1 px-2 small">
+                              <i class="fi fi-rr-plus"></i> 하위 게시판 추가
+                            </a>
+                            {% endif %}
+              
+                          </p>
+                        </td>
+                        <td>{{ board.total_views }}</td>
+                        <td>{{ board.total_posts }}</td>
+                        <td class="text-center">
+              
+                          <!-- 게시판 수정 -->
+                          <a href="javascript: new bootstrap.Modal(document.getElementById('{{ board.id }}EditModal')).show()">
+                            <i class="fi fi-rr-edit"></i>
+                          </a>
+                          {% with to_modify_board=board %}
+                          {% include 'parts/update_board_modal.html' %}
+                          {% endwith %}
+              
+                        </td>
+                      </tr>
+                      {% if board.children|length > 0 %}
+                      {% for child in board.children %}
+                      <tr>
+                        <td>
+                          <p class="ms-2">
+                            {{ child.name }}<br>
+              
+                            <!-- 하위 게시판 추가. 트리 타입만 가능 -->
+                            {% if child.board_type == 'tree' %}
+                            <a href="javascript: document.getElementById('subBoardParent').value = '{{ board.id }}'; new bootstrap.Modal(document.getElementById('addnewBoardModal')).show()"
+                            class="btn btn-success p-1 px-2 small">
+                              <i class="fi fi-rr-plus"></i> 하위 게시판 추가
+                            </a>
+                            {% endif %}
+              
+                          </p>
+                        </td>
+                        <td>{{ child.total_views }}</td>
+                        <td>{{ child.total_posts }}</td>
+                        <td class="text-center">
+              
+                          <!-- 게시판 수정 -->
+                          <a href="javascript: new bootstrap.Modal(document.getElementById('{{ child.id }}EditModal')).show()">
+                            <i class="fi fi-rr-edit"></i>
+                          </a>
+                          {% with to_modify_board=child %}
+                          {% include 'parts/update_board_modal.html' %}
+                          {% endwith %}
+              
+                        </td>
+                        {% if child.children|length > 0 %}
+                        {% for grandchild in child.children %}
+                        <tr>
+                          <td>
+                            <p class="ms-4">
+                              {{ grandchild.name }}<br>
+              
+                              <!-- 하위 게시판 추가. 트리 타입만 가능 -->
+                              {% if grandchild.board_type == 'tree' %}
+                              <a href="javascript: document.getElementById('subBoardParent').value = '{{ board.id }}'; new bootstrap.Modal(document.getElementById('addnewBoardModal')).show()"
+                              class="btn btn-success p-1 px-2 small">
+                                <i class="fi fi-rr-plus"></i> 하위 게시판 추가
+                              </a>
+                              {% endif %}
+              
+                            </p>
+                          </td>
+                          <td>{{ grandchild.total_views }}</td>
+                          <td>{{ grandchild.total_posts }}</td>
+                          <td class="text-center">
+              
+                            <!-- 게시판 수정 -->
+                            <a href="javascript: new bootstrap.Modal(document.getElementById('{{ grandchild.id }}EditModal')).show()">
+                              <i class="fi fi-rr-edit"></i>
+                            </a>
+                            {% with to_modify_board=grandchild %}
+                            {% include 'parts/update_board_modal.html' %}
+                            {% endwith %}
+              
+                          </td>
+                        </tr>
+                          {% if grandchild.children|length > 0 %}
+                          {% for grandgrandchild in grandchild.children %}
+                          <tr>
+                            <td>
+                              <span class="ms-6">{{ grandgrandchild.name }}</span>
+                            </td>
+                            <td>{{ grandgrandchild.total_views }}</td>
+                            <td>{{ grandgrandchild.total_posts }}</td>
+                            <td class="text-center">
+              
+                              <!-- 게시판 수정 -->
+                              <a href="javascript: new bootstrap.Modal(document.getElementById('{{ grandgrandchild.id }}EditModal')).show()">
+                                <i class="fi fi-rr-edit"></i>
+                              </a>
+                              {% with to_modify_board=grandgrandchild %}
+                              {% include 'parts/update_board_modal.html' %}
+                              {% endwith %}
+              
+                            </td>
+                          </tr>
+                          {% endfor %}
+                          {% endif %}
+                        {% endfor %}
+                        {% endif %}
+                      {% endfor %}
+                      {% endif %}
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <!-- 검색 -->
         <div class="rounded border p-3 mb-5 shadow">
@@ -225,81 +241,85 @@
 
         </div>
 
-    <!-- 게시글 목록 -->
-    <div class="row pb-5">
+        <!-- 게시글 목록 -->
+        <div class="row pb-5">
 
-      {% if posts|length == 0 %}
-      <p>
-        게시글이 없습니다.
-      </p>
-      {% endif %}
+          {% if posts|length == 0 %}
+          <p>
+            게시글이 없습니다.
+          </p>
+          {% endif %}
 
-      {% for post in posts %}
-      <a class="text-dark text-decoration-none" href="{{supervisor_url}}/supervisor/post/edit?post_id={{post.id}}">
-        <div style="display: flex; white-space: nowrap;" class="mb-3 pb-3 border-bottom">
-          <div style="display: inline-block; text-align: left;">
-            {% if post.image %}
-            <img src="{{post.image}}" class="img-fluid rounded img-web shadow m-1" style="width: 6vw; min-width: 80px; max-width: 100px;">
-            {% endif %}
-          </div>
-          <div style="display: inline-block; text-align: left; flex: 1;">
-            <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+          {% for post in posts %}
+          <a class="text-dark text-decoration-none" href="{{supervisor_url}}/supervisor/post/edit?post_id={{post.id}}">
+            <div style="display: flex; white-space: nowrap;" class="mb-3 pb-3 border-bottom">
               <div style="display: inline-block; text-align: left;">
-                <div class="ps-3">
-                  <p class="text-black-50 small mb-1">
-                    <span class="me-1">
-                      {{post.author.nickname}}
-                    </span>
-                    {% include 'components/other/level_badge.html' with level=post.author.level %}
-                  </p>
-                  <p>
-                    {{post.title}}
-                  </p>
-                  <p class="text-black-50 small m-0">
-                    {{post.created_at}}
-                  </p>
+                {% if post.image %}
+                <img src="{{post.image}}" class="img-fluid rounded img-web shadow m-1" style="width: 6vw; min-width: 80px; max-width: 100px;">
+                {% endif %}
+              </div>
+              <div style="display: inline-block; text-align: left; flex: 1;">
+                <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+                  <div style="display: inline-block; text-align: left;">
+                    <div class="ps-3">
+                      <p class="text-black-50 small mb-1">
+                        <span class="me-1">
+                          {{post.author.nickname}}
+                        </span>
+                        {% include 'components/other/level_badge.html' with level=post.author.level %}
+                      </p>
+                      <p>
+                        {{post.title}}
+                      </p>
+                      <p class="text-black-50 small m-0">
+                        {{post.created_at}}
+                      </p>
+                    </div>
+                  </div>
+                  <div style="display: inline-block; text-align: right;">
+                    <p class="m-0 text-end text-black-50" style="font-size: 12px;">
+                      <span class="me-1" style="white-space: nowrap;">
+                        <i class="fi fi-rr-eye"></i> {{post.view_count}}
+                      </span>
+                      <span class="me-1" style="white-space: nowrap;">
+                        <i class="fi fi-rr-social-network"></i> {{post.like_count}}
+                      </span>
+                      <span style="white-space: nowrap;">
+                        <i class="fi fi-rr-comment-dots"></i> {{post.comment_count}}
+                      </span>
+                    </p>
+                  </div>
                 </div>
               </div>
-              <div style="display: inline-block; text-align: right;">
-                <p class="m-0 text-end text-black-50" style="font-size: 12px;">
-                  <span class="me-1" style="white-space: nowrap;">
-                    <i class="fi fi-rr-eye"></i> {{post.view_count}}
-                  </span>
-                  <span class="me-1" style="white-space: nowrap;">
-                    <i class="fi fi-rr-social-network"></i> {{post.like_count}}
-                  </span>
-                  <span style="white-space: nowrap;">
-                    <i class="fi fi-rr-comment-dots"></i> {{post.comment_count}}
-                  </span>
-                </p>
-              </div>
             </div>
+          </a>
+
+          {% endfor %}
+
+        </div>
+
+        <!-- 검색 영역 -->
+        <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+          <div style="display: inline-block; text-align: left;">
+            {% include 'components/main/search_bar.html' %}
+          </div>
+          <div style="display: inline-block; text-align: right;">
+            <a class="btn btn-primary" href="/post/write_post?board_ids={{request.GET.board_ids}}">
+              <i class="fi fi-rr-edit"></i> 글 작성
+            </a>
           </div>
         </div>
-      </a>
 
-      {% endfor %}
+        <!-- 페이지네이션 영역 -->
+        {% include 'components/main/pagination.html' %}
 
-    </div>
-
-    <!-- 검색 영역 -->
-    <div style="display: flex; justify-content: space-between; white-space: nowrap;">
-      <div style="display: inline-block; text-align: left;">
-        {% include 'components/main/search_bar.html' %}
       </div>
-      <div style="display: inline-block; text-align: right;">
-        <a class="btn btn-primary" href="/post/write_post?board_ids={{request.GET.board_ids}}">
-          <i class="fi fi-rr-edit"></i> 글 작성
-        </a>
+
+      <!-- 맨 위로 가기 버튼 -->
+      <div class="text-end">
+        {% include 'components/main/top_button.html' %}
       </div>
-    </div>
 
-    <!-- 페이지네이션 영역 -->
-    {% include 'components/main/pagination.html' %}
-
-    <!-- 맨 위로 가기 버튼 -->
-    <div class="text-end">
-      {% include 'components/main/top_button.html' %}
     </div>
 
   </div>

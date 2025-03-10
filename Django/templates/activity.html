@@ -112,7 +112,7 @@
     // pagination
     // 만약 contexts에서 lastpage를 받았고, pagination 컴포넌트가 있다면, 페이지네이션을 생성합니다.
     if ('{{last_page}}' && document.querySelector('#pageButton')) {
-      makePaegeButton('{{request.GET.page}}', '{{last_page}}', `/message?search=`);
+      makePaegeButton('{{request.GET.page}}', '{{last_page}}', `/activity?tab=activityTab&search=`);
     }
   });
 </script>

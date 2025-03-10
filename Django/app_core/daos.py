@@ -39,7 +39,7 @@ update_level(level, text=None, text_color=None, background_color=None, required_
 select_posts(title=None, category_id=None, board_id=None, related_post_id=None, order='default', place_info_status=None, author_nickname=None, author_partner_name=None, min_search_weight=0, page=1): 게시글 검색
 select_account_bookmarked_posts(account_id): 사용자 북마크한 게시글 가져오기
 select_post(post_id): 게시글 정보 가져오기
-create_post(title, board_ids, author_id, content, related_post_id=None, image=None, include_coupons=None, locked=False): 게시글 생성
+create_post(title, board_ids, author_id, content, related_post_id=None, image=None, include_coupons=None, hide=False): 게시글 생성
 update_post(post_id, title=None, content=None, board_ids₩
 create_post_place_info(post_id, category_ids, location_info, open_info, address): 게시글의 여행지 정보 생성
 update_place_info(place_info_id, category_ids=None, location_info=None, open_info=None, address=None, status=None, note=None): 여행지 정보 업데이트
@@ -47,8 +47,8 @@ delete_place_info(post_id): 게시글의 여행지 정보 삭제
 
 ##### [COMMENT]
 select_comments(post_id, page=None): 게시글 댓글 가져오기
-create_comment(post_id, account_id, content, locked=False): 댓글 생성
-update_comment(comment_id, content, locked): 댓글 업데이트
+create_comment(post_id, account_id, content, hide=False): 댓글 생성
+update_comment(comment_id, content, hide): 댓글 업데이트
 delete_comment(comment_id): 댓글 삭제
 
 ##### [COUPON]
@@ -79,7 +79,7 @@ delete_banner(banner_id): 배너 삭제
 get_statistics(days_ago=7): 통계 정보 가져오기
 set_statistic(name, date): 통계 생성(또는 업데이트)
 
-##### [BLOCKED_IP]
+##### [Blocked_IP]
 select_blocked_ips(): 차단된 IP 목록 가져오기
 create_blocked_ip(ip): IP 차단
 delete_blocked_ip(ip): IP 차단 해제
@@ -805,8 +805,10 @@ def select_post(post_id=None, title=None):
         'id': post.id,
         'author': {
             'id': post.author.id,
-            'nickname': post.author.last_name,
-            'partner_name': post.author.first_name,
+            'nickname': post.author.first_name,
+            'partner_name': post.author.last_name,
+            'account_type': post.author.groups.all()[0].name,
+            'level': select_level(post.author.level.level),
         },
         'related_post': {
             'id': post.related_post.id,
@@ -846,17 +848,12 @@ def select_post(post_id=None, title=None):
     return post_data
 
 # 게시글 생성
-def create_post(author_id, title, content, board_ids, related_post_id=None, image=None, include_coupon_name=None):
+def create_post(title, content, board_ids, author_id=None, related_post_id=None, image=None, include_coupon_name=None):
 
     # 사용자 확인
     account = models.ACCOUNT.objects.filter(
         id=author_id
-    )
-    if not account.exists():
-        return {
-            'success': False,
-            'message': '사용자 정보가 존재하지 않습니다.',
-        }
+    ).first()
 
     # related_post 확인
     if related_post_id:
@@ -886,7 +883,7 @@ def create_post(author_id, title, content, board_ids, related_post_id=None, imag
 
     # 게시글 생성
     post = models.POST.objects.create(
-        author=account.first(),
+        author=account,
         related_post=related_post.first() if related_post_id else None,
         title=title,
         content=content,
@@ -1105,38 +1102,53 @@ def select_comments(post_id):
 
     # 게시글 댓글 확인
     comments = models.COMMENT.objects.select_related(
-        'author', 'author__level'
+        'author'
     ).filter(
         post=post.first()
     )
+    comments_data = []
 
-    # 게시글 댓글 포멧
-    comments_data = [{
-        'id': comment.id,
-        'author': {
-            'id': comment.author.id,
-            'nickname': comment.author.first_name,
-            'partner_name': comment.author.last_name,
-            'level': select_level(comment.author.level.level),
-        },
-        'content': comment.content,
-        'created_at': datetime.datetime.strftime(comment.created_at, '%Y-%m-%d %H:%M'),
-    } for comment in comments]
+    for comment in comments:
+        subcomments = models.COMMENT.objects.select_related(
+            'author'
+        ).filter(
+            parent_comment=comment
+        )
+
+        comments_data.append({
+            'id': comment.id,
+            'author': {
+                'id': comment.author.id,
+                'nickname': comment.author.first_name,
+                'partner_name': comment.author.last_name,
+                'level': select_level(comment.author.level.pk),
+            },
+            'content': comment.content,
+            'hide': comment.hide,
+            'created_at': datetime.datetime.strftime(comment.created_at, '%Y-%m-%d %H:%M'),
+            'subcomments': [{
+                'id': subcomment.id,
+                'author': {
+                    'id': subcomment.author.id,
+                    'nickname': subcomment.author.first_name,
+                    'partner_name': subcomment.author.last_name,
+                    'level': select_level(subcomment.author.level.pk),
+                },
+                'content': subcomment.content,
+                'hide': subcomment.hide,
+                'created_at': datetime.datetime.strftime(subcomment.created_at, '%Y-%m-%d %H:%M'),
+            } for subcomment in subcomments],
+        })
 
     return comments_data
 
 # 댓글 생성
-def create_comment(content, account_id, post_id, parent_comment_id=None, locked=False):
+def create_comment(content, account_id, post_id=None, parent_comment_id=None, hide=False):
 
     # 게시글 확인
     post = models.POST.objects.filter(
         id=post_id
     ).first()
-    if not post:
-        return {
-            'success': False,
-            'message': '게시글 정보가 존재하지 않습니다.',
-        }
 
     # 사용자 확인
     account = models.ACCOUNT.objects.filter(
@@ -1166,11 +1178,27 @@ def create_comment(content, account_id, post_id, parent_comment_id=None, locked=
         post=post,
         author=account,
         content=content,
-        locked=locked,
+        hide=hide,
     )
     if parent_comment_id:
         comment.parent_comment = parent_comment
     comment.save()
+
+    # 대댓글 작성
+    if parent_comment_id:
+        point = int(select_server_setting('comment_point'))
+        account.mileage += point
+        account.exp += point
+        account.save()
+
+        return {
+            'success': True,
+            'message': '댓글이 생성되었습니다.',
+            'type': 'comment',
+            'point': point,
+            'pk': comment.id,
+            'parent_comment_author_id': parent_comment_author_id,
+        }
 
     # 출석체크, 가입 인사 확인 및 포인트 지급
     if post.title.startswith('attendance:'):
@@ -1227,7 +1255,7 @@ def create_comment(content, account_id, post_id, parent_comment_id=None, locked=
     }
 
 # 댓글 업데이트
-def update_comment(comment_id, content, locked=False):
+def update_comment(comment_id, content=None, hide=None):
 
     # 댓글 확인
     comment = models.COMMENT.objects.filter(
@@ -1240,8 +1268,10 @@ def update_comment(comment_id, content, locked=False):
         }
 
     # 댓글 업데이트
-    comment.content = content
-    comment.locked = locked
+    if content:
+        comment.content = content
+    if hide != None:
+        comment.hide = hide
     comment.save()
 
     return {
@@ -1285,7 +1315,7 @@ def select_coupons(code=None, name=None, status=None, create_account_id=None, ow
     if status and status != 'history':
         query &= Q(status=status)
     elif status == 'history':
-        query &= Q(status='used') | Q(status='expired' | Q(status='deleted'))
+        query &= Q(status__in=['used', 'expired', 'deleted'])
     if create_account_id:
         query &= Q(create_account__id=create_account_id)
     if own_account_id:
@@ -1570,7 +1600,7 @@ def select_messages(receive_account_id=None, send_account_id=None, is_read=None,
     for msg in msgs:
 
         # 보낸 사람 정보
-        if msg.sender == '': # supervisor
+        if not msg.sender: # supervisor
             sender_account = {
                 'id': 'supervisor',
                 'nickname': '관리자',
@@ -1586,7 +1616,7 @@ def select_messages(receive_account_id=None, send_account_id=None, is_read=None,
             }
 
         # 받는 사람 정보
-        if msg.receive == '':
+        if not msg.receive:
             receive_account = {
                 'id': '',
                 'nickname': '관리자',
@@ -1635,6 +1665,10 @@ def create_message(title, content, message_type, receive_account_id=None, sender
         receiver_id = models.ACCOUNT.objects.filter(
             id=receive_account_id
         ).first()
+    elif receive_account_id == 'all':
+        receiver_id = 'all'
+    else:
+        receiver_id = None
 
     # 쿠폰 확인
     if include_coupon_code:
@@ -1894,7 +1928,7 @@ def create_statistic(name):
 
 
 
-##### [BLOCKED_IP]
+##### [Blocked_IP]
 # 차단된 IP 정보 가져오기
 def select_blocked_ips():
 

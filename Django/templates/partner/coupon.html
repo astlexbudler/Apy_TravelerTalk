@@ -11,9 +11,53 @@
 
     <!-- 선택지 버튼 그룹 -->
     <div class="btn-group w-100 d-flex">
-      {% include 'components/main/page_tab.html' with tab_name='쿠폰' tab_id='couponTab' tab_link='/partner/coupon?tab=couponTab' %}
+      <div class="w-100 d-flex justify-content-center">
+        <a class="w-100 btn" href="{{PARTNER_URL}}/partner/coupon?tab=couponTab" id="couponTab">
+          쿠폰
+        </a>
+      </div>
+      <script>
+          window.addEventListener('load', () => {
+              if ('{{request.GET.tab}}' == 'couponTab') { // 해당 탭이 선택 되었을 경우,
+                  document.getElementById('couponTab').classList.add('pastel-pink-background');
+                  document.getElementById('couponTab').classList.add('text-white');
+                  // 탭 박스가 있다면 표시
+                  if (document.getElementById('couponTabBox')) {
+                      document.getElementById('couponTabBox').classList.remove('d-none');
+                  }
+              } else { // 해당 탭이 선택 되지 않았을 경우,
+                  document.getElementById('couponTab').classList.add('pastel-beige-background');
+                  // 탭 박스가 있다면 숨김
+                  if (document.getElementById('couponTabBox')) {
+                      document.getElementById('couponTabBox').classList.add('d-none');
+                  }
+              }
+          });
+      </script>
       <span class="divider"></span>
-      {% include 'components/main/page_tab.html' with tab_name='쿠폰 사용 내역' tab_id='historyTab' tab_link='/partner/coupon?tab=historyTab' %}
+      <div class="w-100 d-flex justify-content-center">
+        <a class="w-100 btn" href="{{PARTNER_URL}}/partner/coupon?tab=historyTab" id="historyTab">
+          쿠폰 사용 내역
+        </a>
+      </div>
+      <script>
+          window.addEventListener('load', () => {
+              if ('{{request.GET.tab}}' == 'historyTab') { // 해당 탭이 선택 되었을 경우,
+                  document.getElementById('historyTab').classList.add('pastel-pink-background');
+                  document.getElementById('historyTab').classList.add('text-white');
+                  // 탭 박스가 있다면 표시
+                  if (document.getElementById('historyTabBox')) {
+                      document.getElementById('historyTabBox').classList.remove('d-none');
+                  }
+              } else { // 해당 탭이 선택 되지 않았을 경우,
+                  document.getElementById('historyTab').classList.add('pastel-beige-background');
+                  // 탭 박스가 있다면 숨김
+                  if (document.getElementById('historyTabBox')) {
+                      document.getElementById('historyTabBox').classList.add('d-none');
+                  }
+              }
+          });
+      </script>
     </div>
 
     <!-- 검색 -->

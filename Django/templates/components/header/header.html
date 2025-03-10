@@ -15,13 +15,13 @@
             <!-- 헤더 상단 메뉴 -->
             <div style="display: flex; justify-content: space-between; white-space: nowrap;">
                 <div style="display: inline-block; text-align: left;">
-                    <a class="text-black-50 small me-3" style="white-space: nowrap;" href="{{main_url}}/post/attendance">
+                    <a class="text-black-50 small me-3" style="white-space: nowrap;" href="{{MAIN_URL}}/post?board_ids=23,25">
                         <i class="fi fi-rr-calendar-check"></i> 출석체크
                     </a>
-                    <a class="text-black-50 small me-3" style="white-space: nowrap;" href="{{main_url}}/bookmark">
+                    <a class="text-black-50 small me-3" style="white-space: nowrap;" href="{{MAIN_URL}}/bookmark">
                         <i class="fi fi-rr-bookmark"></i> 즐겨찾기
                     </a>
-                    <a class="text-black-50 small" style="white-space: nowrap;" href="{{main_url}}/coupon">
+                    <a class="text-black-50 small" style="white-space: nowrap;" href="{{MAIN_URL}}/coupon">
                         <i class="fi fi-rr-ticket"></i> 쿠폰함
                     </a>
                 </div>
@@ -31,7 +31,7 @@
                         <i class="fi fi-rr-user"></i> 로그인
                     </a>
                     {% else %}
-                    <a class="text-black-50 small me-3" style="white-space: nowrap;" href="{{main_url}}/profile">
+                    <a class="text-black-50 small me-3" style="white-space: nowrap;" href="{{MAIN_URL}}/profile">
                         <i class="fi fi-rr-user"></i> 프로필
                     </a>
                     {% endif %}
@@ -51,7 +51,7 @@
                                     </p>
                                     {% else %}
                                     {% for message in unread_messages %}
-                                    <a href="{{main_url}}/message">
+                                    <a href="{{MAIN_URL}}/message">
                                         <div class="p-2 mb-2 border-bottom">
                                             <p class="text-black-60 m-0">
                                                 {{message.title}}
@@ -73,7 +73,7 @@
                             </li>
                             <li class="text-end p-2 border-top">
                                 <div style="display: flex; justify-content: space-between; white-space: nowrap;">
-                                    <a class="text-black-50" href="{{main_url}}/message">
+                                    <a class="text-black-50" href="{{MAIN_URL}}/message">
                                         <i class="fi fi-rr-envelope"></i> 쪽지함
                                     </a>
                                 </div>
@@ -95,7 +95,7 @@
                     <div style="width: 80px; height: 80px;">
 
                         <!-- 로고 -->
-                        <a href="{{main_url}}/">
+                        <a href="{{MAIN_URL}}/">
                             <img class="logo-dark" src="/static/travelertalk/img/icon.png">
                             <img class="logo-light" src="/static/travelertalk/img/icon.png">
                         </a>
@@ -127,7 +127,7 @@
                         </div>
                     </div>
                     <div class="offcanvas offcanvas-start text-start" tabindex="-1" id="offcanvasMobileMenu" aria-labelledby="offcanvasMobileMenuLabel">
-                        <div class="offcanvas-header" style="background-color: #ffafc8;">
+                        <div class="offcanvas-header" style="background-color: #b5c7d7;">
                             <div
                             style="display: flex; justify-content: space-between; white-space: nowrap;">
                                 <div style="display: inline-block; text-align: left;">
@@ -167,7 +167,7 @@
                                     <div class="mt-4">
                                         <a href="javascript: tryLogin(document.getElementById('mobileLoginForm'));"
                                             class="btn btn-primary btn-sm small me-1">로그인</a>
-                                        <a href="{{main_url}}/signup"
+                                        <a href="{{MAIN_URL}}/signup"
                                             class="btn btn-secondary btn-sm small">회원가입</a>
                                     </div>
                                 </form>
@@ -176,24 +176,24 @@
                                 {% endif %}
 
                                 <!-- 게시판 목록 -->
-                                <div class="mt-5 mb-3" style="border-bottom: 3px solid #ffafc8;">
+                                <div class="mt-5 mb-3" style="border-bottom: 3px solid #b5c7d7;">
                                     <h6 class="text-black-60">
                                         게시판
                                     </h6>
                                 </div>
                                 <ul class="navbar-nav mx-auto">
                                     <li class="nav-item">
-                                        <a class="nav-link px-3" href="/post?board_ids=35,36">
+                                        <a class="nav-link px-3" href="/post?board_ids=34,35">
                                             이벤트
                                         </a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link px-3" href="/post/review">
+                                        <a class="nav-link px-3" href="/post/review?board_ids=37">
                                             후기 게시판
                                         </a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link px-3" href="/post?board_ids=39">
+                                        <a class="nav-link px-3" href="/post?board_ids=38">
                                             문의
                                         </a>
                                     </li>
@@ -243,7 +243,7 @@
             </div>
             <div style="width: 24%; min-height: 60px; display: inline-block;" class="p-1">
                 <div class="border rounded p-2 shadow-sm">
-                    <a href="/post/review">
+                    <a href="/post/review?board_ids=37">
                         <img src="/static/travelertalk/img/positive-vote.png" style="width: 100%; height: auto;">
                         <p class="text-black-50 text-center mb-1">
                             후기 게시판
@@ -283,30 +283,30 @@
             <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids=23,30">
                 구인/구직
             </a>
-            <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids=23,32">
+            <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids=23,31">
                 브론즈
             </a>
-            <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids=23,33">
+            <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids=23,32">
                 실버
             </a>
-            <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids=23,34">
+            <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids=23,33">
                 골드
             </a>
         </div>
 
         <!-- 이벤트 메뉴 -->
         <div class="w-100 mt-4 d-none mobileButtons" style="white-space: wrap;" id="mobileEventButtons">
-            <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids=35,36">
+            <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids=34,35">
                 이벤트
             </a>
-            <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids=35,37">
+            <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids=34,36">
                 쿠폰거래
             </a>
         </div>
 
         <!-- 게시판 기타 메뉴 -->
         <div class="w-100 mt-4 d-none mobileButtons" style="white-space: wrap;" id="mobileEtcButtons">
-            <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids=39">
+            <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids=38">
                 문의
             </a>
         </div>

@@ -429,6 +429,8 @@ class api_message(APIView):
 
         # 메세지 데이터
         receiver_id = request.data.get('receiver_id')
+        if 'supervisor' == receiver_id:
+            receiver_id = None # 관리자는 None
         sender_id = request.user.id
         if 'message' in request.user.subsupervisor_permissions:
             sender_id = None # 관리자는 None
@@ -440,8 +442,8 @@ class api_message(APIView):
 
         # 메세지 생성
         response = daos.create_message(
-            sender_id=sender_id,
-            receiver_id=receiver_id,
+            sender_account_id=sender_id,
+            receive_account_id=receiver_id,
             title=title,
             content=content,
             image=image,
@@ -532,11 +534,13 @@ class api_comment(APIView):
         # 댓글 수정
         comment_id = request.data.get('comment_id')
         content = request.data.get('content')
+        hide = True if request.data.get('hide') == 'true' else False if request.data.get('hide') == 'false' else None
 
         # 댓글 수정
         response = daos.update_comment(
             comment_id=comment_id,
-            content=content
+            content=content,
+            hide=hide
         )
 
         if response['success']:
