@@ -69,7 +69,7 @@ main {
 .background-image {
     background-image: url('/static/travelertalk/img/background.png');
     background-position: center bottom;
-    background-size: contain;
+    background-size: cover;
     position: absolute;
     bottom: 200px;
     width: 100vw;
