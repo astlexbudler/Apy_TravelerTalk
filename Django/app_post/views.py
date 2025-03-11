@@ -477,7 +477,10 @@ def post_view(request):
 
   # 좋아요 가능 여부
   likeable = True
-  if post_id in request.session.get('like_post_ids', ''):
+  if post['boards'][-1]['board_type'] == 'travel':
+    if post_id not in contexts['account']['bookmarked_posts']:
+      likeable = False
+  elif post_id in request.session.get('like_post_ids', ''):
     likeable = False
 
   # 조회수 증가

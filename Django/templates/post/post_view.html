@@ -9,6 +9,9 @@
 
     <div style="min-height: 300px;">
 
+      <!-- 상단 배너 영역 -->
+      {% include 'components/main/banner.html' with banners=banners bannerCaouselName='post' %}
+
       <!-- 페이지 타이틀 -->
       {% include 'components/main/breadcrumbs.html' %}
       <div class="mb-5 pb-2 border-bottom">
@@ -39,20 +42,42 @@
               </span>
             </p>
             {% if account.id == post.author.id or 'post' in account.supervisor_permissions %}
-            <a class="btn btn-success btn-sm small me-2" href="/post/rewrite_post?post_id={{ post.id }}&board_ids={{ request.GET.board_ids }}">
+            <a class="btn btn-success btn-sm small p-1 px-2 me-2" href="/post/rewrite_post?post_id={{ post.id }}&board_ids={{ request.GET.board_ids }}">
               <i class="fi fi-rr-edit"></i> 게시글 수정
             </a>
-            <a class="btn btn-danger btn-sm small" href="javascript: deletePost();">
+            <a class="btn btn-danger btn-sm small p-1 px-2" href="javascript: deletePost();">
               <i class="fi fi-rr-trash"></i> 게시글 삭제
             </a>
             {% else %}
             {% if request.user.is_authenticated and likeable %}
-            <a class="btn btn-success btn-sm small" href="javascript: likePost();">
-              <i class="fi fi-rr-social-network"></i> 좋아요
+            <a class="btn btn-success btn-sm p-1 px-2" href="javascript: likePost();">
+              <i class="fi fi-rr-social-network"></i> 
+              {% if board.board_type == 'travel' %}
+              추천
+              {% else %}
+              좋아요
+              {% endif %}
             </a>
             {% elif request.user.is_authenticated and not likeable %}
-            <a class="btn btn-outline-success btn-sm small" href="javascript: likePost();">
-              <i class="fi fi-rr-social-network"></i> 좋아요 취소
+            <a class="btn btn-success btn-sm p-1 px-2" href="javascript: likePost();">
+              <i class="fi fi-rr-social-network"></i> 
+              {% if board.board_type == 'travel' %}
+              추천 취소
+              {% else %}
+              좋아요 취소
+              {% endif %}
+            </a>
+            {% endif %}
+            {% endif %}
+            {% if board.board_type == 'travel' %}
+            <a href="/post/review?board_ids=37&related_post_id={{post.id}}"
+              class="btn btn-sm btn-secondary p-1 px-2">
+              <i class="fi fi-rr-star"></i> 후기검색
+            </a>
+            {% if account.account_type in 'user,dame' %}
+            <a href="/post/write_post?review_post_id={{ post.id }}"
+              class="btn btn-sm btn-secondary p-1 px-2">
+              <i class="fi fi-rr-comment-alt-dots"></i> 후기 작성
             </a>
             {% endif %}
             {% endif %}
@@ -132,14 +157,14 @@
       {% else %}
       <div class="border-bottom my-4"></div>
       {% endif %}
-      {% else %}
+      {% elif board.board_type != 'travel' %}
       {% with commentable=true comment_form_title='댓글' placeholder='댓글을 작성해주세요.' button_text='<i class="fi fi-rr-edit"></i> 댓글 작성' commentable=commentable %}
       {% include 'components/main/post_view/comment/comment_form.html' %}
       {% endwith %}
       {% endif %}
 
       <!-- 댓글 목록 -->
-      {% if comments|length == 0 %}
+      {% if comments|length == 0 and board.board_type != 'travel' %}
       <p>
         {% if board.board_type == 'qna' %}
         아직 답변이 없습니다.
@@ -171,7 +196,16 @@
 <script>
 
   likePost = async () => {
-    await fetch('/api/like_post?post_id={{ post.id }}');
+    var formData = new FormData();
+    formData.append('post_id', '{{ post.id }}');
+
+    await fetch('/api/post', {
+      method: 'PATCH',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}'
+      },
+      body: formData
+    })
     location.reload();
   }
 

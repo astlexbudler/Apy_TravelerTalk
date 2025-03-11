@@ -171,7 +171,7 @@ def select_account(account_id):
             'status': account.status,
             'subsupervisor_permissions': str(account.subsupervisor_permissions).split(','),
             'level': select_level(account.level.pk),
-            'bookmarked_posts': [post.id for post in account.bookmarked_posts.all()],
+            'bookmarked_posts': ','.join([str(post.id) for post in account.bookmarked_posts.all()]),
             'exp': account.exp,
             'mileage': account.mileage,
         }
