@@ -85,7 +85,7 @@
     </div>
 
     <!-- 버튼 -->
-    <div class="my-4 text-end">
+    <div class="my-3 text-end">
       <a class="btn btn-success btn-sm"
         href="javascript: new bootstrap.Modal(document.getElementById('addBannerModal')).show();">
         <i class="fi fi-rr-plus"></i> 배너 생성
@@ -93,7 +93,7 @@
     </div>
 
     <!-- 검색 결과 -->
-    <div class="rounded border p-3 my-4 shadow">
+    <div class="rounded border p-2 my-3 shadow">
       {% if banners|length == 0 %}
       <p>
         배너가 없습니다.
@@ -101,9 +101,9 @@
       {% endif %}
       <div class="row mb-2">
         {% for banner in banners %}
-        <div class="p-1 {% if banner.status == 'full' %}col-12{% else %}col-6{% endif %}">
+        <div class="p-1 {% if banner.status == 'full' %}col-4{% else %}col-2{% endif %}">
           <a href="javascript: new bootstrap.Modal(document.getElementById('editBannerModal{{ banner.id }}')).show();">
-            <img class="w-100 shadow-sm" src="{{ banner.image }}">
+            <img class="w-100 shadow-sm" src="{{ banner.image }}" {% if banner.status == 'none' %}style="border: 1px solid red;"{% endif %}>
           </a>
         </div>
         {% include 'components/modal/supervisor/update_banner.html' %}

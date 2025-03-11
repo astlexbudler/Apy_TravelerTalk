@@ -78,7 +78,7 @@
 
     <!-- 차단 IP 목록 -->
     {% if request.GET.tab in 'userTab,dameTab' %}
-    <div class="rounded border p-3 my-4 shadow">
+    <div class="rounded border p-2 my-3 shadow">
       <p>
         <i class="fi fi-rr-lock"></i> 차단 IP 목록
       </p>
@@ -95,7 +95,7 @@
             <div class="accordion-body">
               <table class="table table-bordered">
                 <thead>
-                  <tr>
+                  <tr class="tbg1">
                     <th>차단 IP</th>
                     <th style="width: 100px;" class="text-center">
                       <a class="text-success"
@@ -127,13 +127,13 @@
 
     <!-- 통계 -->
     {% if request.GET.tab in 'userTab,dameTab,partnerTab' %}
-    <div class="rounded border p-3 my-4 shadow">
+    <div class="rounded border p-2 my-3 shadow">
       <p>
         <i class="fi fi-rr-stats"></i> 통계
       </p>
       <table class="table table-bordered">
         <thead>
-          <tr>
+          <tr class="tbg1">
             <th>구분</th>
             <th>정상</th>
             <th>승인 대기중</th>
@@ -163,7 +163,7 @@
     {% endif %}
 
     <!-- 검색 -->
-    <div class="rounded border p-3 my-4 shadow">
+    <div class="rounded border p-2 my-3 shadow">
       <p>
         <i class="fi fi-rr-search"></i> 검색
       </p>
@@ -198,7 +198,7 @@
     </div>
 
     <!-- 버튼 그룹 -->
-    <div class="text-end my-4">
+    <div class="text-end my-3">
       <a class="btn btn-danger btn-sm me-2"
         href="javascript: deleteSelectedAccounts()">
         <i class="fi fi-rr-trash"></i> 선택 삭제
@@ -219,7 +219,7 @@
     </div>
 
     <!-- 검색 결과 -->
-    <div class="row p-3 my-4">
+    <div class="row p-2 my-3">
       <!-- 검색 결과 -->
       {% if accounts|length < 1 %}
       <p>
@@ -228,7 +228,7 @@
       {% endif %}
       <table class="table table-bordered">
         <thead>
-          <tr>
+          <tr class="tbg1">
             <th>아이디</th>
             <th>닉네임</th>
             <th>회원구분</th>
@@ -386,7 +386,7 @@
     {% include 'components/main/pagination.html' %}
 
     <!-- 맨 위로 가기 버튼 -->
-    <div class="text-end mb-5">
+    <div class="text-end">
       {% include 'components/main/top_button.html' %}
     </div>
 

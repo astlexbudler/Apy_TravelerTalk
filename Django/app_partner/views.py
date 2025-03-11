@@ -81,7 +81,7 @@ def index(request):
   if request.method == 'POST':
     for post in posts: # 모든 게시글을 숨김
       daos.update_place_info(
-        post_id=post['id'],
+        post_id=post.id,
         status='writing',
       )
     daos.update_place_info( # 요청한 게시글만 보이게

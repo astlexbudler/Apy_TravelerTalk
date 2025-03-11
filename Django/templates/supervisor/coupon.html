@@ -45,13 +45,13 @@
     </div>
 
       <!-- 통계 -->
-      <div class="rounded border p-3 my-4 shadow">
+      <div class="rounded border p-2 my-3 shadow">
         <p>
           <i class="fi fi-rr-stats"></i> 통계
         </p>
         <table class="table table-bordered">
           <thead>
-            <tr>
+            <tr class="tbg1">
               <th>구분</th>
               <th>사용 가능한 쿠폰</th>
               <th>만료된 쿠폰</th>
@@ -77,7 +77,7 @@
       </div>
 
       <!-- 검색 -->
-      <div class="rounded border p-3 my-4 shadow">
+      <div class="rounded border p-2 my-3 shadow">
         <p>
           <i class="fi fi-rr-search"></i> 검색
         </p>
@@ -113,7 +113,7 @@
 
       <!-- 버튼 -->
       {% if request.GET.tab == 'couponTab' %}
-      <div class="my-4 text-end">
+      <div class="my-3 text-end">
         <a href="javascript: new bootstrap.Modal(document.getElementById('writeCouponModal')).show();"
           class="btn btn-success btn-sm small">
           <i class="fi fi-rr-plus"></i> 새 쿠폰 등록
@@ -122,7 +122,7 @@
       {% endif %}
 
       <!-- 쿠폰 목록 -->
-      <div class="p-3 my-4">
+      <div class="p-2 my-3">
 
         {% if coupons|length == 0 %}
         <p>
@@ -141,7 +141,7 @@
               </div>
               {% endif %}
               <div class="ps-3" style="display: inline-block; text-align: left; flex: 1;">
-                <p class="text-black-50 mb-1" style="font-size: 12px;">
+                <p class="text-black-50 mb-1 x-small">
                   {% if coupon.create_account.account_type == 'partner' %}
                   {{coupon.create_account.partner_name}}
                   {% else %}
@@ -150,17 +150,17 @@
                   님이 생성한 쿠폰
                 </p>
                 <p class="text-black mb-2">
-                    {{coupon.name}} <span class="text-black-50" style="font-size: 12px;;">{% if not coupon.own_account %}(소유자 없음){% endif %}</span>
+                    {{coupon.name}} <span class="text-black-50 x-small">{% if not coupon.own_account %}(소유자 없음){% endif %}</span>
                 </p>
-                <p class="text-black-50 m-0" style="font-size: 12px;">
+                <p class="text-black-50 m-0 x-small">
                     여행지: {{coupon.related_post.title}}
                 </p>
-                <p class="text-black-50 small m-0" style="font-size: 12px;">
+                <p class="text-black-50 x-small m-0">
                     사용기간: {{coupon.expire_at}}까지
                 </p>
               </div>
               <div style="display: inline-block; text-align: right;">
-                  <p class="mb-2 text-end text-black-50" style="font-size: 14px;">
+                  <p class="mb-2 text-end text-black-50 x-small">
                     {% if coupon.status == 'active' %}
                     <span class="badge bg-success">사용 가능</span>
                     {% elif coupon.status == 'used' %}
@@ -171,7 +171,7 @@
                     <span class="badge bg-danger">삭제됨</span>
                     {% endif %}
                   </p>
-                  <p class="text-black-50" style="font-size: 12px;">
+                  <p class="text-black-50 x-small">
                       <i class="fi fi-ss-coins"></i> <span class="numberComma">{{coupon.required_mileage}}</span> 마일리지 필요
                   </p>
               </div>
@@ -193,7 +193,7 @@
       {% include 'components/main/pagination.html' %}
 
     <!-- 맨 위로 가기 버튼 -->
-    <div class="text-end mb-5">
+    <div class="text-end">
       {% include 'components/main/top_button.html' %}
     </div>
   </div>

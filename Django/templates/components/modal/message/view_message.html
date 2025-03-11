@@ -76,7 +76,7 @@
                     <i class="fi fi-rr-ticket"></i> 쿠폰 받기
                 </button>
                 {% endif %}
-                {% if request.GET.tab != 'outboxTab' %}
+                {% if request.GET.tab != 'outboxTab' and account.account_type in 'partner,supervisor,subsupervisor' %}
                 <button class="btn btn-success" data-bs-dismiss="modal"
                     onclick="replyMessage('{{message.sender_account.id}}', '{{message.sender_account.nickname}}', '{{message.title}}');">
                     <i class="fi fi-rr-edit"></i> 답장하기

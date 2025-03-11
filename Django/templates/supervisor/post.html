@@ -10,14 +10,14 @@
     {% endwith %}
 
     <!-- 버튼 -->
-    <div class="my-4 text-end">
+    <div class="my-3 text-end">
       <a class="btn btn-success btn-sm" href="javascript: new bootstrap.Modal(document.getElementById('addnewBoardModal')).show()">
         <i class="fi fi-rr-plus"></i> 최상위 게시판 추가
       </a>
     </div>
 
     <!-- 게시판 편집 및 통계 -->
-    <div class="rounded border p-3 my-4 shadow">
+    <div class="rounded border p-2 my-3 shadow">
       <p>
         <i class="fi fi-rr-stats"></i> 게시판 편집
       </p>
@@ -34,7 +34,7 @@
             <div class="accordion-body">
               <table class="table table-bordered">
                 <thead>
-                  <tr>
+                  <tr class="tbg1">
                     <th>구분</th>
                     <th>조회수</th>
                     <th>게시글 수</th>
@@ -156,7 +156,7 @@
     </div>
 
     <!-- 검색 -->
-    <div class="rounded border p-3 my-4 shadow">
+    <div class="rounded border p-2 my-3 shadow">
       <p>
         <i class="fi fi-rr-search"></i> 검색
       </p>
@@ -209,14 +209,14 @@
     </div>
 
     <!-- 버튼 -->
-    <div class="my-4 text-end">
+    <div class="my-3 text-end">
       <a href="javascript: openExportDataPage();" class="btn btn-sm btn-success">
         <i class="fi fi-rr-file-excel"></i> 다운로드
       </a>
     </div>
 
     <!-- 게시글 목록 -->
-    <div class="row p-3 my-4">
+    <div class="row p-2 my-3">
 
       {% if posts|length == 0 %}
       <p>
@@ -236,7 +236,7 @@
             <div style="display: flex; justify-content: space-between; white-space: nowrap;">
               <div style="display: inline-block; text-align: left;">
                 <div class="ps-3">
-                  <p class="text-black-50 mb-1" style="font-size: 12px;">
+                  <p class="text-black-50 mb-1 x-small">
                     {% for board in post.boards %}
                     {{ board.name }} {% if not forloop.last %} > {% endif %}
                     {% endfor %}
@@ -252,13 +252,13 @@
                   <p class="mb-2">
                     {{post.title}} <span style="cursor: pointer;" onclick="window.location.href='{{SUPERVISOR_URL}}/supervisor/post/edit?post_id={{post.id}}';"><i class="fi fi-rr-edit text-primary"></i></span>
                   </p>
-                  <p class="text-black-50 m-0" style="font-size: 12px;">
+                  <p class="text-black-50 m-0 x-small">
                     {{post.created_at}}
                   </p>
                 </div>
               </div>
               <div style="display: inline-block; text-align: right;">
-                <p class="text-end text-black-50" style="font-size: 12px;">
+                <p class="text-end text-black-50 x-small">
                   <span class="me-1" style="white-space: nowrap;">
                     <i class="fi fi-rr-eye"></i> {{post.view_count}}
                   </span>

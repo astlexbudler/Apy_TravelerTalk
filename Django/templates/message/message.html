@@ -49,11 +49,13 @@
     </div>
 
     <!-- 버튼 -->
+    {% if account.account_type == 'partner' %}
     <div class="text-end">
       <a class="btn btn-success" href="javascript: replyMessage('supervisor', '관리자', '');">
         <i class="fi fi-rr-edit"></i> 쪽지 쓰기
       </a>
     </div>
+    {% endif %}
 
     <!-- 페이지네이션 영역 -->
     {% include 'components/main/pagination.html' %}

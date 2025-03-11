@@ -3,72 +3,72 @@
 <main class="container">
 
   <div class="main-section">
-      <!-- 페이지 타이틀 -->
-      {% with title='레벨 관리' subtitle='사용자 레벨 정책 관리' %}
-      {% include 'components/main/title_section.html' %}
-      {% endwith %}
 
-      <div class="text-end p-3 mb-5">
-        <a href="javascript: $('#addNewLevel').modal('show');" class="btn btn-success btn-sm">
-          <i class="fi fi-rr-plus"></i> 레벨 정책 추가
-        </a>
-      </div>
+    <!-- 페이지 타이틀 -->
+    {% with title='레벨 관리' subtitle='사용자 레벨 정책 관리' %}
+    {% include 'components/main/title_section.html' %}
+    {% endwith %}
 
-      <table class="table table-border small border shadow text-center">
-        <tbody>
-          <tr>
-            <th>
-              레벨
-            </th>
-            <th>
-              이미지
-            </th>
-            <th>
-              레벨 텍스트
-            </th>
-            <th></th>
+    <div class="text-end p-2 my-3">
+      <a href="javascript: $('#addNewLevel').modal('show');" class="btn btn-success btn-sm">
+        <i class="fi fi-rr-plus"></i> 레벨 정책 추가
+      </a>
+    </div>
+
+    <table class="table table-border small border shadow text-center">
+      <tbody>
+        <tr class="tbg1">
+          <th>
+            레벨
+          </th>
+          <th>
+            이미지
+          </th>
+          <th>
+            레벨 텍스트
+          </th>
+          <th></th>
+        </tr>
+        {% if levels|length < 1 %} <tr>
+          <td colspan="5">
+            등록된 레벨 정책이 없습니다.
+          </td>
           </tr>
-          {% if levels|length < 1 %} <tr>
-            <td colspan="5">
-              등록된 레벨 정책이 없습니다.
+          {% else %}
+          {% for level in levels %}
+          <tr>
+            <td>
+              {{ level.level }}
             </td>
-            </tr>
-            {% else %}
-            {% for level in levels %}
-            <tr>
-              <td>
-                {{ level.level }}
-              </td>
-              <td>
-                {% if level.image %}
-                <img src="{{ level.image }}" alt="레벨 이미지" style="height: 20px;">
-                {% else %}
-                <span>설정된 이미지 없음</span>
-                {% endif %}
-              </td>
-              <td>
-                {% if not level.image %}
-                <span class="badge" style="color: {{level.text_color}}; background-color: {{level.background_color}};">
-                  {{ level.text }}
-                </span>
-                {% endif %}
-              </td>
-              <td>
-                <a href="javascript: new bootstrap.Modal(document.getElementById('editLevel{{level.level}}')).show();"
-                  class="text-black-50">
-                  <i class="fi fi-rr-edit"></i>
-                </a>
-                {% include 'components/modal/supervisor/update_level.html' %}
-              </td>
-            </tr>
-            {% endfor %}
-            {% endif %}
-        </tbody>
-      </table>
-
+            <td>
+              {% if level.image %}
+              <img src="{{ level.image }}" alt="레벨 이미지" style="height: 20px;">
+              {% else %}
+              <span>설정된 이미지 없음</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if not level.image %}
+              <span class="badge" style="color: {{level.text_color}}; background-color: {{level.background_color}};">
+                {{ level.text }}
+              </span>
+              {% endif %}
+            </td>
+            <td>
+              <a href="javascript: new bootstrap.Modal(document.getElementById('editLevel{{level.level}}')).show();"
+                class="text-black-50">
+                <i class="fi fi-rr-edit"></i>
+              </a>
+              {% include 'components/modal/supervisor/update_level.html' %}
+            </td>
+          </tr>
+          {% endfor %}
+          {% endif %}
+      </tbody>
+    </table>
 
     <!-- 맨 위로 가기 버튼 -->
-    <div class="text-end mb-5">
+    <div class="text-end">
       {% include 'components/main/top_button.html' %}
     </div>
   </div>

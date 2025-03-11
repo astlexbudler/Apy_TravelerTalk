@@ -4,130 +4,130 @@
 
   <div class="main-section">
 
-      <!-- 페이지 타이틀 -->
-      {% with title='시스템 설정' subtitle='시스템 정책 설정 수정' %}
-      {% include 'components/main/title_section.html' %}
-      {% endwith %}
+    <!-- 페이지 타이틀 -->
+    {% with title='시스템 설정' subtitle='시스템 정책 설정 수정' %}
+    {% include 'components/main/title_section.html' %}
+    {% endwith %}
 
-      <!-- 시스템 설정 -->
-      <div class="container">
+    <!-- 시스템 설정 -->
+    <div class="container">
+      <div class="form-group mb-3">
+        <label>파일 업로드</label>
+        <input class="form-control mb-1" id="path" value="/media/default.png" readonly>
+        <input type="file" class="form-control" id="uploadInput" accept="image/*">
+        <div class="alert alert-info small mt-2 mb-5">
+          <i class="fi fi-rr-info"></i> 파일을 서버에 업로드하고 경로를 반환합니다. 헤더 이미지나 로고 시 이미지를 업로드하고 경로를 입력하세요.
+        </div>
+      </div>
+
+      <form class="mb-5" id="settingsForm">
+
+        <!-- service_name -->
         <div class="form-group mb-3">
-          <label>파일 업로드</label>
-          <input class="form-control mb-1" id="path" value="/media/default.png" readonly>
-          <input type="file" class="form-control" id="uploadInput" accept="image/*">
+          <label for="service_name">서비스 이름</label>
+          <input type="text" class="form-control" name="service_name" value="{{settings.service_name}}">
+        </div>
+
+        <!-- site_logo -->
+        <div class="form-group mb-3">
+          <label for="site_logo">사이트 로고</label>
+          <input type="text" class="form-control" name="site_logo" value="{{settings.site_logo}}">
           <div class="alert alert-info small mt-2 mb-5">
-            <i class="fi fi-rr-info"></i> 파일을 서버에 업로드하고 경로를 반환합니다. 헤더 이미지나 로고 시 이미지를 업로드하고 경로를 입력하세요.
+            <i class="fi fi-rr-info"></i> 아이콘 및 로고로 사용될 이미지의 업로드 링크. 이미지 크기는 512x512 사이즈 권장.
           </div>
         </div>
 
-        <form class="mb-5" id="settingsForm">
-
-          <!-- service_name -->
-          <div class="form-group mb-3">
-            <label for="service_name">서비스 이름</label>
-            <input type="text" class="form-control" name="service_name" value="{{settings.service_name}}">
+        <!-- company_info -->
+        <div class="form-group mb-3">
+          <label for="company_info">회사 이름</label>
+          <input type="text" class="form-control" name="company_info" value="{{settings.company_info}}">
+          <div class="alert alert-info small mt-2 mb-5">
+            <i class="fi fi-rr-info"></i> 회사 소개 및 제휴 안내 등에 표시될 회사 이름입니다.
           </div>
+        </div>
 
-          <!-- site_logo -->
-          <div class="form-group mb-3">
-            <label for="site_logo">사이트 로고</label>
-            <input type="text" class="form-control" name="site_logo" value="{{settings.site_logo}}">
-            <div class="alert alert-info small mt-2 mb-5">
-              <i class="fi fi-rr-info"></i> 아이콘 및 로고로 사용될 이미지의 업로드 링크. 이미지 크기는 512x512 사이즈 권장.
-            </div>
+        <!-- terms -->
+        <div class="form-group mb-3">
+          <label for="terms">이용 약관</label>
+          <textarea id="terms">
+              {{settings.terms|safe}}
+          </textarea>
+          <script>
+              // 아래 기능만 메뉴에 활성화
+              // 폰트 사이즈, 볼드, 이탤릭, 밑줄, 정렬, 테이블, 이미지, 구분선
+              $(document).ready(function () {
+                  $('#terms').summernote({
+                      tabsize: 2,
+                      height: parseInt('300'),
+                      toolbar: [
+                          ['fontsize', ['fontsize']],
+                          ['font', ['bold', 'italic', 'underline', 'clear']],
+                          ['para', ['paragraph']],
+                          ['table', ['table']],
+                          ['insert', ['hr', 'picture']],
+                      ]
+                  });
+              });
+          </script>
+          <div class="alert alert-info small mt-2 mb-5">
+            <i class="fi fi-rr-info"></i> 서비스 이용약관 및 개인정보 처리방침을 입력하세요.
           </div>
+        </div>
 
-          <!-- company_info -->
-          <div class="form-group mb-3">
-            <label for="company_info">회사 이름</label>
-            <input type="text" class="form-control" name="company_info" value="{{settings.company_info}}">
-            <div class="alert alert-info small mt-2 mb-5">
-              <i class="fi fi-rr-info"></i> 회사 소개 및 제휴 안내 등에 표시될 회사 이름입니다.
-            </div>
+        <!-- register_point -->
+        <div class="form-group mb-3">
+          <label for="register_point">가입 포인트</label>
+          <input type="number" class="form-control" name="register_point" value="{{settings.register_point}}">
+          <div class="alert alert-info small mt-2 mb-5">
+            <i class="fi fi-rr-info"></i> 사용자가 처음 회원가입하면 자동으로 지급되는 포인트입니다.
           </div>
+        </div>
 
-          <!-- terms -->
-          <div class="form-group mb-3">
-            <label for="terms">이용 약관</label>
-            <textarea id="terms">
-                {{settings.terms|safe}}
-            </textarea>
-            <script>
-                // 아래 기능만 메뉴에 활성화
-                // 폰트 사이즈, 볼드, 이탤릭, 밑줄, 정렬, 테이블, 이미지, 구분선
-                $(document).ready(function () {
-                    $('#terms').summernote({
-                        tabsize: 2,
-                        height: parseInt('300'),
-                        toolbar: [
-                            ['fontsize', ['fontsize']],
-                            ['font', ['bold', 'italic', 'underline', 'clear']],
-                            ['para', ['paragraph']],
-                            ['table', ['table']],
-                            ['insert', ['hr', 'picture']],
-                        ]
-                    });
-                });
-            </script>
-            <div class="alert alert-info small mt-2 mb-5">
-              <i class="fi fi-rr-info"></i> 서비스 이용약관 및 개인정보 처리방침을 입력하세요.
-            </div>
+        <!-- attend_point -->
+        <div class="form-group mb-3">
+          <label for="attend_point">출석 포인트</label>
+          <input type="number" class="form-control" name="attend_point" value="{{settings.attend_point}}">
+          <div class="alert alert-info small mt-2 mb-5">
+            <i class="fi fi-rr-info"></i> 일반 사용자가 매일 출석하면 지급되는 포인트입니다. 1등은 x2배, 2등은 x1.5배, 3등은 x1.2배 지급됩니다.
           </div>
+        </div>
 
-          <!-- register_point -->
-          <div class="form-group mb-3">
-            <label for="register_point">가입 포인트</label>
-            <input type="number" class="form-control" name="register_point" value="{{settings.register_point}}">
-            <div class="alert alert-info small mt-2 mb-5">
-              <i class="fi fi-rr-info"></i> 사용자가 처음 회원가입하면 자동으로 지급되는 포인트입니다.
-            </div>
+        <!-- post_point -->
+        <div class="form-group mb-3">
+          <label for="post_point">게시물 포인트</label>
+          <input type="number" class="form-control" name="post_point" value="{{settings.post_point}}">
+          <div class="alert alert-info small mt-2 mb-5">
+            <i class="fi fi-rr-info"></i> 일반 사용자가 게시물을 작성하면 지급되는 포인트입니다.
           </div>
+        </div>
 
-          <!-- attend_point -->
-          <div class="form-group mb-3">
-            <label for="attend_point">출석 포인트</label>
-            <input type="number" class="form-control" name="attend_point" value="{{settings.attend_point}}">
-            <div class="alert alert-info small mt-2 mb-5">
-              <i class="fi fi-rr-info"></i> 일반 사용자가 매일 출석하면 지급되는 포인트입니다. 1등은 x2배, 2등은 x1.5배, 3등은 x1.2배 지급됩니다.
-            </div>
+        <!-- review_point -->
+        <div class="form-group mb-3">
+          <label for="review_point">리뷰 포인트</label>
+          <input type="number" class="form-control" name="review_point" value="{{settings.review_point}}">
+          <div class="alert alert-info small mt-2 mb-5">
+            <i class="fi fi-rr-info"></i> 일반 사용자가 리뷰를 작성하면 지급되는 포인트입니다.
           </div>
+        </div>
 
-          <!-- post_point -->
-          <div class="form-group mb-3">
-            <label for="post_point">게시물 포인트</label>
-            <input type="number" class="form-control" name="post_point" value="{{settings.post_point}}">
-            <div class="alert alert-info small mt-2 mb-5">
-              <i class="fi fi-rr-info"></i> 일반 사용자가 게시물을 작성하면 지급되는 포인트입니다.
-            </div>
+        <!-- comment_point -->
+        <div class="form-group mb-3">
+          <label for="comment_point">댓글 포인트</label>
+          <input type="number" class="form-control" name="comment_point" value="{{settings.comment_point}}">
+          <div class="alert alert-info small mt-2 mb-5">
+            <i class="fi fi-rr-info"></i> 일반 사용자가 댓글을 작성하면 지급되는 포인트입니다.
           </div>
+        </div>
 
-          <!-- review_point -->
-          <div class="form-group mb-3">
-            <label for="review_point">리뷰 포인트</label>
-            <input type="number" class="form-control" name="review_point" value="{{settings.review_point}}">
-            <div class="alert alert-info small mt-2 mb-5">
-              <i class="fi fi-rr-info"></i> 일반 사용자가 리뷰를 작성하면 지급되는 포인트입니다.
-            </div>
-          </div>
+        <a class="btn btn-primary mt-2" href="javascript: saveSettings()">
+          <i class="fi fi-rr-edit"></i> 변경된 설정 저장
+        </a>
 
-          <!-- comment_point -->
-          <div class="form-group mb-3">
-            <label for="comment_point">댓글 포인트</label>
-            <input type="number" class="form-control" name="comment_point" value="{{settings.comment_point}}">
-            <div class="alert alert-info small mt-2 mb-5">
-              <i class="fi fi-rr-info"></i> 일반 사용자가 댓글을 작성하면 지급되는 포인트입니다.
-            </div>
-          </div>
-
-          <a class="btn btn-primary mt-2" href="javascript: saveSettings()">
-            <i class="fi fi-rr-edit"></i> 변경된 설정 저장
-          </a>
-
-        </form>
-      </div>
+      </form>
+    </div>
 
     <!-- 맨 위로 가기 버튼 -->
-    <div class="text-end mb-5">
+    <div class="text-end">
       {% include 'components/main/top_button.html' %}
     </div>
   </div>
