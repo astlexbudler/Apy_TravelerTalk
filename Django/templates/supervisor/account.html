@@ -199,6 +199,10 @@
 
     <!-- 버튼 그룹 -->
     <div class="text-end my-4">
+      <a class="btn btn-danger btn-sm me-2"
+        href="javascript: deleteSelectedAccounts()">
+        <i class="fi fi-rr-trash"></i> 선택 삭제
+      </a>
       <a class="btn btn-primary btn-sm me-2"
         href="javascript: new bootstrap.Modal(document.getElementById('addAccount')).show()">
         <i class="fi fi-rr-user-add"></i> 사용자 생성
@@ -259,7 +263,8 @@
               </span>
             </div>
             <div style="display: inline-block; text-align: right;">
-              <p class="m-0 text-end text-black-50" style="font-size: 14px;">
+              <input type="checkbox" class="form-check-input" name="selectedAccounts" value="{{ search_account.id }}">
+              <p class="m-0 text-end text-black-50 mt-2" style="font-size: 14px;">
                 {% if search_account.status == 'active' %}
                 <span class="badge bg-success">정상</span>
                 {% elif 'pending' in search_account.status %}
@@ -345,6 +350,57 @@
       makePaegeButton('{{request.GET.page}}', '{{last_page}}', `{{SUPERVISOR_URL}}/supervisor/account?tab=${tab}&accountId=${searchAccountId}&accountNickname=${searchAccountNickname}&accountStatus=${searchAccountStatus}`);
     }
   });
+
+  // 사용자 선택 삭제
+  deleteSelectedAccounts = async () => {
+
+    var isDelete = await Swal.fire({
+      html: `
+      <div>
+        <div class="text-center py-4">
+          <h1 class="text-dark">회원 삭제</h1>
+        </div>
+        <diV class="text-center">
+          <p class="text-black-50">
+            선택된 회원을 삭제하시겠습니까?
+          </p>
+        </div>
+      </div>`,
+      icon: `warning`,
+      showConfirmButton: true,
+      confirmButtonText: `삭제하기`,
+      confirmButtonColor: `#f25767`,
+      showCancelButton: true,
+      cancelButtonText: `취소`,
+      cancelButtonColor: `#929ea8`
+    })
+      .then((result) => {
+        if (result.isConfirmed) {
+          return true;
+        }
+        return false;
+      });
+    if (!isDelete) {
+      return;
+    }
+
+    showAlert('일괄 삭제', '선택된 회원을 삭제합니다. 잠시만 기다려주세요', 'info');
+
+    var selectedAccounts = document.getElementsByName('selectedAccounts');
+    var selectedAccountIds = [];
+    for (var i = 0; i < selectedAccounts.length; i++) {
+      if (selectedAccounts[i].checked) {
+        await fetch('/api/account?id=' + selectedAccounts[i].value, {
+          method: 'DELETE',
+          headers: {
+            'X-CSRFToken': csrftoken
+          }
+        });
+      }
+    }
+    await showAlert('회원 삭제 완료', '회원 삭제가 성공적으로 처리되었습니다.', 'success');
+    location.reload();
+  }
 
 
 </script>

@@ -73,7 +73,7 @@
                     <div class="col-12 col-lg-8 border shadow p-5">
                         <div class="container mx-3">
                             <div class="my-5">
-                                <h4 class="mt-4 text-black-60">관리자 페이지</h4>
+                                <h4 class="mt-4 text-black-60" id="loginTitle"></h4>
                                 <p>
                                     관리자 계정 확인을 위해 한번 더 로그인해주세요.
                                 </p>
@@ -112,6 +112,20 @@
 
     </div>
     <script>
+
+        window.addEventListener('load', () => {
+            const titleElement = document.getElementById('loginTitle');
+            const url = window.location.href;
+
+            if (url.includes('ptn') || url.includes('partner')) {
+                titleElement.innerText = '파트너 관리자 로그인';
+            } else if (url.includes('spv') || url.includes('supervisor')) {
+                titleElement.innerText = '사이트 관리자 로그인';
+            } else {
+                titleElement.innerText = '관리자 로그인';
+            }
+        });
+
 
     </script>
 

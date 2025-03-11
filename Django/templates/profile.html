@@ -208,17 +208,17 @@
     }
 
     // 회원 탈퇴 요청
-    var success = await fetch('/api/account', {
+    var success = await fetch('/api/account?id={{profile.id}}', {
       method: 'DELETE',
       headers: {
         'X-CSRFToken': csrftoken
       }
     })
-      .then(response => response.json())
-      .then(data => {
-        console.log(data);
-        return data.success;
-      });
+    .then(response => response.json())
+    .then(data => {
+      console.log(data);
+      return data.success;
+    });
 
     // 회원 탈퇴 결과에 따른 처리
     if (success) {
