@@ -1,15 +1,43 @@
+<div class="modal fade" id="updateExpModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title text-black-60">
+                경험치 변경
+              </h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+
+              <div class="form-group">
+                  <label>변경할 경험치</label>
+                  <input type="number" class="form-control" placeholder="변경할 경험치를 입력해주세요." id="exp" value="{{ profile.exp }}">
+              </div>
+
+          </div>
+          <div class="modal-footer">
+              <button class="btn btn-primary me-2" onclick="updateExp();" data-bs-dismiss="modal">
+                  <i class="fi fi-rr-edit"></i> 변경하기
+              </button>
+              <button class="btn btn-secondary" data-bs-dismiss="modal">
+                  취소
+              </button>
+          </div>
+      </div>
+  </div>
+</div>
 <script>
-      // Exp 변경
+  // Exp 변경
   updateExp = async () => {
     newExp = document.getElementById('exp').value;
 
     // Exp 변경 요청
     var formData = new FormData();
     formData.append('exp', newExp);
-    formData.append('edit_account_id', '{{ profile.id }}');
+    formData.append('id', '{{ profile.id }}');
 
-    var result = await fetch('/api/account?update=y', {
-      method: 'POST',
+    var success = await fetch('/api/account', {
+      method: 'PATCH',
       body: formData,
       headers: {
         'X-CSRFToken': csrftoken
@@ -22,7 +50,7 @@
       });
 
     // Exp 변경 결과에 따른 처리
-    if (result == 'y') {
+    if (success) {
       await showAlert('Exp 변경 완료', 'Exp가 성공적으로 변경되었습니다.', 'success');
       location.reload();
       return

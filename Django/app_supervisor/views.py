@@ -5,7 +5,7 @@ import string
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, logout, get_user_model
-from django.db.models import Q
+from django.db.models import Q, Count, Case, When, Value, IntegerField
 from django.contrib.auth.models import Group
 from django.conf import settings
 
@@ -495,20 +495,18 @@ def account(request):
   page = int(request.GET.get('page', '1'))
   search_id = request.GET.get('username')
   search_nickname = request.GET.get('nickname', '')
-  search_level_at_least = int(request.GET.get('level_at_least', '0'))
   search_status = request.GET.get('status')
   search_ip = request.GET.get('ip')
-  search_mileage_at_least = int(request.GET.get('mileage_at_least', '0'))
 
   # 계정 타입별로 계정 통계 가져오기
   query = Q()
-  if tab == 'user':
+  if tab == 'userTab':
     query = Q(groups__name='user')
-  elif tab == 'dame':
+  elif tab == 'dameTab':
     query = Q(groups__name='dame')
-  elif tab == 'partner':
+  elif tab == 'partnerTab':
     query = Q(groups__name='partner')
-  elif tab == 'supervisor':
+  elif tab == 'supervisorTab':
     query = Q(groups__name__in=['supervisor', 'subsupervisor'])
   accounts = models.ACCOUNT.objects.filter(query).order_by('-date_joined')
 
@@ -525,14 +523,10 @@ def account(request):
     query &= Q(username=search_id)
   if search_nickname:
     query &= Q(first_name=search_nickname)
-  if search_level_at_least:
-    query &= Q(level__level__gte=search_level_at_least)
   if search_status:
     query &= Q(status=search_status)
   if search_ip:
     query &= Q(recent_ip=search_ip)
-  if search_mileage_at_least:
-    query &= Q(mileage__gte=search_mileage_at_least)
   accounts = accounts.filter(query)
 
   # export
@@ -544,11 +538,11 @@ def account(request):
       [acnt.last_name for acnt in accounts],
       [acnt.email for acnt in accounts],
       [acnt.tel for acnt in accounts],
-      [[group.name for group in acnt.groups.all()] for acnt in accounts],
-      [acnt.date_joined for acnt in accounts],
-      [acnt.last_login for acnt in accounts],
+      [acnt.groups.all()[0].name for acnt in accounts],
+      [datetime.datetime.strftime(acnt.date_joined, '%Y-%m-%d %H:%M') for acnt in accounts],
+      [datetime.datetime.strftime(acnt.last_login, '%Y-%m-%d %H:%M') if acnt.last_login else None for acnt in accounts],
       [acnt.status for acnt in accounts],
-      [acnt.note for acnt in accounts],
+      [str(acnt.note).replace(',', '.') for acnt in accounts],
       [acnt.mileage for acnt in accounts],
       [acnt.exp for acnt in accounts],
       [acnt.subsupervisor_permissions for acnt in accounts],
@@ -563,8 +557,8 @@ def account(request):
     })
 
   # 페이지네이션
-  accounts = accounts[(page - 1) * 20:page * 20]
-  last_page = math.ceil(accounts.count() / 20)
+  accounts = accounts[(page - 1) * 50:page * 50]
+  last_page = math.ceil(accounts.count() / 50)
   search_accounts = []
   for account in accounts:
 
@@ -576,7 +570,7 @@ def account(request):
       'partner_name': account.last_name,
       'email': account.email,
       'tel': account.tel,
-      'account_type': account.groups.all()[0].pk, # 각 계정은 하나의 그룹만 가짐
+      'account_type': account.groups.all()[0].name, # 각 계정은 하나의 그룹만 가짐
       'status': account.status,
       'subsupervisor_permissions': str(account.subsupervisor_permissions).split(','),
       'level': daos.select_level(account.level.pk),
@@ -594,6 +588,10 @@ def account(request):
     'ip': blocked_ip.ip
   } for blocked_ip in models.BLOCKED_IP.objects.all()]
 
+  # 게시판 및 카테고리
+  boards = daos.make_board_tree(board_type='travel')
+  categories = daos.make_category_tree()
+
   return render(request, 'supervisor/account.html', {
     **daos.get_urls(),
     'account': account,
@@ -603,6 +601,8 @@ def account(request):
     'last_page': last_page, # 페이지 처리를 위해 필요한 정보
     'status': status, # 사용자 종류(탭) 별 통계 데이터(관리자는 없음)
     'blocked_ips': blocked_ips, # 차단 IP 목록
+    'travel_boards': boards, # 게시판 목록
+    'categories': categories, # 카테고리 목록
   })
 
 # 프로필
@@ -688,41 +688,38 @@ def post(request):
   page = int(request.GET.get('page', '1'))
   search_post_title = request.GET.get('post_title', '')
   search_board_id = request.GET.get('board_id', '')
-  search_author_id = request.GET.get('author_id', '')
+  search_author = request.GET.get('author', '')
 
   # 게시판별 통계 가져오기
   boards = daos.make_board_tree(status=True, board_type='not_travel')
 
   # 게시글 검색
   query = Q()
+  query &= Q(place_info=None)
+  query &= Q(author__isnull=False)
   if search_post_title:
     query &= Q(title__contains=search_post_title)
-  if search_author_id:
-    query &= Q(author__username__contains=search_author_id)
+  if search_author:
+    query &= Q(author__username=search_author) # 작성자 아이디로 검색
+    query &= Q(author__first_name=search_author) # 작성자 닉네임으로 검색
   if search_board_id:
     query &= Q(boards__id__contains=search_board_id)
-  posts = models.POST.objects.exclude(
-    author__isnull=True, # 작성자가 없는 게시글은 제외
-    place_info__isnull=False, # 장소 정보가 없는 게시글은 제외
-  ).select_related(
-    'author'
+  posts = models.POST.objects.select_related(
+    'author', 'place_info'
   ).filter(query).order_by('-created_at')
 
   # export
   if request.GET.get('export'):
-    headers = ['id', 'title', 'image', 'view_count', 'like_count', 'created_at', 'search_weight', 'board', 'author', 'place_info', 'related_post']
+    headers = ['id', 'title', 'view_count', 'like_count', 'created_at', 'board', 'author_nickname', 'related_post_name']
     values = [
         [str(post.id) for post in posts],
         [post.title for post in posts],
-        [str(post.image) for post in posts],
         [str(post.view_count) for post in posts],
         [str(post.like_count) for post in posts],
-        [str(post.created_at) for post in posts],
-        [str(post.search_weight) for post in posts],
+        [datetime.datetime.strftime(post.created_at, '%Y-%m-%d %H:%M') for post in posts],
         [str(post.boards.all().last().name) for post in posts],
-        [str(post.author.username) for post in posts],
-        [str(post.place_info) for post in posts],
-        [str(post.related_post) for post in posts],
+        [str(post.author.first_name) for post in posts],
+        [str(post.related_post.title) if post.related_post else '' for post in posts],
     ]
 
     # 행(row) 중심 데이터 변환 (Transpose)
@@ -735,8 +732,8 @@ def post(request):
     })
 
   # 페이지네이션
-  last_page = posts.count() // 20 + 1 # 20개씩 표시
-  posts = posts[(page - 1) * 20:page * 20]
+  last_page = posts.count() // 50 + 1 # 50개씩 표시
+  posts = posts[(page - 1) * 50:page * 50]
   search_posts = []
 
   # 게시글 정보
@@ -748,6 +745,7 @@ def post(request):
           'nickname': post.author.first_name,
           'partner_name': post.author.last_name,
           'level': daos.select_level(post.author.level.level),
+          'account_type': post.author.groups.all()[0].name,
       },
       'related_post': {
           'id': post.related_post.id,
@@ -757,7 +755,7 @@ def post(request):
           'id': board.id,
           'name': board.name,
       } for board in post.boards.all()],
-      'board_ids': [board.id for board in post.boards.all()],
+      'board_ids': ','.join([str(board.id) for board in post.boards.all()]),
       'title': post.title,
       'image': '/media/' + str(post.image) if post.image else None,
       'view_count': post.view_count,
@@ -850,7 +848,7 @@ def travel(request):
     # 데이터 가져오기
     post_id = request.POST.get('post_id')
     place_status = request.POST.get('place_status')
-    post_search_weight = request.POST.get('post_search_weight')
+    post_search_weight = request.POST.get('search_weight')
     ad_start_at = request.POST.get('ad_start_at')
     ad_end_at = request.POST.get('ad_end_at')
     place_info_note = request.POST.get('place_info_note')
@@ -869,27 +867,20 @@ def travel(request):
 
   # 통계 데이터 가져오기
   tab = request.GET.get('tab', 'noAdTab') # noAdTab, weightAdTab, statusAdTab
-  posts = models.POST.objects.exclude(
-    place_info__isnull=True, # 여행지 정보가 없는 게시글은 제외
-  ).prefetch_related(
+  posts = models.POST.objects.prefetch_related(
     'boards'
   ).select_related(
     'author', 'place_info'
   ).prefetch_related(
     'place_info__categories'
-  ).all().order_by('-created_at')
-  status = {
-    'writing': posts.filter(place_info__status='writing').count(),
-    'active': posts.filter(place_info__status='active').count(),
-    'pending': posts.filter(place_info__status='pending').count(),
-    'weightAd': posts.exclude(search_weight__gt=0, place_info__status='active').count(),
-    'ad': posts.filter(place_info__status='ad').count(),
-  }
+  ).filter(
+    place_info__isnull=False
+  ).order_by('-created_at')
 
   # 데이터 가져오기
   search_title = request.GET.get('title')
   search_board_id = request.GET.get('board_id')
-  search_author_id = request.GET.get('author_id')
+  search_author = request.GET.get('author')
   search_category_id = request.GET.get('category_id')
   search_address = request.GET.get('address')
   search_place_status = request.GET.get('place_status')
@@ -899,6 +890,7 @@ def travel(request):
   query = Q()
   if tab == 'noAdTab':
     query &= Q(place_info__status='writing') | Q(place_info__status='active') | Q(place_info__status='pending')
+    query &= Q(search_weight=0)
   elif tab == 'weightAdTab':
     query &= Q(search_weight__gt=0) & Q(place_info__status='active')
   elif tab == 'statusAdTab':
@@ -907,31 +899,45 @@ def travel(request):
     query &= Q(title__contains=search_title)
   if search_board_id:
     query &= Q(boards__id__contains=search_board_id)
-  if search_author_id:
-    query &= Q(author__username=search_author_id)
+  if search_author:
+    query &= Q(author__username=search_author)
+    query &= Q(author__first_name=search_author)
+    query &= Q(author__last_name=search_author)
   if search_category_id:
     query &= Q(place_info__categories__id__contains=search_category_id)
   if search_address:
     query &= Q(place_info__address__contains=search_address)
   if search_place_status:
     query &= Q(place_info__status=search_place_status)
-  search_posts = posts.filter(query)
+  posts = posts.filter(query)
+  search_posts = posts.filter(query).annotate(
+    ad_priority=Case(
+        When(place_info__status='ad', then=Value(0)),   # 'ad' 상태일 때 우선순위 0
+        When(place_info__status='active', then=Value(1)), # 'active' 상태일 때 우선순위
+        default=Value(2),                                # 그 외는 우선순위 1
+        output_field=IntegerField(),
+    )
+).order_by('ad_priority', '-search_weight', '-created_at')
 
   # export
   if request.GET.get('export'):
-    headers = ['id', 'title', 'image', 'view_count', 'like_count', 'created_at', 'search_weight', 'board', 'author', 'place_info', 'related_post']
+    headers = ['id', 'title', 'board', 'category', 'author_nickname', 'author_partner_name', 'open_info', 'location_info', 'search_weight', 'status', 'ad_start_at', 'ad_end_at', 'view_count', 'like_count', 'created_at']
     values = [
         [str(post.id) for post in search_posts],
         [post.title for post in search_posts],
-        [str(post.image) for post in search_posts],
+        [str(post.boards.all().last().name) for post in search_posts],
+        [str(post.place_info.categories.all().last().name) for post in search_posts],
+        [str(post.author.first_name) for post in search_posts],
+        [str(post.author.last_name) for post in search_posts],
+        [post.place_info.open_info for post in search_posts],
+        [post.place_info.location_info for post in search_posts],
+        [str(post.search_weight) for post in search_posts],
+        [post.place_info.status for post in search_posts],
+        [datetime.datetime.strftime(post.place_info.ad_start_at, '%Y-%m-%d') if post.place_info.ad_start_at else '' for post in search_posts],
+        [datetime.datetime.strftime(post.place_info.ad_end_at, '%Y-%m-%d') if post.place_info.ad_end_at else '' for post in search_posts],
         [str(post.view_count) for post in search_posts],
         [str(post.like_count) for post in search_posts],
-        [str(post.created_at) for post in search_posts],
-        [str(post.search_weight) for post in search_posts],
-        [str(post.boards.all().last().name) for post in search_posts],
-        [str(post.author.username) for post in search_posts],
-        [str(post.place_info) for post in search_posts],
-        [str(post.related_post) for post in search_posts],
+        [datetime.datetime.strftime(post.created_at, '%Y-%m-%d %H:%M') for post in search_posts],
     ]
 
     # 행(row) 중심 데이터 변환 (Transpose)
@@ -944,13 +950,13 @@ def travel(request):
     })
 
   # 페이지네이션
-  last_page = search_posts.count() // 20 + 1 # 20개씩 표시
-  search_posts = search_posts[(page - 1) * 20:page * 20]
-  search_posts = []
+  last_page = search_posts.count() // 50 + 1 # 50개씩 표시
+  search_posts = search_posts[(page - 1) * 50:page * 50]
+  posts = []
 
   # 게시글 정보
   for post in search_posts:
-    search_posts.append({
+    posts.append({
       'id': post.id,
       'author': {
           'id': post.author.id,
@@ -973,27 +979,27 @@ def travel(request):
           'id': board.id,
           'name': board.name,
       } for board in post.boards.all()],
-      'board_ids': [board.id for board in post.boards.all()],
+      'board_ids': ','.join([str(board.id) for board in post.boards.all()]),
       'title': post.title,
       'image': '/media/' + str(post.image) if post.image else None,
       'view_count': post.view_count,
       'like_count': post.like_count,
       'created_at': datetime.datetime.strftime(post.created_at, '%Y-%m-%d %H:%M'),
       'comment_count': models.COMMENT.objects.filter(post=post).count(),
+      'search_weight': post.search_weight,
     })
 
   # 카테고리 정보
-  boards = daos.make_board_tree(board_type='travel', status=True)
-  categories = daos.make_category_tree()
+  boards = daos.make_board_tree(board_type='travel')
+  categories = daos.make_category_tree(status=True)
 
   return render(request, 'supervisor/travel.html', {
     **daos.get_urls(),
     'account': account,
     'server_settings': server_settings,
 
-    'posts': search_posts, # 검색된 게시글 정보
+    'posts': posts, # 검색된 게시글 정보
     'last_page': last_page, # 페이지 처리를 위해 필요한 정보
-    'status': status, # 여행지 게시글 상태별 통계 데이터
     'travel_boards': boards, # 게시판 정보
     'categories': categories, # 카테고리 정보
   })
@@ -1137,11 +1143,11 @@ def coupon(request):
   # 페이지네이션
   last_page = coupons.count() // 20 + 1 # 20개씩 표시
   coupons = coupons[(page - 1) * 20:page * 20]
-  coupons = []
+  coupon_data = []
 
   # 쿠폰 정보
   for coupon in coupons:
-    coupons.append({
+    coupon_data.append({
       'code': coupon.code,
       'name': coupon.name,
       'image': '/media/' + str(coupon.image) if coupon.image else None,
@@ -1169,7 +1175,7 @@ def coupon(request):
     'server_settings': server_settings,
 
     'status': status, # 쿠폰 종류(탭) 별 통계 데이터
-    'coupons': coupons, # 검색된 쿠폰 정보
+    'coupons': coupon_data, # 검색된 쿠폰 정보
     'last_page': last_page, # 페이지 처리를 위해 필요한 정보
   })
 
@@ -1200,11 +1206,11 @@ def message(request):
   # 통계 데이터 가져오기
   if tab == 'inboxTab':
     messages = models.MESSAGE.objects.select_related(
-      'sender', 'receiver', 'include_coupon'
+      'sender', 'receive', 'include_coupon'
     ).filter(receive__isnull=True).order_by('-created_at')
   else:
     messages = models.MESSAGE.objects.select_related(
-      'sender', 'receiver', 'include_coupon'
+      'sender', 'receive', 'include_coupon'
     ).filter(sender__isnull=True).order_by('-created_at')
   status = {
     'user_question_read': messages.filter(message_type='user_question', is_read=True).count(),
@@ -1228,20 +1234,20 @@ def message(request):
       Q(first_name=search_message_receiver) | Q(last_name=search_message_receiver)
     ).first()
     if receiver:
-      query &= Q(receiver=receiver)
+      query &= Q(receive=receiver)
   messages = messages.filter(query)
 
   # export
   if request.GET.get('export'):
-    headers = ['id', 'title', 'content', 'is_read', 'created_at', 'sender']
+    headers = ['id', 'title', 'is_read', 'created_at', 'include_coupon_code', 'sender', 'receiver']
     values = [
       [m.id for m in messages],
       [m.title for m in messages],
-      [m.content for m in messages],
       [m.is_read for m in messages],
-      [m.created_at for m in messages],
-      [m.sender.first_name if m.sender else 'supervisor' for m in messages],
-      [m.receive.first_name if m.receiver else 'supervisor' for m in messages],
+      [datetime.datetime.strftime(m.created_at, '%Y-%m-%d %H:%M') for m in messages],
+      [m.include_coupon.code if m.include_coupon else '' for m in messages],
+      ['관리자' if m.sender is None else m.sender.first_name for m in messages],
+      ['관리자' if m.receive is None else m.receive.first_name for m in messages],
     ]
 
     # 행(row) 중심 데이터 변환 (Transpose)
@@ -1254,22 +1260,22 @@ def message(request):
     })
 
   # 페이지네이션
-  last_page = messages.count() // 20 + 1 # 20개씩 표시
-  messages = messages[(page - 1) * 20:page * 20]
-  messages = []
+  last_page = messages.count() // 50 + 1 # 50개씩 표시
+  messages = messages[(page - 1) * 50:page * 50]
+  message_data = []
 
   # 메시지 정보
   for msg in messages:
-    messages.append({
+    message_data.append({
       'id': msg.id,
       'sender_account': {
-        'id': message.sender.id,
-        'nickname': message.sender.first_name,
-      } if message.sender else {'id': '', 'nickname': '관리자', 'account_type': 'supervisor'},
+        'id': msg.sender.id,
+        'nickname': msg.sender.first_name,
+      } if msg.sender else {'id': '', 'nickname': '관리자', 'account_type': 'supervisor'},
       'receive_account': {
-        'id': message.receiver.id,
-        'nickname': message.receiver.first_name,
-      } if message.receiver else {'id': '', 'nickname': '관리자', 'account_type': 'supervisor'},
+        'id': msg.receive.id,
+        'nickname': msg.receive.first_name,
+      } if msg.receive else {'id': '', 'nickname': '관리자', 'account_type': 'supervisor'},
       'title': msg.title,
       'content': msg.content,
       'image': '/media/' + str(msg.image) if msg.image else None,
@@ -1289,7 +1295,7 @@ def message(request):
     'server_settings': server_settings,
 
     'status': status,
-    'messages': messages,
+    'messages': message_data,
     'last_page': last_page
   })
 

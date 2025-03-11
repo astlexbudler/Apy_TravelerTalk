@@ -32,7 +32,7 @@
                     </div>
 
                     <!-- 쪽지 발송 대상 검색 -->
-                    <div class="form-group mt-2 mb-2 {% if account.account_type not in 'supervisor,sub_supervisor,partner' %}d-none{% endif %}">
+                    <div class="form-group mt-2 mb-2 {% if account.account_type not in 'supervisor,subsupervisor,partner' %}d-none{% endif %}">
                         <label>받는 사람</label> <small id="receiverConfirmMessage"></small>
                         <div class="form-group position-relative w-100" style="display: inline-block;" onkeyup="if(event.keyCode == 13) { addUser(); }">
                             <input class="form-control" placeholder="사용자 아이디 또는 닉네임을 입력해주세요." id="accountSearchInput">
@@ -42,16 +42,14 @@
                             </a>
                         </div>
                     </div>
-                    {% if account.account_type not in 'supervisor,sub_supervisor' %}
                     <div class="mb-4 px-2">
-                        <div class="form-group mb-2">
+                        <div class="form-group mb-2 {% if account.account_type in 'supervisor,subsupervisor' %}d-none{% endif %}">
                             <input type="checkbox" id="messageToAdmin">
                             <label for="messageToAdmin">관리자 문의 메세지로 보내기</label>
                         </div>
                         <input id="receiverId" class="d-none">
                         <div id="receiverList"></div>
                     </div>
-                    {% endif %}
 
                     <!-- 쪽지 제목 -->
                     <div class="form-group mb-2">
@@ -71,8 +69,12 @@
                             <option value="partner_question" selected>파트너 문의</option>
                             <option value="request_ad">광고 요청</option>
                             {% endif %}
-                            {% if account.account_type in 'supervisor,sub_supervisor' %}
-                            <option value="supervisor" selected>관리자 쪽지</option>
+                            {% if account.account_type in 'supervisor,subsupervisor' %}
+                            <option value="user_question" selected>사용자 문의 답변</option>
+                            <option value="partner_question">파트너 문의 답변</option>
+                            <option value="request_ad">광고 요청 답변</option>
+                            <option value="request_coupon">쿠폰 요청 답변</option>
+                            <option value="all">모두에게</option>
                             {% endif %}
                         </select>
                     </div>
@@ -85,11 +87,10 @@
                     </div>
 
                     <!-- 쿠폰 -->
-                    {% if account.account_type == 'partner' or account.account_type == 'supervisor' or account.account_type == 'sub_supervisor' %}
+                    {% if account.account_type == 'partner' or account.account_type == 'supervisor' or account.account_type == 'subsupervisor' %}
                     <div class="form-group mb-2">
                         <label>쿠폰 보내기</label> <small id="couponConfirmMessage"></small>
-                        <input id="couponCode" class="form-control" placeholder="보낼 쿠폰 코드를 입력하세요." name="coupon_code"
-                            oninput="couponCodeCheck(this);">
+                        <input id="couponCode" class="form-control" placeholder="보낼 쿠폰 코드를 입력하세요." name="coupon_code" oninput="couponCodeCheck(this);">
                         <small>
                             전달하고자하는 쿠폰의 쿠폰 코드를 입력하세요.
                         </small>
@@ -265,6 +266,35 @@
         couponValid = true;
     }
 
+    // 모두에게
+    document.getElementById('messageType').addEventListener('change', (e) => {
+        if (e.target.value == 'all') {
+            document.getElementById('receiverId').value = 'all,';
+            html = `
+                <div style="display: flex; justify-content: space-between; white-space: nowrap;" id="all">
+                    <div style="display: inline-block; text-align: left;">
+                        <p class="text-black-60 mb-1">
+                            모두에게
+                        </p>
+                    </div>
+                    <div style="display: inline-block; text-align: right;">
+                        <a href="javascript: deleteUser('all');" class="small text-danger">
+                            삭제
+                        </a>
+                    </div>
+                </div>
+            `;
+            document.getElementById('receiverList').innerHTML = html;
+
+            document.getElementById('couponCode').value = '';
+            document.getElementById('couponCode').setAttribute('readonly', 'readonly');
+        } else {
+            document.getElementById('receiverId').value = '';
+            document.getElementById('receiverList').innerHTML = '';
+            document.getElementById('couponCode').removeAttribute('readonly');
+        }
+    });
+
     // 쪽지 보내기
     sendMessage = async () => {
 
@@ -279,7 +309,7 @@
         var receiverIds = document.getElementById('receiverId').value;
         var messageTitle = document.getElementById('messageTitle').value;
         var messageContent = document.getElementById('messageContent').value;
-        if (receiverIds == '' || messageTitle == '' || messageContent == '') {
+        if (messageTitle == '' || messageContent == '') {
             console.log('receiverIds', receiverIds, 'messageTitle', messageTitle, 'messageContent', messageContent);
             await showAlert('쪽지 보내기', '모든 항목을 입력해주세요.', 'error');
             return;
@@ -301,6 +331,9 @@
                 formData.append('coupon_code', document.getElementById('couponCode').value);
             }
             formData.append('message_type', document.getElementById('messageType').value);
+            if (document.getElementById('messageType').value == 'all') {
+                formData.append('receiver_id', 'all');
+            }
             await fetch('/api/message', {
                 method: 'POST',
                 headers: {

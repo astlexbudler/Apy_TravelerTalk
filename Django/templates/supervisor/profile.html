@@ -4,193 +4,188 @@
 
   <div class="main-section">
 
-    <div style="min-height: calc(100vh - 160px);">
+    <!-- 페이지 타이틀 -->
+    {% include 'components/main/breadcrumbs.html' %}
+    {% include 'components/main/title_section.html' with title='프로필' subtitle='프로필 정보를 확인하거나 수정할 수 있습니다.' %}
 
-
-      <!-- 페이지 타이틀 -->
-      {% include 'components/main/breadcrumbs.html' %}
-      {% include 'components/main/title_section.html' with title='프로필' subtitle='프로필 정보를 확인하거나 수정할 수 있습니다.' %}
-
-      <!-- 선택지 버튼 그룹 -->
-      <div class="btn-group w-100 d-flex">
-        <div class="w-100 d-flex justify-content-center rounded-2">
-          <a class="w-100 btn pastel-pink-background text-white" href="{{supervisor_url}}/supervisor/account/profile?account_id={{request.GET.account_id}}&tab=profileTab" id="profileTab">
-              프로필
-          </a>
-        </div>
-        <div class="divider"></div>
-        <div class="w-100 d-flex justify-content-center rounded-2">
-          <a class="w-100 btn pastel-beige-background" href="{{supervisor_url}}/supervisor/account/activity?account_id={{request.GET.account_id}}&tab=activityTab" id="activityTab">
-              활동 기록
-          </a>
-        </div>
+    <!-- 선택지 버튼 그룹 -->
+    <div class="btn-group w-100 d-flex">
+      <div class="w-100 d-flex justify-content-center rounded-2">
+        <a class="w-100 btn pastel-pink-background text-white" href="{{SUPERVISOR_URL}}/supervisor/account/profile?account_id={{request.GET.account_id}}&tab=profileTab" id="profileTab">
+            프로필
+        </a>
       </div>
+      <div class="divider"></div>
+      <div class="w-100 d-flex justify-content-center rounded-2">
+        <a class="w-100 btn pastel-beige-background" href="{{SUPERVISOR_URL}}/supervisor/account/activity?account_id={{request.GET.account_id}}&tab=activityTab" id="activityTab">
+            활동 기록
+        </a>
+      </div>
+    </div>
+
+    <!-- 프로필 정보 -->
+    <div class="mt-4">
+
+      <!-- 프로필 카드 -->
+      {% if profile.account_type in 'user,dame' %}
+      {% include 'components/main/profile_card.html' %}
+      {% endif %}
 
       <!-- 프로필 정보 -->
-      <div class="mt-4">
-
-        <!-- 프로필 카드 -->
-        {% if profile.account_type in 'user,dame' %}
-        {% include 'components/main/profile_card.html' %}
-        {% endif %}
-
-        <!-- 프로필 정보 -->
-        <div class="mb-5">
-          <h6 class="text-black-60 mb-3 pb-3 border-bottom">
-            프로필 수정
-          </h6>
-          <div class="mt-2 mb-5 row">
-            <div class="col-6">
-              <p class="text-dark">
-                아이디
-              </p>
-              <p class="text-black-50">
-                {{ profile.username }}
-              </p>
-            </div>
-            <div class="col-6">
-              <p class="text-dark">
-                상태
-                <a class="text-black-50"
-                  href="javascript: new bootstrap.Modal(document.getElementById('updateStatusModal')).show();">
-                  <i class="fi fi-rr-edit"></i>
-              </p>
-              <p class="text-black-50">
-                {% if profile.status == 'active' %}
-                <span class="badge bg-success">정상</span>
-                {% elif profile.status == 'pending' %}
-                <span class="badge bg-warning">대기</span>
-                {% elif profile.status == 'blocked' %}
-                <span class="badge bg-danger">정지</span>
-                {% elif profile.status == 'deleted' %}
-                <span class="badge bg-secondary">탈퇴</span>
-                {% endif %}
-              </p>
-            </div>
+      <div class="mb-5">
+        <h6 class="text-black-60 mb-3 pb-3 border-bottom">
+          프로필 수정
+        </h6>
+        <div class="mt-2 mb-5 row">
+          <div class="col-6">
+            <p class="text-dark">
+              아이디
+            </p>
+            <p class="text-black-50">
+              {{ profile.username }}
+            </p>
           </div>
-          <div class="mb-5 row">
-            <div class="col-6">
-              <p class="text-dark">
-                가입일
-              </p>
-              <p class="text-black-50">
-                {{ profile.created_at }}
-              </p>
-            </div>
-            <div class="col-6">
-              <p class="text-dark">
-                마지막 로그인
-              </p>
-              <p class="text-black-50">
-                {{ profile.last_login }}
-              </p>
-            </div>
+          <div class="col-6">
+            <p class="text-dark">
+              상태
+              <a class="text-black-50"
+                href="javascript: new bootstrap.Modal(document.getElementById('updateStatusModal')).show();">
+                <i class="fi fi-rr-edit"></i>
+            </p>
+            <p class="text-black-50">
+              {% if profile.status == 'active' %}
+              <span class="badge bg-success">정상</span>
+              {% elif profile.status == 'pending' %}
+              <span class="badge bg-warning">대기</span>
+              {% elif profile.status == 'blocked' %}
+              <span class="badge bg-danger">정지</span>
+              {% elif profile.status == 'deleted' %}
+              <span class="badge bg-secondary">탈퇴</span>
+              {% endif %}
+            </p>
           </div>
-          <div class="mb-5 row">
-            <div class="col-6">
-              <p class="text-dark">
-                <span class="text-dark">닉네임</span>
-                <a class="text-black-50"
-                  href="javascript: new bootstrap.Modal(document.getElementById('rewriteNicknameModal')).show();">
-                  <i class="fi fi-rr-edit"></i>
-                </a>
-              </p>
-              <p class="text-black-50">
-                {{ profile.nickname }}
-              </p>
-            </div>
-            {% if profile.account_type == 'subsupervisor' and account.account_type == 'supervisor' %}
-            <div class="col-6">
-              <p class="text-dark">
-                부관리자 권한
-                <a class="text-black-50"
-                  href="javascript: new bootstrap.Modal(document.getElementById('rewriteSubSupervisorPermissionsModal')).show();">
-                  <i class="fi fi-rr-edit"></i>
-                </a>
-              </p>
-              <p class="text-black-50">
-                {% if 'user' in profile.subsupervisor_permissions %}
-                <span class="badge bg-success">사용자</span>
-                {% endif %}
-                {% if 'post' in profile.subsupervisor_permissions %}
-                <span class="badge bg-success">게시물</span>
-                {% endif %}
-                {% if 'travel' in profile.subsupervisor_permissions %}
-                <span class="badge bg-success">여행</span>
-                {% endif %}
-                {% if 'coupon' in profile.subsupervisor_permissions %}
-                <span class="badge bg-success">쿠폰</span>
-                {% endif %}
-                {% if 'message' in profile.subsupervisor_permissions %}
-                <span class="badge bg-success">메시지</span>
-                {% endif %}
-                {% if 'banner' in profile.subsupervisor_permissions %}
-                <span class="badge bg-success">배너</span>
-                {% endif %}
-                {% if 'level' in profile.subsupervisor_permissions %}
-                <span class="badge bg-success">레벨</span>
-                {% endif %}
-                {% if 'setting' in profile.subsupervisor_permissions %}
-                <span class="badge bg-success">시스템</span>
-                {% endif %}
-              </p>
-            </div>
-            {% elif profile.account_type == 'partner' %}
-            <div class="col-6">
-              <p class="text-dark">
-                파트너 이름
-                <a class="text-black-50"
-                  href="javascript: new bootstrap.Modal(document.getElementById('rewritePartnerNameModal')).show();">
-                  <i class="fi fi-rr-edit"></i>
-                </a>
-              </p>
-              <p class="text-black-50">
-                {{ profile.partner_name }}
-              </p>
-            </div>
-            {% endif %}
+        </div>
+        <div class="mb-5 row">
+          <div class="col-6">
+            <p class="text-dark">
+              가입일
+            </p>
+            <p class="text-black-50">
+              {{ profile.created_at }}
+            </p>
           </div>
-          {% if profile.account_type == 'partner' %}
-          <div class="mb-5 row">
-            <div class="col-6">
-              <p class="text-dark">
-                <span class="text-dark">이메일</span>
-                <a class="text-black-50"
-                  href="javascript: new bootstrap.Modal(document.getElementById('rewriteEmailModal')).show();">
-                  <i class="fi fi-rr-edit"></i>
-                </a>
-              </p>
-              <p class="text-black-50">
-                {{ profile.email }}
-              </p>
-            </div>
-            <div class="col-6">
-              <p class="text-dark">
-                <span class="text-dark">연락처</span>
-                <a class="text-black-50"
-                  href="javascript: new bootstrap.Modal(document.getElementById('rewritePartnerPhoneModal')).show();">
-                  <i class="fi fi-rr-edit"></i>
-                </a>
-              </p>
-              <p class="text-black-50">
-                {{ profile.tel }}
-              </p>
-            </div>
+          <div class="col-6">
+            <p class="text-dark">
+              마지막 로그인
+            </p>
+            <p class="text-black-50">
+              {{ profile.last_login }}
+            </p>
+          </div>
+        </div>
+        <div class="mb-5 row">
+          <div class="col-6">
+            <p class="text-dark">
+              <span class="text-dark">닉네임</span>
+              <a class="text-black-50"
+                href="javascript: new bootstrap.Modal(document.getElementById('rewriteNicknameModal')).show();">
+                <i class="fi fi-rr-edit"></i>
+              </a>
+            </p>
+            <p class="text-black-50">
+              {{ profile.nickname }}
+            </p>
+          </div>
+          {% if profile.account_type == 'subsupervisor' and account.account_type == 'supervisor' %}
+          <div class="col-6">
+            <p class="text-dark">
+              부관리자 권한
+              <a class="text-black-50"
+                href="javascript: new bootstrap.Modal(document.getElementById('rewriteSubSupervisorPermissionsModal')).show();">
+                <i class="fi fi-rr-edit"></i>
+              </a>
+            </p>
+            <p class="text-black-50">
+              {% if 'user' in profile.subsupervisor_permissions %}
+              <span class="badge bg-success">사용자</span>
+              {% endif %}
+              {% if 'post' in profile.subsupervisor_permissions %}
+              <span class="badge bg-success">게시물</span>
+              {% endif %}
+              {% if 'travel' in profile.subsupervisor_permissions %}
+              <span class="badge bg-success">여행</span>
+              {% endif %}
+              {% if 'coupon' in profile.subsupervisor_permissions %}
+              <span class="badge bg-success">쿠폰</span>
+              {% endif %}
+              {% if 'message' in profile.subsupervisor_permissions %}
+              <span class="badge bg-success">메시지</span>
+              {% endif %}
+              {% if 'banner' in profile.subsupervisor_permissions %}
+              <span class="badge bg-success">배너</span>
+              {% endif %}
+              {% if 'level' in profile.subsupervisor_permissions %}
+              <span class="badge bg-success">레벨</span>
+              {% endif %}
+              {% if 'setting' in profile.subsupervisor_permissions %}
+              <span class="badge bg-success">시스템</span>
+              {% endif %}
+            </p>
+          </div>
+          {% elif profile.account_type == 'partner' %}
+          <div class="col-6">
+            <p class="text-dark">
+              파트너 이름
+              <a class="text-black-50"
+                href="javascript: new bootstrap.Modal(document.getElementById('rewritePartnerNameModal')).show();">
+                <i class="fi fi-rr-edit"></i>
+              </a>
+            </p>
+            <p class="text-black-50">
+              {{ profile.partner_name }}
+            </p>
           </div>
           {% endif %}
         </div>
-
-        <!-- 버튼 -->
-        <div class="mb-5 text-end">
-          <a class="btn btn-success btn-sm small me-2"
-            href="javascript: new bootstrap.Modal(document.getElementById('rewritePasswordModal')).show();">
-            <i class="fi fi-rr-lock"></i> 비밀번호 변경
-          </a>
-          <a class="btn btn-danger btn-sm small" href="javascript: askDeleteAccount();">
-            <i class="fi fi-rr-trash"></i> 계정 삭제
-          </a>
+        {% if profile.account_type == 'partner' %}
+        <div class="mb-5 row">
+          <div class="col-6">
+            <p class="text-dark">
+              <span class="text-dark">이메일</span>
+              <a class="text-black-50"
+                href="javascript: new bootstrap.Modal(document.getElementById('rewriteEmailModal')).show();">
+                <i class="fi fi-rr-edit"></i>
+              </a>
+            </p>
+            <p class="text-black-50">
+              {{ profile.email }}
+            </p>
+          </div>
+          <div class="col-6">
+            <p class="text-dark">
+              <span class="text-dark">연락처</span>
+              <a class="text-black-50"
+                href="javascript: new bootstrap.Modal(document.getElementById('rewritePartnerPhoneModal')).show();">
+                <i class="fi fi-rr-edit"></i>
+              </a>
+            </p>
+            <p class="text-black-50">
+              {{ profile.tel }}
+            </p>
+          </div>
         </div>
+        {% endif %}
+      </div>
 
+      <!-- 버튼 -->
+      <div class="mb-5 text-end">
+        <a class="btn btn-success btn-sm small me-2"
+          href="javascript: new bootstrap.Modal(document.getElementById('rewritePasswordModal')).show();">
+          <i class="fi fi-rr-lock"></i> 비밀번호 변경
+        </a>
+        <a class="btn btn-danger btn-sm small" href="javascript: askDeleteAccount();">
+          <i class="fi fi-rr-trash"></i> 계정 삭제
+        </a>
       </div>
 
     </div>
@@ -200,6 +195,10 @@
 </main>
 
 <!-- Modals -->
+<!-- 마일리지 변경 모달 -->
+{% include 'components/modal/account/update_mileage.html' %}
+<!-- 경험치 변경 모달 -->
+{% include 'components/modal/account/update_exp.html' %}
 <!-- 닉네임 변경 모달 -->
 {% include 'components/modal/account/update_nickname.html' %}
 <!-- 비밀번호 변경 모달 -->
@@ -221,7 +220,7 @@
   window.addEventListener('load', () => {
     const tab = '{{request.GET.tab}}';
     if (!tab) {
-      location.href = '{{supervisor_url}}/supervisor/account/profile?account_id={{ request.GET.account_id }}&tab=profileTab';
+      location.href = '{{SUPERVISOR_URL}}/supervisor/account/profile?account_id={{ request.GET.account_id }}&tab=profileTab';
     }
   });
 

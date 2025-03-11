@@ -50,7 +50,58 @@
 
                 <!-- 게시글 및 카테고리 정보 -->
                 <div class="d-none" id="partnerInfo">
-                    {% include 'components/main/input_partner_category.html' %}
+                    <div class="row mb-4">
+                        <div class="form-group col-6">
+                            <label>게시판</label>
+                            <select class="form-select" id="selectedBoard">
+                                <option value="">전체</option>
+                                {% for board in travel_boards %}
+                                <option value="{{ board.id }}" {% if board.id == request.GET.board_id %}selected{% endif %}>{{ board.name }}</option>
+                                {% if board.children|length > 0 %}
+                                {% for child in board.children %}
+                                <option value="{{ child.id }}" {% if child.id == request.GET.board_id %}selected{% endif %}>- {{ child.name }}</option>
+                                {% if child.children|length > 0 %}
+                                {% for grandchild in child.children %}
+                                <option value="{{ grandchild.id }}" {% if grandchild.id == request.GET.board_id %}selected{% endif %}>
+                                -- {{ grandchild.name }}</option>
+                                {% if grandchild.children|length > 0 %}
+                                {% for grandgrandchild in grandchild.children %}
+                                <option value="{{ grandgrandchild.id }}" {% if grandgrandchild.id == request.GET.board_id %}selected{% endif %}>--- {{ grandgrandchild.name }}</option>
+                                {% endfor %}
+                                {% endif %}
+                                {% endfor %}
+                                {% endif %}
+                                {% endfor %}
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group col-6">
+                        <label>카테고리</label>
+                            <select class="form-select" id="serviceCategory">
+                                <option value="">전체</option>
+                                {% for board in categories %}
+                                <option value="{{ board.id }}" {% if board.id == request.GET.board_id %}selected{% endif %}>{{ board.name }}</option>
+                                {% if board.children|length > 0 %}
+                                {% for child in board.children %}
+                                <option value="{{ child.id }}" {% if child.id == request.GET.board_id %}selected{% endif %}>- {{ child.name }}</option>
+                                {% if child.children|length > 0 %}
+                                {% for grandchild in child.children %}
+                                <option value="{{ grandchild.id }}" {% if grandchild.id == request.GET.board_id %}selected{% endif %}>
+                                -- {{ grandchild.name }}</option>
+                                {% if grandchild.children|length > 0 %}
+                                {% for grandgrandchild in grandchild.children %}
+                                <option value="{{ grandgrandchild.id }}" {% if grandgrandchild.id == request.GET.board_id %}selected{% endif %}>--- {{ grandgrandchild.name }}</option>
+                                {% endfor %}
+                                {% endif %}
+                                {% endfor %}
+                                {% endif %}
+                                {% endfor %}
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
                 </div>
 
             </div>
@@ -198,6 +249,8 @@
 
     // 하위 관리자 추가
     addNewAccount = async () => {
+
+        showAlert('계정 생성', '계정을 생성중입니다. 완료될 때까지 기다려주세요.', 'info');
 
         // 다중 생성
         for (var i = 0; i < document.getElementById('accountCount').value; i++) {

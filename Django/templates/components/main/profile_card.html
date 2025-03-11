@@ -27,7 +27,9 @@
             <p class="text-dark">
                 경험치 
                 {% if 'user' in  account.subsupervisor_permissions %}
-                <a href="#" class="text-black-50"><i class="fi fi-rr-edit"></i></a>
+                <a class="text-black-50" href="javascript: new bootstrap.Modal(document.getElementById('updateExpModal')).show();">
+                    <i class="fi fi-rr-edit"></i>
+                </a>
                 {% endif %}
             </p>
             <p class="text-black-50">
@@ -42,7 +44,9 @@
             <p class="text-dark">
                 마일리지 
                 {% if 'user' in  account.subsupervisor_permissions %}
-                <a href="#" class="text-black-50"><i class="fi fi-rr-edit"></i></a>
+                <a class="text-black-50" href="javascript: new bootstrap.Modal(document.getElementById('updateMileageModal')).show();">
+                    <i class="fi fi-rr-edit"></i>
+                </a>
                 {% endif %}
             </p>
             <p class="text-black-50">

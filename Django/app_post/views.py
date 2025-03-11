@@ -461,8 +461,6 @@ def post_view(request):
   # 리다이렉트
   if not post: # 게시글이 없는 경우
     return redirect('/?redirect_message=not_found_post') # 메인 페이지로 이동
-  if post['boards'][-1]['board_type'] == 'travel': # 여행지 게시판인 경우
-    return redirect('/post/travel_view?post_id=' + post_id + '&board_ids=' + post['board_ids'])
   if post['boards'][-1]['level_cut'] > contexts['account']['level']['level']: # 레벨 제한 확인
     return redirect('/?redirect_mssage=not_enough_level') # 레벨이 부족한 경우, 메인 페이지로 이동
 

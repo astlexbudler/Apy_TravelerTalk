@@ -116,7 +116,7 @@
     checkPostId = async (postIdInput) => {
         var postId = postIdInput.value;
         if (postId.length > 0) {
-            const data = await fetch('/api/search_post?post_id=' + postId)
+            const data = await fetch('/api/post?post_id=' + postId)
             .then(response => response.json())
             .then(data => {
                 console.log(data);
@@ -198,6 +198,8 @@
             await showAlert('쿠폰 생성', '쿠폰 이름, 설명, 만료일, 필요 포인트는 필수 입력 사항입니다.', 'error');
             return;
         }
+
+        showAlert('쿠폰 생성', '쿠폰을 생성중입니다. 완료될 때까지 기다려주세요.', 'info');
 
         // 쿠폰 생성 요청
         for(var i = 0; i < count; i++) {

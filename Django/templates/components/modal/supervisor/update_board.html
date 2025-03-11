@@ -3,7 +3,9 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">{{ to_modify_board.name }} 수정</h5>
+                <h5 class="modal-title text-black-60">
+                    {{ to_modify_board.name }} 수정
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body text-start">
@@ -14,14 +16,14 @@
                     <input class="form-control" id="{{ to_modify_board.id }}Name" value="{{ to_modify_board.name }}">
                 </div>
 
-                <div class="row mb-2">
-                    <!-- 게시판 타입 -->
+                <!-- 게시판 타입 및 레벨 제한 -->
+                <div class="row mb-4">
+
                     <div class="form-group col-8">
                         <label>게시판 타입</label>
                         <select class="form-select" id="{{ to_modify_board.id }}Type">
                             <option value="board" {% if to_modify_board.board_type == "board" %} selected {% endif %}>게시판</option>
                             <option value="travel" {% if to_modify_board.board_type == "travel" %} selected {% endif %}>여행</option>
-                            <option value="tree" {% if to_modify_board.board_type == "tree" %} selected {% endif %}>폴더</option>
                             <option value="anonymous" {% if to_modify_board.board_type == "anonymous" %} selected {% endif %}>익명</option>
                             <option value="attendance" {% if to_modify_board.board_type == "attendance" %} selected {% endif%}>출석</option>
                             <option value="greeting" {% if to_modify_board.board_type == "greeting" %} selected {% endif %}>인사</option>
@@ -31,12 +33,17 @@
                         </select>
                     </div>
 
-                    <!-- 레벨 제한 -->
                     <div class="form-group col-4">
                         <label>레벨 제한</label>
-                        <input type="number" class="form-control" id="{{ to_modify_board.id }}Level"
-                            value="{{ to_modify_board.level_cut }}">
+                        <input type="number" class="form-control" id="{{ to_modify_board.id }}Level" value="{{ to_modify_board.level_cut }}">
                     </div>
+
+                    <div class="form-group col-12">
+                        <div class="alert alert-info small mt-2">
+                            <i class="fi fi-rr-info"></i> 레벨 제한을 1 이상 설정할 경우, 비회원은 해당 게시판에 접근할 수 없습니다.
+                        </div>
+                    </div>
+
                 </div>
 
                 <!-- 표시 그룹 -->
@@ -125,36 +132,37 @@
                             <input type="checkbox" class="form-check-input"
                                 onclick="toggleAll('{{ to_modify_board.id }}Write', this.checked);">
                             <label class="form-check-label">전체</label>
-                            <span>
-                                <span>
-                                    <input type="checkbox" class="form-check-input"
-                                        id="{{ to_modify_board.id }}WriteUser" {% if 'user' in to_modify_board.write %}
-                                        checked {% endif %}>
-                                    <label class="form-check-label" for="{{ to_modify_board.id }}WriteUser">사용자</label>
-                                </span>
-                                <span>
-                                    <input type="checkbox" class="form-check-input"
-                                        id="{{ to_modify_board.id }}WriteDame" {% if 'dame' in to_modify_board.write %}checked {% endif %}>
-                                    <label class="form-check-label" for="{{ to_modify_board.id }}WriteDame">여성회원</label>
-                                </span>
-                                <span>
-                                    <input type="checkbox" class="form-check-input"
-                                        id="{{ to_modify_board.id }}WritePartner" {% if 'partner' in to_modify_board.write %} checked {% endif %}>
-                                    <label class="form-check-label"
-                                        for="{{ to_modify_board.id }}WritePartner">파트너</label>
-                                </span>
-                                <span>
-                                    <input type="checkbox" class="form-check-input"
-                                        id="{{ to_modify_board.id }}WriteSubsupervisor" {% if 'subsupervisor' in to_modify_board.write %} checked {% endif %}>
-                                    <label class="form-check-label"
-                                        for="{{ to_modify_board.id }}WriteSubsupervisor">부관리자</label>
-                                </span>
-                                <span>
-                                    <input type="checkbox" class="form-check-input"
-                                        id="{{ to_modify_board.id }}WriteSupervisor" {% if 'supervisor' in to_modify_board.write %} checked {% endif %}>
-                                    <label class="form-check-label"
-                                        for="{{ to_modify_board.id }}WriteSupervisor">관리자</label>
-                                </span>
+                        </span>
+                        <span>
+                        <span>
+                            <input type="checkbox" class="form-check-input"
+                                id="{{ to_modify_board.id }}WriteUser" {% if 'user' in to_modify_board.write %}
+                                checked {% endif %}>
+                            <label class="form-check-label" for="{{ to_modify_board.id }}WriteUser">사용자</label>
+                        </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input"
+                                id="{{ to_modify_board.id }}WriteDame" {% if 'dame' in to_modify_board.write %}checked {% endif %}>
+                            <label class="form-check-label" for="{{ to_modify_board.id }}WriteDame">여성회원</label>
+                        </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input"
+                                id="{{ to_modify_board.id }}WritePartner" {% if 'partner' in to_modify_board.write %} checked {% endif %}>
+                            <label class="form-check-label"
+                                for="{{ to_modify_board.id }}WritePartner">파트너</label>
+                        </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input"
+                                id="{{ to_modify_board.id }}WriteSubsupervisor" {% if 'subsupervisor' in to_modify_board.write %} checked {% endif %}>
+                            <label class="form-check-label"
+                                for="{{ to_modify_board.id }}WriteSubsupervisor">부관리자</label>
+                        </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input"
+                                id="{{ to_modify_board.id }}WriteSupervisor" {% if 'supervisor' in to_modify_board.write %} checked {% endif %}>
+                            <label class="form-check-label"
+                                for="{{ to_modify_board.id }}WriteSupervisor">관리자</label>
+                        </span>
                     </p>
                 </div>
 
@@ -199,6 +207,10 @@
                     <label>표시 가중치</label>
                     <input type="number" class="form-control" id="{{ to_modify_board.id }}Weight"
                         value="{{ to_modify_board.display_weight }}">
+                </div>
+
+                <div class="alert alert-info small mt-2">
+                    <i class="fi fi-rr-info"></i> 게시판 수정 또는 삭제 시 일부 페이지에 게시판이 표시가 잘못될 수 있습니다. 모바일 페이지와 백엔드 설정을 업데이트해주세요.
                 </div>
 
             </div>

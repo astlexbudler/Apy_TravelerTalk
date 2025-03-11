@@ -26,15 +26,11 @@
     // 아이피 차단
     blockIp = async () => {
         var blockIp = document.getElementById('blockIp').value;
-        if (blockIp.length < 7) {
-            showAlert('아이피 차단', '아이피를 확인해주세요.', 'error');
-            return
-        }
 
         // 아이피 차단
         var formData = new FormData();
         formData.append('ip', blockIp);
-        await fetch('{{supervisor_url}}/supervisor/account?block_ip=y', {
+        await fetch('/api/ip_block', {
             method: 'POST',
             body: formData,
             headers: {
@@ -44,7 +40,7 @@
             .then(res => res.json())
             .then(async data => {
                 console.log(data);
-                if (data.result === 'success') {
+                if (data.success) {
                     await showAlert('아이피 차단', '아이피가 차단되었습니다.', 'success');
                     location.reload();
                 } else {
@@ -59,8 +55,8 @@
 
         var formData = new FormData();
         formData.append('ip', ip);
-        await fetch('{{supervisor_url}}/supervisor/account?unblock_ip=y', {
-            method: 'POST',
+        await fetch('/api/ip_block', {
+            method: 'DELETE',
             body: formData,
             headers: {
                 'X-CSRFToken': csrftoken
@@ -69,7 +65,7 @@
             .then(res => res.json())
             .then(async data => {
                 console.log(data);
-                if (data.result === 'success') {
+                if (data.success) {
                     await showAlert('아이피 차단 해제', '아이피 차단이 해제되었습니다.', 'success');
                     location.reload();
                 } else {

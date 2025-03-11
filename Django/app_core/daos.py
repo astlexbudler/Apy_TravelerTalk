@@ -674,6 +674,7 @@ def select_posts(title=None, category_id=None, board_id=None, related_post_id=No
             'id': post.author.id,
             'nickname': post.author.first_name,
             'partner_name': post.author.last_name,
+            'account_type': post.author.groups.all()[0].name,
             'level': select_level(post.author.level.level),
         },
         'related_post': {
@@ -833,7 +834,7 @@ def select_post(post_id=None, title=None):
             'comment_groups': [group.name for group in board.comment_groups.all()],
             'level_cut': board.level_cut,
         } for board in post.boards.all()],
-        'board_ids': [board.id for board in post.boards.all()],
+        'board_ids': ''.join([str(board.id) for board in post.boards.all()]),
         'include_coupons': include_coupons,
         'title': post.title,
         'content': post.content,
@@ -1695,12 +1696,13 @@ def create_message(title, content, message_type, receive_account_id=None, sender
     else: # 모든 사용자에게(관리자만 가능)
         accounts = models.ACCOUNT.objects.all()
         for account in accounts:
-            message = models.MESSAGE.objects.create(
-                receive=account,
-                title=title,
-                content=content,
-                message_type=message_type,
-            )
+            if account.groups.all()[0].name in ['user', 'dame', 'partner']: # 모두에게 메세지는 사용자, 여성회원, 파트너만 수신
+                message = models.MESSAGE.objects.create(
+                    receive=account,
+                    title=title,
+                    content=content,
+                    message_type='user_question' if account.groups.all()[0].name in ['user', 'dame'] else 'partner_question',
+                )
 
     return {
         'success': True,
@@ -2013,8 +2015,8 @@ def make_board_tree(board_type=None, status=False):
             'write_groups': [group.name for group in board.write_groups.all()],
             'comment_groups': [group.name for group in board.comment_groups.all()],
             'display_weight': board.display_weight,
-            'total_views': int(math.fsum([post.view_count for post in models.POST.objects.filter(Q(boards__id__in=str(board.id)))])) if status else 0,
-            'total_posts': models.POST.objects.filter(Q(boards__id__in=str(board.id))).count() if status else 0,
+            'total_views': int(math.fsum([post.view_count for post in models.POST.objects.filter(Q(boards__id__in=[str(board.id)]))])) if status else 0,
+            'total_posts': models.POST.objects.filter(Q(boards__id__in=[str(board.id)])).count() if status else 0,
             'children': [],
         } for board in boards if not board.parent_board
     }
@@ -2032,8 +2034,8 @@ def make_board_tree(board_type=None, status=False):
                     'write_groups': [group.name for group in board.write_groups.all()],
                     'comment_groups': [group.name for group in board.comment_groups.all()],
                     'display_weight': board.display_weight,
-                    'total_views': int(math.fsum([post.view_count for post in models.POST.objects.filter(Q(boards__id__in=str(board.id)))])) if status else 0,
-                    'total_posts': models.POST.objects.filter(Q(boards__id__in=str(board.id))).count() if status else 0,
+                    'total_views': int(math.fsum([post.view_count for post in models.POST.objects.filter(Q(boards__id__in=[str(board.id)]))])) if status else 0,
+                    'total_posts': models.POST.objects.filter(Q(boards__id__in=[str(board.id)])).count() if status else 0,
                     'children': [],
                 }
                 #if children not in board_dict[board.parent_board.name]['children']:
@@ -2054,8 +2056,8 @@ def make_board_tree(board_type=None, status=False):
                                 'write_groups': [group.name for group in board.write_groups.all()],
                                 'comment_groups': [group.name for group in board.comment_groups.all()],
                                 'display_weight': board.display_weight,
-                                'total_views': int(math.fsum([post.view_count for post in models.POST.objects.filter(Q(boards__id__in=str(board.id)))])) if status else 0,
-                                'total_posts': models.POST.objects.filter(Q(boards__id__in=str(board.id))).count() if status else 0,
+                                'total_views': int(math.fsum([post.view_count for post in models.POST.objects.filter(Q(boards__id__in=[str(board.id)]))])) if status else 0,
+                                'total_posts': models.POST.objects.filter(Q(boards__id__in=[str(board.id)])).count() if status else 0,
                                 'children': [],
                             }
                             #if children not in child['children']:
@@ -2075,8 +2077,8 @@ def make_board_tree(board_type=None, status=False):
                                         'write_groups': [group.name for group in board.write_groups.all()],
                                         'comment_groups': [group.name for group in board.comment_groups.all()],
                                         'display_weight': board.display_weight,
-                                        'total_views': int(math.fsum([post.view_count for post in models.POST.objects.filter(Q(boards__id__in=str(board.id)))])) if status else 0,
-                                        'total_posts': models.POST.objects.filter(Q(boards__id__in=str(board.id))).count() if status else 0,
+                                        'total_views': int(math.fsum([post.view_count for post in models.POST.objects.filter(Q(boards__id__in=[str(board.id)]))])) if status else 0,
+                                        'total_posts': models.POST.objects.filter(Q(boards__id__in=[str(board.id)])).count() if status else 0,
                                         'children': [],
                                     }
                                     # if children not in grandchild['children']:
@@ -2239,7 +2241,7 @@ def delete_board(board_id):
     }
 
 # 카테고리 트리 생성
-def make_category_tree():
+def make_category_tree(status=False):
 
     # 카테고리 확인
     categories = models.CATEGORY.objects.all().order_by('-display_weight')
@@ -2251,7 +2253,12 @@ def make_category_tree():
         'name': category.name,
         'display_weight': category.display_weight,
         'children': [],
-        'post_count': models.POST.objects.exclude(place_info__isnull=True).filter(place_info__categories__id__in=[category.id]).count(),
+        'post_count': 0 if status else models.POST.objects.filter(place_info__categories__id__in=[category.id]).count(),
+        'writing_count': models.POST.objects.filter(place_info__status='writing', place_info__categories__id__in=[category.id]).count() if status else 0,
+        'active_count': models.POST.objects.filter(place_info__status='active', place_info__categories__id__in=[category.id]).count() if status else 0,
+        'pending_count': models.POST.objects.filter(place_info__status='pending', place_info__categories__id__in=[category.id]).count() if status else 0,
+        'weight_ad_count': models.POST.objects.filter(search_weight__gt=0, place_info__categories__id__in=[category.id]).count() if status else 0,
+        'status_ad_count': models.POST.objects.filter(place_info__status='ad', place_info__categories__id__in=[category.id]).count() if status else 0,
         } for category in categories if not category.parent_category
     }
 
@@ -2264,7 +2271,12 @@ def make_category_tree():
                 'name': category.name,
                 'display_weight': category.display_weight,
                 'children': [],
-                'post_count': models.POST.objects.exclude(place_info__isnull=True).filter(place_info__categories__id__in=[category.id]).count(),
+                'post_count': 0 if status else models.POST.objects.filter(place_info__categories__id__in=[category.id]).count(),
+                'writing_count': models.POST.objects.filter(place_info__status='writing', place_info__categories__id__in=[category.id]).count() if status else 0,
+                'active_count': models.POST.objects.filter(place_info__status='active', place_info__categories__id__in=[category.id]).count() if status else 0,
+                'pending_count': models.POST.objects.filter(place_info__status='pending', place_info__categories__id__in=[category.id]).count() if status else 0,
+                'weight_ad_count': models.POST.objects.filter(search_weight__gt=0, place_info__categories__id__in=[category.id]).count() if status else 0,
+                'status_ad_count': models.POST.objects.filter(place_info__status='ad', place_info__categories__id__in=[category.id]).count() if status else 0,
                 })
         else:
             loop = True
@@ -2278,7 +2290,12 @@ def make_category_tree():
                             'name': category.name,
                             'display_weight': category.display_weight,
                             'children': [],
-                            'post_count': models.POST.objects.exclude(place_info__isnull=True).filter(place_info__categories__id__in=[category.id]).count(),
+                            'post_count': 0 if status else models.POST.objects.filter(place_info__categories__id__in=[category.id]).count(),
+                            'writing_count': models.POST.objects.filter(place_info__status='writing', place_info__categories__id__in=[category.id]).count() if status else 0,
+                            'active_count': models.POST.objects.filter(place_info__status='active', place_info__categories__id__in=[category.id]).count() if status else 0,
+                            'pending_count': models.POST.objects.filter(place_info__status='pending', place_info__categories__id__in=[category.id]).count() if status else 0,
+                            'weight_ad_count': models.POST.objects.filter(search_weight__gt=0, place_info__categories__id__in=[category.id]).count() if status else 0,
+                            'status_ad_count': models.POST.objects.filter(place_info__status='ad', place_info__categories__id__in=[category.id]).count() if status else 0,
                         })
                         loop = False
                     if loop:
@@ -2291,7 +2308,12 @@ def make_category_tree():
                                     'name': category.name,
                                     'display_weight': category.display_weight,
                                     'children': [],
-                                    'post_count': models.POST.objects.exclude(place_info__isnull=True).filter(place_info__categories__id__in=[category.id]).count(),
+                                    'post_count': 0 if status else models.POST.objects.filter(place_info__categories__id__in=[category.id]).count(),
+                                    'writing_count': models.POST.objects.filter(place_info__status='writing', place_info__categories__id__in=[category.id]).count() if status else 0,
+                                    'active_count': models.POST.objects.filter(place_info__status='active', place_info__categories__id__in=[category.id]).count() if status else 0,
+                                    'pending_count': models.POST.objects.filter(place_info__status='pending', place_info__categories__id__in=[category.id]).count() if status else 0,
+                                    'weight_ad_count': models.POST.objects.filter(search_weight__gt=0, place_info__categories__id__in=[category.id]).count() if status else 0,
+                                    'status_ad_count': models.POST.objects.filter(place_info__status='ad', place_info__categories__id__in=[category.id]).count() if status else 0,
                                 })
                                 loop = False
 

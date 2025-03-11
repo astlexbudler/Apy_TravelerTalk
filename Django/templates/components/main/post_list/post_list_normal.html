@@ -55,7 +55,9 @@
                             <span class="me-1">
                                 {{post.author.nickname}}
                             </span>
+                            {% if post.author.account_type in 'user,dame' %}
                             {% include 'components/other/level_badge.html' with level=post.author.level %}
+                            {% endif %}
                             {% endif %}
                         </p>
                         <p>

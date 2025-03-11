@@ -817,7 +817,7 @@ class api_ip_block(APIView):
             return JsonResponse({"success": False, 'status': 403, "message": "권한이 없습니다."})
 
         # IP 차단
-        ip = request.query_params.get('ip')
+        ip = request.data.get('ip')
         daos.create_blocked_ip(ip)
 
         return JsonResponse({"success": True, 'status': 200, "message": "IP 차단 성공"})
@@ -832,7 +832,7 @@ class api_ip_block(APIView):
             return JsonResponse({"success": False, 'status': 403, "message": "권한이 없습니다."})
 
         # IP 차단 해제
-        ip = request.query_params.get('ip')
+        ip = request.data.get('ip')
         daos.delete_blocked_ip(ip)
 
         return JsonResponse({"success": True, 'status': 200, "message": "IP 차단 해제 성공"})

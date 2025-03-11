@@ -21,16 +21,8 @@
               if ('{{request.GET.tab}}' == 'userTab') { // 해당 탭이 선택 되었을 경우,
                   document.getElementById('userTab').classList.add('pastel-pink-background');
                   document.getElementById('userTab').classList.add('text-white');
-                  // 탭 박스가 있다면 표시
-                  if (document.getElementById('userTabBox')) {
-                      document.getElementById('userTabBox').classList.remove('d-none');
-                  }
               } else { // 해당 탭이 선택 되지 않았을 경우,
                   document.getElementById('userTab').classList.add('pastel-beige-background');
-                  // 탭 박스가 있다면 숨김
-                  if (document.getElementById('userTabBox')) {
-                      document.getElementById('userTabBox').classList.add('d-none');
-                  }
               }
           });
       </script>
@@ -45,16 +37,8 @@
               if ('{{request.GET.tab}}' == 'dameTab') { // 해당 탭이 선택 되었을 경우,
                   document.getElementById('dameTab').classList.add('pastel-pink-background');
                   document.getElementById('dameTab').classList.add('text-white');
-                  // 탭 박스가 있다면 표시
-                  if (document.getElementById('dameTabBox')) {
-                      document.getElementById('dameTabBox').classList.remove('d-none');
-                  }
               } else { // 해당 탭이 선택 되지 않았을 경우,
                   document.getElementById('dameTab').classList.add('pastel-beige-background');
-                  // 탭 박스가 있다면 숨김
-                  if (document.getElementById('dameTabBox')) {
-                      document.getElementById('dameTabBox').classList.add('d-none');
-                  }
               }
           });
       </script>
@@ -69,16 +53,8 @@
               if ('{{request.GET.tab}}' == 'partnerTab') { // 해당 탭이 선택 되었을 경우,
                   document.getElementById('partnerTab').classList.add('pastel-pink-background');
                   document.getElementById('partnerTab').classList.add('text-white');
-                  // 탭 박스가 있다면 표시
-                  if (document.getElementById('partnerTabBox')) {
-                      document.getElementById('partnerTabBox').classList.remove('d-none');
-                  }
               } else { // 해당 탭이 선택 되지 않았을 경우,
                   document.getElementById('partnerTab').classList.add('pastel-beige-background');
-                  // 탭 박스가 있다면 숨김
-                  if (document.getElementById('partnerTabBox')) {
-                      document.getElementById('partnerTabBox').classList.add('d-none');
-                  }
               }
           });
       </script>
@@ -93,317 +69,241 @@
               if ('{{request.GET.tab}}' == 'supervisorTab') { // 해당 탭이 선택 되었을 경우,
                   document.getElementById('supervisorTab').classList.add('pastel-pink-background');
                   document.getElementById('supervisorTab').classList.add('text-white');
-                  // 탭 박스가 있다면 표시
-                  if (document.getElementById('supervisorTabBox')) {
-                      document.getElementById('supervisorTabBox').classList.remove('d-none');
-                  }
               } else { // 해당 탭이 선택 되지 않았을 경우,
                   document.getElementById('supervisorTab').classList.add('pastel-beige-background');
-                  // 탭 박스가 있다면 숨김
-                  if (document.getElementById('supervisorTabBox')) {
-                      document.getElementById('supervisorTabBox').classList.add('d-none');
-                  }
               }
           });
       </script>
     </div>
 
     <!-- 차단 IP 목록 -->
+    {% if request.GET.tab in 'userTab,dameTab' %}
     <div class="rounded border p-3 my-4 shadow">
       <p>
         <i class="fi fi-rr-lock"></i> 차단 IP 목록
       </p>
+      <div class="accordion shadow">
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button bg-white text-black-50 collapsed" type="button" data-bs-toggle="collapse"
+              data-bs-target="#levelTableAccordionItem" aria-expanded="false"
+              aria-controls="levelTableAccordionItem">
+              차단 IP 목록 확인
+            </button>
+          </h2>
+          <div id="levelTableAccordionItem" class="accordion-collapse collapse">
+            <div class="accordion-body">
+              <table class="table table-bordered">
+                <thead>
+                  <tr>
+                    <th>차단 IP</th>
+                    <th style="width: 100px;" class="text-center">
+                      <a class="text-success"
+                        href="javascript: new bootstrap.Modal(document.getElementById('blockIpModal')).show()">
+                        <i class="fi fi-rr-plus"></i> IP 차단
+                      </a>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for blocked_ip in blocked_ips %}
+                  <tr>
+                    <td>{{blocked_ip.ip}}</td>
+                    <td class="text-center">
+                      <a href="javascript: unblockIp('{{blocked_ip.ip}}')" class="text-danger">
+                        <i class="fi fi-rr-unlock"></i> 해제
+                      </a>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- 통계 -->
+    {% if request.GET.tab in 'userTab,dameTab,partnerTab' %}
+    <div class="rounded border p-3 my-4 shadow">
+      <p>
+        <i class="fi fi-rr-stats"></i> 통계
+      </p>
       <table class="table table-bordered">
         <thead>
           <tr>
-            <th>차단 IP</th>
-            <th style="width: 100px;" class="text-center">
-              <a class="text-success"
-                href="javascript: new bootstrap.Modal(document.getElementById('blockIpModal')).show()">
-                <i class="fi fi-rr-plus"></i> IP 차단
-              </a>
-            </th>
+            <th>구분</th>
+            <th>정상</th>
+            <th>승인 대기중</th>
+            <th>탈퇴</th>
+            <th>정지</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            {% for blocked_ip in blocked_ips %}
-            <td>{{blocked_ip.ip}}</td>
-            <td class="text-center">
-              <a href="javascript: unblockIp('{{blocked_ip.ip}}')" class="text-danger">
-                <i class="fi fi-rr-unlock"></i> 해제
-              </a>
+            <td>
+              {% if request.GET.tab == 'userTab' %}
+              일반 회원
+              {% elif request.GET.tab == 'dameTab' %}
+              여성 회원
+              {% else %}
+              파트너 회원
+              {% endif %}
             </td>
-            {% endfor %}
+            <td>{{status.active}}</td>
+            <td>{{status.pending}}</td>
+            <td>{{status.deleted}}</td>
+            <td>{{status.blocked}}</td>
           </tr>
         </tbody>
       </table>
     </div>
+    {% endif %}
 
-    <!-- 사용자 -->
-    <div class="my-5 d-none" id="userTabBox">
-
-      <!-- 통계 -->
-      <div class="rounded border p-3 mb-5 shadow">
-        <p>
-          <i class="fi fi-rr-stats"></i> 통계
-        </p>
-        <table class="table table-bordered">
-          <thead>
-            <tr>
-              <th>구분</th>
-              <th>정상</th>
-              <th>승인 대기중</th>
-              <th>탈퇴</th>
-              <th>정지</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>일반회원</td>
-              <td>{{status.user.active}}</td>
-              <td>{{status.user.pending}}</td>
-              <td>{{status.user.deleted}}</td>
-              <td>{{status.user.blocked}}</td>
-            </tr>
-            <tr>
-              <td>여성 회원</td>
-              <td>{{status.dame.active}}</td>
-              <td>{{status.dame.pending}}</td>
-              <td>{{status.dame.deleted}}</td>
-              <td>{{status.dame.blocked}}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- 검색 -->
-      <div class="rounded border p-3 mb-5 shadow">
-        <p>
-          <i class="fi fi-rr-search"></i> 검색
-        </p>
-        <form id="userSearchForm" method="get" action="{{SUPERVISOR_URL}}/supervisor/account">
-          <div class="row">
-            <input type="hidden" name="tab" value="{{request.GET.tab}}">
-            <div class="form-group mt-4 col-6">
-              <label>아이디</label>
-              <input class="form-control" name="accountId" placeholder="사용자 아이디" value="{{request.GET.accountId}}">
-            </div>
-            <div class="form-group mt-4 col-6">
-              <label>닉네임</label>
-              <input class="form-control" name="accountNickname" placeholder="사용자 닉네임"
-                value="{{request.GET.accountNickname}}">
-            </div>
-            <div class="row m-0 p-0 mt-4">
-              <div class="form-group col-6">
-                <label>성별</label>
-                <select class="form-control" name="dame">
-                  <option value="">전체</option>
-                  <option value="user" {% if request.GET.dame == 'userTab' %}selected{% endif %}>일반 회원</option>
-                  <option value="dame" {% if request.GET.dame == 'dameTab' %}selected{% endif %}>여성 회원</option>
-                </select>
-              </div>
-              <div class="form-group col-6">
-                <label>상태</label>
-                <select class="form-control" name="accountStatus">
-                  <option value=''>전체</option>
-                  <option value="active" {% if request.GET.accountStatus == 'active' %}selected{% endif %}>정상</option>
-                  <option value="pending" {% if request.GET.accountStatus == 'pending' %}selected{% endif %}>승인 대기중
-                  </option>
-                  <option value="deleted" {% if request.GET.accountStatus == 'deleted' %}selected{% endif %}>탈퇴</option>
-                  탈퇴</option>
-                  <option value="blocked" {% if request.GET.accountStatus == 'blocked' %}selected{% endif %}>정지</option>
-                  정지</option>
-                </select>
-              </div>
-            </div>
+    <!-- 검색 -->
+    <div class="rounded border p-3 my-4 shadow">
+      <p>
+        <i class="fi fi-rr-search"></i> 검색
+      </p>
+      <form id="userSearchForm" method="get" action="{{SUPERVISOR_URL}}/supervisor/account">
+        <div class="row">
+          <input type="hidden" name="tab" value="{{request.GET.tab}}">
+          <div class="form-group col-5">
+            <label>아이디</label>
+            <input class="form-control" name="username" placeholder="사용자 아이디" value="{{request.GET.username}}">
           </div>
-        </form>
-        <p class="text-end mt-4">
-          <a class="btn btn-primary" href="javascript: document.getElementById('userSearchForm').submit()">
-            <i class="fi fi-rr-search"></i> 검색
-          </a>
-        </p>
-      </div>
-
-    </div>
-
-    <!-- 파트너 -->
-    <div class="my-5 d-none" id="partnerTabBox">
-
-      <!-- 통계 -->
-      <div class="rounded border p-3 mb-5 shadow">
-        <p>
-          <i class="fi fi-rr-stats"></i> 통계
-        </p>
-        <table class="table table-bordered">
-          <thead>
-            <tr>
-              <th>정상</th>
-              <th>승인 대기중</th>
-              <th>탈퇴</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>{{status.partner.active}}</td>
-              <td>{{status.partner.pending}}</td>
-              <td>{{status.partner.deleted}}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- 검색 -->
-      <div class="rounded border p-3 mb-5 shadow">
-        <p>
-          <i class="fi fi-rr-search"></i> 검색
-        </p>
-        <form id="partnerSearchForm" method="get" action="{{SUPERVISOR_URL}}/supervisor/account">
-          <div class="row">
-            <input type="hidden" name="tab" value="{{request.GET.tab}}">
-            <div class="form-group mt-4 col-6">
-              <label>아이디</label>
-              <input class="form-control" name="accountId" placeholder="파트너 아이디" value="{{request.GET.accountId}}">
-            </div>
-            <div class="form-group mt-4 col-6">
-              <label>닉네임</label>
-              <input class="form-control" name="accountNickname" placeholder="파트너 닉네임"
-                value="{{request.GET.accountNickname}}">
-            </div>
-            <div class="form-group mt-4 col-12">
-              <label>상태</label>
-              <select class="form-control" name="accountStatus">
-                <option value="">전체</option>
-                <option value="active" {% if request.GET.accountStatus == 'active' %}selected{% endif %}>정상</option>
-                <option value="pending" {% if request.GET.accountStatus == 'pending' %}selected{% endif %}>승인 대기중
-                </option>
-                <option value="deleted" {% if request.GET.accountStatus == 'deleted' %}selected{% endif %}>탈퇴</option>
-                <option value="blocked" {% if request.GET.accountStatus == 'blocked' %}selected{% endif %}>정지</option>
-              </select>
-            </div>
+          <div class="form-group col-4">
+            <label>닉네임</label>
+            <input class="form-control" name="nickname" placeholder="사용자 닉네임" value="{{request.GET.nickname}}">
           </div>
-        </form>
-        <p class="text-end mt-4">
-          <a class="btn btn-primary" href="javascript: document.getElementById('partnerSearchForm').submit()">
-            <i class="fi fi-rr-search"></i> 검색
-          </a>
-        </p>
-      </div>
-
+          <div class="form-group col-3">
+            <label>상태</label>
+            <select class="form-select" name="status">
+              <option value=''>전체</option>
+              <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>정상</option>
+              <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>승인 대기중</option>
+              <option value="deleted" {% if request.GET.status == 'deleted' %}selected{% endif %}>탈퇴</option>
+              <option value="blocked" {% if request.GET.status == 'blocked' %}selected{% endif %}>정지</option>
+            </select>
+          </div>
+        </div>
+      </form>
+      <p class="text-end mt-3 mb-2">
+        <a class="btn btn-primary" href="javascript: document.getElementById('userSearchForm').submit()">
+          <i class="fi fi-rr-search"></i> 검색
+        </a>
+      </p>
     </div>
 
     <!-- 버튼 그룹 -->
-    <div class="text-end p-3 mb-5">
+    <div class="text-end my-4">
       <a class="btn btn-primary btn-sm me-2"
         href="javascript: new bootstrap.Modal(document.getElementById('addAccount')).show()">
         <i class="fi fi-rr-user-add"></i> 사용자 생성
       </a>
-      {% if request.GET.tab == 'supervisorTab' %}
+      {% if request.GET.tab == 'supervisorTab' and account.account_type == 'supervisor' %}
       <a class="btn btn-primary btn-sm me-2"
         href="javascript: new bootstrap.Modal(document.getElementById('addSubsupervisor')).show()">
         <i class="fi fi-rr-user-add"></i> 하위 관리자 추가
       </a>
       {% endif %}
-
       <a href="javascript: openExportDataPage();" class="btn btn-sm btn-success">
         <i class="fi fi-rr-file-excel"></i> 다운로드
       </a>
     </div>
 
     <!-- 검색 결과 -->
-    <div>
+    <div class="row p-3 my-4">
       <!-- 검색 결과 -->
-      {% if accounts|length < 1 %} <p>
+      {% if accounts|length < 1 %}
+      <p>
         검색 결과가 없습니다.
-        </p>
-        {% endif %}
-        {% for search_account in accounts %}
-        <div class="col-12 p-2 mb-2 border-bottom">
-          <a href="{{SUPERVISOR_URL}}/supervisor/account/profile?account_id={{ search_account.id }}&tab=profileTab">
-            <div style="display: flex; justify-content: space-between; white-space: nowrap;">
-              <div style="display: inline-block; text-align: left;">
-                <span class="text-black-50" style="font-size: 14px;">
-                  <i class="fi fi-rr-user"></i> {{ search_account.username }} (
-                  {% if 'supervisor' in search_account.account_type %}
-                  관리자
-                  {% elif 'subsupervisor' in search_account.account_type %}
-                  하위 관리자
-                  {% elif 'partner' in search_account.account_type %}
-                  파트너
-                  {% elif 'dame' in search_account.account_type %}
-                  여성회원
-                  {% else %}
-                  일반회원
-                  {% endif %})
-                </span><br>
-                <p>
-                  <span class="h5 text-black-60">
-                    {{ search_account.nickname }}
-                  </span>
-
-                  <!-- 레벨 뱃지 -->
-                  {% with level=profile.level %}
-                  {% include 'components/other/level_badge.html' %}
-                  {% endwith %}
-
-                </p>
-                <span class="text-black-50">
-                  <i class="fi fi-rr-calendar"></i> 가입일: {{ search_account.date_joined }} / 최근 접속일: {{ search_account.last_login }}
+      </p>
+      {% endif %}
+      {% for search_account in accounts %}
+      <div class="col-12 p-1 mb-1 border-bottom">
+        <a href="{{SUPERVISOR_URL}}/supervisor/account/profile?account_id={{ search_account.id }}&tab=profileTab">
+          <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+            <div style="display: inline-block; text-align: left;">
+              <span class="text-black-50" style="font-size: 14px;">
+                {{ search_account.username }} (
+                {% if 'supervisor' in search_account.account_type %}
+                관리자
+                {% elif 'subsupervisor' in search_account.account_type %}
+                하위 관리자
+                {% elif 'partner' in search_account.account_type %}
+                파트너
+                {% elif 'dame' in search_account.account_type %}
+                여성회원
+                {% else %}
+                일반회원
+                {% endif %})
+              </span><br>
+              <p class="mb-2">
+                <span class="h6 text-black-60">
+                  {{ search_account.nickname }}
                 </span>
-              </div>
-              <div style="display: inline-block; text-align: right;">
-                <p class="m-0 text-end text-black-50" style="font-size: 14px;">
-                  {% if search_account.status == 'active' %}
-                  <span class="badge bg-success">정상</span>
-                  {% elif 'pending' in search_account.status %}
-                  <span class="badge bg-warning">승인대기중</span>
-                  {% elif search_account.status == 'deleted' %}
-                  <span class="badge bg-danger">탈퇴</span>
-                  {% elif search_account.status == 'blocked' %}
-                  <span class="badge bg-secondary">정지</span>
-                  {% endif %}
-                </p>
-              </div>
-            </div>
-            {% if search_account.account_type in 'user,dame' %}
-            <div class="row mt-2">
-              <div class="col-6">
-                <p class="text-dark m-0">
-                  Exp
-                </p>
-                <p class="text-black-50">
-                  <i class="fi fi-ss-coins"></i>
-                  <span class="numberComma">{{ search_account.exp }}</span> Exp
-                </p>
-              </div>
-              <div class="col-6">
-                <p class="text-dark m-0">
-                  마일리지
-                </p>
-                <p class="text-black-50">
-                  <i class="fi fi-ss-coins text-secondary"></i>
-                  <span class="numberComma">{{ search_account.mileage }}</span> 마일리지
-                </p>
-              </div>
-            </div>
-            {% endif %}
-            <p class="text-black-50 small">
-              최근 접속 IP {{ search_account.recent_ip }}
-            </p>
-          </a>
-          <!-- 버튼들 -->
-          <div class="my-3">
 
-            <!-- 메세지 보내기 버튼 -->
-            <a class="btn btn-primary small p-1 px-2"
-              href="{{SUPERVISOR_URL}}/supervisor/message?tab=inboxTab&to={{ search_account.id }}">
-              <i class="fi fi-rr-envelope"></i> 메시지 보내기
-            </a>
+                <!-- 레벨 뱃지 -->
+                {% if search_account.account_type in 'user,dame' %}
+                {% with level=search_account.level %}
+                {% include 'components/other/level_badge.html' %}
+                {% endwith %}
+                {% endif %}
 
+              </p>
+              <span class="text-black-50">
+                <i class="fi fi-rr-calendar"></i> 가입일: {{ search_account.date_joined }} / 최근 접속일: {{ search_account.last_login }}
+              </span>
+            </div>
+            <div style="display: inline-block; text-align: right;">
+              <p class="m-0 text-end text-black-50" style="font-size: 14px;">
+                {% if search_account.status == 'active' %}
+                <span class="badge bg-success">정상</span>
+                {% elif 'pending' in search_account.status %}
+                <span class="badge bg-warning">승인대기중</span>
+                {% elif search_account.status == 'deleted' %}
+                <span class="badge bg-danger">탈퇴</span>
+                {% elif search_account.status == 'blocked' %}
+                <span class="badge bg-secondary">정지</span>
+                {% endif %}
+              </p>
+            </div>
           </div>
-        </div>
-        {% endfor %}
+          {% if search_account.account_type in 'user,dame' %}
+          <div class="row mt-2">
+            <div class="col-6">
+              <p class="text-dark m-0">
+                Exp: <span class="text-black-50"><i class="fi fi-ss-coins"></i> <span class="numberComma">{{ search_account.exp }}</span> Exp</span>
+              </p>
+            </div>
+            <div class="col-6">
+              <p class="text-dark m-0">
+                마일리지: <span class="text-black-50"><i class="fi fi-ss-coins text-secondary"></i> <span class="numberComma">{{ search_account.mileage }}</span> 마일리지</span>
+              </p>
+            </div>
+          </div>
+          {% endif %}
+          <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+            <div style="display: inline-block; text-align: left;">
+              <p class="text-black-50 small">
+                최근 접속 IP: {{ search_account.ip }}
+              </p>
+            </div>
+            <div style="display: inline-block; text-align: right;">
+              {% if search_account.account_type in 'user,dame,partner' %}
+              <a class="btn btn-primary small p-1 px-2"
+                href="{{SUPERVISOR_URL}}/supervisor/message?tab=inboxTab&to={{ search_account.id }}&message_type={% if search_account.account_type in 'user,dame' %}user{% else %}partner{% endif %}_question">
+                <i class="fi fi-rr-envelope"></i> 메시지 보내기
+              </a>
+              {% endif %}
+            </div>
+          </div>
+        </a>
+      </div>
+      {% endfor %}
     </div>
 
     <!-- 페이지네이션 영역 -->

@@ -2,7 +2,9 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">새 게시판 추가</h5>
+                <h5 class="modal-title text-black-60">
+                    새 게시판 추가
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -23,7 +25,6 @@
                         <select class="form-select" id="newBoardType">
                             <option value="board">게시판</option>
                             <option value="travel">여행지</option>
-                            <option value="tree">폴더</option>
                             <option value="anonymous">익명</option>
                             <option value="attendance">출석</option>
                             <option value="greeting">인사</option>
@@ -34,7 +35,13 @@
 
                     <div class="form-group col-4">
                         <label>레벨 제한</label>
-                        <input type="number" class="form-control" id="newBoardLevel" value="1">
+                        <input type="number" class="form-control" id="newBoardLevel" value="0">
+                    </div>
+
+                    <div class="form-group col-12">
+                        <div class="alert alert-info small mt-2">
+                            <i class="fi fi-rr-info"></i> 레벨 제한을 1 이상 설정할 경우, 비회원은 해당 게시판에 접근할 수 없습니다.
+                        </div>
                     </div>
 
                 </div>
@@ -44,33 +51,33 @@
                     <label>게시판 표시 그룹</label>
                     <p>
                         <span>
-                            <input type="checkbox" class="form-check-input"
-                                onclick="toggleAll('newBoardDisplay', this.checked);">
+                            <input type="checkbox" class="form-check-input" onclick="toggleAll('newBoardDisplay', this.checked);">
                             <label class="form-check-label">전체</label>
-                            <span>
-                                <input type="checkbox" class="form-check-input" id="newBoardDisplayGuest">
-                                <label class="form-check-label" for="newBoardDisplayGuest">비회원</label>
                             </span>
-                            <span>
-                                <input type="checkbox" class="form-check-input" id="newBoardDisplayUser">
-                                <label class="form-check-label" for="newBoardDisplayUser">사용자</label>
-                            </span>
-                            <span>
-                                <input type="checkbox" class="form-check-input" id="newBoardDisplayDame">
-                                <label class="form-check-label" for="newBoardDisplayDame">여성회원</label>
-                            </span>
-                            <span>
-                                <input type="checkbox" class="form-check-input" id="newBoardDisplayPartner">
-                                <label class="form-check-label" for="newBoardDisplayPartner">파트너</label>
-                            </span>
-                            <span>
-                                <input type="checkbox" class="form-check-input" id="newBoardDisplaySubsupervisor">
-                                <label class="form-check-label" for="newBoardDisplaySubsupervisor">부관리자</label>
-                            </span>
-                            <span>
-                                <input type="checkbox" class="form-check-input" id="newBoardDisplaySupervisor">
-                                <label class="form-check-label" for="newBoardDisplaySupervisor">관리자</label>
-                            </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input" id="newBoardDisplayGuest">
+                            <label class="form-check-label" for="newBoardDisplayGuest">비회원</label>
+                        </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input" id="newBoardDisplayUser">
+                            <label class="form-check-label" for="newBoardDisplayUser">사용자</label>
+                        </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input" id="newBoardDisplayDame">
+                            <label class="form-check-label" for="newBoardDisplayDame">여성회원</label>
+                        </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input" id="newBoardDisplayPartner">
+                            <label class="form-check-label" for="newBoardDisplayPartner">파트너</label>
+                        </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input" id="newBoardDisplaySubsupervisor">
+                            <label class="form-check-label" for="newBoardDisplaySubsupervisor">부관리자</label>
+                        </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input" id="newBoardDisplaySupervisor">
+                            <label class="form-check-label" for="newBoardDisplaySupervisor">관리자</label>
+                        </span>
                     </p>
                 </div>
 
@@ -155,22 +162,22 @@
                             <input type="checkbox" class="form-check-input" id="newBoardCommentUser">
                             <label class="form-check-label" for="newBoardCommentUser">사용자</label>
                         </span>
-                        <spanp>
+                        <span>
                             <input type="checkbox" class="form-check-input" id="newBoardCommentDame">
                             <label class="form-check-label" for="newBoardCommentDame">여성회원</label>
-                            </span>
-                            <span>
-                                <input type="checkbox" class="form-check-input" id="newBoardCommentPartner">
-                                <label class="form-check-label" for="newBoardCommentPartner">파트너</label>
-                            </span>
-                            <span>
-                                <input type="checkbox" class="form-check-input" id="newBoardCommentSubsupervisor">
-                                <label class="form-check-label" for="newBoardCommentSubsupervisor">부관리자</label>
-                            </span>
-                            <span>
-                                <input type="checkbox" class="form-check-input" id="newBoardCommentSupervisor">
-                                <label class="form-check-label" for="newBoardCommentSupervisor">관리자</label>
-                            </span>
+                        </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input" id="newBoardCommentPartner">
+                            <label class="form-check-label" for="newBoardCommentPartner">파트너</label>
+                        </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input" id="newBoardCommentSubsupervisor">
+                            <label class="form-check-label" for="newBoardCommentSubsupervisor">부관리자</label>
+                        </span>
+                        <span>
+                            <input type="checkbox" class="form-check-input" id="newBoardCommentSupervisor">
+                            <label class="form-check-label" for="newBoardCommentSupervisor">관리자</label>
+                        </span>
                     </p>
                 </div>
 
@@ -178,6 +185,10 @@
                 <div class="form-group">
                     <label>표시 가중치</label>
                     <input type="number" class="form-control" id="newBoardWeight" value="0">
+                </div>
+
+                <div class="alert alert-info small mt-2">
+                    <i class="fi fi-rr-info"></i> 신규 게시판 생성 시 일부 페이지에 게시판이 표시되지 않을 수 있습니다. 모바일 페이지와 백엔드 설정을 업데이트해주세요.
                 </div>
 
             </div>
