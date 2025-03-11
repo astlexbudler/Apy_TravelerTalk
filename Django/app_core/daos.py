@@ -1303,9 +1303,7 @@ def select_coupons(code=None, name=None, status=None, create_account_id=None, ow
 
     # 모든 쿠폰 정보 확인
     coupons = models.COUPON.objects.select_related(
-        'own_account', 'related_post', 'create_account', 'own_account__level',
-    ).prefetch_related(
-        'create_account__groups'
+        'related_post', 'create_account', 'own_account'
     )
 
     query = Q()
@@ -1326,7 +1324,7 @@ def select_coupons(code=None, name=None, status=None, create_account_id=None, ow
 
     # 페이지네이션
     last_page = (coupons.count() // 20) + 1
-    coupons = coupons[(page-1)*20:page]
+    coupons = coupons[(page-1)*20:page*20]
 
     # 쿠폰 정보 포멧
     coupons_data = [{
@@ -1344,11 +1342,12 @@ def select_coupons(code=None, name=None, status=None, create_account_id=None, ow
             'id': coupon.own_account.id,
             'nickname': coupon.own_account.first_name,
             'level': select_level(coupon.own_account.level.level),
+            'account_type': coupon.own_account.groups.all()[0].name, # 각 계정은 하나의 그룹만 가짐
         } if coupon.own_account else None,
         'create_account': {
             'id': coupon.create_account.id,
             'nickname': coupon.create_account.first_name,
-            'partner_name': coupon.create_account.last_name,
+            'level': select_level(coupon.create_account.level.level),
             'account_type': coupon.create_account.groups.all()[0].name, # 각 계정은 하나의 그룹만 가짐
         } if coupon.create_account else None,
         'status': coupon.status,
@@ -1506,7 +1505,7 @@ def select_message(message_id):
 
     # 메세지 확인
     message = models.MESSAGE.objects.select_related(
-        'include_coupon', 'sender_account', 'receive_account'
+        'include_coupon', 'sender', 'receive'
     ).filter(
         id=message_id
     ).first()
@@ -1519,33 +1518,33 @@ def select_message(message_id):
     # 보낸 사람 정보
     if not message.sender: # 관리자
         sender_account = {
-            'id': '',
+            'id': 'admin',
             'nickname': '관리자',
             'account_type': 'supervisor',
         }
     else:
         sender_account = {
-            'id': message.sender_account.id,
-            'nickname': message.sender_account.first_name,
-            'partner_name': message.sender_account.last_name,
-            'account_type': message.sender_account.groups.all()[0].name, # 각 계정은 하나의 그룹만 가짐
-            'level': select_level(message.sender_account.level.level),
+            'id': message.sender.id,
+            'nickname': message.sender.first_name,
+            'partner_name': message.sender.last_name,
+            'account_type': message.sender.groups.all()[0].name, # 각 계정은 하나의 그룹만 가짐
+            'level': select_level(message.sender.level.level),
         }
 
     # 받는 사람 정보
     if message.receive == '': # 관리자
         receive_account = {
-            'id': '',
+            'id': 'admin',
             'nickname': '관리자',
             'account_type': 'supervisor',
         }
     else:
         receive_account = {
-            'id': message.receive_account.id,
-            'nickname': message.receive_account.first_name,
-            'partner_name': message.receive_account.last_name,
-            'account_type': message.receive_account.groups.all()[0].name, # 각 계정은 하나의 그룹만 가짐
-            'level': select_level(message.receive_account.level.level),
+            'id': message.receive.id,
+            'nickname': message.receive.first_name,
+            'partner_name': message.receive.last_name,
+            'account_type': message.receive.groups.all()[0].name, # 각 계정은 하나의 그룹만 가짐
+            'level': select_level(message.receive.level.level),
         }
 
     # 메세지 정보 포멧
@@ -1573,7 +1572,7 @@ def select_messages(receive_account_id=None, send_account_id=None, is_read=None,
 
     # 메세지 확인
     msgs = models.MESSAGE.objects.select_related(
-        'include_coupon' , 'sender', 'receive'
+        'include_coupon' , 'sender', 'receive', 'include_coupon__related_post'
     ).order_by('-created_at')
 
     # 쿼리 필터
@@ -1603,7 +1602,7 @@ def select_messages(receive_account_id=None, send_account_id=None, is_read=None,
         # 보낸 사람 정보
         if not msg.sender: # supervisor
             sender_account = {
-                'id': 'supervisor',
+                'id': 'admin',
                 'nickname': '관리자',
                 'account_type': 'supervisor',
             }
@@ -1619,7 +1618,7 @@ def select_messages(receive_account_id=None, send_account_id=None, is_read=None,
         # 받는 사람 정보
         if not msg.receive:
             receive_account = {
-                'id': '',
+                'id': 'admin',
                 'nickname': '관리자',
                 'account_type': 'supervisor',
             }
@@ -1640,11 +1639,16 @@ def select_messages(receive_account_id=None, send_account_id=None, is_read=None,
             'title': msg.title,
             'content': msg.content,
             'image': '/media/' + str(msg.image) if msg.image else None,
+            'message_type': msg.message_type,
             'include_coupon': {
                 'code': msg.include_coupon.code,
                 'name': msg.include_coupon.name,
                 'required_mileage': msg.include_coupon.required_mileage,
                 'expire_at': datetime.datetime.strftime(msg.include_coupon.expire_at, '%Y-%m-%d'),
+                'related_post': {
+                    'id': msg.include_coupon.related_post.id,
+                    'title': msg.include_coupon.related_post.title,
+                },
             } if msg.include_coupon else None,
             'is_read': msg.is_read,
             'created_at': datetime.datetime.strftime(msg.created_at, '%Y-%m-%d %H:%M'),
@@ -1802,7 +1806,8 @@ def select_banners(location):
 
     # 모든 배너 정보 확인
     bs = models.BANNER.objects.filter(
-        location=location
+        ~Q(status='none'),
+        location=location,
     ).order_by('display_weight')
 
     # 배너 정보 포멧
@@ -2007,7 +2012,7 @@ def make_board_tree(board_type=None, status=False):
     # 부모 게시판이 없는 게시판(최상위 게시판)을 먼저 생성
     board_dict = {
         board.name: {
-            'id': board.id,
+            'id': str(board.id),
             'name': board.name,
             'level_cut': board.level_cut,
             'board_type': board.board_type,
@@ -2026,7 +2031,7 @@ def make_board_tree(board_type=None, status=False):
         if board.parent_board: # 부모 게시판이 존재할 경우,
             if board_dict.get(board.parent_board.name): # 부모 게시판의 자식으로 추가
                 children = {
-                    'id': board.id,
+                    'id': str(board.id),
                     'name': board.name,
                     'level_cut': board.level_cut,
                     'board_type': board.board_type,
@@ -2048,7 +2053,7 @@ def make_board_tree(board_type=None, status=False):
                             break
                         if child['name'] == board.parent_board.name:
                             children = {
-                                'id': board.id,
+                                'id': str(board.id),
                                 'name': board.name,
                                 'level_cut': board.level_cut,
                                 'board_type': board.board_type,
@@ -2069,7 +2074,7 @@ def make_board_tree(board_type=None, status=False):
                                     break
                                 if grandchild['name'] == board.parent_board.name:
                                     children = {
-                                        'id': board.id,
+                                        'id': str(board.id),
                                         'name': board.name,
                                         'level_cut': board.level_cut,
                                         'board_type': board.board_type,
@@ -2249,7 +2254,7 @@ def make_category_tree(status=False):
     # 부모 카테고리가 없는 카테고리(최상위 카테고리)를 먼저 생성
     category_dict = {
         category.name: {
-        'id': category.id,
+        'id': str(category.id),
         'name': category.name,
         'display_weight': category.display_weight,
         'children': [],
@@ -2267,7 +2272,7 @@ def make_category_tree(status=False):
         if category.parent_category: # 부모 카테고리가 존재할 경우,
             if category_dict.get(category.parent_category.name):
                 category_dict[category.parent_category.name]['children'].append({
-                'id': category.id,
+                'id': str(category.id),
                 'name': category.name,
                 'display_weight': category.display_weight,
                 'children': [],
@@ -2286,7 +2291,7 @@ def make_category_tree(status=False):
                         break
                     if child['name'] == category.parent_category.name:
                         child['children'].append({
-                            'id': category.id,
+                            'id': str(category.id),
                             'name': category.name,
                             'display_weight': category.display_weight,
                             'children': [],
@@ -2304,7 +2309,7 @@ def make_category_tree(status=False):
                                 break
                             if grandchild['name'] == category.parent_category.name:
                                 grandchild['children'].append({
-                                    'id': category.id,
+                                    'id': str(category.id),
                                     'name': category.name,
                                     'display_weight': category.display_weight,
                                     'children': [],
@@ -2338,7 +2343,7 @@ def select_category(category_id):
 
     # 카테고리 정보 포멧
     category_data = {
-        'id': category.id,
+        'id': str(category.id),
         'name': category.name,
         'display_weight': category.display_weight,
     }

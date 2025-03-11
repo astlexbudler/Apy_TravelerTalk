@@ -34,7 +34,6 @@
                     <a class="text-black-50 small me-3" style="white-space: nowrap;" href="{{MAIN_URL}}/profile">
                         <i class="fi fi-rr-user"></i> 프로필
                     </a>
-                    {% endif %}
                     <div class="h-col h-switch dropdown me-3" style="display: inline-block;">
                         <a class="theme-switch text-black-50 small" type="button" style="white-space: nowrap;"
                             aria-expanded="false" data-bs-toggle="dropdown" data-bs-display="static">
@@ -52,18 +51,12 @@
                                     {% else %}
                                     {% for message in unread_messages %}
                                     <a href="{{MAIN_URL}}/message">
-                                        <div class="p-2 mb-2 border-bottom">
+                                        <div class="p-2 mt-2 border-bottom">
                                             <p class="text-black-60 m-0">
                                                 {{message.title}}
                                             </p>
                                             <p class="text-black-50" style="font-size: 12px;">
-                                                {% if message.sender.nickname %}
-                                                {{message.sender.nickname}}
-                                                {% elif message.sender.id == 'supervisor' %}
-                                                관리자
-                                                {% else %}
-                                                {{message.sender.id}}
-                                                {% endif %} | {{message.created_at}}
+                                                {{message.sender_account.nickname}} ({{message.sender_account.id}}) | {{message.created_at}}
                                             </p>
                                         </div>
                                     </a>
@@ -80,7 +73,6 @@
                             </li>
                         </ul>
                     </div>
-                    {% if account.account_type != 'guest' %}
                     <a class="text-black-50 small" href="javascript: logout();" style="white-space: nowrap;">
                         <i class="fi fi-rr-exit"></i> 로그아웃
                     </a>
@@ -127,7 +119,7 @@
                         </div>
                     </div>
                     <div class="offcanvas offcanvas-start text-start" tabindex="-1" id="offcanvasMobileMenu" aria-labelledby="offcanvasMobileMenuLabel">
-                        <div class="offcanvas-header" style="background-color: #b5c7d7;">
+                        <div class="offcanvas-header" style="background-color: #97a0a7;">
                             <div
                             style="display: flex; justify-content: space-between; white-space: nowrap;">
                                 <div style="display: inline-block; text-align: left;">
@@ -213,7 +205,7 @@
 {% include 'components/header/toggle_theme.html' %}
 <!-- 모바일 게시판 타이틀 -->
 <div class="w-100 px-3 mb-4 d-lg-none">
-    <div class="mb-3" style="border-bottom: 3px solid #ffafc8;">
+    <div class="mb-3" style="border-bottom: 3px solid #b5c7d7;">
         <h6 class="text-black-60">
             게시판
         </h6>

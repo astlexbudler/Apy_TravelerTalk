@@ -4,20 +4,48 @@
 
   <div class="main-section">
 
-      <!-- 페이지 타이틀 -->
-      {% with title='쿠폰 관리' subtitle='쿠폰 발급 및 관리. 쿠폰 사용 내역 확인' %}
-      {% include 'components/main/title_section.html' %}
-      {% endwith %}
+    <!-- 페이지 타이틀 -->
+    {% with title='쿠폰 관리' subtitle='쿠폰 발급 및 관리. 쿠폰 사용 내역 확인' %}
+    {% include 'components/main/title_section.html' %}
+    {% endwith %}
 
     <!-- 선택지 버튼 그룹 -->
     <div class="btn-group w-100 d-flex">
-      {% include 'components/main/page_tab.html' with tab_name='쿠폰' tab_id='couponTab' tab_link='/supervisor/coupon?tab=couponTab' %}
+      <div class="w-100 d-flex justify-content-center">
+        <a class="w-100 btn" href="{{SUPERVISOR_URL}}/supervisor/coupon?tab=couponTab" id="couponTab">
+          사용 가능한 쿠폰
+        </a>
+      </div>
+      <script>
+          window.addEventListener('load', () => {
+              if ('{{request.GET.tab}}' == 'couponTab') { // 해당 탭이 선택 되었을 경우,
+                  document.getElementById('couponTab').classList.add('pastel-pink-background');
+                  document.getElementById('couponTab').classList.add('text-white');
+              } else { // 해당 탭이 선택 되지 않았을 경우,
+                  document.getElementById('couponTab').classList.add('pastel-beige-background');
+              }
+          });
+      </script>
       <span class="divider"></span>
-      {% include 'components/main/page_tab.html' with tab_name='쿠폰 사용 내역' tab_id='historyTab' tab_link='/supervisor/coupon?tab=historyTab' %}
+      <div class="w-100 d-flex justify-content-center">
+        <a class="w-100 btn" href="{{SUPERVISOR_URL}}/supervisor/coupon?tab=historyTab" id="historyTab">
+          쿠폰 사용 내역
+        </a>
+      </div>
+      <script>
+          window.addEventListener('load', () => {
+              if ('{{request.GET.tab}}' == 'historyTab') { // 해당 탭이 선택 되었을 경우,
+                  document.getElementById('historyTab').classList.add('pastel-pink-background');
+                  document.getElementById('historyTab').classList.add('text-white');
+              } else { // 해당 탭이 선택 되지 않았을 경우,
+                  document.getElementById('historyTab').classList.add('pastel-beige-background');
+              }
+          });
+      </script>
     </div>
 
       <!-- 통계 -->
-      <div class="rounded border p-3 my-5 shadow">
+      <div class="rounded border p-3 my-4 shadow">
         <p>
           <i class="fi fi-rr-stats"></i> 통계
         </p>
@@ -25,7 +53,7 @@
           <thead>
             <tr>
               <th>구분</th>
-              <th>발행한 쿠폰</th>
+              <th>사용 가능한 쿠폰</th>
               <th>만료된 쿠폰</th>
               <th>삭제된 쿠폰</th>
             </tr>
@@ -49,88 +77,111 @@
       </div>
 
       <!-- 검색 -->
-      <div class="rounded border p-3 my-5 shadow">
+      <div class="rounded border p-3 my-4 shadow">
         <p>
           <i class="fi fi-rr-search"></i> 검색
         </p>
-        <form id="couponSearchForm" method="GET" action="{{supervisor_url}}/supervisor/coupon">
-          <input type="hidden" name="tab" value="coupon">
+        <form id="couponSearchForm" method="GET" action="{{SUPERVISOR_URL}}/supervisor/coupon">
+          <input type="hidden" name="tab" value="{{request.GET.tab}}">
           <div class="row">
-            <div class="form-group mt-4 col-12">
-              <label>이름</label>
-              <input class="form-control" name="coupon_name" placeholder="쿠폰 이름">
+            <div class="form-group mb-4 col-8">
+              <label>쿠폰 이름</label>
+              <input class="form-control" name="name" placeholder="쿠폰 이름">
             </div>
-            <div class="form-group mt-4 col-12">
+            <div class="form-group mb-4 col-4">
               <label>코드</label>
-              <input class="form-control" name="coupon_code" placeholder="쿠폰 코드">
+              <input class="form-control" name="code" placeholder="쿠폰 코드">
+            </div>
+          </div>
+          <div class="row">
+            <div class="form-group mb-4 col-6">
+              <label>쿠폰 생성자</label>
+              <input class="form-control" name="create_account" placeholder="아이디, 닉네임 또는 파트너 이름">
+            </div>
+            <div class="form-group mb-4 col-6">
+              <label>쿠폰 소유자</label>
+              <input class="form-control" name="own_account" placeholder="아이디 또는 닉네임">
             </div>
           </div>
         </form>
-        <p class="text-end pt-5">
+        <p class="text-end mt-3 mb-2">
           <a class="btn btn-success" href="javascript: document.getElementById('couponSearchForm').submit()">
             <i class="fi fi-rr-search"></i> 검색
           </a>
         </p>
       </div>
 
-      <!-- 쿠폰 -->
-      <div class="mt-4">
+      <!-- 버튼 -->
+      {% if request.GET.tab == 'couponTab' %}
+      <div class="my-4 text-end">
+        <a href="javascript: new bootstrap.Modal(document.getElementById('writeCouponModal')).show();"
+          class="btn btn-success btn-sm small">
+          <i class="fi fi-rr-plus"></i> 새 쿠폰 등록
+        </a>
+      </div>
+      {% endif %}
 
-        <!-- 버튼 -->
-        {% if request.GET.tab == 'couponTab' %}
-        <div class="p-3 mb-5 text-end">
-          <a href="javascript: new bootstrap.Modal(document.getElementById('writeCouponModal')).show();"
-            class="btn btn-success btn-sm small">
-            <i class="fi fi-rr-plus"></i> 새 쿠폰 등록
-          </a>
-        </div>
+      <!-- 쿠폰 목록 -->
+      <div class="p-3 my-4">
+
+        {% if coupons|length == 0 %}
+        <p>
+          쿠폰이 없습니다.
+        </p>
         {% endif %}
 
-        <!-- 쿠폰 목록 -->
-        <div class="mb-5" style="min-height: 300px;">
-          <h6 class="text-black-60 mb-3 pb-3 border-bottom">
-            쿠폰
-          </h6>
-          {% if coupons|length == 0 %}
-          <p>
-            쿠폰이 없습니다.
-          </p>
-          {% endif %}
-          {% for coupon in coupons %}
-          <a class="text-dark" href="javascript: new bootstrap.Modal(document.getElementById('couponModal{{coupon.code}}')).show();">
-            <div class="p-2 mb-2 pb-3 border-bottom">
-              <div style="display: flex; justify-content: space-between; white-space: nowrap;">
-                {% if coupon.image %}
-                <div style="display: inline-block; text-align: left;">
-                  <img src="{{coupon.image}}" class="img-fluid rounded img-web shadow m-1"
-                  style="width: 6vw; min-width: 80px; max-width: 100px;">
-                </div>
-                {% endif %}
-                <div class="ps-3" style="display: inline-block; text-align: left; flex: 1;">
-                    <h6 class="text-black-60 mb-4">
-                        {{coupon.name}}
-                    </h6>
-                    <p class="text-black-50 small m-0">
-                        여행지: {{coupon.related_post.title}}
-                    </p>
-                    <p class="text-black-50 small">
-                        사용기간: {{coupon.expire_at}}까지
-                    </p>
-                </div>
-                <div style="display: inline-block; text-align: right;">
-                    <p class="text-black-50">
-                        <i class="fi fi-ss-coins"></i> <span class="numberComma">{{coupon.required_mileage}}</span> 마일리지 필요
-                    </p>
-                </div>
+        {% for coupon in coupons %}
+        <a class="text-dark" href="javascript: new bootstrap.Modal(document.getElementById('couponModal{{coupon.code}}')).show();">
+          <div class="p-1 mb-1 border-bottom">
+            <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+              {% if coupon.image %}
+              <div style="display: inline-block; text-align: left;">
+                <img src="{{coupon.image}}" class="img-fluid rounded img-web shadow m-1"
+                style="width: 6vw; min-width: 80px; max-width: 100px;">
+              </div>
+              {% endif %}
+              <div class="ps-3" style="display: inline-block; text-align: left; flex: 1;">
+                <p class="text-black-50 mb-1" style="font-size: 12px;">
+                  {% if coupon.create_account.account_type == 'partner' %}
+                  {{coupon.create_account.partner_name}}
+                  {% else %}
+                  관리자
+                  {% endif %}
+                  님이 생성한 쿠폰
+                </p>
+                <p class="text-black mb-2">
+                    {{coupon.name}} <span class="text-black-50" style="font-size: 12px;;">{% if not coupon.own_account %}(소유자 없음){% endif %}</span>
+                </p>
+                <p class="text-black-50 m-0" style="font-size: 12px;">
+                    여행지: {{coupon.related_post.title}}
+                </p>
+                <p class="text-black-50 small m-0" style="font-size: 12px;">
+                    사용기간: {{coupon.expire_at}}까지
+                </p>
+              </div>
+              <div style="display: inline-block; text-align: right;">
+                  <p class="mb-2 text-end text-black-50" style="font-size: 14px;">
+                    {% if coupon.status == 'active' %}
+                    <span class="badge bg-success">사용 가능</span>
+                    {% elif coupon.status == 'used' %}
+                    <span class="badge bg-secondary">사용 완료</span>
+                    {% elif coupon.status == 'expired' %}
+                    <span class="badge bg-secondary">기간 만료</span>
+                    {% elif coupon.status == 'deleted' %}
+                    <span class="badge bg-danger">삭제됨</span>
+                    {% endif %}
+                  </p>
+                  <p class="text-black-50" style="font-size: 12px;">
+                      <i class="fi fi-ss-coins"></i> <span class="numberComma">{{coupon.required_mileage}}</span> 마일리지 필요
+                  </p>
               </div>
             </div>
-          </a>
-          {% include 'components/modal/coupon/view_coupon.html' %}
-          {% include 'components/modal/coupon/update_coupon.html' %}
-          {% include 'components/modal/coupon/update_status_coupon.html' %}
-          {% endfor %}
-        </div>
-
+          </div>
+        </a>
+        {% include 'components/modal/coupon/view_coupon.html' %}
+        {% include 'components/modal/coupon/update_coupon.html' %}
+        {% include 'components/modal/coupon/update_status_coupon.html' %}
+        {% endfor %}
       </div>
 
       <!-- 안내 메세지 -->

@@ -4,365 +4,321 @@
 
   <div class="main-section">
 
-      <!-- 페이지 타이틀 -->
-      {% with title='메세지 관리' subtitle='관리자 문의 메세지 관리' %}
-      {% include 'components/main/title_section.html' %}
-      {% endwith %}
+    <!-- 페이지 타이틀 -->
+    {% with title='메세지 관리' subtitle='관리자 문의 메세지 관리' %}
+    {% include 'components/main/title_section.html' %}
+    {% endwith %}
 
 
-      <!-- 선택지 버튼 그룹 -->
-      <div class="btn-group w-100 d-flex">
-        {% if request.GET.tab == 'inboxTab' %}
-        <div class="w-100 d-flex justify-content-center">
-          <a class="w-100 btn" href="{{SUPERVISOR_URL}}/supervisor/message?tab=inboxTab&message_type=user_question" id="user_question">
-            받은 사용자 질문 쪽지함
-          </a>
-        </div>
-        <script>
-            window.addEventListener('load', () => {
-                if ('{{request.GET.message_type}}' == 'user_question') { // 해당 탭이 선택 되었을 경우,
-                    document.getElementById('user_question').classList.add('pastel-pink-background');
-                    document.getElementById('user_question').classList.add('text-white');
-                } else { // 해당 탭이 선택 되지 않았을 경우,
-                    document.getElementById('user_question').classList.add('pastel-beige-background');
-                }
-            });
-        </script>
-        <span class="divider"></span>
-        <div class="w-100 d-flex justify-content-center">
-          <a class="w-100 btn" href="{{SUPERVISOR_URL}}/supervisor/message?tab=inboxTab&message_type=partner_question" id="partner_question">
-            받은 파트너 질문 쪽지함
-          </a>
-        </div>
-        <script>
-            window.addEventListener('load', () => {
-                if ('{{request.GET.message_type}}' == 'partner_question') { // 해당 탭이 선택 되었을 경우,
-                    document.getElementById('partner_question').classList.add('pastel-pink-background');
-                    document.getElementById('partner_question').classList.add('text-white');
-                } else { // 해당 탭이 선택 되지 않았을 경우,
-                    document.getElementById('partner_question').classList.add('pastel-beige-background');
-                }
-            });
-        </script>
-        <span class="divider"></span>
-        <div class="w-100 d-flex justify-content-center">
-          <a class="w-100 btn" href="{{SUPERVISOR_URL}}/supervisor/message?tab=inboxTab&message_type=request_ad" id="request_ad">
-            받은 광고 요청 쪽지함
-          </a>
-        </div>
-        <script>
-            window.addEventListener('load', () => {
-                if ('{{request.GET.message_type}}' == 'request_ad') { // 해당 탭이 선택 되었을 경우,
-                    document.getElementById('request_ad').classList.add('pastel-pink-background');
-                    document.getElementById('request_ad').classList.add('text-white');
-                } else { // 해당 탭이 선택 되지 않았을 경우,
-                    document.getElementById('request_ad').classList.add('pastel-beige-background');
-                }
-            });
-        </script>
-        <span class="divider"></span>
-        <div class="w-100 d-flex justify-content-center">
-          <a class="w-100 btn" href="{{SUPERVISOR_URL}}/supervisor/message?tab=inboxTab&message_type=request_coupon" id="request_coupon">
-            받은 쿠폰 요청 쪽지함
-          </a>
-        </div>
-        <script>
-            window.addEventListener('load', () => {
-                if ('{{request.GET.message_type}}' == 'request_coupon') { // 해당 탭이 선택 되었을 경우,
-                    document.getElementById('request_coupon').classList.add('pastel-pink-background');
-                    document.getElementById('request_coupon').classList.add('text-white');
-                } else { // 해당 탭이 선택 되지 않았을 경우,
-                    document.getElementById('request_coupon').classList.add('pastel-beige-background');
-                }
-            });
-        </script>
-        {% else %}
-        <div class="w-100 d-flex justify-content-center">
-          <a class="w-100 btn" href="{{SUPERVISOR_URL}}/supervisor/message?tab=outboxTab&message_type=user_question" id="user_question">
-            보낸 사용자 질문 쪽지함
-          </a>
-        </div>
-        <script>
-            window.addEventListener('load', () => {
-                if ('{{request.GET.message_type}}' == 'user_question') { // 해당 탭이 선택 되었을 경우,
-                    document.getElementById('user_question').classList.add('pastel-pink-background');
-                    document.getElementById('user_question').classList.add('text-white');
-                } else { // 해당 탭이 선택 되지 않았을 경우,
-                    document.getElementById('user_question').classList.add('pastel-beige-background');
-                }
-            });
-        </script>
-        <span class="divider"></span>
-        <div class="w-100 d-flex justify-content-center">
-          <a class="w-100 btn" href="{{SUPERVISOR_URL}}/supervisor/message?tab=outboxTab&message_type=partner_question" id="partner_question">
-            보낸 파트너 질문 쪽지함
-          </a>
-        </div>
-        <script>
-            window.addEventListener('load', () => {
-                if ('{{request.GET.message_type}}' == 'partner_question') { // 해당 탭이 선택 되었을 경우,
-                    document.getElementById('partner_question').classList.add('pastel-pink-background');
-                    document.getElementById('partner_question').classList.add('text-white');
-                } else { // 해당 탭이 선택 되지 않았을 경우,
-                    document.getElementById('partner_question').classList.add('pastel-beige-background');
-                }
-            });
-        </script>
-        <span class="divider"></span>
-        <div class="w-100 d-flex justify-content-center">
-          <a class="w-100 btn" href="{{SUPERVISOR_URL}}/supervisor/message?tab=outboxTab&message_type=request_ad" id="request_ad">
-            보낸 광고 요청 쪽지함
-          </a>
-        </div>
-        <script>
-            window.addEventListener('load', () => {
-                if ('{{request.GET.message_type}}' == 'request_ad') { // 해당 탭이 선택 되었을 경우,
-                    document.getElementById('request_ad').classList.add('pastel-pink-background');
-                    document.getElementById('request_ad').classList.add('text-white');
-                } else { // 해당 탭이 선택 되지 않았을 경우,
-                    document.getElementById('request_ad').classList.add('pastel-beige-background');
-                }
-            });
-        </script>
-        <span class="divider"></span>
-        <div class="w-100 d-flex justify-content-center">
-          <a class="w-100 btn" href="{{SUPERVISOR_URL}}/supervisor/message?tab=outboxTab&message_type=request_coupon" id="request_coupon">
-            보낸 쿠폰 요청 쪽지함
-          </a>
-        </div>
-        <script>
-            window.addEventListener('load', () => {
-                if ('{{request.GET.message_type}}' == 'request_coupon') { // 해당 탭이 선택 되었을 경우,
-                    document.getElementById('request_coupon').classList.add('pastel-pink-background');
-                    document.getElementById('request_coupon').classList.add('text-white');
-                } else { // 해당 탭이 선택 되지 않았을 경우,
-                    document.getElementById('request_coupon').classList.add('pastel-beige-background');
-                }
-            });
-        </script>
-        {% endif %}
+    <!-- 선택지 버튼 그룹 -->
+    <div class="btn-group w-100 d-flex">
+      {% if request.GET.tab == 'inboxTab' %}
+      <div class="w-100 d-flex justify-content-center">
+        <a class="w-100 btn" href="{{SUPERVISOR_URL}}/supervisor/message?tab=inboxTab&message_type=user_question" id="user_question">
+          받은 사용자 질문 쪽지함
+        </a>
       </div>
-
-      <!-- 받은 쪽지 리스트 -->
-      <div class="my-5" id="inbox">
-
-        <!-- 통계 -->
-        <div class="rounded border p-3 mb-5 shadow">
-          <p>
-            <i class="fi fi-rr-stats"></i> 통계
-          </p>
-          <table class="table table-bordered">
-            <thead>
-              <tr>
-                <th>구분</th>
-                <th>읽은 쪽지 수</th>
-                <th>읽지 않은 쪽지 수</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>
-                  전체
-                </td>
-                <td>
-                  {{status.read}}
-                </td>
-                <td>
-                  {{status.unread}}
-                </td>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- 검색 -->
-        <div class="rounded border p-3 mb-5 shadow">
-          <p>
-            <i class="fi fi-rr-search"></i> 검색
-          </p>
-          <form id="inboxSearchForm" method="get" action="{{SUPERVISOR_URL}}/supervisor/message">
-            <input type="hidden" name="tab" value="inbox">
-            <div class="row">
-              <div class="form-group mt-4 col-12">
-                <label>제목</label>
-                <input class="form-control" name="messageTitle" placeholder="쪽지 제목">
-              </div>
-              <div class="form-group mt-4 col-12">
-                <label>받는 사람</label>
-                <input class="form-control" name="messageReceiverId" placeholder="받는 사람 아이디">
-              </div>
-            </div>
-          </form>
-
-          <p class="text-end mt-4">
-            <a class="btn btn-success" href="javascript: document.getElementById('inboxSearchForm').submit()">
-              <i class="fi fi-rr-search"></i> 검색
-            </a>
-          </p>
-        </div>
-
-        <!-- 버튼 -->
-        <div class="p-3 mb-5 text-end">
-
-          <a class="btn btn-primary btn-sm me-2"
-            href="javascript: new bootstrap.Modal(document.getElementById('newMessageModal')).show();">
-            <i class="fi fi-rr-envelope"></i> 쪽지 보내기
-          </a>
-
-          <a href="javascript: openExportDataPage();" class="btn btn-sm btn-success">
-            <i class="fi fi-rr-file-excel"></i> 다운로드
-          </a>
-
-        </div>
-
-        <!-- 쪽지 목록 -->
-        <div class="mb-5" style="min-height: 300px;">
-          <h6 class="text-black-60 mb-3 pb-3 border-bottom">
-            쪽지
-          </h6>
-          {% if messages|length == 0 %}
-          <p>
-            쪽지가 없습니다.
-          </p>
-          {% endif %}
-          {% for message in messages %}
-          {% include 'components/main/message_list.html' %}
-          {% include 'components/modal/message/view_message.html' %}
-          {% endfor %}
-        </div>
-
-        <!-- 안내 메세지 -->
-        <div class="alert alert-info small">
-          <i class="fi fi-rr-info"></i> 쿠폰은 상세보기를 통해 쿠폰 코드를 확인하고 사용할 수 있습니다. 사용 기간이 있는 경우, 기간 내에 사용해주세요.
-        </div>
-
+      <script>
+          window.addEventListener('load', () => {
+              if ('{{request.GET.message_type}}' == 'user_question') { // 해당 탭이 선택 되었을 경우,
+                  document.getElementById('user_question').classList.add('pastel-pink-background');
+                  document.getElementById('user_question').classList.add('text-white');
+              } else { // 해당 탭이 선택 되지 않았을 경우,
+                  document.getElementById('user_question').classList.add('pastel-beige-background');
+              }
+          });
+      </script>
+      <span class="divider"></span>
+      <div class="w-100 d-flex justify-content-center">
+        <a class="w-100 btn" href="{{SUPERVISOR_URL}}/supervisor/message?tab=inboxTab&message_type=partner_question" id="partner_question">
+          받은 파트너 질문 쪽지함
+        </a>
       </div>
+      <script>
+          window.addEventListener('load', () => {
+              if ('{{request.GET.message_type}}' == 'partner_question') { // 해당 탭이 선택 되었을 경우,
+                  document.getElementById('partner_question').classList.add('pastel-pink-background');
+                  document.getElementById('partner_question').classList.add('text-white');
+              } else { // 해당 탭이 선택 되지 않았을 경우,
+                  document.getElementById('partner_question').classList.add('pastel-beige-background');
+              }
+          });
+      </script>
+      <span class="divider"></span>
+      <div class="w-100 d-flex justify-content-center">
+        <a class="w-100 btn" href="{{SUPERVISOR_URL}}/supervisor/message?tab=inboxTab&message_type=request_ad" id="request_ad">
+          받은 광고 요청 쪽지함
+        </a>
+      </div>
+      <script>
+          window.addEventListener('load', () => {
+              if ('{{request.GET.message_type}}' == 'request_ad') { // 해당 탭이 선택 되었을 경우,
+                  document.getElementById('request_ad').classList.add('pastel-pink-background');
+                  document.getElementById('request_ad').classList.add('text-white');
+              } else { // 해당 탭이 선택 되지 않았을 경우,
+                  document.getElementById('request_ad').classList.add('pastel-beige-background');
+              }
+          });
+      </script>
+      <span class="divider"></span>
+      <div class="w-100 d-flex justify-content-center">
+        <a class="w-100 btn" href="{{SUPERVISOR_URL}}/supervisor/message?tab=inboxTab&message_type=request_coupon" id="request_coupon">
+          받은 쿠폰 요청 쪽지함
+        </a>
+      </div>
+      <script>
+          window.addEventListener('load', () => {
+              if ('{{request.GET.message_type}}' == 'request_coupon') { // 해당 탭이 선택 되었을 경우,
+                  document.getElementById('request_coupon').classList.add('pastel-pink-background');
+                  document.getElementById('request_coupon').classList.add('text-white');
+              } else { // 해당 탭이 선택 되지 않았을 경우,
+                  document.getElementById('request_coupon').classList.add('pastel-beige-background');
+              }
+          });
+      </script>
+      {% else %}
+      <div class="w-100 d-flex justify-content-center">
+        <a class="w-100 btn" href="{{SUPERVISOR_URL}}/supervisor/message?tab=outboxTab&message_type=user_question" id="user_question">
+          보낸 사용자 질문 쪽지함
+        </a>
+      </div>
+      <script>
+          window.addEventListener('load', () => {
+              if ('{{request.GET.message_type}}' == 'user_question') { // 해당 탭이 선택 되었을 경우,
+                  document.getElementById('user_question').classList.add('pastel-pink-background');
+                  document.getElementById('user_question').classList.add('text-white');
+              } else { // 해당 탭이 선택 되지 않았을 경우,
+                  document.getElementById('user_question').classList.add('pastel-beige-background');
+              }
+          });
+      </script>
+      <span class="divider"></span>
+      <div class="w-100 d-flex justify-content-center">
+        <a class="w-100 btn" href="{{SUPERVISOR_URL}}/supervisor/message?tab=outboxTab&message_type=partner_question" id="partner_question">
+          보낸 파트너 질문 쪽지함
+        </a>
+      </div>
+      <script>
+          window.addEventListener('load', () => {
+              if ('{{request.GET.message_type}}' == 'partner_question') { // 해당 탭이 선택 되었을 경우,
+                  document.getElementById('partner_question').classList.add('pastel-pink-background');
+                  document.getElementById('partner_question').classList.add('text-white');
+              } else { // 해당 탭이 선택 되지 않았을 경우,
+                  document.getElementById('partner_question').classList.add('pastel-beige-background');
+              }
+          });
+      </script>
+      <span class="divider"></span>
+      <div class="w-100 d-flex justify-content-center">
+        <a class="w-100 btn" href="{{SUPERVISOR_URL}}/supervisor/message?tab=outboxTab&message_type=request_ad" id="request_ad">
+          보낸 광고 요청 쪽지함
+        </a>
+      </div>
+      <script>
+          window.addEventListener('load', () => {
+              if ('{{request.GET.message_type}}' == 'request_ad') { // 해당 탭이 선택 되었을 경우,
+                  document.getElementById('request_ad').classList.add('pastel-pink-background');
+                  document.getElementById('request_ad').classList.add('text-white');
+              } else { // 해당 탭이 선택 되지 않았을 경우,
+                  document.getElementById('request_ad').classList.add('pastel-beige-background');
+              }
+          });
+      </script>
+      <span class="divider"></span>
+      <div class="w-100 d-flex justify-content-center">
+        <a class="w-100 btn" href="{{SUPERVISOR_URL}}/supervisor/message?tab=outboxTab&message_type=request_coupon" id="request_coupon">
+          보낸 쿠폰 요청 쪽지함
+        </a>
+      </div>
+      <script>
+          window.addEventListener('load', () => {
+              if ('{{request.GET.message_type}}' == 'request_coupon') { // 해당 탭이 선택 되었을 경우,
+                  document.getElementById('request_coupon').classList.add('pastel-pink-background');
+                  document.getElementById('request_coupon').classList.add('text-white');
+              } else { // 해당 탭이 선택 되지 않았을 경우,
+                  document.getElementById('request_coupon').classList.add('pastel-beige-background');
+              }
+          });
+      </script>
+      {% endif %}
+    </div>
 
-      <!-- 보낸 쪽지 리스트 -->
-      <div class="my-5 d-none" id="outbox">
-
-        <!-- 통계 -->
-        <div class="rounded border p-3 mb-5">
-          <p>
-            <i class="fi fi-rr-stats"></i> 통계
-          </p>
-          <table class="table table-bordered">
-            <thead>
-              <tr>
-                <th>구분</th>
-                <th>받은 쪽지 수</th>
-                <th>읽지 않은 쪽지 수</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>
-                  전체
-                </td>
-                <td>
-                  {{status.outbox.count}}
-                </td>
-                <td>
-                  {{status.outbox.unread}}
-                </td>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- 검색 -->
-        <div class="rounded border p-3 mb-5">
-          <p>
-            <i class="fi fi-rr-search"></i> 검색
-          </p>
-
-          <form id="outboxSearchForm" method="get" action="{{SUPERVISOR_URL}}/supervisor/message">
-            <input type="hidden" name="tab" value="outbox">
-            <div class="row">
-              <div class="form-group mt-4 col-12">
-                <label>제목</label>
-                <input class="form-control" name="messageTitle" placeholder="쪽지 제목">
-              </div>
-              <div class="form-group mt-4 col-12">
-                <label>받는 사람</label>
-                <input class="form-control" name="messageReceiverId" placeholder="받는 사람 아이디">
-              </div>
-            </div>
-          </form>
-
-          <p class="text-end mt-4">
-            <a class="btn btn-success" href="javascript: document.getElementById('outboxSearchForm').submit()">
-              <i class="fi fi-rr-search"></i> 검색
-            </a>
-          </p>
-        </div>
-
-        <!-- 버튼 -->
-        <div class="text-end">
-          <a href="javascript: openExportDataPage();" class="btn btn-sm btn-success">
-            <i class="fi fi-rr-file-excel"></i> 다운로드
-          </a>
-        </div>
-
-        <!-- 검색 결과 -->
-        <p class="text-black-50 small">
-          <i class="fi fi-rr-info"></i> 내가 보낸 쪽지 및 읽음 여부를 확인할 수 있습니다.
-        </p>
-        <table class="table table-border small border shadow text-center">
-          <tbody>
-            <tr>
-              <th>
-                받는 사람
-              </th>
-              <th>
-                제목
-              </th>
-              <th>
-                보낸 날짜
-              </th>
-              <th>
-                읽음 여부
-              </th>
-            </tr>
-            {% if messages|length < 1 %} <tr>
-              <td colspan="4">
-                <p class="text-black">보낸 쪽지가 없습니다.</p>
-              </td>
-              </tr>
+    <!-- 통계 -->
+    <div class="rounded border p-3 my-4 shadow">
+      <p>
+        <i class="fi fi-rr-stats"></i> 통계
+      </p>
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>구분</th>
+            <th>읽지 않은</th>
+            <th>읽음</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              {% if request.GET.tab == 'inboxTab' %}
+              받은 
               {% else %}
-              {% for message in messages %}
-              <tr style="cursor: pointer;"
-                onclick="new bootstrap.Modal(document.getElementById('messageModal{{message.id}}')).show();
-                {% if message.sender_account and not message.is_read %}fetch('/api/message?message_id={{message.id}}');{% endif %}">
-                <td>
-                  <span class="text-dark">
-                    {% if message.to.partner_name%}
-                    {{ message.to.partner_name }}
-                    {% elif message.to.nickname %}
-                    {{ message.to.nickname }}
-                    {% else %}
-                    비회원 {{message.to.id}}
-                    {% endif %}
-                  </span>
-                </td>
-                <td>
-                  {{ message.title }}
-                </td>
-                <td>
-                  {{ message.created_at }}
-                </td>
-                <td>
-                  {% if message.read == 'y' %}
-                  <i class="fi fi-rr-eye"></i> 읽음
-                  {% else %}
-                  <i class="fi fi-rr-eye"></i> 읽지 않음
-                  {% endif %}
-                  {% include 'components/modal/message/view_message.html' %}
-                </td>
-              </tr>
-              {% endfor %}
+              보낸 
               {% endif %}
-          </tbody>
-        </table>
+              사용자 질문
+            </td>
+            <td>
+              {{status.user_question_unread}}
+            </td>
+            <td>
+              {{status.user_question_read}}
+            </td>
+          </tr>
+          <tr>
+            <td>
+              {% if request.GET.tab == 'inboxTab' %}
+              받은 
+              {% else %}
+              보낸 
+              {% endif %}
+              파트너 질문
+            </td>
+            <td>
+              {{status.partner_question_unread}}
+            </td>
+            <td>
+              {{status.partner_question_read}}
+            </td>
+          </tr>
+          <tr>
+            <td>
+              {% if request.GET.tab == 'inboxTab' %}
+              받은 
+              {% else %}
+              보낸 
+              {% endif %}
+              광고 요청
+            </td>
+            <td>
+              {{status.request_ad_unread}}
+            </td>
+            <td>
+              {{status.request_ad_read}}
+            </td>
+          </tr>
+          <tr>
+            <td>
+              {% if request.GET.tab == 'inboxTab' %}
+              받은 
+              {% else %}
+              보낸 
+              {% endif %}
+              쿠폰 요청
+            </td>
+            <td>
+              {{status.request_coupon_unread}}
+            </td>
+            <td>
+              {{status.request_coupon_read}}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 검색 -->
+    <div class="rounded border p-3 my-4 shadow">
+      <p>
+        <i class="fi fi-rr-search"></i> 검색
+      </p>
+      <form id="inboxSearchForm" method="get" action="{{SUPERVISOR_URL}}/supervisor/message">
+        <input type="hidden" name="tab" value="inbox">
+        <div class="row mb-4">
+          <div class="form-group col-8">
+            <label>제목</label>
+            <input class="form-control" name="messageTitle" placeholder="쪽지 제목">
+          </div>
+          <div class="form-group col-4">
+            <label>받는 사람</label>
+            <input class="form-control" name="messageReceiverId" placeholder="받는 사람 아이디">
+          </div>
+        </div>
+      </form>
+
+      <p class="text-end mt-3 mb-2">
+        <a class="btn btn-success" href="javascript: document.getElementById('inboxSearchForm').submit()">
+          <i class="fi fi-rr-search"></i> 검색
+        </a>
+      </p>
+    </div>
+
+    <!-- 버튼 -->
+    <div class="my-4 text-end">
+
+      <a class="btn btn-primary btn-sm me-2"
+        href="javascript: new bootstrap.Modal(document.getElementById('newMessageModal')).show();">
+        <i class="fi fi-rr-envelope"></i> 쪽지 보내기
+      </a>
+
+      <a href="javascript: openExportDataPage();" class="btn btn-sm btn-success">
+        <i class="fi fi-rr-file-excel"></i> 다운로드
+      </a>
+
+    </div>
+
+
+    <!-- 쪽지 목록 -->
+    <div class="p-3 my-4">
+      {% if messages|length == 0 %}
+      <p>
+        쪽지가 없습니다.
+      </p>
+      {% endif %}
+      {% for message in messages %}
+      <div class="p-1 mb-1 border-bottom">
+        <a class="text-dark" href="javascript: new bootstrap.Modal(document.getElementById('messageModal{{message.id}}')).show(); 
+        {% if message.sender_account.id != account.id and not message.is_read %}fetch('/api/message?message_id={{message.id}}');{% endif %}">
+            <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+                <div style="display: inline-block; text-align: left;">
+                  <p class="text-black-50 small mb-1">
+                    {{message.sender_account.nickname}}({{message.sender_account.username}}) > {{message.receive_account.nickname}}({{message.receive_account.username}})
+                  </p>
+                    <p class="text-black mb-3">
+                        {{ message.title }}
+                        {% if message.include_coupon %}
+                        <i class="fi fi-rr-ticket text-success"></i>
+                        {% endif %}
+                    </p>
+                    <p class="text-black-50 small m-0">
+                      {% if message.sender_account.id != '' %}
+                        보낸시간: 
+                      {% else %}
+                        받은시간:
+                      {% endif %}
+                      {{message.created_at}}
+                    </p>
+                </div>
+                <div style="display: inline-block; text-align: right;">
+                    {% if not message.is_read %}
+                    <p class="text-success small">
+                        읽지 않음
+                    </p>
+                    {% else %}
+                    <p class="text-black-50 small">
+                        읽음
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+        </a>
       </div>
+      {% include 'components/modal/message/view_message.html' %}
+      {% endfor %}
+    </div>
+
+    <!-- 안내 메세지 -->
+    <div class="alert alert-info small">
+      <i class="fi fi-rr-info"></i> 쿠폰은 상세보기를 통해 쿠폰 코드를 확인하고 사용할 수 있습니다. 사용 기간이 있는 경우, 기간 내에 사용해주세요.
+    </div>
 
       <!-- 페이지네이션 영역 -->
       {% include 'components/main/pagination.html' %}

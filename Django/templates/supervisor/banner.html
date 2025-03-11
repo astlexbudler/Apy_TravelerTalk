@@ -4,10 +4,10 @@
 
   <div class="main-section">
 
-      <!-- 페이지 타이틀 -->
-      {% with title='배너 관리' subtitle='광고 배너 관리' %}
-      {% include 'components/main/title_section.html' %}
-      {% endwith %}
+    <!-- 페이지 타이틀 -->
+    {% with title='배너 관리' subtitle='광고 배너 관리' %}
+    {% include 'components/main/title_section.html' %}
+    {% endwith %}
 
     <!-- 선택지 버튼 그룹 -->
     <div class="btn-group w-100 d-flex">
@@ -84,42 +84,38 @@
       </script>
     </div>
 
-      <div class="my-5">
+    <!-- 버튼 -->
+    <div class="my-4 text-end">
+      <a class="btn btn-success btn-sm"
+        href="javascript: new bootstrap.Modal(document.getElementById('addBannerModal')).show();">
+        <i class="fi fi-rr-plus"></i> 배너 생성
+      </a>
+    </div>
 
-        <!-- 버튼 -->
-        <div class="p-3 mb-4 text-end">
-
-          <a class="btn btn-success btn-sm"
-            href="javascript: new bootstrap.Modal(document.getElementById('addBannerModal')).show();">
-            <i class="fi fi-rr-plus"></i> 배너 생성
+    <!-- 검색 결과 -->
+    <div class="rounded border p-3 my-4 shadow">
+      {% if banners|length == 0 %}
+      <p>
+        배너가 없습니다.
+      </p>
+      {% endif %}
+      <div class="row mb-2">
+        {% for banner in banners %}
+        <div class="p-1 {% if banner.status == 'full' %}col-12{% else %}col-6{% endif %}">
+          <a href="javascript: new bootstrap.Modal(document.getElementById('editBannerModal{{ banner.id }}')).show();">
+            <img class="w-100 shadow-sm" src="{{ banner.image }}">
           </a>
-
         </div>
-
-        <!-- 검색 결과 -->
-        {% if banners|length == 0 %}
-        <p>
-          배너가 없습니다.
-        </p>
-        {% endif %}
-        <div class="row mb-2">
-          {% for banner in banners %}
-          <div class="p-1 {% if banner.size == 'full' %}col-12{% else %}col-6{% endif %}">
-            <a href="javascript: new bootstrap.Modal(document.getElementById('editBannerModal{{ banner.id }}')).show();">
-              <img class="w-100 shadow-sm" src="{{ banner.image }}">
-            </a>
-          </div>
-          {% include 'components/modal/supervisor/update_banner.html' %}
-          {% endfor %}
-        </div>
-        <div class="alert alert-info small">
-          <i class="fi fi-rr-info"></i> 전체 배너의 경우 1000px * 250px 크기를 권장합니다.(절반 크기의 경우 500px * 250px)
-        </div>
-
+        {% include 'components/modal/supervisor/update_banner.html' %}
+        {% endfor %}
       </div>
+      <div class="alert alert-info small">
+        <i class="fi fi-rr-info"></i> 전체 배너의 경우 1000px * 250px 크기를 권장합니다.(절반 크기의 경우 500px * 250px)
+      </div>
+    </div>
 
     <!-- 맨 위로 가기 버튼 -->
-    <div class="text-end mb-5">
+    <div class="text-end">
       {% include 'components/main/top_button.html' %}
     </div>
   </div>
@@ -148,7 +144,7 @@
     var location = document.getElementById('bannerLocation' + id).value;
     var link = document.getElementById('bannerLink' + id).value;
     var displayWeight = document.getElementById('bannerDisplayWeight' + id).value;
-    var size = document.getElementById('bannerSize' + id).value;
+    var status = document.getElementById('bannerStatus' + id).value;
 
     if (location == '' | link == '' | displayWeight == '') {
       await showAlert('필수 입력값 누락', '필수 입력값을 모두 입력해주세요.', 'error');
@@ -162,9 +158,9 @@
     formData.append('location', location);
     formData.append('link', link);
     formData.append('display_weight', displayWeight);
-    formData.append('size', size);
+    formData.append('status', status);
 
-    var response = await fetch('{{SUPERVISOR_URL}}/supervisor/banner?id=' + id, {
+    var response = await fetch('{{SUPERVISOR_URL}}/supervisor/banner?banner=' + id, {
       method: 'POST',
       body: formData,
       headers: {
@@ -186,7 +182,7 @@
   }
 
   deleteBanner = async (id) => {
-    var response = await fetch('{{SUPERVISOR_URL}}/supervisor/banner?id=' + id, {
+    var response = await fetch('{{SUPERVISOR_URL}}/supervisor/banner?banner=' + id, {
       method: 'DELETE',
       headers: {
         'X-CSRFToken': csrftoken

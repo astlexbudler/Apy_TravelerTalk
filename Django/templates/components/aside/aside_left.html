@@ -32,9 +32,9 @@
     <!-- 로그인 -->
     {% if account.account_type == 'guest' %}
     <div>
-        <h5 class="text-black-60">
+        <h6 class="text-black-60">
             로그인
-        </h5>
+        </h6>
         <form onkeyup="if(event.keyCode == 13) tryLogin(this);" id="asideLoginForm">
             {% csrf_token %}
             <div class="form-group">
@@ -61,12 +61,10 @@
     {% include 'components/other/side_profile_box.html' %}
     {% endif %}
 
-    <div style="height: 80px;"></div>
-
-    {% if not categories %}
+    <div style="height: 30px;"></div>
 
     <!-- 즐겨찾기 -->
-    <div class="pt-4">
+    <div>
         <div style="border-bottom: 3px solid #b5c7d7;">
             <div style="display: flex; justify-content: space-between; white-space: nowrap;">
                 <div style="display: inline-block; text-align: left;">
@@ -94,6 +92,8 @@
             {% endfor %}
         </div>
     </div>
+
+    {% if not categories %}
 
     <!-- 내 쿠폰들. 사용자 계정만 표시 -->
     <div class="pt-4">

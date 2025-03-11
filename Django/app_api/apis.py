@@ -407,9 +407,10 @@ class api_message(APIView):
             if message['include_coupon'] == None:
                 return JsonResponse({"success": False, 'status': 400, "message": "쿠폰이 포함되어있지 않습니다."})
             if request.user.mileage < message['include_coupon']['required_mileage']:
-                return JsonResponse({"success": False, 'status': 400, "message": "마일리지가 부족합니다."})
+                return JsonResponse({"success": False, 'status': 401, "message": "마일리지가 부족합니다."})
             daos.update_account(account_id=request.user.id, mileage=request.user.mileage - message['include_coupon']['required_mileage'])
             daos.update_message(message_id, delete_coupon=True)
+            daos.update_coupon(message['include_coupon']['code'], own_account_id=request.user.id)
             daos.create_account_activity(
                 account_id=request.user.id,
                 message=f'[쿠폰수령] {message["include_coupon"]["code"]} 쿠폰을 수령하였습니다.',
@@ -437,7 +438,7 @@ class api_message(APIView):
         title = request.data.get('title')
         content = request.data.get('content')
         image = request.data.get('image')
-        include_coupon_code = request.data.get('include_coupon_code')
+        include_coupon_code = request.data.get('coupon_code')
         message_type = request.data.get('message_type')
 
         # 메세지 생성
@@ -583,10 +584,10 @@ class api_coupon(APIView):
         code = request.query_params.get('code')
         name = request.query_params.get('name')
 
-        response = daos.select_all_coupons(
+        response = daos.select_coupons(
             code=code,
             name=name
-        )
+        )[0]
 
         return JsonResponse({"success": True, 'status': 200, "message": "쿠폰 조회 성공", 'data': response})
 

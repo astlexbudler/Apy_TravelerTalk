@@ -208,6 +208,7 @@
                 codeRoll();
                 formData.set('code', document.getElementById('newCouponCode').value);
             }
+            console.log(document.getElementById('newCouponCode').value + ' 쿠폰 생성');
             var success = await fetch('/api/coupon', {
                 method: 'POST',
                 headers: {

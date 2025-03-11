@@ -1092,8 +1092,10 @@ def coupon(request):
   # 데이터 가져오기
   tab = request.GET.get('tab', 'couponTab') # coupopn, history
   page = int(request.GET.get('page', 1))
-  search_coupon_code = request.GET.get('code', '') # 쿠폰 이름 검색
+  search_coupon_code = request.GET.get('code') # 쿠폰 이름 검색
   search_coupon_name = request.GET.get('name', '') # 쿠폰 소유자 검색
+  search_create_account = request.GET.get('create_account') # 쿠폰 생성자 검색
+  search_own_account = request.GET.get('own_account') # 쿠폰 소유자 검색
   coupons = models.COUPON.objects.select_related(
     'related_post', 'create_account', 'own_account'
   ).all().order_by('-created_at')
@@ -1101,6 +1103,7 @@ def coupon(request):
   # status
   status = {
     'active': coupons.filter(status='active').count(),
+    'used': coupons.filter(status='used').count(),
     'expired': coupons.filter(status='expired').count(),
     'deleted': coupons.filter(status='deleted').count(),
   }
@@ -1115,6 +1118,18 @@ def coupon(request):
     query &= Q(code=search_coupon_code)
   if search_coupon_name:
     query &= Q(name__contains=search_coupon_name)
+  if search_create_account:
+    create_account = models.ACCOUNT.objects.filter(
+      Q(first_name=search_create_account) | Q(last_name=search_create_account) | Q(username=search_create_account)
+    ).first()
+    if create_account:
+      query &= Q(create_account=create_account)
+  if search_own_account:
+    own_account = models.ACCOUNT.objects.filter(
+      Q(first_name=search_own_account) | Q(username=search_own_account)
+    ).first()
+    if own_account:
+      query &= Q(own_account=own_account)
   coupons = coupons.filter(query)
 
   if request.GET.get('export'):
@@ -1162,6 +1177,7 @@ def coupon(request):
       'create_account': {
         'id': coupon.create_account.id,
         'partner_name': coupon.create_account.last_name,
+        'account_type': coupon.create_account.groups.all()[0].name,
       },
       'own_account': {
         'id': coupon.own_account.id,
@@ -1270,12 +1286,14 @@ def message(request):
       'id': msg.id,
       'sender_account': {
         'id': msg.sender.id,
+        'username': msg.sender.username,
         'nickname': msg.sender.first_name,
-      } if msg.sender else {'id': '', 'nickname': '관리자', 'account_type': 'supervisor'},
+      } if msg.sender else {'id': account['id'], 'nickname': '관리자', 'account_type': 'supervisor', 'username': 'admin'},
       'receive_account': {
         'id': msg.receive.id,
+        'username': msg.receive.username,
         'nickname': msg.receive.first_name,
-      } if msg.receive else {'id': '', 'nickname': '관리자', 'account_type': 'supervisor'},
+      } if msg.receive else {'id': account['id'], 'nickname': '관리자', 'account_type': 'supervisor', 'username': 'admin'},
       'title': msg.title,
       'content': msg.content,
       'image': '/media/' + str(msg.image) if msg.image else None,
@@ -1315,6 +1333,36 @@ def banner(request):
     return redirect(settings.SUPERVISOR_URL)
   if 'banner' not in account['subsupervisor_permissions']:
     return redirect(settings.SUPERVISOR_URL)
+
+  # POST 요청 처리
+  if request.method == 'POST':
+    # 데이터 가져오기
+    banner_id = request.GET.get('banner')
+    print(banner_id)
+    print(request.POST.dict())
+    if banner_id:
+      daos.update_banner(
+        banner=banner_id,
+        location=request.POST.get('location'),
+        image=request.FILES.get('image'),
+        link=request.POST.get('link', ''),
+        status=request.POST.get('status'),
+        display_weight=request.POST.get('display_weight'),
+      )
+    else:
+      daos.create_banner(
+        location=request.POST.get('location'),
+        image=request.FILES.get('image'),
+        link=request.POST.get('link'),
+        status=request.POST.get('status'),
+        display_weight=request.POST.get('display_weight')
+      )
+    return JsonResponse({'result': 'success'})
+  # DELETE 요청 처리
+  if request.method == 'DELETE':
+    banner_id = request.GET.get('banner_id')
+    daos.delete_banner(banner_id)
+    return JsonResponse({'result': 'success'})
 
   # 데이터 가져오기
   tab = request.GET.get('tab', 'topTab') # topTab, sideTab, postTab

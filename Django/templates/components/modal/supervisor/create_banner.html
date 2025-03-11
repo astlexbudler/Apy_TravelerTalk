@@ -2,7 +2,7 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">
+                <h5 class="modal-title text-black-60">
                     배너 생성하기
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -16,26 +16,26 @@
 
                 <!-- 위치 및 사이즈 -->
                 <div class="row mb-4">
-                    <div class="form-group col-6">
+                    <div class="form-group col-4">
+                        <label>크기</label>
+                        <select class="form-select" id="bannerStatus">
+                            <option value="full">전체</option>
+                            <option value="half">절반(측하단은 불가)</option>
+                            <option value="none">숨기기</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-4">
                         <label>위치</label>
                         <select class="form-select" id="bannerLocation">
                             <option value="top">상단</option>
                             <option value="side">측/하단</option>
+                            <option value="post">게시판 내</option>
                         </select>
                     </div>
-                    <div class="form-group col-6">
-                        <label>크기</label>
-                        <select class="form-select" id="bannerSize">
-                            <option value="full">전체</option>
-                            <option value="half">절반(상단 배너만 적용 가능)</option>
-                        </select>
+                    <div class="form-group col-4">
+                        <label>노출 가중치</label>
+                        <input class="form-control" placeholder="노출 우선순위" id="bannerDisplayWeight">
                     </div>
-                </div>
-
-                <!-- display weight -->
-                <div class="form-group mb-4">
-                    <label>노출 가중치</label>
-                    <input class="form-control" placeholder="노출 우선순위를 입력하세요." id="bannerDisplayWeight">
                 </div>
 
                 <!-- link -->
@@ -63,9 +63,9 @@
         var location = document.getElementById('bannerLocation').value;
         var link = document.getElementById('bannerLink').value;
         var displayWeight = document.getElementById('bannerDisplayWeight').value;
-        var size = document.getElementById('bannerSize').value;
+        var status = document.getElementById('bannerStatus').value;
 
-        if (image == undefined | link == '' | displayWeight == '') {
+        if (image == null || location == '' || link == '' || displayWeight == '' || status == '') {
             await showAlert('필수 입력값 누락', '필수 입력값을 모두 입력해주세요.', 'error');
             return;
         }
@@ -75,9 +75,9 @@
         formData.append('location', location);
         formData.append('link', link);
         formData.append('display_weight', displayWeight);
-        formData.append('size', size);
+        formData.append('status', status);
 
-        var response = await fetch('{{supervisor_url}}/supervisor/banner', {
+        var response = await fetch('{{SUPERVISOR_URL}}/supervisor/banner', {
             method: 'POST',
             body: formData,
             headers: {

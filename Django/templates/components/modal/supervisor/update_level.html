@@ -17,24 +17,24 @@
                     <!-- 대표 이미지 -->
                     <div class="mb-4">
                         <label>
-                            레벨 이미지
+                            레벨 이미지 {{level}}
                         </label>
-                        <div id="imageInput{{ banner.id }}Preview" class="mb-3">
+                        <div id="imageInput{{ level.level }}Preview" class="mb-3">
                             <div class="mb-2 me-2 shadow-sm text-end p-2"
-                                style="min-width: 150px; width: 12vw; background: url('{{ banner.image }}') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw; cursor: pointer;">
+                                style="min-width: 150px; width: 12vw; background: url('{{ level.image }}') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw; cursor: pointer;">
                             </div>
                         </div>
-                        <a href="javascript: document.getElementById('imageInput{{ banner.id }}').click();" class="btn btn-success btn-sm small">
+                        <a href="javascript: document.getElementById('imageInput{{ level.level }}').click();" class="btn btn-success btn-sm small">
                             <i class="fi fi-rr-picture"></i> 이미지 등록
                         </a>
-                        <input type="file" class="d-none" id="imageInput{{ banner.id }}">
+                        <input type="file" class="d-none" id="imageInput{{ level.level }}" name="image">
                         <div class="alert alert-info small mt-2">
                             <i class="fi fi-rr-info"></i> 레벨 뱃지 이미지를 업로드하면 텍스트는 표시되지 않습니다.
                         </div>
                     </div>
                     <script>
                         // 대표 이미지 추가
-                        document.getElementById('imageInput{{ banner.id }}').addEventListener('change', async (e) => {
+                        document.getElementById('imageInput{{ level.level }}').addEventListener('change', async (e) => {
                             const files = e.target.files;
 
                             for (let i = 0; i < files.length; i++) {
@@ -42,7 +42,7 @@
                                 const reader = new FileReader();
                                 reader.onload = (e) => {
                                     const imagePath = e.target.result;
-                                    document.getElementById('imageInput{{ banner.id }}Preview').innerHTML = `
+                                    document.getElementById('imageInput{{ level.level }}Preview').innerHTML = `
                             <div class="mb-2 me-2 shadow-sm text-end p-2" style="min-width: 150px; width: 12vw; background: url('${imagePath}') center/cover no-repeat; display: inline-block; min-height: 150px; height: 12vw; cursor: pointer;"></div>
                             `;
                                 }

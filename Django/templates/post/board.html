@@ -33,6 +33,7 @@
     </div>
 
     <!-- 검색 영역 -->
+    {% if board.board_type != 'travel' %}
     <div style="display: flex; justify-content: space-between; white-space: nowrap;">
       <div style="display: inline-block; text-align: left;">
         {% include 'components/main/search_bar.html' %}
@@ -45,6 +46,7 @@
         {% endif %}
       </div>
     </div>
+    {% endif %}
 
     <!-- 페이지네이션 영역 -->
     {% include 'components/main/pagination.html' %}

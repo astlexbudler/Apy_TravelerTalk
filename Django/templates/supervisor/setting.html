@@ -167,7 +167,7 @@
     var formData = new FormData(document.getElementById('settingsForm'));
     formData.append('terms', $('#terms').summernote('code'));
 
-    fetch('{{supervisor_url}}/supervisor/setting', {
+    fetch('{{SUPERVISOR_URL}}/supervisor/setting', {
       method: 'POST',
       body: formData,
       headers: {

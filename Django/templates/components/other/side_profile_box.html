@@ -10,7 +10,7 @@
         {% elif account.account_type == 'subsupervisor' %}
         <span class="text-black-50 me-1" style="font-size: 14px;">부관리자</span>
         {% else %}
-        <span class="text-black-50 me-1" style="font-size: 14px;">
+        <span class="text-black-50 me-1" style="font-size: 12px;">
             {% if account.account_type == 'user' %}
             일반 회원
             {% elif account.account_type == 'dame' %}
@@ -19,14 +19,14 @@
         </span> 
         {% include 'components/other/level_badge.html' with level=account.level %}
         {% endif %}
-        <p>
+        <p class="text-black-60">
             {{account.nickname}}
         </p>
     </a>
 
     <!-- 포인트, 쿠폰, 쪽지 -->
     {% if account.account_type not in 'supervisor,subsupervisor' %}
-    <div class="border p-2">
+    <div class="border p-2 small">
 
         {% if account.account_type in 'user,dame' %}
         <!-- 포인트 -->

@@ -75,7 +75,7 @@
 
         var formData = new FormData(document.getElementById('newLevelForm'));
 
-        var response = await fetch('{{supervisor_url}}/supervisor/level', {
+        var response = await fetch('{{SUPERVISOR_URL}}/supervisor/level', {
             method: 'POST',
             body: formData,
             headers: {

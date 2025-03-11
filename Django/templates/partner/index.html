@@ -30,141 +30,116 @@
         </p>
         {% endif %}
 
-        {% for post in posts %}
-        <div style="display: flex; justify-content: space-between; white-space: nowrap;">
-          <div class="col-6 col-lg-4 p-2">
-            <a class="text-dark text-decoration-none" href="{{PARTNER_URL}}/partner/rewrite_post?post_id={{post.id}}">
-                <div class="card hover-scale overflow-hidden shadow-sm">
-                    <div class="hover-scale-in blog-card-ratio ratio ratio-4x3">
-
-                        <!-- 여행지 정보 상태가 'ad'인 경우, 베스트 업체로 표시 -->
+        <div class="row">
+          {% for post in posts %}
+          <div class="col-6 col-xl-4 p-1 p-lg-2">
+            <a class="text-dark text-decoration-none" href="{{MAIN_URL}}/post/post_view?post_id={{post.id}}&board_ids={{post.board_ids}}" target="_blank">
+              <div class="card hover-scale overflow-hidden shadow-sm" style="min-height: 460px;">
+                <div class="hover-scale-in blog-card-ratio ratio ratio-4x3">
+                    {% if post.place_info.status == 'ad' %}
+                    <span
+                        class="bg-primary px-3 py-1 position-absolute top-0 start-0 w-auto h-auto z-1 mt-2 ms-2 text-white fs-sm text-center"
+                        style="line-height: 16px;">
+                        베스트<br>업체
+                    </span>
+                    {% endif %}
+                    <img class="blog-card-ratio-img card-img-top" src="{{post.image}}">
+                </div>
+                <div class="card-body">
+                  <div style="display: flex; justify-content: space-between; white-space: nowrap;">
+                    <div style="display: inline-block; text-align: left;">
+                      <!-- 카테고리 및 게시판  -->
+                      <p class="text-black-50 mb-2" style="font-size: 12px;">
+                        <span class="me-2">
+                          {% for board in post.boards %}
+                          {{ board.name }} {% if not forloop.last %} > {% endif %}
+                          {% endfor %}
+                        </span>
+                        {% for category in post.place_info.categories %}
+                        {{ category.name }} {% if not forloop.last %} > {% endif %}
+                        {% endfor %}
+                      </p>
+                      <!-- 제목 -->
+                      <p class="text-black-50 mb-1" style="font-size: 12px;">
+                        {{ post.author.partner_name }}
+                      </p>
+                    </div>
+                    <div style="display: inline-block; text-align: right;">
+                      <p class="m-0">
                         {% if post.place_info.status == 'ad' %}
-                        <span
-                            class="bg-primary px-3 py-1 position-absolute top-0 start-0 w-auto h-auto z-1 mt-2 ms-2 text-white fs-sm text-center"
-                            style="line-height: 16px;">
-                            베스트<br>업체
-                        </span>
+                        <span class="badge bg-primary">광고중</span>
+                        {% elif post.place_info.status == 'active' %}
+                        <span class="badge bg-secondary">광고 없음</span>
+                        {% elif post.place_info.status == 'blocked' %}
+                        <span class="badge bg-danger">숨김</span>
+                        {% elif post.place_info.status == 'writing' %}
+                        <span class="badge bg-warning">작성중</span>
+                        {% elif post.place_info.status == 'pending' %}
+                        <span class="badge bg-info">광고 승인대기</span>
                         {% endif %}
-
-                        <img class="blog-card-ratio-img card-img-top" src="{{post.image}}">
+                        <a href="javascript: new bootstrap.Modal(document.getElementById('{{post.id}}Modal')).show()"
+                          class="text-primary small">
+                          <i class="fi fi-rr-edit"></i>
+                        </a>
+                      </p>
                     </div>
-                    <div class="card-body">
-
-                        <!-- 카테고리 -->
-                        <span class="text-black-50" style="font-size: 12px;">
-                            {% for category in post.place_info.categories %}
-                            {{ category.name }} {% if not forloop.last %} > {% endif %}
-                            {% endfor %}
-                        </span>
-
-                        <!-- 제목 -->
-                        <h6 class="mb-4">
-                            {{ post.title }}
-                        </h6>
-
-                        <!-- 주소 -->
-                        <p class="small text-black-50 mb-1">
-                            <i class="fi fi-rr-marker"></i> {{ post.place_info.location_info }}
-                        </p>
-
-                        <!-- 오픈 정보 -->
-                        <p class="small text-black-50 mb-1">
-                            <i class="fi fi-rr-info"></i> {{ post.place_info.open_info }}
-                        </p>
-
+                  </div>
+                  <h6 class="mb-3 text-black-60">
+                      {{ post.title }}
+                      <a href="{{PARTNER_URL}}/partner/rewrite_post?post_id={{ post.id }}"
+                        class="text-primary">
+                        <i class="fi fi-rr-edit"></i>
+                      </a>
+                  </h6>
+                  <p class="text-black-50 small mb-2">
+                    가중치: {{post.search_weight}}
+                  </p>
+                  <p class="small text-black-50">
+                    광고 시작 일시: {{post.place_info.ad_start_at}}<br>
+                    광고 종료 일시: {{post.place_info.ad_end_at}}<br>
+                  </p>
+                </div>
+              </div>
+            </a>
+          </div>
+          <div class="modal fade" id="{{post.id}}Modal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            {{ post.title }} 광고 설정
+                        </h5>
+                        <button  class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="card-footer">
-
-                        <!-- 댓글보기, 후기 검색, 정보 보기 버튼 -->
-                        <span
-                            class="btn btn-sm btn-outline-secondary small p-1 px-2">
-                            <i class="fi fi-rr-eye"></i> 상세
-                        </span>
-                        <span
-                            class="btn btn-sm btn-outline-secondary small p-1 px-2">
-                            <i class="fi fi-rr-star"></i> 후기
-                        </span>
-                        <span
-                            class="btn btn-sm btn-outline-secondary small p-1 px-2">
-                            <i class="fi fi-rr-comment"></i> 댓글
-                        </span>
-
+                    <div class="modal-body">
+  
+                        <!-- 광고 상태 -->
+                        <div class="form-group mb-4">
+                            <label>광고 상태</label>
+                            <select class="form-control" id="{{ post.id }}adStatus">
+                              <option value="pending" {% if post.place_info.status == 'pending' %}selected{% endif %}>광고 요청</option>
+                              <option value="active" {% if post.place_info.status == 'active' %}selected{% endif %}>게시</option>
+                              <option value="writing" {% if post.place_info.status == 'writing' %}selected{% endif %}>숨김</option>
+                            </select>
+                            <div class="alert alert-info small mt-2">
+                              <i class="fi fi-rr-info"></i> 한번에 하나의 게시글만 게시할 수 있습니다. 게시글 상태를 변경하면 광고 설정이 초기화됩니다.
+                            </div>
+                        </div>
+  
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-primary me-2" onclick="updateAd('{{ post.id }}');"
+                            data-bs-dismiss="modal">
+                            <i class="fi fi-rr-edit"></i> 수정하기</button>
+                            <button class="btn btn-secondary" data-bs-dismiss="modal">
+                                취소
+                            </button>
                     </div>
                 </div>
-            </a>
-        </div>
-          <div style="flex: 1; padding-left: 10px;">
-            <div class="border rounded p-3 mt-2">
-              <p>
-                <span class="h5 text-black-60 me-2">
-                  광고 설정
-                </span>
-                <a href="javascript: new bootstrap.Modal(document.getElementById('{{post.id}}Modal')).show()"
-                  class="text-black-50">
-                  <i class="fi fi-rr-edit"></i>
-                </a>
-              </p>
-              <p>
-                광고 상태:
-                {% if post.place_info.status == 'ad' %}
-                <span class="badge bg-primary">광고중</span>
-                {% elif post.place_info.status == 'active' %}
-                <span class="badge bg-secondary">광고 없음</span>
-                {% elif post.place_info.status == 'blocked' %}
-                <span class="badge bg-danger">숨김</span>
-                {% elif post.place_info.status == 'writing' %}
-                <span class="badge bg-warning">작성중</span>
-                {% elif post.place_info.status == 'pending' %}
-                <span class="badge bg-info">광고 승인대기</span>
-                {% endif %}
-              </p>
-              <p class="small text-black-50">
-                광고 시작 일시: {{post.place_info.ad_start_at}}<br>
-                광고 종료 일시: {{post.place_info.ad_end_at}}<br>
-              </p>
-              <p>
-                게시글 아이디: {{post.id}}
-              </p>
             </div>
           </div>
+          {% endfor %}
         </div>
-        <div class="modal fade" id="{{post.id}}Modal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
-          <div class="modal-dialog modal-dialog-centered">
-              <div class="modal-content">
-                  <div class="modal-header">
-                      <h5 class="modal-title">
-                          {{ post.title }} 광고 설정
-                      </h5>
-                      <button  class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                  </div>
-                  <div class="modal-body">
-
-                      <!-- 광고 상태 -->
-                      <div class="form-group mb-4">
-                          <label>광고 상태</label>
-                          <select class="form-control" id="{{ post.id }}adStatus">
-                            <option value="pending" {% if post.place_info.status == 'pending' %}selected{% endif %}>광고 요청</option>
-                            <option value="active" {% if post.place_info.status == 'active' %}selected{% endif %}>게시</option>
-                            <option value="writing" {% if post.place_info.status == 'writing' %}selected{% endif %}>숨김</option>
-                          </select>
-                          <div class="alert alert-info small mt-2">
-                            <i class="fi fi-rr-info"></i> 한번에 하나의 게시글만 게시할 수 있습니다.
-                          </div>
-                      </div>
-
-                  </div>
-                  <div class="modal-footer">
-                      <button class="btn btn-primary me-2" onclick="updateAd('{{ post.id }}');"
-                          data-bs-dismiss="modal">
-                          <i class="fi fi-rr-edit"></i> 수정하기</button>
-                          <button class="btn btn-secondary" data-bs-dismiss="modal">
-                              취소
-                          </button>
-                  </div>
-              </div>
-          </div>
-      </div>
-        {% endfor %}
 
       </div>
 

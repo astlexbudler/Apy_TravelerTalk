@@ -46,7 +46,9 @@
                   <tr>
                     <td>
                       <p>
-                        {{ board.name }}
+                        <a href="{{SUPERVISOR_URL}}/supervisor/post?board_id={{ board.id }}">
+                          {{ board.name }}
+                        </a>
                         <a href="javascript: document.getElementById('subBoardParent').value = '{{ board.id }}'; new bootstrap.Modal(document.getElementById('addnewBoardModal')).show()"
                         class="btn btn-success p-1 px-2 small ms-2">
                           <i class="fi fi-rr-plus"></i> 하위 게시판 추가
@@ -70,7 +72,9 @@
                   <tr>
                     <td>
                       <p class="ms-2">
-                        {{ child.name }}
+                        <a href="{{SUPERVISOR_URL}}/supervisor/post?board_id={{ child.id }}">
+                          {{ child.name }}
+                        </a>
                         <a href="javascript: document.getElementById('subBoardParent').value = '{{ board.id }}'; new bootstrap.Modal(document.getElementById('addnewBoardModal')).show()"
                         class="btn btn-success p-1 px-2 small ms-2">
                           <i class="fi fi-rr-plus"></i> 하위 게시판 추가
@@ -93,7 +97,9 @@
                     <tr>
                       <td>
                         <p class="ms-4">
-                          {{ grandchild.name }}
+                          <a href="{{SUPERVISOR_URL}}/supervisor/post?board_id={{ grandchild.id }}">
+                            {{ grandchild.name }}
+                          </a>
                           <a href="javascript: document.getElementById('subBoardParent').value = '{{ board.id }}'; new bootstrap.Modal(document.getElementById('addnewBoardModal')).show()"
                           class="btn btn-success p-1 px-2 small ms-2">
                             <i class="fi fi-rr-plus"></i> 하위 게시판 추가
@@ -116,7 +122,11 @@
                       {% for grandgrandchild in grandchild.children %}
                       <tr>
                         <td>
-                          <span class="ms-6">{{ grandgrandchild.name }}</span>
+                          <p class="ms-6">
+                            <a href="{{SUPERVISOR_URL}}/supervisor/post?board_id={{ grandgrandchild.id }}">
+                              {{ grandgrandchild.name }}
+                            </a>
+                          </p>
                         </td>
                         <td>{{ grandgrandchild.total_views }}</td>
                         <td>{{ grandgrandchild.total_posts }}</td>

@@ -56,22 +56,25 @@ def index(request):
               'id': c.id,
               'name': c.name,
           } for c in post.place_info.categories.all()],
-          'category_ids': [c.id for c in post.place_info.categories.all()],
+          'category_ids': ','.join([str(c.id) for c in post.place_info.categories.all()]),
           'location_info': post.place_info.location_info if len(post.place_info.location_info) <= 16 else post.place_info.location_info[:20] + '..',
           'open_info': post.place_info.open_info if len(post.place_info.open_info) <= 16 else post.place_info.open_info[:20] + '..',
           'status': post.place_info.status,
+          'ad_start_at': datetime.datetime.strftime(post.place_info.ad_start_at, '%Y-%m-%d') if post.place_info.ad_start_at else None,
+          'ad_end_at': datetime.datetime.strftime(post.place_info.ad_end_at, '%Y-%m-%d') if post.place_info.ad_end_at else None,
       } if post.place_info else None,
       'boards': [{
           'id': board.id,
           'name': board.name,
       } for board in post.boards.all()],
-      'board_ids': [board.id for board in post.boards.all()],
+      'board_ids': ','.join([str(board.id) for board in post.boards.all()]),
       'title': post.title,
       'image': '/media/' + str(post.image) if post.image else None,
       'view_count': post.view_count,
       'like_count': post.like_count,
       'created_at': datetime.datetime.strftime(post.created_at, '%Y-%m-%d %H:%M'),
       'comment_count': models.COMMENT.objects.filter(post=post).count(),
+      'search_weight': post.search_weight,
   } for post in posts]
 
   # 여행지 정보 수정 요청 처리

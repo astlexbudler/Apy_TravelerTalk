@@ -1,12 +1,14 @@
-<div class="row mb-3">
+<div class="mb-3">
     <div class="d-none d-lg-block">
-        {% for banner in banners %}
-        <div class="p-1 {%if banner.size == 'full' %}col-12{% else %}col-6{% endif %}">
-            <a href="{{ banner.link }}" target="_blank">
-                <img class="w-100 shadow-sm" src="{{ banner.image }}">
-            </a>
+        <div class="row">
+            {% for banner in banners %}
+            <div class="{%if banner.status == 'full' %}col-12{% else %}col-6{% endif %}">
+                <a href="{{ banner.link }}" target="_blank">
+                    <img class="w-100 shadow-sm" src="{{ banner.image }}">
+                </a>
+            </div>
+            {% endfor %}
         </div>
-        {% endfor %}
     </div>
 
     <div id="{{bannerCaouselName}}" data-ride="carousel" class="carousel slide d-lg-none">

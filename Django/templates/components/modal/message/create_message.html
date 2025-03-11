@@ -31,32 +31,6 @@
                         {% include 'components/other/upload_image.html' with label='이미지 첨부' id='imageInput' %}
                     </div>
 
-                    <!-- 쪽지 발송 대상 검색 -->
-                    <div class="form-group mt-2 mb-2 {% if account.account_type not in 'supervisor,subsupervisor,partner' %}d-none{% endif %}">
-                        <label>받는 사람</label> <small id="receiverConfirmMessage"></small>
-                        <div class="form-group position-relative w-100" style="display: inline-block;" onkeyup="if(event.keyCode == 13) { addUser(); }">
-                            <input class="form-control" placeholder="사용자 아이디 또는 닉네임을 입력해주세요." id="accountSearchInput">
-                            <a href="javascript: addUser();" class="position-absolute text-black-50"
-                                style="right: 15px; top: 50%; transform: translateY(-50%); font-size: 14px;">
-                                <i class="fi fi-rs-paper-plane-top text-success"></i>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="mb-4 px-2">
-                        <div class="form-group mb-2 {% if account.account_type in 'supervisor,subsupervisor' %}d-none{% endif %}">
-                            <input type="checkbox" id="messageToAdmin">
-                            <label for="messageToAdmin">관리자 문의 메세지로 보내기</label>
-                        </div>
-                        <input id="receiverId" class="d-none">
-                        <div id="receiverList"></div>
-                    </div>
-
-                    <!-- 쪽지 제목 -->
-                    <div class="form-group mb-2">
-                        <label>제목</label>
-                        <input class="form-control" placeholder="쪽지 제목을 입력하세요." id="messageTitle" name="title">
-                    </div>
-
                     <!-- 쪽지 구분 -->
                     <div class="form-group mb-4">
                         <label>쪽지 구분</label>
@@ -77,6 +51,32 @@
                             <option value="all">모두에게</option>
                             {% endif %}
                         </select>
+                    </div>
+
+                    <!-- 쪽지 발송 대상 검색 -->
+                    <div class="form-group mt-2 mb-2 {% if account.account_type not in 'supervisor,subsupervisor,partner' %}d-none{% endif %}">
+                        <label>받는 사람</label> <small id="receiverConfirmMessage"></small>
+                        <div class="form-group position-relative w-100" style="display: inline-block;" onkeyup="if(event.keyCode == 13) { addUser(); }">
+                            <input class="form-control" placeholder="사용자 아이디 또는 닉네임을 입력해주세요." id="accountSearchInput">
+                            <a href="javascript: addUser();" class="position-absolute text-black-50"
+                                style="right: 15px; top: 50%; transform: translateY(-50%); font-size: 14px;">
+                                <i class="fi fi-rs-paper-plane-top text-success"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="mb-4 px-2">
+                        <div class="form-group mb-2 {% if account.account_type in 'supervisor,subsupervisor' %}d-none{% endif %}">
+                            <input type="checkbox" id="messageToAdmin">
+                            <label for="messageToAdmin">관리자 문의 메세지로 보내기</label>
+                        </div>
+                        <input id="receiverId" type="hidden" name="receiver_id">
+                        <div id="receiverList"></div>
+                    </div>
+
+                    <!-- 쪽지 제목 -->
+                    <div class="form-group mb-2">
+                        <label>제목</label>
+                        <input class="form-control" placeholder="쪽지 제목을 입력하세요." id="messageTitle" name="title">
                     </div>
 
                     <!-- 쪽지 내용 -->
@@ -149,6 +149,7 @@
             receiverConfirmMessage.classList.add('text-success');
             receiverConfirmMessage.classList.remove('text-danger');
             nowAccountId = accounts[0]['id'];
+            console.log(nowAccountId);
             nowAccountNickname = accounts[0]['nickname'];
             accountOk = true;
             return
@@ -226,6 +227,7 @@
         receiverList.innerHTML = '';
         accountSearchInput.removeAttribute('readonly');
         receiverId.value = '';
+        receiverConfirmMessage.innerHTML = '';
     });
 
 
@@ -309,8 +311,8 @@
         var receiverIds = document.getElementById('receiverId').value;
         var messageTitle = document.getElementById('messageTitle').value;
         var messageContent = document.getElementById('messageContent').value;
+        console.log('receiverIds', receiverIds, 'messageTitle', messageTitle, 'messageContent', messageContent, 'couponValid', couponValid);
         if (messageTitle == '' || messageContent == '') {
-            console.log('receiverIds', receiverIds, 'messageTitle', messageTitle, 'messageContent', messageContent);
             await showAlert('쪽지 보내기', '모든 항목을 입력해주세요.', 'error');
             return;
         }
@@ -320,6 +322,7 @@
             if (receiverIds.split(',')[i] == '') {
                 continue;
             }
+            console.log(receiverIds.split(',')[i]);
             var formData = new FormData();
             formData.append('receiver_id', receiverIds.split(',')[i]);
             formData.append('title', messageTitle);

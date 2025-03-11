@@ -71,7 +71,7 @@
                         <p class="text-black-50 small">
                             사용기한: {{coupon.expire_at}} 까지
                         </p>
-                        {% if coupon.required_mileage != 0 %}
+                        {% if coupon.required_mileage != 0 and coupon.create_account.id == account.id %}
                         <div class="alert alert-info small">
                             <i class="fi fi-ss-coins"></i> <span class="numberComma">{{coupon.required_mileage}}</span>
                             마일리지 필요

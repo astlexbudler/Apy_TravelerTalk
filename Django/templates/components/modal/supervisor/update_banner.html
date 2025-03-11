@@ -3,7 +3,7 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">
+                <h5 class="modal-title text-black-60">
                     배너 수정하기
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -46,27 +46,27 @@
 
                 <!-- 위치 및 사이즈 -->
                 <div class="row mb-4">
-                    <div class="form-group col-6">
+                    <div class="form-group col-4">
+                        <label>크기</label>
+                        <select class="form-select" id="bannerStatus{{ banner.id }}">
+                            <option value="full"{% if banner.size == 'full' %} selected{% endif %}>전체</option>
+                            <option value="half"{% if banner.size == 'half' %} selected{% endif %}>절반(측하단은 불가)</option>
+                            <option value="none"{% if banner.size == 'none' %} selected{% endif %}>숨기기</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-4">
                         <label>위치</label>
                         <select class="form-select" id="bannerLocation{{ banner.id }}">
                             <option value="top"{% if banner.location == 'top' %} selected{% endif %}>상단</option>
                             <option value="side"{% if banner.location == 'side' %} selected{% endif %}>측/하단</option>
+                            <option value="post"{% if banner.location == 'post' %} selected{% endif %}>게시판 내</option>
                         </select>
                     </div>
-                    <div class="form-group col-6">
-                        <label>크기</label>
-                        <select class="form-select" id="bannerSize{{ banner.id }}">
-                            <option value="full"{% if banner.size == 'full' %} selected{% endif %}>전체</option>
-                            <option value="half"{% if banner.size == 'half' %} selected{% endif %}>절반(상단 배너만 적용 가능)</option>
-                        </select>
+                    <div class="form-group col-4">
+                        <label>노출 가중치</label>
+                        <input class="form-control" placeholder="노출 우선순위를 입력하세요." id="bannerDisplayWeight{{ banner.id }}"
+                            value="{{ banner.display_weight }}">
                     </div>
-                </div>
-
-                <!-- display weight -->
-                <div class="form-group mb-4">
-                    <label>노출 가중치</label>
-                    <input class="form-control" placeholder="노출 우선순위를 입력하세요." id="bannerDisplayWeight{{ banner.id }}"
-                        value="{{ banner.display_weight }}">
                 </div>
 
                 <!-- link -->
