@@ -196,16 +196,7 @@
 <script>
 
 receiveCoupon = async (post_id) => {
-  var formData = new FormData();
-  formData.append('post_id', post_id);
-
-  var success = await fetch('/api/api_coupon_receive', {
-    method: 'POST',
-    headers: {
-      'X-CSRFToken': '{{ csrf_token }}'
-    },
-    body: formData
-  })
+  var success = await fetch('/api/coupon_receive?post_id={{ post.id }}')
   .then((response) => response.json())
   .then(data => data.success);
 

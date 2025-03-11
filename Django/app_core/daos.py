@@ -791,6 +791,7 @@ def select_post(post_id=None, title=None):
         if coupon.status != 'active':
             continue
         include_coupons.append({
+            'code': coupon.code,
             'name': coupon.name,
             'expire_at': datetime.datetime.strftime(coupon.expire_at, '%Y-%m-%d'),
             'required_mileage': coupon.required_mileage,
@@ -941,7 +942,7 @@ def create_post_place_info(post_id, category_ids, location_info, open_info, stat
     }
 
 # 게시글 정보 업데이트
-def update_post(post_id, title=None, content=None, image=None, board_ids=None, search_weight=None, view_count=None, like_count=None, place_info_id=None):
+def update_post(post_id, title=None, content=None, image=None, board_ids=None, search_weight=None, view_count=None, like_count=None, place_info_id=None, delete_coupon_code=None):
 
     # 게시글 확인
     post = models.POST.objects.filter(
@@ -975,6 +976,10 @@ def update_post(post_id, title=None, content=None, image=None, board_ids=None, s
         post.view_count = view_count
     if like_count: # 좋아요 수 업데이트
         post.like_count = like_count
+    if delete_coupon_code: # 쿠폰 삭제
+        post.include_coupons.remove(models.COUPON.objects.filter(
+            code=delete_coupon_code
+        ).first())
     if place_info_id:
         place_info = models.PLACE_INFO.objects.filter(
             id=place_info_id

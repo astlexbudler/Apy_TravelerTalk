@@ -116,7 +116,28 @@ def api_file_upload(request):
 
 # 쿠폰 게시글에서 쿠폰 수령 api
 def api_coupon_receive(request):
-    return JsonResponse({"success": False, 'status': 200, "message": "쿠폰 수령 성공"})
+
+    post_id = request.GET.get('post_id')
+
+    # 로그인 여부 확인
+    if not request.user.is_authenticated:
+        return JsonResponse({"success": False, 'status': 401, "message": "로그인이 필요합니다."})
+    account = daos.select_account(request.user.id)
+    if account['account_type'] not in ['user', 'dame']:
+        return JsonResponse({"success": False, 'status': 403, "message": "권한이 없습니다."})
+    post = daos.select_post(post_id)
+    if not post['include_coupons']:
+        return JsonResponse({"success": False, 'status': 400, "message": "쿠폰이 포함되어있지 않습니다."})
+    coupon = post['include_coupons'][0]
+    if account['mileage'] < coupon['required_mileage']:
+        return JsonResponse({"success": False, 'status': 401, "message": "마일리지가 부족합니다."})
+
+    # 쿠폰 수령
+    daos.update_post(post_id, delete_coupon_code=coupon['code'])
+    daos.update_account(request.user.id, mileage=account['mileage'] - coupon['required_mileage'])
+    daos.update_coupon(coupon['code'], own_account_id=request.user.id)
+
+    return JsonResponse({"success": True, 'status': 200, "message": "쿠폰 수령 성공"})
 
 # 게시글 REST API
 # GET: 게시글 조회
