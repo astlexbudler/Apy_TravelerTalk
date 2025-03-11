@@ -356,7 +356,7 @@
       formData.append('image', document.getElementById('imageInput').files[0]); // 대표 이미지
     }
 
-    await fetch('{{supervisor_url}}/supervisor/travel/edit?post_id={{ request.GET.post_id }}', {
+    await fetch('{{SUPERVISOR_URL}}/supervisor/travel/edit?post_id={{ request.GET.post_id }}', {
       method: 'POST',
       headers: {
         'X-CSRFToken': csrftoken
@@ -367,7 +367,7 @@
       .then(async (data) => {
         if (data.result == 'success') {
           await showAlert('게시글 수정 완료', '게시글이 성공적으로 수정되었습니다.', 'success');
-          window.location.href = '{{supervisor_url}}/supervisor/travel';
+          window.location.href = '{{SUPERVISOR_URL}}/supervisor/travel';
         } else {
           showAlert('게시글 수정 실패', '게시글 수정 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error');
         }
