@@ -31,7 +31,7 @@
 -->
 
 <div class="col-6 col-xl-4 p-1 p-lg-2">
-    <a class="text-dark text-decoration-none" href="/post/post_view?post_id={{post.id}}&board_ids={{request.GET.board_ids}}">
+    <a class="text-dark text-decoration-none" href="/post/post_view?post_id={{post.id}}&board_ids={{post.board_ids}}">
         <div class="card hover-scale overflow-hidden shadow-sm" style="min-height: 400px;">
             <div class="hover-scale-in blog-card-ratio ratio ratio-4x3">
 
@@ -77,15 +77,15 @@
             <div class="card-footer w-100 p-1 p-lg-2 py-2" style="white-space: nowrap; position: absolute; bottom: 0; height: 50px;">
 
                 <!-- 댓글보기, 후기 검색, 정보 보기 버튼 -->
-                <a href="/post/travel_view?post_id={{post.id}}&board_ids={{request.GET.board_ids}}"
+                <a href="/post/post_view?post_id={{post.id}}&board_ids={{post.board_ids}}"
                     class="btn btn-sm btn-outline-secondary p-1 px-2" style="font-size: 12px;">
                     <i class="fi fi-rr-eye"></i> 상세
                 </a>
-                <a href="/post/review?related_post_id={{post.id}}"
+                <a href="/post/review?board_ids=37&related_post_id={{post.id}}"
                     class="btn btn-sm btn-outline-secondary p-1 px-2" style="font-size: 12px;">
                     <i class="fi fi-rr-star"></i> 후기
                 </a>
-                <a href="/post/travel_view?post_id={{post.id}}&board_ids={{request.GET.board_ids}}"
+                <a href="/post/post_view?post_id={{post.id}}&board_ids={{post.board_ids}}"
                     class="btn btn-sm btn-outline-secondary p-1 px-2" style="font-size: 12px;">
                     <i class="fi fi-rr-comment"></i> 댓글
                 </a>

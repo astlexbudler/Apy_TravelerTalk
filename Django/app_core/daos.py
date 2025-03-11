@@ -105,6 +105,7 @@ def get_default_contexts(request):
         account = {
             'id': '',
             'account_type': 'guest',
+            'bookmarked_posts': '',
             'level': {
                 'level': 0
             }
@@ -695,7 +696,7 @@ def select_posts(title=None, category_id=None, board_id=None, related_post_id=No
             'id': board.id,
             'name': board.name,
         } for board in post.boards.all()],
-        'board_ids': [board.id for board in post.boards.all()],
+        'board_ids': ','.join([str(board.id) for board in post.boards.all()]),
         'title': post.title,
         'image': '/media/' + str(post.image) if post.image else None,
         'view_count': post.view_count,
