@@ -346,6 +346,7 @@ def write_post(request):
     if not title or not content: # 제목 또는 내용이 없는 경우
       return JsonResponse({'result': 'error'})
     coupon_name = request.POST.get('coupon_name')
+    hide = request.POST.get('hide')
     # 게시글 작성
     post = daos.create_post(
       author_id=request.user.id,
@@ -355,6 +356,7 @@ def write_post(request):
       related_post_id=related_post_id,
       image=image,
       include_coupon_name=coupon_name,
+      hide=hide,
     )
     # 사용자 활동 기록 추가 및 포인트
     if board['board_type'] == 'review':
@@ -421,12 +423,14 @@ def rewrite_post(request):
     image = request.FILES.get('image')
     if not title or not content: # 제목 또는 내용이 없는 경우
       return JsonResponse({'result': 'error'})
+    hide = request.POST.get('hide')
     # 게시글 수정
     post = daos.update_post(
       post_id=post_id,
       title=title,
       content=content,
       image=image,
+      hide=hide,
     )
     # 사용자 활동 기록 추가
     if board['board_type'] == 'review':
@@ -463,6 +467,8 @@ def post_view(request):
     return redirect('/?redirect_message=not_found_post') # 메인 페이지로 이동
   if post['boards'][-1]['level_cut'] > contexts['account']['level']['level']: # 레벨 제한 확인
     return redirect('/?redirect_mssage=not_enough_level') # 레벨이 부족한 경우, 메인 페이지로 이동
+  if post['hide'] and contexts['account']['account_type'] not in ['supervisor', 'subsupervisor'] and post['author']['id'] != contexts['account']['id']: # 숨김 게시글인 경우
+    return redirect('/?redirect_message=not_allowed_post') # 권한이 없는 경우, 메인 페이지로 이동
 
   # 배너
   banners = daos.select_banners('post')

@@ -34,7 +34,7 @@
             <div class="accordion-body">
               <table class="table table-bordered">
                 <thead>
-                  <tr class="tbg1">
+                  <tr class="bg-body-secondary">
                     <th>구분</th>
                     <th>조회수</th>
                     <th>게시글 수</th>
@@ -163,11 +163,11 @@
       <form id="postSearchForm" method="get" action="{{SUPERVISOR_URL}}/supervisor/post">
         <div class="row">
           <div class="form-group mb-4 col-12">
-            <label>제목</label>
-            <input class="form-control" name="post_title" placeholder="게시글 제목" value="{{request.GET.post_title}}">
+            <label>제목 또는 내용</label>
+            <input class="form-control" name="post_title" placeholder="게시글 제목 또는 내용" value="{{request.GET.post_title}}">
           </div>
           <div class="row mb-4">
-            <div class="form-group col-8">
+            <div class="form-group col-6">
               <label>작성자 아이디 또는 닉네임</label>
               <input class="form-control" name="author" placeholder="작성자 아이디 또는 닉네임"
                 value="{{request.GET.author}}">
@@ -195,6 +195,14 @@
                 {% endfor %}
                 {% endif %}
                 {% endfor %}
+              </select>
+            </div>
+            <div class="form-group col-2">
+              <label>검색</label>
+              <select class="form-select" name="page_items">
+                <option value="30" {% if request.GET.page_items == '30' %}selected{% endif %}>30개씩</option>
+                <option value="50" {% if request.GET.page_items == '50' %}selected{% endif %}>50개씩</option>
+                <option value="100" {% if request.GET.page_items == '100' %}selected{% endif %}>100개씩</option>
               </select>
             </div>
           </div>

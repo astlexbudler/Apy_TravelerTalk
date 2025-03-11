@@ -1,0 +1,98 @@
+{% extends 'base/base_partner.html' %}
+{% block content %}
+<main class="container">
+
+  <div class="main-section">
+
+    <div style="min-height: calc(100vh - 160px);">
+
+      <!-- 페이지 타이틀 -->
+      {% include 'components/main/breadcrumbs.html' %}
+      {% include 'components/main/title_section.html' with title='쪽지' subtitle='쪽지 수신 및 발신 내역을 확인하고 쪽지를 보낼 수 있습니다.' %}
+
+      <!-- 선택지 버튼 그룹 -->
+      <div class="btn-group w-100 d-flex">
+        {% include 'components/main/page_tab.html' with tab_name='받은 쪽지함' tab_id='inboxTab' tab_link='/message?tab=inboxTab' %}
+        <span class="divider"></span>
+        {% include 'components/main/page_tab.html' with tab_name='보낸 쪽지함' tab_id='outboxTab' tab_link='/message?tab=outboxTab' %}
+      </div>
+
+      <!-- 쪽지 목록 -->
+      <div class="mt-4">
+
+        <!-- 프로필 카드 -->
+        {% include 'components/main/profile_card.html' with profile=account %}
+
+        <!-- 쪽지 목록 -->
+        <div class="mb-5" style="min-height: 300px;">
+          <h6 class="text-black-60 mb-3 pb-3 border-bottom">
+            쪽지
+          </h6>
+          {% if messages|length == 0 %}
+          <p>
+            쪽지가 없습니다.
+          </p>
+          {% endif %}
+          {% for message in messages %}
+          {% include 'components/main/message_list.html' %}
+          {% include 'components/modal/message/view_message.html' %}
+          {% endfor %}
+        </div>
+
+        <!-- 안내 메세지 -->
+        <div class="alert alert-info small">
+          <i class="fi fi-rr-info"></i> 쿠폰은 상세보기를 통해 쿠폰 코드를 확인하고 사용할 수 있습니다. 사용 기간이 있는 경우, 기간 내에 사용해주세요.
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- 버튼 -->
+    {% if account.account_type == 'partner' %}
+    <div class="text-end">
+      <a class="btn btn-success" href="javascript: new bootstrap.Modal(document.getElementById('newMessageModal')).show();">
+        <i class="fi fi-rr-edit"></i> 쪽지 쓰기
+      </a>
+    </div>
+    {% endif %}
+
+    <!-- 페이지네이션 영역 -->
+    {% include 'components/main/pagination.html' %}
+
+    <!-- 맨 위로 가기 버튼 -->
+    <div class="text-end">
+      {% include 'components/main/top_button.html' %}
+    </div>
+
+  </div>
+
+</main>
+
+<!-- 쪽지 작성 모달 -->
+{% include 'components/modal/message/create_message.html' %}
+
+<script>
+
+  // 페이지 로드 시 탭 선택 확인
+  window.addEventListener('load', () => {
+    const tab = '{{request.GET.tab}}';
+    if (!tab) {
+      location.href = '{{PARTNER_URL}}/partner/message?tab=inboxTab';
+    }
+  });
+
+  window.addEventListener('load', () => {
+    console.log(`Window loaded at ${getNowDatetimeString()}`);
+
+    // pagination
+    // 만약 contexts에서 lastpage를 받았고, pagination 컴포넌트가 있다면, 페이지네이션을 생성합니다.
+    if ('{{last_page}}' && document.querySelector('#pageButton')) {
+      makePaegeButton('{{request.GET.page}}', '{{last_page}}', `{{PARTNER_URL}}/partber/message?search=&tab={{request.GET.tab}}`);
+    }
+
+  });
+
+</script>
+
+{% endblock %}

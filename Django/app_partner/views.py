@@ -74,6 +74,7 @@ def index(request):
       'like_count': post.like_count,
       'created_at': datetime.datetime.strftime(post.created_at, '%Y-%m-%d %H:%M'),
       'comment_count': models.COMMENT.objects.filter(post=post).count(),
+      'review_count': models.POST.objects.filter(related_post=post).count(),
       'search_weight': post.search_weight,
   } for post in posts]
 
@@ -330,3 +331,37 @@ def activity(request):
     'activities': activities,
     'last_page': last_page, # 페이지 처리를 위해 필요한 정보
   })
+
+# 메시지
+def message(request):
+
+  # 권한 확인
+  if not request.user.is_authenticated:
+    return redirect(settings.PARTNER_URL)
+  account = daos.select_account_detail(request.user.id)
+  server_settings = {
+      'site_logo': daos.select_server_setting('site_logo'),
+      'service_name': daos.select_server_setting('service_name'),
+  }
+  if account['account_type'] != 'partner' or account['status'] == 'pending':
+    return redirect(settings.PARTNER_URL)
+
+  # 데이터 가져오기
+  tab = request.GET.get('tab', 'inboxTab') # inbox 또는 outbox
+  message_type = request.GET.get('message_type') # 메세지 타입
+  page = int(request.GET.get('page', '1'))
+
+  # 탭 확인
+  if tab == 'inboxTab': # 받은 메세지함
+    messages, last_page = daos.select_messages(receive_account_id=account['id'], message_type=message_type, page=page)
+  else: # 보낸 메세지함
+    messages, last_page = daos.select_messages(send_account_id=account['id'], message_type=message_type, page=page)
+
+  return render(request, 'partner/message.html', {
+    'account': account,
+    'server_settings': server_settings,
+
+    'messages': messages,
+    'last_page': last_page,
+  })
+

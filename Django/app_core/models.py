@@ -177,7 +177,7 @@ class BOARD(models.Model):
   comment_groups = models.ManyToManyField(Group, help_text='댓글 작성 그룹', related_name='board_comment_groups')
   level_cut = models.IntegerField(help_text='게시글 접근 레벨 제한', default=0)
   name = models.CharField(max_length=100, help_text='게시판 이름')
-  # attendance=출석 게시판, greeting=인사 게시판, anonymous=익명 게시판, qna=질문 게시판, travel=여행지 정보 게시판, coupon=쿠폰 게시판, review=리뷰 게시판, board=일반 게시판
+  # attendance=출석 게시판, greeting=인사 게시판, anonymous=익명 게시판, qna=질문 게시판, travel=여행지 정보 게시판, coupon=쿠폰 게시판, review=리뷰 게시판, board=일반 게시판, gallery=갤러리 게시판
   board_type = models.CharField(max_length=20, help_text='게시판 타입')
   display_weight = models.IntegerField(help_text='표시 순서', default=0)
 

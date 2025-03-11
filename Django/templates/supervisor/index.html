@@ -17,18 +17,26 @@
                 <p>
                     <i class="fi fi-rr-stats"></i> 통계
                 </p>
-                <table class="table table-bordered">
-                    <tr class="tbg1">
-                        <td rowspan="2" style="background-color: #e9ecef;">
+                <table class="table table-bordered ">
+                    <tr class="bg-secondary">
+                        <td rowspan="2">
                             파트너 가입
                         </td>
-                        <td>신청</td>
-                        <td>완료</td>
-                        <td rowspan="2" style="background-color: #e9ecef;">
+                        <td class="bg-body-secondary">
+                            신청
+                        </td>
+                        <td class="bg-body-secondary">
+                            완료
+                        </td>
+                        <td rowspan="2">
                             문의
                         </td>
-                        <td>미답변</td>
-                        <td colspan="2">완료</td>
+                        <td class="bg-body-secondary">
+                            미답변
+                        </td>
+                        <td colspan="2" class="bg-body-secondary">
+                            답변
+                        </td>
                     </tr>
                     <tr>
                         <td>{{pending_partner}}</td>
@@ -36,18 +44,28 @@
                         <td>{{qna_no_answer}}</td>
                         <td colspan="2">{{qna_answer}}</td>
                     </tr>
-                    <tr class="tbg1">
-                        <td rowspan="2" style="background-color: #e9ecef;">
+                    <tr class="bg-secondary">
+                        <td rowspan="2">
                             쿠폰
                         </td>
-                        <td>사용 가능</td>
-                        <td>사용됨</td>
-                        <td>쿠폰 요청</td>
-                        <td rowspan="2" style="background-color: #e9ecef;">
+                        <td class="bg-body-secondary">
+                            사용 가능
+                        </td>
+                        <td class="bg-body-secondary">
+                            사용, 만료, 삭제
+                        </td>
+                        <td class="bg-body-secondary">
+                            읽지 않은 쿠폰 요청 메세지
+                        </td>
+                        <td rowspan="2">
                             광고
                         </td>
-                        <td>요청</td>
-                        <td>진행중</td>
+                        <td class="bg-body-secondary">
+                            읽지 않은 광고 요청 메세지
+                        </td>
+                        <td class="bg-body-secondary">
+                            광고중인 여행지
+                        </td>
                     </tr>
                     <tr>
                         <td>{{active_coupon_count}}</td>
@@ -75,7 +93,7 @@
                 </p>
                 <table class="table table-border small border text-center">
                     <tbody>
-                        <tr class="tbg1">
+                        <tr class="bg-body-secondary">
                             <td>
                                 날짜
                             </td>

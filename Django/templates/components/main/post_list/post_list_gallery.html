@@ -1,0 +1,36 @@
+<div class="col-6 col-xl-4 p-1 p-lg-2">
+    <a class="text-dark text-decoration-none" href="/post/post_view?post_id={{post.id}}&board_ids={{post.board_ids}}">
+        <div class="card hover-scale overflow-hidden shadow-sm" style="min-height: 300px;">
+            <div class="hover-scale-in blog-card-ratio ratio ratio-4x3">
+                <img class="blog-card-ratio-img card-img-top" src="{{post.image}}">
+            </div>
+            <div class="card-body">
+
+                <!-- 제목 및 작성자 -->
+                <p class="text-black-60 mb-2 small">
+                    {{ post.author.nickname }} 
+                    {% if post.author.account_type in 'user,dame' %}
+                    {% include 'components/other/level_badge.html' with level=post.author.level %}
+                    {% endif %}
+                </p>
+                <p class="text-black-60">
+                    {{ post.title }}
+                </p>
+
+                <!-- 상태 -->
+                <p class="m-0 text-end text-black-50" style="font-size: 12px;">
+                    <span class="me-1" style="white-space: nowrap;">
+                        <i class="fi fi-rr-eye"></i> {{post.view_count}}
+                    </span>
+                    <span class="me-1" style="white-space: nowrap;">
+                        <i class="fi fi-rr-social-network"></i> {{post.like_count}}
+                    </span>
+                    <span style="white-space: nowrap;">
+                        <i class="fi fi-rr-comment-dots"></i> {{post.comment_count}}
+                    </span>
+                </p>
+
+            </div>
+        </div>
+    </a>
+</div>

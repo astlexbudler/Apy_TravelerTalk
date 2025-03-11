@@ -34,7 +34,12 @@
         }
     }
 -->
-<a class="text-dark text-decoration-none" href="/post/post_view?post_id={{post.id}}&board_ids={{request.GET.board_ids}}">
+<a class="text-dark text-decoration-none" 
+    {% if post.hide and account.account_type not in 'supervisor,subsupervisor' and account.id != post.author.id %}
+    href="javascript: return'';"
+    {% else %}
+    href="/post/post_view?post_id={{post.id}}&board_ids={{request.GET.board_ids}}"
+    {% endif %}>
     <div style="display: flex; white-space: nowrap;" class="mb-3 pb-3 border-bottom">
         {% if post.image %}
         <div style="display: inline-block; text-align: left;">
@@ -61,7 +66,7 @@
                             {% endif %}
                         </p>
                         <p>
-                            {{post.title}}
+                            {{post.title}} {% if post.hide %}<i class="fi fi-rr-lock"></i>{% endif %}
                         </p>
                         <p class="text-black-50 small m-0">
                             {{post.created_at}}

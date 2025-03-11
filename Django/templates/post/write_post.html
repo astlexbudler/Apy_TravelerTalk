@@ -18,12 +18,21 @@
         <!-- 대표 이미지 -->
         {% if request.GET.board_ids != '38' %}
         <div class="my-4">
+          {% if board.board_type == 'gallery' %}
+          {% include 'components/other/upload_image.html' with label='대표 이미지(필수)' id='imageInput' %}
+          {% else %}
           {% include 'components/other/upload_image.html' with label='썸네일 이미지' id='imageInput' %}
+          {% endif %}
         </div>
         {% else %}
         <input type="file" class="d-none" id="imageInput" multiple name="image">
         {% endif %}
 
+        {% if board.board_type != 'qna' %}
+        <div class="alert alert-info small mb-4">
+          <i class="fi fi-rr-info"></i> 게시글 썸네일은 갤리리 게시판을 뺀 나머지 게시판의 게시글 본문에는 표시되지 않습니다.
+        </div>
+        {% endif %}
 
         <!-- 제목 -->
         <div class="my-4">
@@ -53,6 +62,21 @@
             {% include 'components/main/editor.html' with id='content' height='500' %}
           </div>
         </div>
+
+        <!-- 문의 게시글일 경우, 글 숨기기 체크박스 -->
+        {% if request.GET.board_ids == '38' %}
+        <div class="my-4">
+          <div class="form-group">
+            <label>문의글 설정</label>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="hidePost">
+              <label class="form-check-label" for="hidePost">
+                글 작성자와 관리자만 볼 수 있도록 글 숨기기 <i class="fi fi-rr-eye-crossed"></i>
+              </label>
+            </div>
+          </div>
+        </div>
+        {% endif %}
 
         <!-- 작성하기 -->
         <div class="my-5 text-end">
@@ -141,11 +165,20 @@
       showAlert('내용 오류', '내용이 너무 짧습니다. 10자 이상 입력해주세요.', 'error');
       return;
     }
+    {% if board.board_type == 'gallery' %}
+    if (document.getElementById('imageInput').files.length == 0) {
+      showAlert('이미지 오류', '이미지를 업로드해주세요.', 'error');
+      return;
+    }
+    {% endif %}
 
     var formData = new FormData();
     formData.append('title', title);
     formData.append('content', content);
     formData.append('review_post_id', '{{ request.GET.review_post_id }}');
+    if (document.getElementById('hidePost')) {
+      formData.append('hide', document.getElementById('hidePost').checked);
+    }
     if (document.getElementById('imageInput')) {
       formData.append('image', document.getElementById('imageInput').files[0]); // 대표 이미지
     }

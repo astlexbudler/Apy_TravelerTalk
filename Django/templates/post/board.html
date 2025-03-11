@@ -24,9 +24,17 @@
           아직 게시글이 없습니다.
         </p>
         {% endif %}
+
+        <!-- 게시글 목록 -->
+        {% if board.board_type == 'gallery' %}
+        {% for post in posts %}
+        {% include 'components/main/post_list/post_list_gallery.html' %}
+        {% endfor %}
+        {% else %}
         {% for post in posts %}
         {% include 'components/main/post_list/post_list_normal.html' %}
         {% endfor %}
+        {% endif %}
 
       </div>
 

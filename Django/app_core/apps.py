@@ -636,7 +636,7 @@ class AppCoreConfig(AppConfig):
         bronze = models.BOARD.objects.create(
           parent_board=community,
           name='브론즈 게시판',
-          board_type='board',
+          board_type='gallery',
           level_cut=1,
         )
         # display_groups - all
@@ -651,7 +651,7 @@ class AppCoreConfig(AppConfig):
         silver = models.BOARD.objects.create(
           parent_board=community,
           name='실버 게시판',
-          board_type='board',
+          board_type='gallery',
           level_cut=2,
         )
         # display_groups - all
@@ -666,7 +666,7 @@ class AppCoreConfig(AppConfig):
         gold = models.BOARD.objects.create(
           parent_board=community,
           name='골드 게시판',
-          board_type='board',
+          board_type='gallery',
           level_cut=3,
         )
         # display_groups - all

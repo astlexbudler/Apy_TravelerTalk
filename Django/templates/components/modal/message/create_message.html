@@ -65,11 +65,10 @@
                         </div>
                     </div>
                     <div class="mb-4 px-2">
-                        <!--
                         <div class="form-group mb-2 {% if account.account_type in 'supervisor,subsupervisor' %}d-none{% endif %}">
                             <input type="checkbox" id="messageToAdmin">
                             <label for="messageToAdmin">관리자 문의 메세지로 보내기</label>
-                        </div>-->
+                        </div>
                         <input id="receiverId" type="hidden" name="receiver_id">
                         <div id="receiverList"></div>
                     </div>
@@ -200,7 +199,6 @@
     }
 
     // 관리자에게 보내기 체크박스를 체크한 경우
-    /*
     var messageToAdminCheckbox = document.querySelector('#messageToAdmin');
     messageToAdminCheckbox.addEventListener('change', () => {
         if (messageToAdminCheckbox.checked) { // 체크한 경우
@@ -230,7 +228,7 @@
         accountSearchInput.removeAttribute('readonly');
         receiverId.value = '';
         receiverConfirmMessage.innerHTML = '';
-    });*/
+    });
 
 
     // 쿠폰 코드를 입력한 경우, 유효한 쿠폰 코드인지 확인

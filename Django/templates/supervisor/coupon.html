@@ -51,7 +51,7 @@
         </p>
         <table class="table table-bordered">
           <thead>
-            <tr class="tbg1">
+            <tr class="bg-body-secondary">
               <th>구분</th>
               <th>사용 가능한 쿠폰</th>
               <th>만료된 쿠폰</th>
@@ -94,13 +94,21 @@
             </div>
           </div>
           <div class="row">
-            <div class="form-group mb-4 col-6">
+            <div class="form-group mb-4 col-5">
               <label>쿠폰 생성자</label>
               <input class="form-control" name="create_account" placeholder="아이디, 닉네임 또는 파트너 이름">
             </div>
-            <div class="form-group mb-4 col-6">
+            <div class="form-group mb-4 col-5">
               <label>쿠폰 소유자</label>
               <input class="form-control" name="own_account" placeholder="아이디 또는 닉네임">
+            </div>
+            <div class="form-group col-2">
+              <label>검색</label>
+              <select class="form-select" name="page_items">
+                <option value="30" {% if request.GET.page_items == '30' %}selected{% endif %}>30개씩</option>
+                <option value="50" {% if request.GET.page_items == '50' %}selected{% endif %}>50개씩</option>
+                <option value="100" {% if request.GET.page_items == '100' %}selected{% endif %}>100개씩</option>
+              </select>
             </div>
           </div>
         </form>

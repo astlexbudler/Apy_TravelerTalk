@@ -29,6 +29,9 @@ urlpatterns = [
   path('partner/profile', v.profile, name='profile'),
   path('partner/activity', v.activity, name='activity'),
 
+  # 메시지
+  path('partner/message', v.message, name='message'),
+
   # API
   path('api/login', a.api_login, name='account_login'),
   path('api/logout', a.api_logout, name='account_logout'),

@@ -34,6 +34,7 @@
                     <a class="text-black-50 small me-3" style="white-space: nowrap;" href="{{MAIN_URL}}/profile">
                         <i class="fi fi-rr-user"></i> 프로필
                     </a>
+                    {% if account.account_type in 'user,dame' %}
                     <div class="h-col h-switch dropdown me-3" style="display: inline-block;">
                         <a class="theme-switch text-black-50 small" type="button" style="white-space: nowrap;"
                             aria-expanded="false" data-bs-toggle="dropdown" data-bs-display="static">
@@ -73,6 +74,7 @@
                             </li>
                         </ul>
                     </div>
+                    {% endif %}
                     <a class="text-black-50 small" href="javascript: logout();" style="white-space: nowrap;">
                         <i class="fi fi-rr-exit"></i> 로그아웃
                     </a>
@@ -383,6 +385,13 @@
             </a>
             <a class="btn mobileNodeButton" href="/post?board_ids=16">
                 강원/제주
+            </a>
+        </div>
+
+        <!-- 게시판 기타 메뉴 -->
+        <div class="w-100 mt-4 d-none mobileButtons" style="white-space: wrap;" id="mobileEtcButtons">
+            <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids=39">
+                문의
             </a>
         </div>
 

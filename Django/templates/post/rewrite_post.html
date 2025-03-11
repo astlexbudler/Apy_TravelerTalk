@@ -90,6 +90,21 @@
           </div>
         </div>
 
+        <!-- 문의 게시글일 경우, 글 숨기기 체크박스 -->
+        {% if request.GET.board_ids == '38' %}
+        <div class="my-4">
+          <div class="form-group">
+            <label>문의글 설정</label>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="hidePost">
+              <label class="form-check-label" for="hidePost">
+                글 작성자와 관리자만 볼 수 있도록 글 숨기기 <i class="fi fi-rr-eye-crossed"></i>
+              </label>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
         <!-- 작성하기 -->
         <div class="my-5 text-end">
           <a class="btn btn-primary me-2" href="javascript: rewritePost()">
@@ -145,6 +160,9 @@
     formData.append('content', content);
     if (document.getElementById('imageInput')) {
       formData.append('image', document.getElementById('imageInput').files[0]); // 대표 이미지
+    }
+    if (document.getElementById('hidePost')) {
+      formData.append('hide', document.getElementById('hidePost').checked); // 문의글 숨기기
     }
 
     await fetch('/post/rewrite_post?post_id={{ request.GET.post_id }}&board_ids={{ request.GET.board_ids }}', {

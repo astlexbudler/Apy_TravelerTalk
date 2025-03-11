@@ -697,6 +697,7 @@ def select_posts(title=None, category_id=None, board_id=None, related_post_id=No
             'name': board.name,
         } for board in post.boards.all()],
         'board_ids': ','.join([str(board.id) for board in post.boards.all()]),
+        'hide': post.hide,
         'title': post.title,
         'image': '/media/' + str(post.image) if post.image else None,
         'view_count': post.view_count,
@@ -838,6 +839,7 @@ def select_post(post_id=None, title=None):
             'level_cut': board.level_cut,
         } for board in post.boards.all()],
         'board_ids': ''.join([str(board.id) for board in post.boards.all()]),
+        'hide': post.hide,
         'include_coupons': include_coupons,
         'title': post.title,
         'content': post.content,
@@ -852,7 +854,7 @@ def select_post(post_id=None, title=None):
     return post_data
 
 # 게시글 생성
-def create_post(title, content, board_ids, author_id=None, related_post_id=None, image=None, include_coupon_name=None):
+def create_post(title, content, board_ids, author_id=None, related_post_id=None, image=None, include_coupon_name=None, hide=False):
 
     # 사용자 확인
     account = models.ACCOUNT.objects.filter(
@@ -893,6 +895,8 @@ def create_post(title, content, board_ids, author_id=None, related_post_id=None,
         content=content,
         image=image,
     )
+    if hide:
+        post.hide = True
     if include_coupon_name:
         coupons = models.COUPON.objects.filter(
             name=include_coupon_name
@@ -943,7 +947,7 @@ def create_post_place_info(post_id, category_ids, location_info, open_info, stat
     }
 
 # 게시글 정보 업데이트
-def update_post(post_id, title=None, content=None, image=None, board_ids=None, search_weight=None, view_count=None, like_count=None, place_info_id=None, delete_coupon_code=None):
+def update_post(post_id, title=None, content=None, image=None, board_ids=None, search_weight=None, view_count=None, like_count=None, place_info_id=None, delete_coupon_code=None, hide=False):
 
     # 게시글 확인
     post = models.POST.objects.filter(
@@ -971,6 +975,8 @@ def update_post(post_id, title=None, content=None, image=None, board_ids=None, s
             ).first()
             if board:
                 post.boards.add(board)
+    if hide: # 숨김 여부 업데이트
+        post.hide = True
     if search_weight: # 검색 가중치 업데이트
         post.search_weight = search_weight
     if view_count: # 조회수 업데이트
@@ -1919,7 +1925,7 @@ def select_all_statistics(days_ago=7):
     return statistics_data
 
 # 통계 생성
-def create_statistic(name):
+def create_statistic(name, value=1):
 
     # 통계 생성
     exist = models.STATISTIC.objects.filter(
@@ -1927,12 +1933,12 @@ def create_statistic(name):
         date=datetime.datetime.now()
     ).first()
     if exist:
-        exist.value += 1
+        exist.value += value
         exist.save()
     else:
         models.STATISTIC.objects.create(
             name=name,
-            value=1
+            value=value
         )
 
     return {

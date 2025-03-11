@@ -14,7 +14,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-ysfp9p2+rl$28l!t*7mlg=y7@h6a!^j^xmv69t75o(e@=!p=o9'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -80,12 +80,12 @@ CSRF_TRUSTED_ORIGINS=[
     'http://127.0.0.1:8000',
 ]
 
-#MAIN_URL = os.getenv('MAIN_URL', 'http://kibang01.com') # 메인 도메인
-#PARTNER_URL = os.getenv('PARTNER_URL', 'http://ptn.kibang01.com') # 파트너 도메인
-#SUPERVISOR_URL = os.getenv('SUPERVISOR_URL', 'http://spv.kibang01.com') # 슈퍼바이저 도메인
-MAIN_URL = os.getenv('MAIN_URL', 'http://127.0.0.1:8000') # 테스트용
-PARTNER_URL = os.getenv('PARTNER_URL', 'http://127.0.0.1:8000/partner') # 테스트용
-SUPERVISOR_URL = os.getenv('SUPERVISOR_URL', 'http://127.0.0.1:8000/supervisor') # 테스트용
+MAIN_URL = os.getenv('MAIN_URL', 'http://kibang01.com') # 메인 도메인
+PARTNER_URL = os.getenv('PARTNER_URL', 'http://ptn.kibang01.com') # 파트너 도메인
+SUPERVISOR_URL = os.getenv('SUPERVISOR_URL', 'http://spv.kibang01.com') # 슈퍼바이저 도메인
+#MAIN_URL = os.getenv('MAIN_URL', 'http://127.0.0.1:8000') # 테스트용
+#PARTNER_URL = os.getenv('PARTNER_URL', 'http://127.0.0.1:8000/partner') # 테스트용
+#SUPERVISOR_URL = os.getenv('SUPERVISOR_URL', 'http://127.0.0.1:8000/supervisor') # 테스트용
 
 ROOT_URLCONF = 'apptoaster.urls'
 

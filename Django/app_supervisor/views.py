@@ -65,20 +65,28 @@ def index(request):
     status='active'
   ).count()
   used_coupon_count = models.COUPON.objects.filter(
-    Q(status='used') | Q(status='expired') | Q(status='deleted')
+    ~Q(status='active')
   ).count()
   coupon_request_message_count = models.MESSAGE.objects.filter(
-    title__startswith='쿠폰 요청:',
+    message_type='coupon_request',
     is_read=False,
-    #to_account='supervisor'
+    receive__isnull=True
   ).count()
 
   # 여행지 게시글 광고 정보
   place_on_ad_count = models.PLACE_INFO.objects.filter(
-    status='ad'
+    status='ad',
   ).count()
-  place_ad_request_count = models.PLACE_INFO.objects.filter(
-    status='pending'
+  place_on_ad_count += models.PLACE_INFO.objects.select_related(
+    'post'
+  ).filter(
+    status='active',
+    post__search_weight__gt=0
+  ).count()
+  place_ad_request_count = models.MESSAGE.objects.filter(
+    message_type='ad_request',
+    is_read=False,
+    receive__isnull=True
   ).count()
 
   # 통계 데이터 가져오기
@@ -497,6 +505,7 @@ def account(request):
   search_nickname = request.GET.get('nickname', '')
   search_status = request.GET.get('status')
   search_ip = request.GET.get('ip')
+  page_items = int(request.GET.get('page_items', '50'))
 
   # 계정 타입별로 계정 통계 가져오기
   query = Q()
@@ -557,8 +566,8 @@ def account(request):
     })
 
   # 페이지네이션
-  accounts = accounts[(page - 1) * 50:page * 50]
-  last_page = math.ceil(accounts.count() / 50)
+  last_page = math.ceil(accounts.count() / page_items)
+  accounts = accounts[(page - 1) * page_items:page * page_items]
   search_accounts = []
   for account in accounts:
 
@@ -689,6 +698,7 @@ def post(request):
   search_post_title = request.GET.get('post_title', '')
   search_board_id = request.GET.get('board_id', '')
   search_author = request.GET.get('author', '')
+  page_items = int(request.GET.get('page_items', '50'))
 
   # 게시판별 통계 가져오기
   boards = daos.make_board_tree(status=True, board_type='not_travel')
@@ -697,8 +707,9 @@ def post(request):
   query = Q()
   query &= Q(place_info=None)
   query &= Q(author__isnull=False)
-  if search_post_title:
+  if search_post_title: # 제목 또는 내용을 검색하도록 수정됨
     query &= Q(title__contains=search_post_title)
+    query |= Q(content__contains=search_post_title)
   if search_author:
     query &= Q(author__username=search_author) # 작성자 아이디로 검색
     query &= Q(author__first_name=search_author) # 작성자 닉네임으로 검색
@@ -732,8 +743,8 @@ def post(request):
     })
 
   # 페이지네이션
-  last_page = posts.count() // 50 + 1 # 50개씩 표시
-  posts = posts[(page - 1) * 50:page * 50]
+  last_page = posts.count() // page_items + 1
+  posts = posts[(page - 1) * page_items:page * page_items]
   search_posts = []
 
   # 게시글 정보
@@ -863,6 +874,12 @@ def travel(request):
       ad_end_at=ad_end_at,
       note=place_info_note,
     )
+    # 통계 데이터 생성
+    if place_status == 'ad':
+      daos.create_statistic('place_on_ad')
+    elif post_search_weight:
+      if int(post_search_weight) > 0:
+        daos.create_statistic('place_ad_request')
     return JsonResponse({'result': 'success'})
 
   # 통계 데이터 가져오기
@@ -885,6 +902,7 @@ def travel(request):
   search_address = request.GET.get('address')
   search_place_status = request.GET.get('place_status')
   page = int(request.GET.get('page', '1'))
+  page_items = int(request.GET.get('page_items', '50'))
 
   # 쿼리 생성
   query = Q()
@@ -895,8 +913,9 @@ def travel(request):
     query &= Q(search_weight__gt=0) & Q(place_info__status='active')
   elif tab == 'statusAdTab':
     query &= Q(place_info__status='ad')
-  if search_title:
+  if search_title: # 제목 또는 내용을 검색하도록 수정됨
     query &= Q(title__contains=search_title)
+    query |= Q(content__contains=search_title)
   if search_board_id:
     query &= Q(boards__id__in=[search_board_id])
   if search_author:
@@ -950,8 +969,8 @@ def travel(request):
     })
 
   # 페이지네이션
-  last_page = search_posts.count() // 50 + 1 # 50개씩 표시
-  search_posts = search_posts[(page - 1) * 50:page * 50]
+  last_page = search_posts.count() // page_items + 1
+  search_posts = search_posts[(page - 1) * page_items:page * page_items]
   posts = []
 
   # 게시글 정보
@@ -1096,6 +1115,7 @@ def coupon(request):
   search_coupon_name = request.GET.get('name', '') # 쿠폰 소유자 검색
   search_create_account = request.GET.get('create_account') # 쿠폰 생성자 검색
   search_own_account = request.GET.get('own_account') # 쿠폰 소유자 검색
+  page_items = int(request.GET.get('page_items', '50'))
   coupons = models.COUPON.objects.select_related(
     'related_post', 'create_account', 'own_account'
   ).all().order_by('-created_at')
@@ -1156,8 +1176,8 @@ def coupon(request):
     })
 
   # 페이지네이션
-  last_page = coupons.count() // 20 + 1 # 20개씩 표시
-  coupons = coupons[(page - 1) * 20:page * 20]
+  last_page = coupons.count() // page_items + 1
+  coupons = coupons[(page - 1) * page_items:page * page_items]
   coupon_data = []
 
   # 쿠폰 정보
@@ -1218,6 +1238,7 @@ def message(request):
   page = int(request.GET.get('page', '1'))
   search_message_title = request.GET.get('message_title', '')
   search_message_receiver = request.GET.get('message_receiver', '')
+  page_items = int(request.GET.get('page_items', '50'))
 
   # 통계 데이터 가져오기
   if tab == 'inboxTab':
@@ -1276,8 +1297,8 @@ def message(request):
     })
 
   # 페이지네이션
-  last_page = messages.count() // 50 + 1 # 50개씩 표시
-  messages = messages[(page - 1) * 50:page * 50]
+  last_page = messages.count() // page_items + 1
+  messages = messages[(page - 1) * page_items:page * page_items]
   message_data = []
 
   # 메시지 정보

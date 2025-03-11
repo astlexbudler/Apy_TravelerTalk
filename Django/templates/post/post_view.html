@@ -104,6 +104,13 @@
       </div>
       </div>
 
+      <!-- 갤러리일 경우, 대표 이미지 표시 -->
+      {% if board.board_type == 'gallery' %}
+      <div class="my-4">
+        <img class="w-100 shadow" src="{{post.image}}">
+      </div>
+      {% endif %}
+
       <!-- 게시글 내용 -->
       <div class="my-4">
         <div style="min-height: 200px;">
