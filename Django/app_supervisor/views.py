@@ -578,7 +578,7 @@ def account(request):
       'exp': account.exp,
       'mileage': account.mileage,
       'note': account.note,
-      'created_at': datetime.datetime.strftime(account.date_joined, '%Y-%m-%d %H:%M'),
+      'date_joined': datetime.datetime.strftime(account.date_joined, '%Y-%m-%d %H:%M'),
       'last_login': datetime.datetime.strftime(account.last_login, '%Y-%m-%d %H:%M') if account.last_login else None,
       'ip': account.recent_ip,
     })
@@ -898,13 +898,13 @@ def travel(request):
   if search_title:
     query &= Q(title__contains=search_title)
   if search_board_id:
-    query &= Q(boards__id__contains=search_board_id)
+    query &= Q(boards__id__in=[search_board_id])
   if search_author:
     query &= Q(author__username=search_author)
     query &= Q(author__first_name=search_author)
     query &= Q(author__last_name=search_author)
   if search_category_id:
-    query &= Q(place_info__categories__id__contains=search_category_id)
+    query &= Q(place_info__categories__id__in=[search_category_id])
   if search_address:
     query &= Q(place_info__address__contains=search_address)
   if search_place_status:

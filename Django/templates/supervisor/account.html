@@ -226,7 +226,81 @@
         검색 결과가 없습니다.
       </p>
       {% endif %}
-      {% for search_account in accounts %}
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>아이디</th>
+            <th>닉네임</th>
+            <th>회원구분</th>
+            <th>상태</th>
+            <th>가입일</th>
+            <th>최근 접속일</th>
+            <th>최근 접속 아이피</th>
+            <th>메세지</th>
+            <th>삭제</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for search_account in accounts %}
+          <tr>
+            <td>{{ search_account.username }}</td>
+            <td>
+              <a href="{{SUPERVISOR_URL}}/supervisor/account/profile?account_id={{ search_account.id }}&tab=profileTab">
+                <span class="me-2">
+                  {{ search_account.nickname }}
+                </span>
+                {% if search_account.account_type in 'user,dame' %}
+                {% with level=search_account.level %}
+                {% include 'components/other/level_badge.html' %}
+                {% endwith %}
+                {% elif search_account.account_type == 'partner' %}
+                ({{ search_account.partner_name }})
+                {% endif %}
+              </a>
+            </td>
+            <td>
+              {% if 'supervisor' in search_account.account_type %}
+              관리자
+              {% elif 'subsupervisor' in search_account.account_type %}
+              하위 관리자
+              {% elif 'partner' in search_account.account_type %}
+              파트너
+              {% elif 'dame' in search_account.account_type %}
+              여성회원
+              {% else %}
+              일반회원
+              {% endif %}
+            </td>
+            <td>
+              {% if search_account.status == 'active' %}
+              <span class="badge bg-success">정상</span>
+              {% elif 'pending' in search_account.status %}
+              <span class="badge bg-warning">승인대기중</span>
+              {% elif search_account.status == 'deleted' %}
+              <span class="badge bg-danger">탈퇴</span>
+              {% elif search_account.status == 'blocked' %}
+              <span class="badge bg-secondary">정지</span>
+              {% endif %}
+            </td>
+            <td>{{ search_account.date_joined }}</td>
+            <td>{{ search_account.last_login }}</td>
+            <td>{{ search_account.ip }}</td>
+            <td>
+              {% if search_account.account_type in 'user,dame,partner' %}
+              <a href="{{SUPERVISOR_URL}}/supervisor/message?tab=inboxTab&to={{ search_account.id }}&message_type={% if search_account.account_type in 'user,dame' %}user{% else %}partner{% endif %}_question">
+                <i class="fi fi-rr-envelope"></i>
+              </a>
+              {% endif %}
+            </td>
+            <td>
+              <input type="checkbox" class="form-check-input" name="selectedAccounts" value="{{ search_account.id }}">
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <!--
       <div class="col-12 p-1 mb-1 border-bottom">
         <a href="{{SUPERVISOR_URL}}/supervisor/account/profile?account_id={{ search_account.id }}&tab=profileTab">
           <div style="display: flex; justify-content: space-between; white-space: nowrap;">
@@ -249,8 +323,6 @@
                 <span class="h6 text-black-60">
                   {{ search_account.nickname }}
                 </span>
-
-                <!-- 레벨 뱃지 -->
                 {% if search_account.account_type in 'user,dame' %}
                 {% with level=search_account.level %}
                 {% include 'components/other/level_badge.html' %}
@@ -307,8 +379,7 @@
             </div>
           </div>
         </a>
-      </div>
-      {% endfor %}
+      </div>-->
     </div>
 
     <!-- 페이지네이션 영역 -->
