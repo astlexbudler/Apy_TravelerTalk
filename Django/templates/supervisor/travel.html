@@ -224,6 +224,7 @@
         <i class="fi fi-rr-search"></i> 검색
       </p>
       <form id="postSearchForm" method="get" action="{{SUPERVISOR_URL}}/supervisor/travel">
+        <input type="hidden" name="tab" value="{{request.GET.tab}}">
         <div class="row">
           <div class="row mb-4">
             <div class="form-group col-6">
