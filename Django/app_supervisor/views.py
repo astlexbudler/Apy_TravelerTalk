@@ -1360,7 +1360,7 @@ def banner(request):
     return JsonResponse({'result': 'success'})
   # DELETE 요청 처리
   if request.method == 'DELETE':
-    banner_id = request.GET.get('banner_id')
+    banner_id = request.GET.get('banner')
     daos.delete_banner(banner_id)
     return JsonResponse({'result': 'success'})
 
