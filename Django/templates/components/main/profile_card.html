@@ -2,7 +2,19 @@
     <a href="/profile?profile_id={{profile_id}}" class="text-dark text-decoration-none">
         <div style="display: flex; justify-content: space-between; white-space: nowrap;">
             <div style="display: inline-block; text-align: left;">
-                <span class="text-black-50 me-1" style="font-size: 14px;">일반 회원</span>
+                <span class="text-black-50 me-1" style="font-size: 14px;">
+                    {% if 'supervisor' in profile.account_type %}
+                    관리자
+                    {% elif 'subsupervisor' in profile.account_type %}
+                    하위 관리자
+                    {% elif 'partner' in profile.account_type %}
+                    파트너
+                    {% elif 'dame' in profile.account_type %}
+                    여성회원
+                    {% else %}
+                    일반회원
+                    {% endif %}
+                </span>
                 <p>
                     {{profile.nickname}}
                 </p>
@@ -22,6 +34,7 @@
             </div>
         </div>
     </a>
+    {% if profile.account_type in 'user,dame' %}
     <div class="row mt-4">
         <div class="col-6">
             <p class="text-dark">
@@ -60,5 +73,6 @@
     <div class="alert alert-info small">
         <i class="fi fi-rr-info"></i> 포인트는 게시글 또는 댓글 작성, 출석 체크 등 활동에 따라 적립되며, 사용자 등급 상승 및 쿠폰 구매에 사용됩니다.
     </div>
+    {% endif %}
 
 </div>

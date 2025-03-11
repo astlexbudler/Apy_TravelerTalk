@@ -15,7 +15,7 @@
       {% if request.GET.tab == 'inboxTab' %}
       <div class="w-100 d-flex justify-content-center">
         <a class="w-100 btn" href="{{SUPERVISOR_URL}}/supervisor/message?tab=inboxTab&message_type=user_question" id="user_question">
-          받은 사용자 질문 쪽지함
+          받은 사용자 쪽지함
         </a>
       </div>
       <script>
@@ -31,7 +31,7 @@
       <span class="divider"></span>
       <div class="w-100 d-flex justify-content-center">
         <a class="w-100 btn" href="{{SUPERVISOR_URL}}/supervisor/message?tab=inboxTab&message_type=partner_question" id="partner_question">
-          받은 파트너 질문 쪽지함
+          받은 파트너 쪽지함
         </a>
       </div>
       <script>
@@ -79,7 +79,7 @@
       {% else %}
       <div class="w-100 d-flex justify-content-center">
         <a class="w-100 btn" href="{{SUPERVISOR_URL}}/supervisor/message?tab=outboxTab&message_type=user_question" id="user_question">
-          보낸 사용자 질문 쪽지함
+          보낸 사용자 쪽지함
         </a>
       </div>
       <script>
@@ -95,7 +95,7 @@
       <span class="divider"></span>
       <div class="w-100 d-flex justify-content-center">
         <a class="w-100 btn" href="{{SUPERVISOR_URL}}/supervisor/message?tab=outboxTab&message_type=partner_question" id="partner_question">
-          보낸 파트너 질문 쪽지함
+          보낸 파트너 쪽지함
         </a>
       </div>
       <script>
@@ -164,7 +164,7 @@
               {% else %}
               보낸 
               {% endif %}
-              사용자 질문
+              사용자 쪽지
             </td>
             <td>
               {{status.user_question_unread}}
@@ -180,7 +180,7 @@
               {% else %}
               보낸 
               {% endif %}
-              파트너 질문
+              파트너 쪽지
             </td>
             <td>
               {{status.partner_question_unread}}
