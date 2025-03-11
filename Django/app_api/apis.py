@@ -114,6 +114,10 @@ def api_file_upload(request):
 
     return JsonResponse({"success": True, 'status': 200, "message": "파일 업로드 성공", 'data': response})
 
+# 쿠폰 게시글에서 쿠폰 수령 api
+def api_coupon_receive(request):
+    return JsonResponse({"success": False, 'status': 200, "message": "쿠폰 수령 성공"})
+
 # 게시글 REST API
 # GET: 게시글 조회
 # DELETE: 게시글 삭제

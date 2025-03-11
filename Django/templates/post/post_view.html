@@ -115,7 +115,7 @@
       <div class="my-4">
         {% if post.include_coupons|length > 0 %}
         {% with coupon=post.include_coupons.0 %}
-        <div class="p-3 border shadow">
+        <div class="p-3 border shadow" style="cursor: pointer;" onclick="{% if account.account_type in 'user,dame' %}receiveCoupon('{{post.id}}'){% endif %}">
           <div style="display: flex; justify-content: space-between; white-space: nowrap;">
               <div style="display: inline-block; text-align: left;">
                   <span class="text-black-60 mb-4 h6">
@@ -126,7 +126,7 @@
                       </span>
                       {% endif %}
                   </span>
-                  <a href="/post/travel_view?post_id={{coupon.related_post.id}}&board_ids={{coupon.related_post.board_ids}}">
+                  <a href="/post/post_view?post_id={{coupon.related_post.id}}&board_ids={{coupon.related_post.board_ids}}">
                     <p class="text-black-50 small m-0">
                       여행지: {{coupon.related_post.title}}
                     </p>
@@ -194,6 +194,28 @@
 </main>
 
 <script>
+
+receiveCoupon = async (post_id) => {
+  var formData = new FormData();
+  formData.append('post_id', post_id);
+
+  var success = await fetch('/api/api_coupon_receive', {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': '{{ csrf_token }}'
+    },
+    body: formData
+  })
+  .then((response) => response.json())
+  .then(data => data.success);
+
+  if (success) {
+    await showAlert('쿠폰 수령 성공', '쿠폰 수령이 완료되었습니다.', 'success');
+    location.reload();
+  } else {
+    await showAlert('쿠폰 수령 실패', '쿠폰 수령에 실패했습니다. 쿠폰이 없거나 마일리지가 부족합니다.', 'error');
+  }
+}
 
   likePost = async () => {
     var formData = new FormData();

@@ -794,6 +794,7 @@ def select_post(post_id=None, title=None):
             'name': coupon.name,
             'expire_at': datetime.datetime.strftime(coupon.expire_at, '%Y-%m-%d'),
             'required_mileage': coupon.required_mileage,
+            'status': coupon.status,
             'related_post': {
                 'id': coupon.related_post.id,
                 'title': coupon.related_post.title,

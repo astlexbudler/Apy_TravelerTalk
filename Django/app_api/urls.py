@@ -13,6 +13,9 @@ urlpatterns = [
   # 파일 업로드 api
   path('upload', a.api_file_upload, name='upload'),
 
+  # 쿠폰 게시글에서 쿠폰 수령 api
+  path('coupon_receive', a.api_coupon_receive, name='coupon_receive'),
+
   # 게시글 API
   # GET: 게시글 조회
   # DELETE: 게시글 삭제
