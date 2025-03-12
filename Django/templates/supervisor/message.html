@@ -149,79 +149,75 @@
         <i class="fi fi-rr-stats"></i> 통계
       </p>
       <table class="table table-bordered">
-        <thead>
-          <tr class="tbg2">
-            <th>구분</th>
-            <th>읽지 않은</th>
-            <th>읽음</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr class="bg-body-secondary">
-            <td>
-              {% if request.GET.tab == 'inboxTab' %}
-              받은 
-              {% else %}
-              보낸 
-              {% endif %}
-              사용자 쪽지
-            </td>
-            <td class="bg-white">
-              {{status.user_question_unread}}
-            </td>
-            <td class="bg-white">
-              {{status.user_question_read}}
-            </td>
-          </tr>
-          <tr class="bg-body-secondary">
-            <td>
-              {% if request.GET.tab == 'inboxTab' %}
-              받은 
-              {% else %}
-              보낸 
-              {% endif %}
-              파트너 쪽지
-            </td>
-            <td class="bg-white">
-              {{status.partner_question_unread}}
-            </td>
-            <td class="bg-white">
-              {{status.partner_question_read}}
-            </td>
-          </tr>
-          <tr class="bg-body-secondary">
-            <td>
-              {% if request.GET.tab == 'inboxTab' %}
-              받은 
-              {% else %}
-              보낸 
-              {% endif %}
-              광고 요청
-            </td>
-            <td class="bg-white">
-              {{status.request_ad_unread}}
-            </td>
-            <td class="bg-white">
-              {{status.request_ad_read}}
-            </td>
-          </tr>
-          <tr class="bg-body-secondary">
-            <td>
-              {% if request.GET.tab == 'inboxTab' %}
-              받은 
-              {% else %}
-              보낸 
-              {% endif %}
-              쿠폰 요청
-            </td>
-            <td class="bg-white">
-              {{status.request_coupon_unread}}
-            </td>
-            <td class="bg-white">
-              {{status.request_coupon_read}}
-            </td>
-          </tr>
-        </tbody>
+        <tr class="bg-secondary">
+          <td class="bg-secondary">구분</td>
+          <td class="bg-secondary">읽지 않은</td>
+          <td class="bg-secondary">읽음</td>
+        </tr>
+        <tr class="bg-body-secondary">
+          <td>
+            {% if request.GET.tab == 'inboxTab' %}
+            받은 
+            {% else %}
+            보낸 
+            {% endif %}
+            사용자 쪽지
+          </td>
+          <td class="bg-white">
+            {{status.user_question_unread}}
+          </td>
+          <td class="bg-white">
+            {{status.user_question_read}}
+          </td>
+        </tr>
+        <tr class="bg-body-secondary">
+          <td>
+            {% if request.GET.tab == 'inboxTab' %}
+            받은 
+            {% else %}
+            보낸 
+            {% endif %}
+            파트너 쪽지
+          </td>
+          <td class="bg-white">
+            {{status.partner_question_unread}}
+          </td>
+          <td class="bg-white">
+            {{status.partner_question_read}}
+          </td>
+        </tr>
+        <tr class="bg-body-secondary">
+          <td>
+            {% if request.GET.tab == 'inboxTab' %}
+            받은 
+            {% else %}
+            보낸 
+            {% endif %}
+            광고 요청
+          </td>
+          <td class="bg-white">
+            {{status.request_ad_unread}}
+          </td>
+          <td class="bg-white">
+            {{status.request_ad_read}}
+          </td>
+        </tr>
+        <tr class="bg-body-secondary">
+          <td>
+            {% if request.GET.tab == 'inboxTab' %}
+            받은 
+            {% else %}
+            보낸 
+            {% endif %}
+            쿠폰 요청
+          </td>
+          <td class="bg-white">
+            {{status.request_coupon_unread}}
+          </td>
+          <td class="bg-white">
+            {{status.request_coupon_read}}
+          </td>
+        </tr>
       </table>
     </div>
 

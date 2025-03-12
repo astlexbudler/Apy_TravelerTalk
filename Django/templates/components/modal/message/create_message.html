@@ -144,7 +144,7 @@
             accountOk = false;
             return
         }
-        if (accounts[0]['nickname'] === receiver || accounts[0]['id'] === receiver) {
+        if (accounts[0]['nickname'] === receiver || accounts[0]['username'] === receiver) {
             receiverConfirmMessage.innerHTML = '사용자 확인';
             receiverConfirmMessage.classList.add('text-success');
             receiverConfirmMessage.classList.remove('text-danger');

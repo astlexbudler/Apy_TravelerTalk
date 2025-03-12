@@ -14,14 +14,14 @@
                     <div class="form-group col-8">
                         <label>광고 상태</label>
                         <select class="form-select" id="{{ post.id }}adStatus">
-                            <option value="ad" {% if post.place_info.status == 'ad' %}selected{% endif %}>광고</option>
+                            <option value="ad" {% if post.place_info.status == 'ad' %}selected{% endif %}>베스트 광고</option>
                             <option value="pending" {% if post.place_info.status == 'pending' %}selected{% endif %}>광고 요청</option>
                             <option value="active" {% if post.place_info.status == 'active' %}selected{% endif %}>게시</option>
                             <option value="writing" {% if post.place_info.status == 'writing' %}selected{% endif %}>숨김</option>
                         </select>
                     </div>
                     <div class="form-group col-4">
-                        <label>가중치</label>
+                        <label>가중치 설정</label>
                         <input type="number" class="form-control" id="{{ post.id }}adWeight"
                             value="{{ post.search_weight }}">
                     </div>

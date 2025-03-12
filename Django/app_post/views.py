@@ -267,6 +267,19 @@ def review(request):
         'created_at': datetime.datetime.strftime(mbr.created_at, '%Y-%m-%d %H:%M'),
       })
 
+    # likeable
+    likeable = True
+    if related_post_id in request.session.get('like_post_ids', ''):
+      likeable = False
+
+    # 조회수 증가
+    if related_post_id not in request.session.get('view_posts', ''):
+      request.session['view_posts'] = request.session.get('view_posts', '') + ',' + related_post_id
+      daos.update_post(
+        post_id=related_post_id,
+        view_count=models.POST.objects.get(pk=related_post_id).view_count + 1,
+      )
+
   return render(request, 'post/review.html', {
     **contexts,
     'boards': boards, # 게시판 정보
@@ -277,6 +290,7 @@ def review(request):
     'today_reviews': today_best_reviews, # 오늘의 베스트 후기
     'weekly_reviews': weekly_best_reviews, # 주간 베스트 후기
     'monthly_reviews': monthly_best_reviews, # 월간 베스트 후기
+    'likeable': likeable, # 좋아요 가능 여부
   })
 
 # 여행 게시판
@@ -484,7 +498,7 @@ def post_view(request):
   # 좋아요 가능 여부
   likeable = True
   if post['boards'][-1]['board_type'] == 'travel':
-    if post_id not in contexts['account']['bookmarked_posts']:
+    if post_id in contexts['account']['bookmarked_posts']:
       likeable = False
   elif post_id in request.session.get('like_post_ids', ''):
     likeable = False

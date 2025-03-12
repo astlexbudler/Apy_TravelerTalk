@@ -207,23 +207,35 @@
 
     <!-- 버튼 그룹 -->
     <div class="text-end my-3">
-      <a class="btn btn-danger btn-sm me-2"
-        href="javascript: deleteSelectedAccounts()">
-        <i class="fi fi-rr-trash"></i> 선택 삭제
-      </a>
-      <a class="btn btn-primary btn-sm me-2"
-        href="javascript: new bootstrap.Modal(document.getElementById('addAccount')).show()">
-        <i class="fi fi-rr-user-add"></i> 사용자 생성
-      </a>
-      {% if request.GET.tab == 'supervisorTab' and account.account_type == 'supervisor' %}
-      <a class="btn btn-primary btn-sm me-2"
-        href="javascript: new bootstrap.Modal(document.getElementById('addSubsupervisor')).show()">
-        <i class="fi fi-rr-user-add"></i> 하위 관리자 추가
-      </a>
-      {% endif %}
-      <a href="javascript: openExportDataPage();" class="btn btn-sm btn-success">
-        <i class="fi fi-rr-file-excel"></i> 다운로드
-      </a>
+      <p>
+        <a class="btn btn-primary btn-sm me-2"
+          href="javascript: new bootstrap.Modal(document.getElementById('addAccount')).show()">
+          <i class="fi fi-rr-user-add"></i> 사용자 생성
+        </a>
+        {% if request.GET.tab == 'supervisorTab' and account.account_type == 'supervisor' %}
+        <a class="btn btn-primary btn-sm me-2"
+          href="javascript: new bootstrap.Modal(document.getElementById('addSubsupervisor')).show()">
+          <i class="fi fi-rr-user-add"></i> 하위 관리자 추가
+        </a>
+        {% endif %}
+        <a href="javascript: openExportDataPage();" class="btn btn-sm btn-success">
+          <i class="fi fi-rr-file-excel"></i> 다운로드
+        </a>
+      </p>
+      <p class="m-0">
+        <a class="btn btn-info btn-sm me-2"
+          href="javascript: activeSelectedAccounts()">
+          <i class="fi fi-rr-trash"></i> 선택 활성
+        </a>
+        <a class="btn btn-success btn-sm me-2"
+          href="javascript: blockSelectedAccounts()">
+          <i class="fi fi-rr-trash"></i> 선택 정지
+        </a>
+        <a class="btn btn-danger btn-sm"
+          href="javascript: deleteSelectedAccounts()">
+          <i class="fi fi-rr-trash"></i> 선택 삭제
+        </a>
+      </p>
     </div>
 
     <!-- 검색 결과 -->
@@ -245,7 +257,7 @@
             <th>최근 접속일</th>
             <th>최근 접속 아이피</th>
             <th>메세지</th>
-            <th>삭제</th>
+            <th>선택</th>
           </tr>
         </thead>
         <tbody>
@@ -448,10 +460,12 @@
       icon: `warning`,
       showConfirmButton: true,
       confirmButtonText: `삭제하기`,
-      confirmButtonColor: `#f25767`,
       showCancelButton: true,
       cancelButtonText: `취소`,
-      cancelButtonColor: `#929ea8`
+      customClass: {
+        confirmButton: 'custom-swal-danger-btn-half', // 커스텀 클래스 적용
+        cancelButton: 'custom-swal-cancel-btn-half' // 커스텀 클래스 적용
+      },
     })
       .then((result) => {
         if (result.isConfirmed) {
@@ -478,6 +492,114 @@
       }
     }
     await showAlert('회원 삭제 완료', '회원 삭제가 성공적으로 처리되었습니다.', 'success');
+    location.reload();
+  }
+
+  // 사용자 선택 정지
+  blockSelectedAccounts = async () => {
+
+    var isBlock = await Swal.fire({
+      html: `
+      <div>
+        <div class="text-center py-4">
+          <h1 class="text-dark">회원 정지</h1>
+        </div>
+        <diV class="text-center">
+          <p class="text-black-50">
+            선택된 회원을 정지하시겠습니까?
+          </p>
+        </div>
+      </div>`,
+      icon: `warning`,
+      showConfirmButton: true,
+      confirmButtonText: `정지하기`,
+      showCancelButton: true,
+      cancelButtonText: `취소`,
+      customClass: {
+        confirmButton: 'custom-swal-danger-btn-half', // 커스텀 클래스 적용
+        cancelButton: 'custom-swal-cancel-btn-half' // 커스텀 클래스 적용
+      },
+    })
+      .then((result) => {
+        if (result.isConfirmed) {
+          return true;
+        }
+        return false;
+      });
+    if (!isBlock) {
+      return;
+    }
+
+    showAlert('일괄 정지', '선택된 회원을 정지합니다. 잠시만 기다려주세요', 'info');
+
+    var selectedAccounts = document.getElementsByName('selectedAccounts');
+    var selectedAccountIds = [];
+    for (var i = 0; i < selectedAccounts.length; i++) {
+      if (selectedAccounts[i].checked) {
+        await fetch('/api/account?id=' + selectedAccounts[i].value, {
+          method: 'PATCH',
+          headers: {
+            'X-CSRFToken': csrftoken
+          }
+        });
+      }
+    }
+
+    await showAlert('회원 정지 완료', '회원 정지가 성공적으로 처리되었습니다.', 'success');
+    location.reload();
+  }
+
+  // 사용자 선택 활성
+  activeSelectedAccounts = async () => {
+
+    var isActive = await Swal.fire({
+      html: `
+      <div>
+        <div class="text-center py-4">
+          <h1 class="text-dark">회원 활성</h1>
+        </div>
+        <diV class="text-center">
+          <p class="text-black-50">
+            선택된 회원을 활성화하시겠습니까?
+          </p>
+        </div>
+      </div>`,
+      icon: `warning`,
+      showConfirmButton: true,
+      confirmButtonText: `활성화하기`,
+      showCancelButton: true,
+      cancelButtonText: `취소`,
+      customClass: {
+        confirmButton: 'custom-swal-danger-btn-half', // 커스텀 클래스 적용
+        cancelButton: 'custom-swal-cancel-btn-half' // 커스텀 클래스 적용
+      },
+    })
+      .then((result) => {
+        if (result.isConfirmed) {
+          return true;
+        }
+        return false;
+      });
+    if (!isActive) {
+      return;
+    }
+
+    showAlert('일괄 활성', '선택된 회원을 활성화합니다. 잠시만 기다려주세요', 'info');
+
+    var selectedAccounts = document.getElementsByName('selectedAccounts');
+    var selectedAccountIds = [];
+    for (var i = 0; i < selectedAccounts.length; i++) {
+      if (selectedAccounts[i].checked) {
+        await fetch('/api/account?id=' + selectedAccounts[i].value, {
+          method: 'PATCH',
+          headers: {
+            'X-CSRFToken': csrftoken
+          }
+        });
+      }
+    }
+
+    await showAlert('회원 활성 완료', '회원 활성이 성공적으로 처리되었습니다.', 'success');
     location.reload();
   }
 
