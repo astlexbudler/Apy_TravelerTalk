@@ -15,28 +15,28 @@
             <!-- 헤더 상단 메뉴 -->
             <div style="display: flex; justify-content: space-between; white-space: nowrap;">
                 <div style="display: inline-block; text-align: left;">
-                    <a class="text-black-50 small me-3" style="white-space: nowrap;" href="{{MAIN_URL}}/post?board_ids=23,25">
+                    <a class="text-black-50 me-3" style="white-space: nowrap;" href="{{MAIN_URL}}/post?board_ids=23,25">
                         <i class="fi fi-rr-calendar-check"></i> 출석체크
                     </a>
-                    <a class="text-black-50 small me-3" style="white-space: nowrap;" href="{{MAIN_URL}}/bookmark">
+                    <a class="text-black-50 me-3" style="white-space: nowrap;" href="{{MAIN_URL}}/bookmark">
                         <i class="fi fi-rr-bookmark"></i> 즐겨찾기
                     </a>
-                    <a class="text-black-50 small" style="white-space: nowrap;" href="{{MAIN_URL}}/coupon">
+                    <a class="text-black-50" style="white-space: nowrap;" href="{{MAIN_URL}}/coupon">
                         <i class="fi fi-rr-ticket"></i> 쿠폰함
                     </a>
                 </div>
                 <div style="display: inline-block; text-align: right;">
                     {% if account.account_type == 'guest' %}
-                    <a class="text-black-50 small me-3 d-lg-none" style="white-space: nowrap;" href="javascript: new bootstrap.Modal(document.getElementById('loginModal')).show();">
+                    <a class="text-black-50 me-3 d-lg-none" style="white-space: nowrap;" href="javascript: new bootstrap.Modal(document.getElementById('loginModal')).show();">
                         <i class="fi fi-rr-user"></i> 로그인
                     </a>
                     {% else %}
-                    <a class="text-black-50 small me-3" style="white-space: nowrap;" href="{{MAIN_URL}}/profile">
+                    <a class="text-black-50 me-3" style="white-space: nowrap;" href="{{MAIN_URL}}/profile">
                         <i class="fi fi-rr-user"></i> 프로필
                     </a>
                     {% if account.account_type in 'user,dame' %}
                     <div class="h-col h-switch dropdown me-3" style="display: inline-block;">
-                        <a class="theme-switch text-black-50 small" type="button" style="white-space: nowrap;"
+                        <a class="theme-switch text-black-50" type="button" style="white-space: nowrap;"
                             aria-expanded="false" data-bs-toggle="dropdown" data-bs-display="static">
                             <span class="bi my-1">
                                 <i class="fi fi-rr-envelope"></i> 쪽지함
@@ -212,14 +212,14 @@
             게시판
         </h6>
     </div>
-    <div>
+    <div style="font-size: 12px;">
         <!-- 이미지 버튼 -->
-        <div style="display: inline-block;" class="mb-1 text-center">
+        <div style="display: inline-block; white-space: nowrap;" class="mb-1 text-center">
             <div style="width: 24%; min-height: 60px; display: inline-block;" class="p-1">
                 <div class="border rounded p-2 shadow-sm hoverCard">
                     <a href="javascript: toogleMobileMenu('Travel')">
                         <img src="/static/travelertalk/img/airplane-around-earth.png" style="width: 100%; height: auto;">
-                        <p class="text-black-60 mt-2 small">
+                        <p class="text-black-60 mt-2">
                             여행지
                         </p>
                     </a>
@@ -229,7 +229,7 @@
                 <div class="border rounded p-2 shadow-sm hoverCard">
                     <a href="javascript: toogleMobileMenu('Community')">
                         <img src="/static/travelertalk/img/chat2.png" style="width: 100%; height: auto;">
-                        <p class="text-black-50 small mt-2">
+                        <p class="text-black-50 mt-2">
                             커뮤니티
                         </p>
                     </a>
@@ -239,7 +239,7 @@
                 <div class="border rounded p-2 shadow-sm hoverCard">
                     <a href="/post/review?board_ids=37">
                         <img src="/static/travelertalk/img/review.png" style="width: 100%; height: auto;">
-                        <p class="text-black-50 small mt-2">
+                        <p class="text-black-50 mt-2">
                             후기 게시판
                         </p>
                     </a>
@@ -249,7 +249,7 @@
                 <div class="border rounded p-2 shadow-sm hoverCard">
                     <a href="javascript: toogleMobileMenu('Event')">
                         <img src="/static/travelertalk/img/gift.png" style="width: 100%; height: auto;">
-                        <p class="text-black-50 small mt-2">
+                        <p class="text-black-50 mt-2">
                             이벤트
                         </p>
                     </a>
@@ -260,47 +260,47 @@
         <!-- 커뮤니티 메뉴 -->
         <div class="w-100 mt-4 d-none mobileButtons row px-2" style="white-space: wrap;" id="mobileCommunityButtons">
             <div class="col-4 p-2">
-                <a class="btn btn-info w-100" href="/post?board_ids=23,24">
+                <a class="btn btn-info btn-sm w-100" href="/post?board_ids=23,24" style="font-size: 12px;">
                     자유게시판
                 </a>
             </div>
             <div class="col-4 p-2">
-                <a class="btn btn-info w-100" href="/post?board_ids=23,26">
+                <a class="btn btn-info btn-sm w-100" href="/post?board_ids=23,26" style="font-size: 12px;">
                     가입인사
                 </a>
             </div>
             <div class="col-4 p-2">
-                <a class="btn btn-info w-100" href="/post?board_ids=23,27">
+                <a class="btn btn-info btn-sm w-100" href="/post?board_ids=23,27" style="font-size: 12px;">
                     익명 게시판
                 </a>
             </div>
             <div class="col-4 p-2">
-                <a class="btn btn-info w-100" href="/post?board_ids=23,28">
+                <a class="btn btn-info btn-sm w-100" href="/post?board_ids=23,28" style="font-size: 12px;">
                     미녀들의 수다
                 </a>
             </div>
             <div class="col-4 p-2">
-                <a class="btn btn-info w-100" href="/post?board_ids=23,29">
+                <a class="btn btn-info btn-sm w-100" href="/post?board_ids=23,29" style="font-size: 12px;">
                     정보공유/교환
                 </a>
             </div>
             <div class="col-4 p-2">
-                <a class="btn btn-info w-100" href="/post?board_ids=23,30">
+                <a class="btn btn-info btn-sm w-100" href="/post?board_ids=23,30" style="font-size: 12px;">
                     구인/구직
                 </a>
             </div>
             <div class="col-4 p-2">
-                <a class="btn btn-info w-100" href="/post?board_ids=23,31">
+                <a class="btn btn-info btn-sm w-100" href="/post?board_ids=23,31" style="font-size: 12px;">
                     브론즈 게시판
                 </a>
             </div>
             <div class="col-4 p-2">
-                <a class="btn btn-info w-100" href="/post?board_ids=23,32">
+                <a class="btn btn-info btn-sm w-100" href="/post?board_ids=23,32" style="font-size: 12px;">
                     실버 게시판
                 </a>
             </div>
             <div class="col-4 p-2">
-                <a class="btn btn-info w-100" href="/post?board_ids=23,33">
+                <a class="btn btn-info btn-sm w-100" href="/post?board_ids=23,33" style="font-size: 12px;">
                     골드 게시판
                 </a>
             </div>
@@ -309,12 +309,12 @@
         <!-- 이벤트 메뉴 -->
         <div class="w-100 mt-4 d-none mobileButtons row px-2" style="white-space: wrap;" id="mobileEventButtons">
             <div class="col-4 p-2">
-                <a class="btn btn-info w-100" href="/post?board_ids=34,35">
+                <a class="btn btn-info btn-sm w-100" href="/post?board_ids=34,35" style="font-size: 12px;">
                     이벤트
                 </a>
             </div>
             <div class="col-4 p-2">
-                <a class="btn btn-info w-100" href="/post?board_ids=34,36">
+                <a class="btn btn-info btn-sm w-100" href="/post?board_ids=34,36" style="font-size: 12px;">
                     쿠폰거래
                 </a>
             </div>
@@ -322,14 +322,14 @@
 
         <!-- 게시판 기타 메뉴 -->
         <div class="w-100 mt-4 d-none mobileButtons px-2" style="white-space: wrap;" id="mobileEtcButtons">
-            <a class="btn btn-secondary" href="/post?board_ids=38">
+            <a class="btn btn-secondary btn-sm" href="/post?board_ids=38" style="font-size: 12px;">
                 문의
             </a>
         </div>
 
         <!-- 여행지 메뉴(서울) -->
         <div class="w-100 mt-4 p-1 d-none mobileButtons" style="white-space: wrap;" id="mobileTravelSeoulButtons">
-            <a href="javascript: toogleMobileDetailMenu('TravelSeoul')" class="text-black small">
+            <a href="javascript: toogleMobileDetailMenu('TravelSeoul')" class="text-black">
                 <div class="border rounded p-2 m-1 shadow-sm text-center hoverCard" style="width: 80px;">
                     <img src="/static/travelertalk/img/seoul.png" style="width: 100%; height: auto;">
                     <p class="mt-1">
@@ -414,7 +414,7 @@
 
         <!-- 여행지 메뉴(해외) -->
         <div class="w-100 mt-4 p-1 d-none mobileButtons" style="white-space: wrap;" id="mobileTravelForeignButtons">
-            <a href="javascript: toogleMobileDetailMenu('TravelForeign')" class="text-black small">
+            <a href="javascript: toogleMobileDetailMenu('TravelForeign')" class="text-black">
                 <div class="border rounded m-1 p-2 shadow-sm text-center hoverCard" style="width: 80px;">
                     <img src="/static/travelertalk/img/traveling.png" style="width: 100%; height: auto;">
                     <p class="mt-1">
