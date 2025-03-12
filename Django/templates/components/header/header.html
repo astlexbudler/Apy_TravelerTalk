@@ -206,7 +206,7 @@
 </header>
 {% include 'components/header/toggle_theme.html' %}
 <!-- 모바일 게시판 타이틀 -->
-<div class="w-100 px-3 mb-4 d-lg-none">
+<div class="w-100 px-3 pb-4 d-lg-none bg-light">
     <div class="mb-3" style="border-bottom: 3px solid #b5c7d7;">
         <h6 class="text-black-60">
             게시판
@@ -214,42 +214,42 @@
     </div>
     <div>
         <!-- 이미지 버튼 -->
-        <div style="display: inline-block;">
+        <div style="display: inline-block;" class="mb-1 text-center">
             <div style="width: 24%; min-height: 60px; display: inline-block;" class="p-1">
-                <div class="border rounded p-2 shadow-sm">
+                <div class="border rounded p-2 shadow-sm hoverCard">
                     <a href="javascript: toogleMobileMenu('Travel')">
-                        <img src="/static/travelertalk/img/travel-bag.png" style="width: 100%; height: auto;">
-                        <p class="text-black-50 text-center mb-1">
+                        <img src="/static/travelertalk/img/airplane-around-earth.png" style="width: 100%; height: auto;">
+                        <p class="text-black-60 mt-2 small">
                             여행지
                         </p>
                     </a>
                 </div>
             </div>
             <div style="width: 24%; min-height: 60px; display: inline-block;" class="p-1">
-                <div class="border rounded p-2 shadow-sm">
+                <div class="border rounded p-2 shadow-sm hoverCard">
                     <a href="javascript: toogleMobileMenu('Community')">
-                        <img src="/static/travelertalk/img/chat.png" style="width: 100%; height: auto;">
-                        <p class="text-black-50 text-center mb-1">
+                        <img src="/static/travelertalk/img/chat2.png" style="width: 100%; height: auto;">
+                        <p class="text-black-50 small mt-2">
                             커뮤니티
                         </p>
                     </a>
                 </div>
             </div>
             <div style="width: 24%; min-height: 60px; display: inline-block;" class="p-1">
-                <div class="border rounded p-2 shadow-sm">
+                <div class="border rounded p-2 shadow-sm hoverCard">
                     <a href="/post/review?board_ids=37">
-                        <img src="/static/travelertalk/img/positive-vote.png" style="width: 100%; height: auto;">
-                        <p class="text-black-50 text-center mb-1">
+                        <img src="/static/travelertalk/img/review.png" style="width: 100%; height: auto;">
+                        <p class="text-black-50 small mt-2">
                             후기 게시판
                         </p>
                     </a>
                 </div>
             </div>
             <div style="width: 24%; min-height: 60px; display: inline-block;" class="p-1">
-                <div class="border rounded p-2 shadow-sm">
+                <div class="border rounded p-2 shadow-sm hoverCard">
                     <a href="javascript: toogleMobileMenu('Event')">
-                        <img src="/static/travelertalk/img/giftbox.png" style="width: 100%; height: auto;">
-                        <p class="text-black-50 text-center mb-1">
+                        <img src="/static/travelertalk/img/gift.png" style="width: 100%; height: auto;">
+                        <p class="text-black-50 small mt-2">
                             이벤트
                         </p>
                     </a>
@@ -258,134 +258,308 @@
         </div>
 
         <!-- 커뮤니티 메뉴 -->
-        <div class="w-100 mt-4 d-none mobileButtons" style="white-space: wrap;" id="mobileCommunityButtons">
-            <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids=23,24">
-                자유게시판
-            </a>
-            <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids=23,26">
-                가입인사
-            </a>
-            <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids=23,27">
-                익명 게시판
-            </a>
-            <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids=23,28">
-                미녀들의 수다
-            </a>
-            <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids=23,29">
-                정보공유/교환
-            </a>
-            <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids=23,30">
-                구인/구직
-            </a>
-            <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids=23,31">
-                브론즈
-            </a>
-            <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids=23,32">
-                실버
-            </a>
-            <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids=23,33">
-                골드
-            </a>
+        <div class="w-100 mt-4 d-none mobileButtons row px-2" style="white-space: wrap;" id="mobileCommunityButtons">
+            <div class="col-4 p-2">
+                <a class="btn btn-info w-100" href="/post?board_ids=23,24">
+                    자유게시판
+                </a>
+            </div>
+            <div class="col-4 p-2">
+                <a class="btn btn-info w-100" href="/post?board_ids=23,26">
+                    가입인사
+                </a>
+            </div>
+            <div class="col-4 p-2">
+                <a class="btn btn-info w-100" href="/post?board_ids=23,27">
+                    익명 게시판
+                </a>
+            </div>
+            <div class="col-4 p-2">
+                <a class="btn btn-info w-100" href="/post?board_ids=23,28">
+                    미녀들의 수다
+                </a>
+            </div>
+            <div class="col-4 p-2">
+                <a class="btn btn-info w-100" href="/post?board_ids=23,29">
+                    정보공유/교환
+                </a>
+            </div>
+            <div class="col-4 p-2">
+                <a class="btn btn-info w-100" href="/post?board_ids=23,30">
+                    구인/구직
+                </a>
+            </div>
+            <div class="col-4 p-2">
+                <a class="btn btn-info w-100" href="/post?board_ids=23,31">
+                    브론즈 게시판
+                </a>
+            </div>
+            <div class="col-4 p-2">
+                <a class="btn btn-info w-100" href="/post?board_ids=23,32">
+                    실버 게시판
+                </a>
+            </div>
+            <div class="col-4 p-2">
+                <a class="btn btn-info w-100" href="/post?board_ids=23,33">
+                    골드 게시판
+                </a>
+            </div>
         </div>
 
         <!-- 이벤트 메뉴 -->
-        <div class="w-100 mt-4 d-none mobileButtons" style="white-space: wrap;" id="mobileEventButtons">
-            <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids=34,35">
-                이벤트
-            </a>
-            <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids=34,36">
-                쿠폰거래
-            </a>
+        <div class="w-100 mt-4 d-none mobileButtons row px-2" style="white-space: wrap;" id="mobileEventButtons">
+            <div class="col-4 p-2">
+                <a class="btn btn-info w-100" href="/post?board_ids=34,35">
+                    이벤트
+                </a>
+            </div>
+            <div class="col-4 p-2">
+                <a class="btn btn-info w-100" href="/post?board_ids=34,36">
+                    쿠폰거래
+                </a>
+            </div>
         </div>
 
         <!-- 게시판 기타 메뉴 -->
-        <div class="w-100 mt-4 d-none mobileButtons" style="white-space: wrap;" id="mobileEtcButtons">
-            <a class="btn btn-light text-black-60 pastel-beige-background me-2 mt-2 shadow-sm" href="/post?board_ids=38">
+        <div class="w-100 mt-4 d-none mobileButtons px-2" style="white-space: wrap;" id="mobileEtcButtons">
+            <a class="btn btn-secondary" href="/post?board_ids=38">
                 문의
             </a>
         </div>
 
         <!-- 여행지 메뉴(서울) -->
-        <div class="w-100 mt-4 d-none mobileButtons" style="white-space: wrap;" id="mobileTravelSeoulButtons">
-            <a class="btn mobileTreeButton" href="javascript: toogleMobileDetailMenu('TravelSeoul')">
-                서울
+        <div class="w-100 mt-4 p-1 d-none mobileButtons" style="white-space: wrap;" id="mobileTravelSeoulButtons">
+            <a href="javascript: toogleMobileDetailMenu('TravelSeoul')" class="text-black small">
+                <div class="border rounded p-2 m-1 shadow-sm text-center hoverCard" style="width: 80px;">
+                    <img src="/static/travelertalk/img/seoul.png" style="width: 100%; height: auto;">
+                    <p class="mt-1">
+                        서울
+                    </p>
+                </div>
             </a>
             <!-- 여행지 메뉴(서울) -->
-            <span id="mobileTravelSeoulDetailButtons" class="d-none">
-                <a class="btn mobileNodeButton" href="/post/travel?board_ids=2,3">
-                    강북
-                </a>
-                <a class="btn mobileNodeButton" href="/post?board_ids=2,4">
-                    압구정
-                </a>
-                <a class="btn mobileNodeButton" href="/post?board_ids=2,5">
-                    동대문
-                </a>
-                <a class="btn mobileNodeButton" href="/post?board_ids=2,6">
-                    홍대/이대
-                </a>
-                <a class="btn mobileNodeButton" href="/post?board_ids=2,7">
-                    이태원
-                </a>
-                <a class="btn mobileNodeButton" href="/post?board_ids=2,8">
-                    강서
-                </a>
-                <a class="btn mobileNodeButton" href="/post?board_ids=2,9">
-                    송파
-                </a>
-            </span>
+            <div id="mobileTravelSeoulDetailButtons" class="d-none row text-center border rounded p-3 shadow m-1 my-3">
+                <div class="col-4 p-3">
+                    <div class="rounded shadow p-2 hoverCard">
+                        <a href="/post/travel?board_ids=2,3" class="mobileNodeButton text-black">
+                            <img src="/static/travelertalk/img/building.png" style="width: 100%; height: auto;">
+                            <p class="mt-1">
+                                강북
+                            </p>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-4 p-3">
+                    <div class="rounded shadow p-2 hoverCard">
+                        <a class="mobileNodeButton text-black" href="/post?board_ids=2,4">
+                            <img src="/static/travelertalk/img/building.png" style="width: 100%; height: auto;">
+                            <p class="mt-1">
+                                압구정
+                            </p>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-4 p-3">
+                    <div class="rounded shadow p-2 hoverCard">
+                        <a class="mobileNodeButton text-black" href="/post?board_ids=2,5">
+                            <img src="/static/travelertalk/img/building.png" style="width: 100%; height: auto;">
+                            <p class="mt-1">
+                                동대문
+                            </p>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-4 p-3">
+                    <div class="rounded shadow p-2 hoverCard">
+                        <a class="mobileNodeButton text-black" href="/post?board_ids=2,6">
+                            <img src="/static/travelertalk/img/building.png" style="width: 100%; height: auto;">
+                            <p class="mt-1">
+                                홍대/이대
+                            </p>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-4 p-3">
+                    <div class="rounded shadow p-2 hoverCard">
+                        <a class="mobileNodeButton text-black" href="/post?board_ids=2,7">
+                            <img src="/static/travelertalk/img/building.png" style="width: 100%; height: auto;">
+                            <p class="mt-1">
+                                이태원
+                            </p>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-4 p-3">
+                    <div class="rounded shadow p-2 hoverCard">
+                        <a class="mobileNodeButton text-black" href="/post?board_ids=2,8">
+                            <img src="/static/travelertalk/img/building.png" style="width: 100%; height: auto;">
+                            <p class="mt-1">
+                                강서
+                            </p>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-4 p-3">
+                    <div class="rounded shadow p-2 hoverCard">
+                        <a class="mobileNodeButton text-black" href="/post?board_ids=2,9">
+                            <img src="/static/travelertalk/img/building.png" style="width: 100%; height: auto;">
+                            <p class="mt-1">
+                                송파
+                            </p>
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- 여행지 메뉴(해외) -->
-        <div class="w-100 mt-4 d-none mobileButtons" style="white-space: wrap;" id="mobileTravelForeignButtons">
-            <a class="btn mobileTreeButton" href="javascript: toogleMobileDetailMenu('TravelForeign')">
-                해외
+        <div class="w-100 mt-4 p-1 d-none mobileButtons" style="white-space: wrap;" id="mobileTravelForeignButtons">
+            <a href="javascript: toogleMobileDetailMenu('TravelForeign')" class="text-black small">
+                <div class="border rounded m-1 p-2 shadow-sm text-center hoverCard" style="width: 80px;">
+                    <img src="/static/travelertalk/img/traveling.png" style="width: 100%; height: auto;">
+                    <p class="mt-1">
+                        해외
+                    </p>
+                </div>
             </a>
-            <span id="mobileTravelForeignDetailButtons" class="d-none">
-                <a class="btn mobileNodeButton" href="/post?board_ids=17,18">
-                    필리핀
-                </a>
-                <a class="btn mobileNodeButton" href="/post?board_ids=17,19">
-                    태국
-                </a>
-                <a class="btn mobileNodeButton" href="/post?board_ids=17,20">
-                    캄보디아
-                </a>
-                <a class="btn mobileNodeButton" href="/post?board_ids=17,21">
-                    일본
-                </a>
-                <a class="btn mobileNodeButton" href="/post?board_ids=17,22">
-                    베트남
-                </a>
-            </span>
+            <div id="mobileTravelForeignDetailButtons" class="d-none row text-center border rounded p-3 shadow m-1 my-3">
+                <div class="col-4 p-3">
+                    <div class="rounded shadow p-2 hoverCard">
+                        <a class="mobileNode button text-black" href="/post?board_ids=17,17">
+                            <img src="/static/travelertalk/img/vacations.png" style="width: 100%; height: auto;">
+                            <p class="mt-1">
+                                필리핀
+                            </p>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-4 p-3">
+                    <div class="rounded shadow p-2 hoverCard">
+                        <a class="mobileNode button text-black" href="/post?board_ids=17,18">
+                            <img src="/static/travelertalk/img/vacations.png" style="width: 100%; height: auto;">
+                            <p class="mt-1">
+                                태국
+                            </p>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-4 p-3">
+                    <div class="rounded shadow p-2 hoverCard">
+                        <a class="mobileNode button text-black" href="/post?board_ids=17,19">
+                            <img src="/static/travelertalk/img/vacations.png" style="width: 100%; height: auto;">
+                            <p class="mt-1">
+                                캄보디아
+                            </p>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-4 p-3">
+                    <div class="rounded shadow p-2 hoverCard">
+                        <a class="mobileNode button text-black" href="/post?board_ids=17,20">
+                            <img src="/static/travelertalk/img/vacations.png" style="width: 100%; height: auto;">
+                            <p class="mt-1">
+                                일본
+                            </p>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-4 p-3">
+                    <div class="rounded shadow p-2 hoverCard">
+                        <a class="mobileNode button text-black" href="/post?board_ids=17,21">
+                            <img src="/static/travelertalk/img/vacations.png" style="width: 100%; height: auto;">
+                            <p class="mt-1">
+                                베트남
+                            </p>
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- 여행지 메뉴(기타) -->
-        <div class="w-100 mt-4 d-none mobileButtons" style="white-space: wrap;" id="mobileTravelEtcButtons">
-            <a class="btn mobileNodeButton" href="/post?board_ids=1">
-                강남
-            </a>
-            <a class="btn mobileNodeButton" href="/post?board_ids=10">
-                인천/부천
-            </a>
-            <a class="btn mobileNodeButton" href="/post?board_ids=11">
-                경기
-            </a>
-            <a class="btn mobileNodeButton" href="/post?board_ids=12">
-                대전/충청
-            </a>
-            <a class="btn mobileNodeButton" href="/post?board_ids=13">
-                대구/구미
-            </a>
-            <a class="btn mobileNodeButton" href="/post?board_ids=14">
-                경상
-            </a>
-            <a class="btn mobileNodeButton" href="/post?board_ids=15">
-                광주/전라
-            </a>
-            <a class="btn mobileNodeButton" href="/post?board_ids=16">
-                강원/제주
-            </a>
+        <div class="w-100 mt-4 p-1 d-none mobileButtons" style="white-space: wrap;" id="mobileTravelEtcButtons">
+            <div class="p-1 text-center row border rounded shadow p-3 m-1">
+                <div class="col-4 p-3">
+                    <div class="rounded shadow p-2 hoverCard">
+                        <a class="mobileNodeButton text-black" href="/post?board_ids=1">
+                            <img src="/static/travelertalk/img/map.png" style="width: 100%; height: auto;">
+                            <p class="mt-1">
+                                강남
+                            </p>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-4 p-3">
+                    <div class="rounded shadow p-2 hoverCard">
+                        <a class="mobileNodeButton text-black" href="/post?board_ids=10">
+                            <img src="/static/travelertalk/img/map.png" style="width: 100%; height: auto;">
+                            <p class="mt-1">
+                                인천/부천
+                            </p>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-4 p-3">
+                    <div class="rounded shadow p-2 hoverCard">
+                        <a class="mobileNodeButton text-black" href="/post?board_ids=11">
+                            <img src="/static/travelertalk/img/map.png" style="width: 100%; height: auto;">
+                            <p class="mt-1">
+                                경기
+                            </p>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-4 p-3">
+                    <div class="rounded shadow p-2 hoverCard">
+                        <a class="mobileNodeButton text-black" href="/post?board_ids=12">
+                            <img src="/static/travelertalk/img/map.png" style="width: 100%; height: auto;">
+                            <p class="mt-1">
+                                대전/충청
+                            </p>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-4 p-3">
+                    <div class="rounded shadow p-2 hoverCard">
+                        <a class="mobileNodeButton text-black" href="/post?board_ids=13">
+                            <img src="/static/travelertalk/img/map.png" style="width: 100%; height: auto;">
+                            <p class="mt-1">
+                                대구/구미
+                            </p>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-4 p-3">
+                    <div class="rounded shadow p-2 hoverCard">
+                        <a class="mobileNodeButton text-black" href="/post?board_ids=14">
+                            <img src="/static/travelertalk/img/map.png" style="width: 100%; height: auto;">
+                            <p class="mt-1">
+                                경상
+                            </p>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-4 p-3">
+                    <div class="rounded shadow p-2 hoverCard">
+                        <a class="mobileNodeButton text-black" href="/post?board_ids=15">
+                            <img src="/static/travelertalk/img/map.png" style="width: 100%; height: auto;">
+                            <p class="mt-1">
+                                광주/전라
+                            </p>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-4 p-3">
+                    <div class="rounded shadow p-2 hoverCard">
+                        <a class="mobileNodeButton text-black" href="/post?board_ids=16">
+                            <img src="/static/travelertalk/img/map.png" style="width: 100%; height: auto;">
+                            <p class="mt-1">
+                                강원/제주
+                            </p>
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- 게시판 기타 메뉴 -->

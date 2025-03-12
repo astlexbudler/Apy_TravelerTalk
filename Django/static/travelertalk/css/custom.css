@@ -88,37 +88,7 @@ main {
     }
 }
 
-.mobileTreeButton {
-    padding: 15px 30px 15px 30px;
-    text-align: center;
-    margin-right: 10px;
-    margin-top: 10px;
-    border: 0px;
-    background-color: transparent;
-    color: rgba(0, 0, 0, 0.6);
-    background-image: url('/static/travelertalk/img/button_tree.png');
-    background-size: 100%;
-    background-position: center top;
-    background-repeat: no-repeat;
-}
-.mobileTreeButton:hover {
-    color: black;
-}
-
-.mobileNodeButton {
-    padding: 15px 30px 15px 30px;
-    text-align: center;
-    color: rgba(0, 0, 0, 0.6);
-    margin-top: 6px;
-    margin-right: 6px;
-    background-image: url('/static/travelertalk/img/button_node.png');
-    background-size: 70px;
-    background-position: center top;
-    background-repeat: no-repeat;
-    border: 0px;
-    background-color: transparent;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-}
-.mobileNodeButton:hover {
-    color: black;
+.hoverCard:hover {
+    background-color: rgb(243, 243, 243);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
