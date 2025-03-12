@@ -225,15 +225,15 @@
       <p class="m-0">
         <a class="btn btn-info btn-sm me-2"
           href="javascript: activeSelectedAccounts()">
-          <i class="fi fi-rr-trash"></i> 선택 활성
+          <i class="fi fi-rr-check"></i> 선택 활성
         </a>
         <a class="btn btn-success btn-sm me-2"
           href="javascript: blockSelectedAccounts()">
-          <i class="fi fi-rr-trash"></i> 선택 정지
+          <i class="fi fi-rr-check"></i> 선택 정지
         </a>
         <a class="btn btn-danger btn-sm"
           href="javascript: deleteSelectedAccounts()">
-          <i class="fi fi-rr-trash"></i> 선택 삭제
+          <i class="fi fi-rr-check"></i> 선택 삭제
         </a>
       </p>
     </div>
@@ -313,7 +313,7 @@
               {% endif %}
             </td>
             <td>
-              <input type="checkbox" class="form-check-input" name="selectedAccounts" value="{{ search_account.id }}">
+              <input type="checkbox" class="form-check-input" name="selectedAccounts" value="{{ search_account.id }}" style="border: 1px solid grey;">
             </td>
           </tr>
           {% endfor %}
