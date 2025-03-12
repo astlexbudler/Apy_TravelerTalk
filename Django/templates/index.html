@@ -91,6 +91,9 @@
     } else if (redirect_message == 'partner_status_error') {
       await showAlert('파트너 승인 필요', '파트너 승인 후 이용해주세요.', 'error');
       location.href = '/';
+    } else if (redirect_message == 'not_enough_level') {
+      await showAlert('레벨 부족', '레벨이 부족합니다.', 'error');
+      location.href = '/';
     }
   }
 

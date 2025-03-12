@@ -92,3 +92,36 @@ main {
     background-color: rgb(243, 243, 243);
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
+
+.custom-swal-confirm-btn {
+    width: 180px;
+    height: 48px;
+    border-radius: 9px;
+    background-color: #0d6efd;
+    margin-bottom: 20px;
+}
+
+.custom-swal-confirm-btn-half {
+    width: 200px;
+    height: 48px;
+    border-radius: 9px;
+    background-color: #0d6efd;
+    margin-bottom: 20px;
+    margin-top: 50px;
+}
+
+.custom-swal-cancel-btn-half {
+    width: 200px;
+    height: 48px;
+    border-radius: 9px;
+    background-color: #aabbd0;
+    margin-bottom: 20px;
+}
+
+.custom-swal-danger-btn-half {
+    width: 200px;
+    height: 48px;
+    border-radius: 9px;
+    background-color: #f25767;
+    margin-bottom: 20px;
+}

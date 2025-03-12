@@ -243,10 +243,12 @@
       icon: `warning`,
       showConfirmButton: true,
       confirmButtonText: `탈퇴하기`,
-      confirmButtonColor: `#f25767`,
       showCancelButton: true,
       cancelButtonText: `취소`,
-      cancelButtonColor: `#929ea8`
+      customClass: {
+        confirmButton: 'custom-swal-danger-btn-half', // 커스텀 클래스 적용
+        cancelButton: 'custom-swal-cancel-btn-half' // 커스텀 클래스 적용
+      },
     })
       .then((result) => {
         if (result.isConfirmed) {

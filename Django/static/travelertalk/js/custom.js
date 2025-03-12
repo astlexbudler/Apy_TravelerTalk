@@ -69,7 +69,10 @@ showAlert = async(title, message, icon) => {
     showConfirmButton: true,
     confirmButtonText: `확인`,
     showCancelButton: false,
-    cancelButtonText: ``
+    cancelButtonText: ``,
+    customClass: {
+      confirmButton: 'custom-swal-confirm-btn' // 커스텀 클래스 적용
+    }
   });
 }
 
@@ -91,7 +94,11 @@ showConfirm = async(title, message, icon, confirmButtonText, cancelButtonText) =
     showConfirmButton: true,
     confirmButtonText: confirmButtonText,
     showCancelButton: true,
-    cancelButtonText: cancelButtonText
+    cancelButtonText: cancelButtonText,
+    customClass: {
+      confirmButton: 'custom-swal-confirm-btn-half', // 커스텀 클래스 적용
+      cancelButton: 'custom-swal-cancel-btn-half' // 커스텀 클래스 적용
+    },
   })
   .then((result) => {
     return result.isConfirmed; // 확인 버튼을 눌렀을 때 true 반환
