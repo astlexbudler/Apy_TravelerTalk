@@ -536,11 +536,16 @@
     var selectedAccountIds = [];
     for (var i = 0; i < selectedAccounts.length; i++) {
       if (selectedAccounts[i].checked) {
-        await fetch('/api/account?id=' + selectedAccounts[i].value, {
+        var formData = new FormData();
+        formData.append('status', 'blocked');
+        formData.append('id', selectedAccounts[i].value);
+
+        await fetch('/api/account', {
           method: 'PATCH',
           headers: {
             'X-CSRFToken': csrftoken
-          }
+          },
+          body: formData
         });
       }
     }
@@ -589,12 +594,16 @@
     var selectedAccounts = document.getElementsByName('selectedAccounts');
     var selectedAccountIds = [];
     for (var i = 0; i < selectedAccounts.length; i++) {
+      var formData = new FormData();
+      formData.append('status', 'active');
+      formData.append('id', selectedAccounts[i].value);
       if (selectedAccounts[i].checked) {
-        await fetch('/api/account?id=' + selectedAccounts[i].value, {
+        await fetch('/api/account', {
           method: 'PATCH',
           headers: {
             'X-CSRFToken': csrftoken
-          }
+          },
+          body: formData
         });
       }
     }

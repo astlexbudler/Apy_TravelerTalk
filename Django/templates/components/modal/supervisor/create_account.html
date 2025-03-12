@@ -56,17 +56,17 @@
                             <select class="form-select" id="selectedBoard">
                                 <option value="">전체</option>
                                 {% for board in travel_boards %}
-                                <option value="{{ board.id }}" {% if board.id == request.GET.board_id %}selected{% endif %}>{{ board.name }}</option>
+                                <option value="{{ board.id }}" {% if forloop.first %}selected{% endif %}>{{ board.name }}</option>
                                 {% if board.children|length > 0 %}
                                 {% for child in board.children %}
-                                <option value="{{ child.id }}" {% if child.id == request.GET.board_id %}selected{% endif %}>- {{ child.name }}</option>
+                                <option value="{{ child.id }}">- {{ child.name }}</option>
                                 {% if child.children|length > 0 %}
                                 {% for grandchild in child.children %}
-                                <option value="{{ grandchild.id }}" {% if grandchild.id == request.GET.board_id %}selected{% endif %}>
+                                <option value="{{ grandchild.id }}">
                                 -- {{ grandchild.name }}</option>
                                 {% if grandchild.children|length > 0 %}
                                 {% for grandgrandchild in grandchild.children %}
-                                <option value="{{ grandgrandchild.id }}" {% if grandgrandchild.id == request.GET.board_id %}selected{% endif %}>--- {{ grandgrandchild.name }}</option>
+                                <option value="{{ grandgrandchild.id }}">--- {{ grandgrandchild.name }}</option>
                                 {% endfor %}
                                 {% endif %}
                                 {% endfor %}
@@ -81,17 +81,17 @@
                             <select class="form-select" id="serviceCategory">
                                 <option value="">전체</option>
                                 {% for board in categories %}
-                                <option value="{{ board.id }}" {% if board.id == request.GET.board_id %}selected{% endif %}>{{ board.name }}</option>
+                                <option value="{{ board.id }}" {% if forloop.first %}selected{% endif %}>{{ board.name }}</option>
                                 {% if board.children|length > 0 %}
                                 {% for child in board.children %}
-                                <option value="{{ child.id }}" {% if child.id == request.GET.board_id %}selected{% endif %}>- {{ child.name }}</option>
+                                <option value="{{ child.id }}">- {{ child.name }}</option>
                                 {% if child.children|length > 0 %}
                                 {% for grandchild in child.children %}
-                                <option value="{{ grandchild.id }}" {% if grandchild.id == request.GET.board_id %}selected{% endif %}>
+                                <option value="{{ grandchild.id }}">
                                 -- {{ grandchild.name }}</option>
                                 {% if grandchild.children|length > 0 %}
                                 {% for grandgrandchild in grandchild.children %}
-                                <option value="{{ grandgrandchild.id }}" {% if grandgrandchild.id == request.GET.board_id %}selected{% endif %}>--- {{ grandgrandchild.name }}</option>
+                                <option value="{{ grandgrandchild.id }}">--- {{ grandgrandchild.name }}</option>
                                 {% endfor %}
                                 {% endif %}
                                 {% endfor %}
@@ -254,6 +254,10 @@
 
         // 다중 생성
         for (var i = 0; i < document.getElementById('accountCount').value; i++) {
+            if (i == 0) {
+                i = '';
+            }
+
             var formData = new FormData();
             formData.append('id', document.getElementById('accountId').value + i);
             formData.append('password', document.getElementById('accountPassword').value);

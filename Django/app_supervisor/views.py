@@ -1005,6 +1005,7 @@ def travel(request):
       'like_count': post.like_count,
       'created_at': datetime.datetime.strftime(post.created_at, '%Y-%m-%d %H:%M'),
       'comment_count': models.COMMENT.objects.filter(post=post).count(),
+      'review_count': models.POST.objects.filter(related_post=post).count(),
       'search_weight': post.search_weight,
     })
 

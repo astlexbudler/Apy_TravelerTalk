@@ -374,7 +374,21 @@
                     </p>
                   </div>
                   <div style="display: inline-block; text-align: right;">
-                    <p class="m-0">
+                    <p class="text-end text-black-50" style="font-size: 12px;">
+                      <span class="me-1" style="white-space: nowrap;">
+                        <i class="fi fi-rr-eye"></i> {{ post.view_count }}
+                      </span>
+                      <span class="me-1" style="white-space: nowrap;">
+                        <i class="fi fi-rr-social-network"></i> {{ post.like_count }}
+                      </span>
+                      <span class="me-1" style="white-space: nowrap;">
+                        <i class="fi fi-rr-star"></i> {{ post.review_count }}
+                      </span>
+                      <span class="me-1" style="white-space: nowrap;">
+                        <i class="fi fi-rr-comment-alt-dots"></i> {{ comments|length }}
+                      </span>
+                    </p>
+                    <p class="mb-2">
                       {% if post.place_info.status == 'ad' %}
                       <span class="badge bg-primary">광고중</span>
                       {% elif post.place_info.status == 'active' %}
@@ -391,6 +405,7 @@
                         <i class="fi fi-rr-edit"></i>
                       </a>
                     </p>
+                    게시글 아이디: {{ post.id }}
                   </div>
                 </div>
                 <h6 class="mb-3 text-black-60">

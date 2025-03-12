@@ -306,6 +306,7 @@ class api_account(APIView):
         )
 
         # 기본 게시글 생성
+        '''
         if account_type == 'partner':
             board_ids = request.data.get('board_ids', '1')
             category_ids = request.data.get('category_ids', '1')
@@ -328,6 +329,7 @@ class api_account(APIView):
                 post_id=post['pk'],
                 place_info_id=place_info['pk']
             )
+        '''
 
         # 기본 포인트 지급
         register_point = daos.select_server_setting('register_point')
