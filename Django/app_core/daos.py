@@ -394,12 +394,14 @@ def delete_account(account_id):
     }
 
 # 사용자 검색
-def search_accounts(username=None, nickname=None, any=None, status=None, account_type=None, page=1):
+def search_accounts(username=None, nickname=None, any=None, status=None, account_type=None, page=1, id_correct=None):
 
     # 사용자 정보 확인
     accounts = models.ACCOUNT.objects.select_related('level').prefetch_related('groups')
     query = Q()
 
+    if id_correct:
+        query &= Q(username=id_correct)
     if username:
         query &= Q(username__icontains=username)
     if nickname:

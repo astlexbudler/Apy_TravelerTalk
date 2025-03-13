@@ -523,3 +523,4 @@ def post_view(request):
     'likeable': likeable, # 좋아요 가능 여부
     'banners': banners, # 배너 정보
   })
+

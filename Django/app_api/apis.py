@@ -274,11 +274,13 @@ class api_account(APIView):
         id = request.query_params.get('id')
         nickname = request.query_params.get('nickname')
         any = request.query_params.get('any') # 닉네임 또는 아이디로 검색
+        id_correct = request.query_params.get('id_correct') # 아이디 정확히 일치
 
         accounts = daos.search_accounts(
             username=id,
             nickname=nickname,
-            any=any
+            any=any,
+            id_correct=id_correct
         )
 
         return JsonResponse({"success": True, 'status': 200, "message": "사용자 조회 성공", 'data': accounts[0]})

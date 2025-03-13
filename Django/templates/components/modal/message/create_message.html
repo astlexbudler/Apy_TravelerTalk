@@ -129,7 +129,7 @@
         }
 
         // 사용자 검색
-        var accounts = await fetch(`/api/account?any=${receiver}`)
+        var accounts = await fetch(`/api/account?id_correct=${receiver}`)
         .then(res => res.json())
         .then(data => {
             console.log(data);
