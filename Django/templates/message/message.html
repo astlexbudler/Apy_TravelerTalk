@@ -10,13 +10,6 @@
       {% include 'components/main/breadcrumbs.html' %}
       {% include 'components/main/title_section.html' with title='쪽지' subtitle='쪽지 수신 및 발신 내역을 확인하고 쪽지를 보낼 수 있습니다.' %}
 
-      <!-- 선택지 버튼 그룹 -->
-      <div class="btn-group w-100 d-flex">
-        {% include 'components/main/page_tab.html' with tab_name='받은 쪽지함' tab_id='inboxTab' tab_link='/message?tab=inboxTab' %}
-        <span class="divider"></span>
-        {% include 'components/main/page_tab.html' with tab_name='보낸 쪽지함' tab_id='outboxTab' tab_link='/message?tab=outboxTab' %}
-      </div>
-
       <!-- 쪽지 목록 -->
       <div class="mt-4">
 

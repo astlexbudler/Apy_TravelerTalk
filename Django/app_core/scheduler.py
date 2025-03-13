@@ -76,17 +76,16 @@ def coupon_expire():
 def place_ad_manage():
 
     # 모든 광고 중인 여행지 정보를 가져온다.
-    place_infos = list(models.PLACE_INFO.objects.select_related('post').filter( # 베스트 광고
+    place_infos1 = list(models.PLACE_INFO.objects.select_related('post').filter( # 베스트 광고
         status='ad'
     ))
-    place_infos.append(list(
-        models.PLACE_INFO.objects.select_related('post').filter( # 가중치 광고
-            status='active',
-            post__search_weight__gt=0
-        )
-    ))
+
+    place_infos2 = models.PLACE_INFO.objects.select_related('post').filter( # 가중치 광고
+        status='active',
+        post__search_weight__gt=0
+    )
     today = datetime.datetime.now()
-    for place_info in place_infos:
+    for place_info in [*place_infos1, *place_infos2]:
         # 광고 종료일이 지난 경우
         ad_end_at = place_info.ad_end_at
         if ad_end_at < today:

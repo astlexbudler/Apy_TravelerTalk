@@ -186,6 +186,7 @@
       formData.append('coupon_name', document.getElementById('couponName').value);
     }
 
+    showAlert('게시글 생성', '게시글을 생성중입니다. 완료될 때까지 기다려주세요.', 'info');
     await fetch('/post/write_post?board_ids={{request.GET.board_ids}}', {
       method: 'POST',
       headers: {

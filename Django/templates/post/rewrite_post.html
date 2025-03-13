@@ -186,6 +186,7 @@
       formData.append('hide', document.getElementById('hidePost').checked); // 문의글 숨기기
     }
 
+    showAlert('게시글 수정', '게시글을 수정중입니다. 완료될 때까지 기다려주세요.', 'info');
     await fetch('/post/rewrite_post?post_id={{ request.GET.post_id }}&board_ids={{ request.GET.board_ids }}', {
       method: 'POST',
       headers: {
