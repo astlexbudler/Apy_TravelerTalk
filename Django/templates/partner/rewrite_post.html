@@ -87,7 +87,7 @@
           </div>
         </div>
 
-        <!-- 주소 address, addressDetail -->
+        <!-- 주소 address, addressDetail 
         <div class="my-4">
           <div class="form-group">
             <div style="display: flex; justify-content: space-between; white-space: nowrap;">
@@ -188,7 +188,7 @@
         </div>
         </div>
 
-      </div>
+      </div>-->
 
       <!-- 게시글 정보 -->
       {% with subtitle=post.title %}
@@ -330,7 +330,7 @@
     formData.append('category_ids', document.getElementById('category_id').value);
     formData.append('location_info', document.getElementById('location_info').value);
     formData.append('open_info', document.getElementById('open_info').value);
-    formData.append('address', document.getElementById('address').value + ' ' + document.getElementById('addressDetail').value);
+    //formData.append('address', document.getElementById('address').value + ' ' + document.getElementById('addressDetail').value);
     if (document.getElementById('imageInput')) {
       formData.append('image', document.getElementById('imageInput').files[0]); // 대표 이미지
     }

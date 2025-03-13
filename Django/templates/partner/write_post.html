@@ -87,10 +87,10 @@
           </div>
         </div>
 
-        <!-- 주소 address, addressDetail -->
+        <!-- 주소 address, addressDetail
         <div class="my-4">
           {% include 'components/main/input_address.html' %}
-        </div>
+        </div> -->
 
       </div>
 
@@ -229,7 +229,7 @@
     formData.append('category_ids', document.getElementById('category_id').value);
     formData.append('location_info', document.getElementById('location_info').value);
     formData.append('open_info', document.getElementById('open_info').value);
-    formData.append('address', document.getElementById('address').value + ' ' + document.getElementById('addressDetail').value);
+    //formData.append('address', document.getElementById('address').value + ' ' + document.getElementById('addressDetail').value);
     if (document.getElementById('imageInput')) {
       formData.append('image', document.getElementById('imageInput').files[0]); // 대표 이미지
     }
