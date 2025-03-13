@@ -47,12 +47,9 @@
                     <div class="{% if coupon.image %}col-6{% else %}col-12{% endif %}">
                         <p class="text-black-50 m-0">
                             <span style="font-size: 12px;">
-                                <u>
-                                    {{coupon.code}}
-                                </u>
-                                <a href="javascript: navigator.clipboard.writeText('{{coupon.code}}'); showAlert('클립보드 복사', '쿠폰 코드가 복사되었습니다.', 'success');"
+                                <a href="javascript: copyToClipboard('{{coupon.code}}');"
                                     class="text-black-50">
-                                    <i class="fi fi-rr-clipboard"></i>
+                                    {{coupon.code}}
                                 </a>
                             </span>
                         </p>
