@@ -27,7 +27,6 @@ def index(request):
   else: # 사용했거나 만료된 쿠폰 정보 가져오기
     coupons, last_page = daos.select_coupons(code=code, name=name, status=status, own_account_id=contexts['account']['id'], page=page)
 
-  print(coupons)
   return render(request, 'coupon/coupon.html', {
     **contexts,
     'boards': boards, # 게시판 정보

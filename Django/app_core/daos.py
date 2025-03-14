@@ -334,6 +334,8 @@ def update_account(account_id, password=None, nickname=None, partner_name=None, 
         account.tel = tel
     if status: # 상태 업데이트
         account.status = status
+        if status == 'active':
+            account.is_active = True
     if note: # 메모 업데이트
         account.note = note
     if subsupervisor_permissions: # 부관리자 권한 업데이트
@@ -1594,11 +1596,11 @@ def select_messages(receive_account_id=None, send_account_id=None, is_read=None,
     query = Q()
     if receive_account_id:
         query &= Q(receive__id=receive_account_id)
-    else:
+    elif receive_account_id == 'supervisor':
         query &= Q(receive__isnull=True)
     if send_account_id:
         query &= Q(sender__id=send_account_id)
-    else:
+    elif send_account_id == 'supervisor':
         query &= Q(sender__isnull=True)
     if is_read:
         query &= Q(is_read=is_read)

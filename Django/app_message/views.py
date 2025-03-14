@@ -21,14 +21,13 @@ def index(request):
 
   # 데이터 가져오기
   tab = request.GET.get('tab', 'inboxTab') # inbox 또는 outbox
-  message_type = request.GET.get('message_type') # 메세지 타입
   page = int(request.GET.get('page', '1'))
 
   # 탭 확인
   if tab == 'inboxTab': # 받은 메세지함
-    messages, last_page = daos.select_messages(receive_account_id=contexts['account']['id'], message_type=message_type, page=page)
+    messages, last_page = daos.select_messages(receive_account_id=contexts['account']['id'], page=page)
   else: # 보낸 메세지함
-    messages, last_page = daos.select_messages(send_account_id=contexts['account']['id'], message_type=message_type, page=page)
+    messages, last_page = daos.select_messages(send_account_id=contexts['account']['id'], page=page)
 
   return render(request, 'message/message.html', {
     **contexts,

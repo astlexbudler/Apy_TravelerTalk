@@ -114,14 +114,21 @@
             <p>
                 로그인이 필요합니다
             </p>
-            {% elif coupons|length == 0 %}
+            {% elif coupons_preview|length == 0 %}
             <p>
                 사용 가능한 쿠폰이 없습니다
             </p>
-            {% for coupon in coupons %}
-            {{ coupon }}
-            {% endfor %}
             {% endif %}
+            {% for coupon in coupons_preview %}
+            <div class="p-1 mb-2 pb-2 border-bottom">
+                <p class="text-black m-0 small">
+                    {{coupon.name}} ({{coupon.related_post.title }})
+                </p>
+                <p class="text-black-50" style="font-size: 12px;">
+                    {{coupon.expire_at}} 까지
+                </p>
+            </div>
+            {% endfor %}
         </div>
     </div>
 

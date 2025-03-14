@@ -266,7 +266,7 @@
                           ['insert', ['hr', 'picture']],
                       ],
                       callbacks: {
-                          onImageUpload: function (files) {
+                          onImageUpload: function(files) {
                               let index = 0;
           
                               function uploadNext() {
@@ -274,31 +274,20 @@
                                       let file = files[index];
                                       let reader = new FileReader();
           
-                                      reader.onload = function (e) {
-                                          let fileType = file.type;
+                                      reader.onload = function(e) {
+                                          let imgNode = $('<img>').attr('src', e.target.result).css({
+                                              'display': 'block',
+                                              'width': '100%',
+                                              'height': 'auto',
+                                          });
           
-                                          if (fileType === "image/gif") {
-                                              // GIF 파일은 Blob URL로 처리
-                                              let blobURL = URL.createObjectURL(file);
-                                              $('#content').summernote('insertImage', blobURL);
-                                          } else {
-                                              // PNG, JPG 등은 DataURL 방식 사용
-                                              $('#content').summernote('insertImage', e.target.result);
-                                          }
+                                          $('#content').summernote('insertNode', imgNode[0]);
           
                                           index++;
-                                          uploadNext(); // 다음 이미지 업로드
+                                          uploadNext(); // 순차적으로 이미지 삽입
                                       };
           
-                                      // GIF도 FileReader를 사용하지만, DataURL 대신 Blob으로 처리
-                                      if (file.type === "image/gif") {
-                                          let blobURL = URL.createObjectURL(file);
-                                          $('#content').summernote('insertImage', blobURL);
-                                          index++;
-                                          uploadNext();
-                                      } else {
-                                          reader.readAsDataURL(file);
-                                      }
+                                      reader.readAsDataURL(file);
                                   }
                               }
           
