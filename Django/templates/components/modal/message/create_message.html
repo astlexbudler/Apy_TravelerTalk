@@ -349,6 +349,10 @@
         }
 
         // 메세지 전송 결과에 따른 알림창
+        if (count == 0) {
+            await showAlert('쪽지 보내기', '받는 사람을 입력해주세요. 받는 대상을 입력하고 목록에 추가해야합니다.', 'error');
+            return;
+        }
         await showAlert('쪽지 보내기', count + '명에게 쪽지를 보냈습니다.', 'success');
         location.reload();
     }
