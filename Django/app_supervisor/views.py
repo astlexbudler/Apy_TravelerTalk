@@ -1081,6 +1081,10 @@ def travel_edit(request):
   # 카테고리 정보
   boards = daos.make_board_tree(board_type='travel')
   categories = daos.make_category_tree()
+  board = post['boards'][-1]
+  board['id'] = str(board['id'])
+  category = post['place_info']['categories'][-1]
+  category['id'] = str(category['id'])
 
   return render(request, 'supervisor/travel_edit.html', {
     **daos.get_urls(),
@@ -1090,6 +1094,8 @@ def travel_edit(request):
     'post': post,
     'categories': categories,
     'boards': boards,
+    'board': board,
+    'category': category,
   })
 
 # 쿠폰 관리 페이지

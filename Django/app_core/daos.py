@@ -643,9 +643,9 @@ def select_posts(title=None, category_id=None, board_id=None, related_post_id=No
     if title:
         query &= Q(title__icontains=title)
     if category_id:
-        query &= Q(place_info__categories__id__in=[category_id])
+        query &= Q(place_info__categories__id__in=[int(category_id)])
     if board_id:
-        query &= Q(boards__id__in=[board_id])
+        query &= Q(boards__id__in=[int(board_id)])
     if related_post_id:
         query &= Q(related_post__id=related_post_id)
     if post_type == 'travel': # place_info가 None이 아닌지 확인
@@ -1021,7 +1021,7 @@ def update_place_info(post_id, category_ids=None, location_info=None, open_info=
     # category_ids 확인
     categories = []
     if category_ids:
-        for category_id in category_ids:
+        for category_id in str(category_ids).split(','):
             category = models.CATEGORY.objects.filter(
                 id=category_id
             ).first()

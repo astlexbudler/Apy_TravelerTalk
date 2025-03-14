@@ -218,6 +218,10 @@ def rewrite_post(request):
   # 게시판 및 카테고리 정보
   boards = daos. make_board_tree(board_type='travel')
   categories = daos.make_category_tree()
+  board = post['boards'][-1]
+  board['id'] = str(board['id'])
+  category = post['place_info']['categories'][-1]
+  category['id'] = str(category['id'])
 
   return render(request, 'partner/rewrite_post.html', {
     'account': account,
@@ -226,6 +230,8 @@ def rewrite_post(request):
     'post': post,
     'boards': boards,
     'categories': categories,
+    'board': board,
+    'category': category,
   })
 
 # 쿠폰 관리 페이지

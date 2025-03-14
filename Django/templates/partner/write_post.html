@@ -24,53 +24,33 @@
           <div class="form-group col-6">
             <label>게시판</label>
             <select class="form-select" id="board_id">
+
               {% for board in boards %}
-              <option value="{{ board.id }}" {% if board.id == request.GET.board_id %}selected{% endif %}>{{ board.name }}</option>
               {% if board.children|length > 0 %}
               {% for child in board.children %}
-              <option value="{{ board.id }},{{ child.id }}" {% if child.id == request.GET.board_id %}selected{% endif %}>- {{ child.name }}</option>
-              {% if child.children|length > 0 %}
-              {% for grandchild in child.children %}
-              <option value="{{ board.id }},{{ child.id }},{{ grandchild.id }}" {% if grandchild.id == request.GET.board_id %}selected{% endif %}>
-                -- {{ grandchild.name }}</option>
-              {% if grandchild.children|length > 0 %}
-              {% for grandgrandchild in grandchild.children %}
-              <option value="{{ board.id }},{{ child.id }},{{ grandchild.id }},{{ grandgrandchild.id }}" {% if grandgrandchild.id == request.GET.board_id %}selected{% endif %}>--- {{ grandgrandchild.name }}</option>
+              <option value="{{ board.id }},{{ child.id }}">{{ board.name }} > {{ child.name }}</option>
               {% endfor %}
+              {% else %}
+              <option value="{{ board.id }}">{{ board.name }}</option>
               {% endif %}
               {% endfor %}
-              {% endif %}
-              {% endfor %}
-              {% endif %}
-              {% endfor %}
+
             </select>
           </div>
           <div class="form-group col-6">
             <label>카테고리</label>
             <select class="form-select" id="category_id">
-              {% for category in categories %}
-              <option value="{{ category.id }}">{{ category.name }}</option>
-              {% endfor %}
 
               {% for category in categories %}
-              <option value="{{ category.id }}" {% if category.id == request.GET.category_id %}selected{% endif %}>{{ category.name }}</option>
-              {% if category.children|length > 0 %}
+              {% if category.children|length == 0 %}
+              <option value="{{ category.id }}">{{ category.name }}</option>
+              {% else  %}
               {% for child in category.children %}
-              <option value="{{ category.id }},{{ child.id }}" {% if child.id == request.GET.category_id %}selected{% endif %}>- {{ child.name }}</option>
-              {% if child.children|length > 0 %}
-              {% for grandchild in child.children %}
-              <option value="{{ category.id }},{{ child.id }},{{ grandchild.id }}" {% if grandchild.id == request.GET.category_id %}selected{% endif %}>
-                -- {{ grandchild.name }}</option>
-              {% if grandchild.children|length > 0 %}
-              {% for grandgrandchild in grandchild.children %}
-              <option value="{{ category.id }},{{ child.id }},{{ grandchild.id }},{{ grandgrandchild.id }}" {% if grandgrandchild.id == request.GET.category_id %}selected{% endif %}>--- {{ grandgrandchild.name }}</option>
+              <option value="{{ category.id }},{{ child.id }}">{{ category.name }} > {{ child.name }}</option>
               {% endfor %}
               {% endif %}
               {% endfor %}
-              {% endif %}
-              {% endfor %}
-              {% endif %}
-              {% endfor %}
+
             </select>
           </div>
         </div>
@@ -262,6 +242,7 @@
       formData.append('image', document.getElementById('imageInput').files[0]); // 대표 이미지
     }
 
+    showAlert('게시글 생성', '게시글을 생성중입니다. 완료될 때까지 기다려주세요.', 'info');
     await fetch('{{PARTNER_URL}}/partner/write_post', {
       method: 'POST',
       headers: {

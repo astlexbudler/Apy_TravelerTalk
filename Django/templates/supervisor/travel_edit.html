@@ -24,23 +24,13 @@
           <div class="form-group col-6">
             <label>게시판</label>
             <select class="form-select" id="board_id">
-              {% for board in boards %}
-              <option value="{{ board.id }}" {% if board.id == post.board_ids %}selected{% endif %}>{{ board.name }}</option>
-              {% if board.children|length > 0 %}
-              {% for child in board.children %}
-              <option value="{{ board.id }},{{ child.id }}" {% if child.id == post.board_ids %}selected{% endif %}>- {{ child.name }}</option>
-              {% if child.children|length > 0 %}
-              {% for grandchild in child.children %}
-              <option value="{{ board.id }},{{ child.id }},{{ grandchild.id }}" {% if grandchild.id == post.board_ids %}selected{% endif %}>
-                -- {{ grandchild.name }}</option>
-              {% if grandchild.children|length > 0 %}
-              {% for grandgrandchild in grandchild.children %}
-              <option value="{{ board.id }},{{ child.id }},{{ grandchild.id }},{{ grandgrandchild.id }}" {% if grandgrandchild.id == post.board_ids %}selected{% endif %}>--- {{ grandgrandchild.name }}</option>
+              {% for b in boards %}
+              {% if b.children|length > 0 %}
+              {% for child in b.children %}
+              <option value="{{ b.id }},{{ child.id }}" {% if child.id == board.id %}selected{% endif %}>{{ b.name }} > {{ child.name }}</option>
               {% endfor %}
-              {% endif %}
-              {% endfor %}
-              {% endif %}
-              {% endfor %}
+              {% else %}
+              <option value="{{ b.id }}" {% if b.id == board.id %}selected{% endif %}>{{ b.name }}</option>
               {% endif %}
               {% endfor %}
             </select>
@@ -48,29 +38,21 @@
           <div class="form-group col-6">
             <label>카테고리</label>
             <select class="form-select" id="category_id">
-              {% for category in categories %}
-              <option value="{{ category.id }}">{{ category.name }}</option>
+
+              {% for c in categories %}
+              {% if c.children|length == 0 %}
+              <option value="{{ c.id }}" {% if c.id == category.id %}selected{% endif %}>
+                {{ c.name }}
+              </option>
+              {% else  %}
+              {% for child in c.children %}
+              <option value="{{ c.id }},{{ child.id }}" {% if child.id == category.id %}selected{% endif %}>
+                {{ c.name }} > {{ child.name }}
+              </option>
+              {% endfor %}
+              {% endif %}
               {% endfor %}
 
-              {% for category in categories %}
-              <option value="{{ category.id }}" {% if category.id == post.place_info.category_ids %}selected{% endif %}>{{ category.name }}</option>
-              {% if category.children|length > 0 %}
-              {% for child in category.children %}
-              <option value="{{ category.id }},{{ child.id }}" {% if child.id == post.place_info.category_ids %}selected{% endif %}>- {{ child.name }}</option>
-              {% if child.children|length > 0 %}
-              {% for grandchild in child.children %}
-              <option value="{{ category.id }},{{ child.id }},{{ grandchild.id }}" {% if grandchild.id == post.place_info.category_ids %}selected{% endif %}>
-                -- {{ grandchild.name }}</option>
-              {% if grandchild.children|length > 0 %}
-              {% for grandgrandchild in grandchild.children %}
-              <option value="{{ category.id }},{{ child.id }},{{ grandchild.id }},{{ grandgrandchild.id }}" {% if grandgrandchild.id == post.place_info.category_ids %}selected{% endif %}>--- {{ grandgrandchild.name }}</option>
-              {% endfor %}
-              {% endif %}
-              {% endfor %}
-              {% endif %}
-              {% endfor %}
-              {% endif %}
-              {% endfor %}
             </select>
           </div>
         </div>
@@ -386,6 +368,7 @@
       formData.append('image', document.getElementById('imageInput').files[0]); // 대표 이미지
     }
 
+    showAlert('게시글 수정', '게시글을 수정중입니다. 완료될 때까지 기다려주세요.', 'info');
     await fetch('{{SUPERVISOR_URL}}/supervisor/travel/edit?post_id={{ request.GET.post_id }}', {
       method: 'POST',
       headers: {
