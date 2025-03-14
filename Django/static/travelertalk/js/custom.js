@@ -197,3 +197,10 @@ scrollToComment = () => {
   commentUly = commentUl.getBoundingClientRect().top;
   window.scrollTo({'top': commentUly, 'behavior': 'smooth'});
 }
+
+// copy to clipboard
+function copyToClipboard(text) {
+  //navigator.clipboard.writeText('{{coupon.code}}'); showAlert('클립보드 복사', '쿠폰 코드가 복사되었습니다.', 'success');
+  navigator.clipboard.writeText(text);
+  showAlert('클립보드 복사', '쿠폰 코드가 복사되었습니다.', 'success');
+}

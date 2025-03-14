@@ -12,16 +12,41 @@
 
       <!-- 선택지 버튼 그룹 -->
       <div class="btn-group w-100 d-flex">
-        {% include 'components/main/page_tab.html' with tab_name='받은 쪽지함' tab_id='inboxTab' tab_link='/message?tab=inboxTab' %}
+        <div class="w-100 d-flex justify-content-center">
+          <a class="w-100 btn" href="{{PARTNER_URL}}/partner/message?tab=inboxTab" id="inboxTab">
+            받은 쪽지함
+          </a>
+        </div>
+        <script>
+            window.addEventListener('load', () => {
+                if ('{{request.GET.tab}}' == 'inboxTab') { // 해당 탭이 선택 되었을 경우,
+                    document.getElementById('inboxTab').classList.add('pastel-pink-background');
+                    document.getElementById('inboxTab').classList.add('text-white');
+                } else { // 해당 탭이 선택 되지 않았을 경우,
+                    document.getElementById('inboxTab').classList.add('pastel-beige-background');
+                }
+            });
+        </script>
         <span class="divider"></span>
-        {% include 'components/main/page_tab.html' with tab_name='보낸 쪽지함' tab_id='outboxTab' tab_link='/message?tab=outboxTab' %}
+        <div class="w-100 d-flex justify-content-center">
+          <a class="w-100 btn" href="{{PARTNER_URL}}/partner/message?tab=outboxTab" id="outboxTab">
+            보낸 쪽지함
+          </a>
+        </div>
+        <script>
+            window.addEventListener('load', () => {
+                if ('{{request.GET.tab}}' == 'outboxTab') { // 해당 탭이 선택 되었을 경우,
+                    document.getElementById('outboxTab').classList.add('pastel-pink-background');
+                    document.getElementById('outboxTab').classList.add('text-white');
+                } else { // 해당 탭이 선택 되지 않았을 경우,
+                    document.getElementById('outboxTab').classList.add('pastel-beige-background');
+                }
+            });
+        </script>
       </div>
 
       <!-- 쪽지 목록 -->
       <div class="mt-4">
-
-        <!-- 프로필 카드 -->
-        {% include 'components/main/profile_card.html' with profile=account %}
 
         <!-- 쪽지 목록 -->
         <div class="mb-5" style="min-height: 300px;">
@@ -91,7 +116,60 @@
       makePaegeButton('{{request.GET.page}}', '{{last_page}}', `{{PARTNER_URL}}/partber/message?search=&tab={{request.GET.tab}}`);
     }
 
+    // to
+    var to = '{{request.GET.to}}';
+    if (to != '') {
+      new bootstrap.Modal(document.getElementById('newMessageModal')).show();
+      var html = `
+            <div style="display: flex; justify-content: space-between; white-space: nowrap;" id="${nowAccountId}">
+                <div style="display: inline-block; text-align: left;">
+                    <p class="text-black-60 mb-1">
+                        ${to}
+                    </p>
+                </div>
+                <div style="display: inline-block; text-align: right;">
+                    <a href="javascript: deleteUser('${to}');" class="small text-danger">
+                        삭제
+                    </a>
+                </div>
+            </div>
+        `;
+        receiverList.innerHTML += html;
+        receiverConfirmMessage.innerHTML = '사용자를 추가했습니다.';
+        receiverConfirmMessage.classList.add('text-success');
+        receiverConfirmMessage.classList.remove('text-danger');
+        receiverId.value = nowAccountId + ',';
+    }
+
   });
+
+
+  // 쪽지 답장
+  replyMessage = (receiverId, messageTitle) => {
+    document.getElementById('messageTitle').value = '답장: ' + document.getElementById('messageTitle').value;
+    document.getElementById('messageContent').value = `[${messageTitle}]\n답장: `;
+    new bootstrap.Modal(document.getElementById('newMessageModal')).show();
+
+    var html = `
+            <div style="display: flex; justify-content: space-between; white-space: nowrap;" id="${receiverId}">
+                <div style="display: inline-block; text-align: left;">
+                    <p class="text-black-60 mb-1">
+                        ${receiverId}
+                    </p>
+                </div>
+                <div style="display: inline-block; text-align: right;">
+                    <a href="javascript: deleteUser('${receiverId}');" class="small text-danger">
+                        삭제
+                    </a>
+                </div>
+            </div>
+        `;
+    receiverList.innerHTML += html;
+    receiverConfirmMessage.innerHTML = '사용자를 추가했습니다.';
+    receiverConfirmMessage.classList.add('text-success');
+    receiverConfirmMessage.classList.remove('text-danger');
+    receiverId.value = receiverId + ',';
+  }
 
 </script>
 

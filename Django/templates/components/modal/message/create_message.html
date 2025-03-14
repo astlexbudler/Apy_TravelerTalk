@@ -318,6 +318,7 @@
         }
 
         // 메세지 전송 요청
+        var count = 0;
         for (var i = 0; i < receiverIds.split(',').length; i++) {
             if (receiverIds.split(',')[i] == '') {
                 continue;
@@ -344,10 +345,11 @@
                 },
                 body: formData
             });
+            count++;
         }
 
         // 메세지 전송 결과에 따른 알림창
-        await showAlert('쪽지 보내기', '쪽지를 성공적으로 전송했습니다.', 'success');
+        await showAlert('쪽지 보내기', count + '명에게 쪽지를 보냈습니다.', 'success');
         location.reload();
     }
 </script>
