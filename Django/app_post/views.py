@@ -320,7 +320,7 @@ def travel(request):
   )
 
   # 카테고리 정보 가져오기
-  categories = daos.make_category_tree()
+  categories = daos.make_category_tree(board_id=board['id'])
 
   return render(request, 'post/travel.html', {
     **contexts,

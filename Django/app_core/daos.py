@@ -2263,7 +2263,7 @@ def delete_board(board_id):
     }
 
 # 카테고리 트리 생성
-def make_category_tree(status=False):
+def make_category_tree(status=False, board_id=None):
 
     # 카테고리 확인
     categories = models.CATEGORY.objects.all().order_by('-display_weight')
@@ -2275,7 +2275,7 @@ def make_category_tree(status=False):
         'name': category.name,
         'display_weight': category.display_weight,
         'children': [],
-        'post_count': 0 if status else models.POST.objects.filter(place_info__categories__id__in=[category.id]).count(),
+        'post_count': 0 if status else models.POST.objects.filter(place_info__categories__id__in=[category.id], boards__id=board_id if board_id else None).count(),
         'writing_count': models.POST.objects.filter(place_info__status='writing', place_info__categories__id__in=[category.id]).count() if status else 0,
         'active_count': models.POST.objects.filter(place_info__status='active', place_info__categories__id__in=[category.id]).count() if status else 0,
         'pending_count': models.POST.objects.filter(place_info__status='pending', place_info__categories__id__in=[category.id]).count() if status else 0,
@@ -2293,7 +2293,7 @@ def make_category_tree(status=False):
                 'name': category.name,
                 'display_weight': category.display_weight,
                 'children': [],
-                'post_count': 0 if status else models.POST.objects.filter(place_info__categories__id__in=[category.id]).count(),
+                'post_count': 0 if status else models.POST.objects.filter(place_info__categories__id__in=[category.id], boards__id=board_id if board_id else None).count(),
                 'writing_count': models.POST.objects.filter(place_info__status='writing', place_info__categories__id__in=[category.id]).count() if status else 0,
                 'active_count': models.POST.objects.filter(place_info__status='active', place_info__categories__id__in=[category.id]).count() if status else 0,
                 'pending_count': models.POST.objects.filter(place_info__status='pending', place_info__categories__id__in=[category.id]).count() if status else 0,
@@ -2312,7 +2312,7 @@ def make_category_tree(status=False):
                             'name': category.name,
                             'display_weight': category.display_weight,
                             'children': [],
-                            'post_count': 0 if status else models.POST.objects.filter(place_info__categories__id__in=[category.id]).count(),
+                            'post_count': 0 if status else models.POST.objects.filter(place_info__categories__id__in=[category.id], boards__id=board_id if board_id else None).count(),
                             'writing_count': models.POST.objects.filter(place_info__status='writing', place_info__categories__id__in=[category.id]).count() if status else 0,
                             'active_count': models.POST.objects.filter(place_info__status='active', place_info__categories__id__in=[category.id]).count() if status else 0,
                             'pending_count': models.POST.objects.filter(place_info__status='pending', place_info__categories__id__in=[category.id]).count() if status else 0,
@@ -2330,7 +2330,7 @@ def make_category_tree(status=False):
                                     'name': category.name,
                                     'display_weight': category.display_weight,
                                     'children': [],
-                                    'post_count': 0 if status else models.POST.objects.filter(place_info__categories__id__in=[category.id]).count(),
+                                    'post_count': 0 if status else models.POST.objects.filter(place_info__categories__id__in=[category.id], boards__id=board_id if board_id else None).count(),
                                     'writing_count': models.POST.objects.filter(place_info__status='writing', place_info__categories__id__in=[category.id]).count() if status else 0,
                                     'active_count': models.POST.objects.filter(place_info__status='active', place_info__categories__id__in=[category.id]).count() if status else 0,
                                     'pending_count': models.POST.objects.filter(place_info__status='pending', place_info__categories__id__in=[category.id]).count() if status else 0,

@@ -195,16 +195,16 @@
                 </a>
                 {% else %}
                 <a class="nav-link"
-                    href="{{MAIN_URL}}/post/travel?board_ids={{request.GET.board_ids}}&category={{category.id}}">
+                    href="{{MAIN_URL}}/post/travel?board_ids={{request.GET.board_ids}}&category_ids={{category.id}}">
                     {{ category.name }} ({{ category.post_count }})
                 </a>
                 {% endif %}
             </div>
 
             <!-- 2차 카테고리 -->
-            {% if category.children|length > 0 %}
-            {% for child in category.children %}
-            <div class="ps-2 pt-2 pb-3 mb-2  border-bottom d-none category_{{category.id}}">
+            {% if c.children|length > 0 %}
+            {% for child in c.children %}
+            <div class="ps-2 pt-2 pb-3 mb-2  border-bottom d-none category_{{c.id}}">
                 {% if child.children|length > 0 %}
                 <a class="nav-link dropdown-toggle" href="javascript: document.querySelectorAll('.category_{{child.id}}').forEach((el) => el.classList.toggle('d-none'));">
                     {{ child.name }} ({{ child.post_count }})
@@ -215,55 +215,11 @@
                 </a>
                 {% else %}
                 <a class="nav-link"
-                    href="{{MAIN_URL}}/post/travel?board_ids={{request.GET.board_ids}}&category={{ child.id }}">
+                    href="{{MAIN_URL}}/post/travel?board_ids={{request.GET.board_ids}}&category_ids={{c.id}},{{child.id}}">
                     {{ child.name }} ({{ child.post_count }})
                 </a>
                 {% endif %}
             </div>
-
-            <!-- 3차 카테고리 -->
-            {% if child.children|length > 0 %}
-            {% for child2 in child.children %}
-            <div
-                class="ps-4 pt-2 pb-3 mb-2 border-bottom d-none category_{{child1.id}}">
-                {% if child2.children|length > 0 %}
-                <a class="nav-link dropdown-toggle" href="javascript: document.querySelectorAll('.category_{{child2.id}}').forEach((el) => el.classList.toggle('d-none'));">
-                    {{ child2.name }} ({{ child2.post_count }})
-                </a>
-                {% elif child2.id in request.GET.category %}
-                <a class="nav-link" href="#" style="color: rgb(184, 184, 184);">
-                    {{ child2.name }} ({{ child2.post_count }})
-                </a>
-                {% else %}
-                <a class="nav-link"
-                    href="{{MAIN_URL}}/post/travel?board_ids={{request.GET.board_ids}}&category={{ child2.id }}">
-                    {{ child2.name }} ({{ child2.post_count }})
-                </a>
-                {% endif %}
-            </div>
-
-            <!-- 4차 카테고리 -->
-            {% if child2.children|length > 0 %}
-            {% for child3 in child2.children %}
-            <div
-                class="ps-6 pt-2 pb-3 mb-2 border-bottom d-none category_{{child2.id}}">
-                {% if child3.id in request.GET.category %}
-                <a class="nav-link" href="#" style="color: rgb(184, 184, 184);">
-                    {{ child3.name }} ({{ child3.post_count }})
-                </a>
-                {% else %}
-                <a class="nav-link"
-                    href="javascript:location.href=location.origin + location.pathname + '?board_ids={{request.GET.board_ids}}&category={{ child3.id }}'">
-                    {{ child3.name }} ({{ child3.post_count }})
-                </a>
-                {% endif %}
-            </div>
-            {% endfor %}
-            {% endif %}
-
-            {% endfor %}
-            {% endif %}
-
             {% endfor %}
             {% endif %}
 

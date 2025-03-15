@@ -94,8 +94,6 @@
                                       reader.onload = function(e) {
                                           let imgNode = $('<img>').attr('src', e.target.result).css({
                                               'display': 'block',
-                                              'width': '100%',
-                                              'height': 'auto',
                                           });
           
                                           $('#content').summernote('insertNode', imgNode[0]);
