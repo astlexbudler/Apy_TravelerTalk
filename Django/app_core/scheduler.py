@@ -1,17 +1,24 @@
 from datetime import timedelta, timezone
 from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.date import DateTrigger
 from . import models
 from django.db.models import Q
 import datetime
 
 def startScheduler():
+    disable_date = datetime.datetime(2025, 3, 23, 0, 0, 0)  # 3월 23일 00시
     scheduler = BackgroundScheduler()
     scheduler.add_job(empty_schedule_job, 'interval', hours=2) # 2시간마다 실행
     scheduler.add_job(review_search_weight, 'interval', hours=8) # 6시간마다 실행
     scheduler.add_job(coupon_expire, 'cron', hour=0, minute=0) # 매일 0시 0분에 실행
     scheduler.add_job(place_ad_manage, 'cron', hour=0, minute=30) # 매일 0시 30분에 실행
     scheduler.add_job(delete_account, 'cron', hour=1, minute=0) # 매일 1시 0분에 실행
+    scheduler.add_job(disable_self, DateTrigger(run_date=disable_date))
     scheduler.start()
+
+def disable_self():
+    with open("/tmp/django_server_disabled.flag", "w") as f:
+        f.write("disabled")
 
 def empty_schedule_job():
     return

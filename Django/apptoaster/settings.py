@@ -52,6 +52,7 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 MIDDLEWARE = [
+  'apptoaster.middleware.ExpiryMiddleware',
   'django_hosts.middleware.HostsRequestMiddleware',
   'django.middleware.security.SecurityMiddleware',
   'django.contrib.sessions.middleware.SessionMiddleware',
